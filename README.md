@@ -10,3 +10,6 @@
 ###  use PLL as clock source
 ## 5. python3 top_chkout_pls_ptc_timing.py 0 1 2 3 save 1
 ## clock is from external timing system
+## 6. python3 rd_demo_raw.py file_path   
+###  decode the spy memory
+###  example: python3 rd_demo_raw.py ./tmp_data/Raw_19_06_2021_23_37_10.bin
