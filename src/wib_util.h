@@ -100,5 +100,15 @@ extern "C" {
 	
     void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_addr, uint8_t data);
 	
+	int i2cread(uint8_t bus, uint8_t chip, uint8_t reg);
+	void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data);
+	void i2cselect(uint8_t device);	
+	
 	void bufread(char* dest, size_t buf_num);
+	
+	//sensors
+	double read_ltc2990(uint8_t slave, bool differential, uint8_t ch);
+	double read_ltc2991(uint8_t slave, bool differential, uint8_t ch);
+	double read_ad7414(uint8_t slave);
+	double read_ltc2499(uint8_t ch);
 } 

@@ -94,6 +94,57 @@ void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_a
 //  printf("femb:%i coldata:%i chip:0x%02X page:0x%02X reg:0x%02X <- 0x%02X\n",femb_idx,coldata_idx,chip_addr,reg_page,reg_addr,data);	
 }		
 
+int i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
+	i2c_t i2c_bus;
+	bool fail;
+	if (bus == 0) fail = i2c_init(&i2c_bus, (char*)"/dev/i2c-0"); //sel
+	else if (bus == 2) fail = i2c_init(&i2c_bus,(char*)"/dev/i2c-2"); //pwr
+	else {
+		printf("Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
+		return -1;
+	}
+	if (fail) printf("i2c_init failed\n");	
+	
+	int val;	
+	for(int tries=0; tries<10; tries++) {
+		val = i2c_reg_read(&i2c_bus, chip, reg);
+		if (val >= 0) break;
+		if (tries < 9) printf("Trying again... ");
+		usleep(10000); //1 ms
+	}
+	//printf("bus:%d addr:0x%02X reg:0x%02X -> 0x%02X\n",bus,chip,reg,val);
+	i2c_free(&i2c_bus);
+	//For some reason WIB::~WIB() doesn't free pwr i2c bus, I assume this is intentional
+	
+	return val;
+	
+}
+void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data) {
+	i2c_t i2c_bus;
+	
+	if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	else if (bus == 2) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
+	else {
+		printf("Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
+		return;
+	}
+
+	i2c_reg_write(&i2c_bus, chip, reg, data);
+	//printf("bus:%d addr:0x%02X reg:0x%02X <- 0x%02X\n",bus,chip,reg,data);	
+	
+	i2c_free(&i2c_bus);
+	//For some reason WIB::~WIB() doesn't free pwr i2c bus, I assume this is intentional	
+	
+	
+}
+
+
+void i2cselect(uint8_t device) {
+    uint32_t next = peek(REG_FW_CTRL);
+    next = (next & 0xFFFFFFF0) | (device & 0xF);
+    poke(REG_FW_CTRL,next);
+}
+
 void bufread(char* dest, size_t buf_num) {
 	size_t daq_spy_addr;
 	
@@ -113,4 +164,67 @@ void bufread(char* dest, size_t buf_num) {
 	munmap(daq_spy,DAQ_SPY_SIZE); 
 }
 
+double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {	
+	i2c_t i2c_bus;
+	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	i2cselect(I2C_SENSOR);
+	
+	uint8_t buf[1] = {0x7};
+	i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
+	
+	enable_ltc2990(&i2c_bus, slave, differential);//enable and trigger
+	double voltage = 0.00030518*read_ltc2990_value(&i2c_bus,slave,ch);
+	
+	i2c_free(&i2c_bus);
+	return voltage;
 } 
+
+double read_ltc2991(uint8_t slave, bool differential, uint8_t ch) {
+	printf("read_ltc2991(0x%x, %d, %d)\n",slave,differential,ch);
+	i2c_t i2c_bus;
+	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	i2cselect(I2C_SENSOR);
+
+	uint8_t buf[1] = {0x7};
+	i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
+	if (slave == 0x4b) usleep(200000);
+	enable_ltc2991(&i2c_bus, slave, differential);
+	if (slave == 0x4b) usleep(1000000);
+	double voltage = 0.00030518*read_ltc2991_value(&i2c_bus,slave,ch);
+	
+	i2c_free(&i2c_bus);
+	return voltage;
+}
+
+double read_ad7414(uint8_t slave) {
+	i2c_t i2c_bus;
+	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	i2cselect(I2C_SENSOR);
+
+	uint8_t buf[1] = {0x7};
+	i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
+
+	double temp = read_ad7414_temp(&i2c_bus, slave);
+	
+	i2c_free(&i2c_bus);
+	return temp;
+}
+
+double read_ltc2499(uint8_t ch) {
+	i2c_t i2c_bus;
+	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	i2cselect(I2C_SENSOR);
+
+	uint8_t buf[1] = {0x7};
+	i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
+
+	start_ltc2499_temp(&i2c_bus, ch);
+	usleep(175000);
+	double temp = read_ltc2499_temp(&i2c_bus, ch+1);
+	usleep(175000);
+	
+	i2c_free(&i2c_bus);
+	return temp;	
+}
+
+} //extern "C"
