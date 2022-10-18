@@ -179,17 +179,16 @@ double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {
 	return voltage;
 } 
 
-double read_ltc2991(uint8_t slave, bool differential, uint8_t ch) {
-	printf("read_ltc2991(0x%x, %d, %d)\n",slave,differential,ch);
+double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch) { //ltc2991 are on 2 different buses
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	else if (bus == 2) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
+	else {
+		printf("read_ltc2991 Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
+		return 0;
+	}		
 
-	uint8_t buf[1] = {0x7};
-	i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
-	if (slave == 0x4b) usleep(200000);
 	enable_ltc2991(&i2c_bus, slave, differential);
-	if (slave == 0x4b) usleep(1000000);
 	double voltage = 0.00030518*read_ltc2991_value(&i2c_bus,slave,ch);
 	
 	i2c_free(&i2c_bus);

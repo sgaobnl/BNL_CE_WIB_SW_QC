@@ -34,7 +34,7 @@ class LLC():
         self.wib.read_ltc2990.argtypes = [ctypes.c_uint8, ctypes.c_bool, ctypes.c_uint8]
         self.wib.read_ltc2990.restype = ctypes.c_double
     
-        self.wib.read_ltc2991.argtypes = [ctypes.c_uint8, ctypes.c_bool, ctypes.c_uint8]
+        self.wib.read_ltc2991.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_bool, ctypes.c_uint8]
         self.wib.read_ltc2991.restype = ctypes.c_double    
     
         self.wib.read_ad7414.argtypes = [ctypes.c_uint8]
