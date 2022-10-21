@@ -2,7 +2,11 @@ extern "C" {
 #ifndef io_reg_h
 #define io_reg_h
 
-#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 //#include "log.h"
 
 typedef struct io_reg_t {

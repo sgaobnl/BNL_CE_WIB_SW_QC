@@ -220,7 +220,7 @@ double read_ltc2499(uint8_t ch) {
 	start_ltc2499_temp(&i2c_bus, ch);
 	usleep(175000);
 	double temp = read_ltc2499_temp(&i2c_bus, ch+1);
-	usleep(175000);
+	//usleep(175000);
 	
 	i2c_free(&i2c_bus);
 	return temp;	

@@ -122,7 +122,7 @@ int i2c_block_write(i2c_t *i2c, uint8_t slave, uint8_t reg, uint8_t *buf, size_t
     }
     int res = i2c_smbus_write_i2c_block_data(i2c->fd, reg, len, buf);
     if (res < 0) {
-       printf("i2c_write failed %s\n",strerror(res));
+       printf("i2c_write failed %s\n",strerror(errno));
     }
     return res;
 }
@@ -134,7 +134,7 @@ int i2c_block_read(i2c_t *i2c, uint8_t slave, uint8_t reg, uint8_t *buf, size_t 
     }
     int res = i2c_smbus_read_i2c_block_data(i2c->fd, reg, len, buf);
     if (res < 0) {
-       printf("i2c_block_read failed %s\n",strerror(res));
+       printf("i2c_block_read failed %s\n",strerror(errno));
     }
     return res;
 }

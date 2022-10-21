@@ -108,7 +108,7 @@ extern "C" {
 	
 	//sensors
 	double read_ltc2990(uint8_t slave, bool differential, uint8_t ch);
-	double read_ltc2991(uint8_t slave, uint8_t slave, bool differential, uint8_t ch);
+	double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch);
 	double read_ad7414(uint8_t slave);
 	double read_ltc2499(uint8_t ch);
 } 
