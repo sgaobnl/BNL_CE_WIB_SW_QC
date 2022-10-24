@@ -226,4 +226,178 @@ double read_ltc2499(uint8_t ch) {
 	return temp;	
 }
 
+bool script_cmd(char* line) {
+	// printf("Printing line:%s",line);
+	char* token = strtok(line, " \n");
+	if (token == NULL or token[0] == '#') return true;
+	
+    if (not strcmp(token,"delay")) {
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid delay\n");
+            return false;
+        }
+        size_t micros = (size_t) strtoull(token,NULL,10);
+        usleep(micros);
+		//printf("slept %d micros\n",micros);
+        return true;
+    } else if (not strcmp(token,"run")) {
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid run\n");
+            return false;
+        }
+        return script(token);
+    } else if (not strcmp(token,"i2c")) {
+		char* bus = strtok(NULL," \n");
+		bool res;
+		if (token == NULL) { //no more arguments, strcmp has undefined behavior with NULL
+            printf("Invalid i2c\n");
+            return false;
+        }        
+        i2c_t i2c_bus;
+        if (not strcmp(bus,"sel")) {  // i2c sel chip addr data [...]
+            i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+        } else if (not strcmp(bus,"pwr")) { // i2c pwr chip addr data [...]
+            i2c_init(&i2c_bus, (char*)"/dev/i2c-2");
+        } else {
+            printf("Invalid i2c bus selection: %s\n", bus);
+            return false;
+        }
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid i2c\n");
+            return false;
+        }			
+        uint8_t chip = (uint8_t)strtoull(token,NULL,16);
+		
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid i2c\n");
+            return false;
+        }						
+        uint8_t addr = (uint8_t)strtoull(token,NULL,16);
+		
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid i2c\n");
+            return false;
+        }						
+        uint8_t data = (uint8_t)strtoull(token,NULL,16);		
+		
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments = single register to write            
+			res = i2c_reg_write(&i2c_bus, chip, addr, data);
+			//printf("res is %d\n",res);
+            return (res > -1);		
+		} else {			//rest of arguments are block of data to write
+			uint8_t *buf = new uint8_t[32]; //max length of data that can be written
+			buf[0] = data;
+			size_t i;
+			for (i = 1; i < 32 and token != NULL; i++) {
+				buf[i] = (uint8_t)strtoull(token,NULL,16);
+				token = strtok(NULL," \n");
+			} 
+            res = i2c_block_write(&i2c_bus, chip, addr, buf, i); //i is now = total number of data arguments
+            //printf("res is %d\n",res);
+			delete [] buf;
+			return (res > -1);
+		}			
+		
+		i2c_free(&i2c_bus);
+    } else if (not strcmp(token,"mem")) {
+		token = strtok(NULL," \n");
+		if (token == NULL) { //no more arguments
+            printf("Invalid arguments to mem\n");
+            return false;
+        }
+		uint32_t addr = strtoull(token,NULL,16);
+		
+		token = strtok(NULL," ");
+		if (token == NULL) { //no more arguments
+            printf("Invalid arguments to mem\n");
+            return false;
+        }
+		uint32_t value = strtoull(token,NULL,16);
+		
+		token = strtok(NULL," \n");
+		if (token == NULL) { // mem addr value
+			printf("poke 0x%x 0x%x\n",addr,value);
+			poke(addr, value);
+			return true;
+		}
+		else { // mem addr value mask
+			uint32_t mask = strtoull(token,NULL,16);
+            uint32_t prev = peek(addr);
+            poke(addr, (prev & (~mask)) | (value & mask));
+            return true;			
+		}
+				
+    } else {
+        printf("Invalid script command: %s\n", token);
+    }
+    return false;	
+}
+
+bool script(char* script, bool file) { //file=true (default) means argument is a file name or path, false means argument is a raw script line
+	if (file) {
+		//printf(".Tryin to find file %s!\n",script);
+		FILE* fp;
+		fp = fopen(script,"r");
+
+        if (fp == NULL) {
+            char path[70];
+			strcpy(path,"scripts/");
+			strcat(path,script);
+			fp = fopen(path,"r");
+            if (fp == NULL) {
+                char path2[70];
+				strcpy(path2,"/etc/wib/");
+				strcat(path2,script);
+				fp = fopen(path2,"r");
+      
+                if (fp == NULL) {
+                    printf("Could not find script %s\n",script);
+					return false;
+                } else {
+                    printf("Running /etc/wib/%s\n",script);
+                }
+            } else {
+                printf("Running scripts/%s\n",script);
+            }
+        } else {
+            printf("Running ./%s\n",script);
+        }
+		
+		size_t size = 0;
+		char *line = NULL; //ref https://linux.die.net/man/3/getline
+		
+		// printf("getline args: %p, %p, %p\n",&line, &size, fp);
+		// return false;
+		while(getline(&line, &size, fp) != -1) {
+			//printf("Exiting after 1 getline\n");
+			//return false;		
+			if (!script_cmd(line)) {
+				free(line);
+				fclose(fp);
+				return false;
+			}
+		}
+		free(line);
+		fclose(fp);
+    } else {
+		
+		printf("Running remote/generated script: %s\n",script);
+		//strtok by \n
+		char* token = strtok(script, "\n");
+		while(token != NULL) {
+			if (!script_cmd(token)) return false;
+			token = strtok(NULL, "\n");
+		}
+ 
+    }
+
+    return true;	
+}
+
 } //extern "C"

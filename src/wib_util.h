@@ -84,7 +84,8 @@ extern "C" {
 	constexpr uint32_t COLD_I2C_DELAY = 60; //microseconds
 	
 	//io_reg_t coldata_i2c[8];
-	
+	constexpr uint8_t sel = 0;
+	constexpr uint8_t pwr = 2;		
 	////////////////FROM FEMB_3ASIC.CC:
 	constexpr size_t CD_I2C_ADDR[] = { 0xA0010000, 0xA0040000, 0xA0050000, 0xA0060000, 0xA0070000, 0xA0080000, 0xA0090000, 0xA00A0000 };
 
@@ -111,4 +112,7 @@ extern "C" {
 	double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch);
 	double read_ad7414(uint8_t slave);
 	double read_ltc2499(uint8_t ch);
+	
+	bool script_cmd(char* line);
+	bool script(char* script, bool file=true);
 } 
