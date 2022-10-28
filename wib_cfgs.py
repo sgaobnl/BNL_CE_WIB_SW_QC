@@ -117,10 +117,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
-        self.femb_power_set(0, 0, 2.5, 3.0, 3.5)
-        self.femb_power_set(1, 0, 2.5, 3.0, 3.5)
-        self.femb_power_set(2, 0, 2.5, 3.0, 3.5)
-        self.femb_power_set(3, 0, 2.5, 3.0, 3.5)
+        self.femb_power_set(0, 0, vfe, vcd, vadc)
+        self.femb_power_set(1, 0, vfe, vcd, vadc)
+        self.femb_power_set(2, 0, vfe, vcd, vadc)
+        self.femb_power_set(3, 0, vfe, vcd, vadc)
 
     def femb_powering(self, fembs = []):
         if len(fembs) > 0:
