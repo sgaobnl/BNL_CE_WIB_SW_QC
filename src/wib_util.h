@@ -23,9 +23,6 @@ extern "C" {
 	constexpr size_t DAQ_SPY_0              = 0xA0100000;
 	constexpr size_t DAQ_SPY_1              = 0xA0200000;
 
-	//Size of a DAQ spy buffer
-	constexpr size_t DAQ_SPY_SIZE           = 0x00100000;
-
 	//32bit register index in CTRL_REGS
 	constexpr size_t REG_TIMING             = 0x0000/4;
 	constexpr size_t REG_FW_CTRL            = 0x0004/4;
@@ -40,6 +37,9 @@ extern "C" {
 	constexpr size_t REG_FW_TIMESTAMP       = 0x0088/4;
 	constexpr size_t REG_BACKPLANE_ADDR     = 0x008C/4;
 	constexpr size_t REG_ENDPOINT_STATUS    = 0x0090/4;
+
+	//Size of a DAQ spy buffer
+	constexpr size_t DAQ_SPY_SIZE           = 0x00100000;
 
 	////////////FROM FEMB_3ASIC.H:
 
@@ -84,8 +84,7 @@ extern "C" {
 	constexpr uint32_t COLD_I2C_DELAY = 60; //microseconds
 	
 	//io_reg_t coldata_i2c[8];
-	constexpr uint8_t sel = 0;
-	constexpr uint8_t pwr = 2;		
+	
 	////////////////FROM FEMB_3ASIC.CC:
 	constexpr size_t CD_I2C_ADDR[] = { 0xA0010000, 0xA0040000, 0xA0050000, 0xA0060000, 0xA0070000, 0xA0080000, 0xA0090000, 0xA00A0000 };
 
@@ -97,11 +96,14 @@ extern "C" {
 	uint32_t peek(size_t addr);
 	void poke(size_t addr, uint32_t value);
 
+	uint32_t wib_peek(size_t addr);
+	void wib_poke(size_t addr, uint32_t value);
+
     uint8_t cdpeek(uint8_t femb_idx,  uint8_t chip_addr, uint8_t reg_page, uint8_t reg_addr);
 	
     void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_addr, uint8_t data);
 	
-	int i2cread(uint8_t bus, uint8_t chip, uint8_t reg);
+	uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg);
 	void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data);
 	void i2cselect(uint8_t device);	
 	
@@ -112,7 +114,14 @@ extern "C" {
 	double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch);
 	double read_ad7414(uint8_t slave);
 	double read_ltc2499(uint8_t ch);
-	
+    double read_ina226_c(uint8_t slave);
+    double read_ina226_v(uint8_t slave);
+
+    bool femb_power_reg_ctrl(uint8_t femb_id, uint8_t regulator_id, double voltage);
+    bool femb_power_config(uint8_t femb_id, double dc2dc_o1, double dc2dc_o2, double dc2dc_o3, double dc2dc_o4 ); //, double ldo_a0, double ldo_a1);
+    bool all_femb_bias_ctrl(bool bias   );
+    bool femb_power_en_ctrl(int femb_id, uint8_t dc2dco1, uint8_t dc2dco2, uint8_t dc2dco3, uint8_t dc2dco4, uint8_t bias  );
+
 	bool script_cmd(char* line);
 	bool script(char* script, bool file=true);
 } 

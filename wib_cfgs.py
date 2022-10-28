@@ -116,21 +116,21 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return self.peek(0xA00C0004)
 
 
-
-
-
-
-    def femb_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
-        print ("Power configuration measurement is not ready yet...")
-        return None
+    def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
+        self.femb_power_set(0, 0, 2.5, 3.0, 3.5)
+        self.femb_power_set(1, 0, 2.5, 3.0, 3.5)
+        self.femb_power_set(2, 0, 2.5, 3.0, 3.5)
+        self.femb_power_set(3, 0, 2.5, 3.0, 3.5)
 
     def femb_powering(self, fembs = []):
-        print ("Power configuration measurement is not ready yet...")
-        return None
+        if len(fembs) > 0:
+            self.all_femb_bias_ctrl(enable=1 )
+        for femb_id in fembs:
+            self.femb_power_en_ctrl(femb_id )
 
-    def get_sensors(self):
-        print ("Power configuration measurement is not ready yet...")
-        return None
+#    def get_sensors(self):
+        #print ("Power configuration measurement is not ready yet...")
+        #return None
 
     def en_ref10MHz(self, ref_en = False):
         if ref_en:

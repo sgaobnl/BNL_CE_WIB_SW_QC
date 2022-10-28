@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "sensors.h"
-#include "i2c.h"
+#include "wib_i2c.h"
 #include "io_reg.h"
 
 void start_ltc2499_temp(i2c_t *i2c, uint8_t next_ch) {
@@ -33,6 +33,25 @@ double read_ad7414_temp(i2c_t *i2c, uint8_t slave) {
     } else {
         return temp/4.0;
     }
+}
+
+
+double read_ina226_vshunt(i2c_t *i2c, uint8_t slave) {
+    uint8_t read_cmd[1] = { 0x01};
+    i2c_write(i2c,slave,read_cmd,1);
+    uint8_t val[2] = {0x00,0x00};
+    i2c_read(i2c,slave,val,2);
+    int16_t vshunt = (val[0]<<8) + val[1];
+    return vshunt; 
+}
+
+double read_ina226_vbus(i2c_t *i2c, uint8_t slave) {
+    uint8_t read_cmd[1] = {0x02};
+    i2c_write(i2c,slave,read_cmd,1);
+    uint8_t val[2] = {0x00,0x00};
+    i2c_read(i2c,slave,val,2);
+    uint16_t vbus = (val[0]<<8) + val[1];
+    return vbus;
 }
 
 void enable_ltc2990(i2c_t *i2c, uint8_t slave, bool differential) {

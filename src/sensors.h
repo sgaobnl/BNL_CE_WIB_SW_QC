@@ -2,13 +2,16 @@ extern "C" {
 #ifndef sensors_h
 #define sensors_h
 
-#include "i2c.h"
+#include "wib_i2c.h"
 //#include "log.h"
 
 void start_ltc2499_temp(i2c_t *i2c, uint8_t ch);
 double read_ltc2499_temp(i2c_t *i2c, uint8_t ch);
 
 double read_ad7414_temp(i2c_t *i2c, uint8_t slave);
+
+double read_ina226_vbus(i2c_t *i2c, uint8_t slave);
+double read_ina226_vshunt(i2c_t *i2c, uint8_t slave);
 
 void enable_ltc2990(i2c_t *i2c, uint8_t slave, bool differential = false);
 
