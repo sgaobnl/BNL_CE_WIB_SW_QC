@@ -9,7 +9,7 @@ import time, datetime, random, statistics
 from QC_tools import QC_tools
 from fpdf import FPDF
 
-def CreateFolders(fembNo):
+def CreateFolders(fembNo, env, toytpc):
 
     datadir = "D:/IO-1865-1C/CHKOUT/data/"
     for key,femb_no in fembNo.items():
@@ -35,10 +35,6 @@ def CreateFolders(fembNo):
     
     datadir = datadir+"/"
     
-    fp = datadir + "logs_env.bin"
-    with open(fp, 'wb') as fn:
-         pickle.dump(logs, fn)
-
     reportdir = "D:/IO-1865-1C/CHKOUT/reports/"
     PLOTDIR = {}
 
@@ -62,6 +58,63 @@ def CreateFolders(fembNo):
             sys.exit()
     
         PLOTDIR[ifemb] = plotdir+'/'
+
+    return datadir,PLOTDIR 
+
+def GenReport(rawdata, fembNo, mon_refs, mon_temps, mon_adcs, PLOTDIR):
+
+    qc_tools = QC_tools()
+    
+    pldata = qc_tools.data_decode(rawdata)
+    pldata = np.array(pldata)
+    
+    qc_tools.PrintMON(fembNo, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR)
+    
+    for ifemb,femb_no in fembNo.items():
+        i=int(ifemb[-1])
+    
+        plotdir = PLOTDIR[ifemb]
+        ana = qc_tools.data_ana(pldata,i)
+        fp_data = plotdir+"SE_response"
+        qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
+    
+        fp_pwr = plotdir+"pwr_meas"
+        qc_tools.PrintPWR( pwr_meas['femb{}'.format(i)], fp_pwr)
+    
+        pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_auto_page_break(False,0)
+        pdf.set_font('Times', 'B', 20)
+        pdf.cell(85)
+        pdf.l_margin = pdf.l_margin*2
+        pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(femb_no)), 0, 1, 'C')
+        pdf.ln(2)
+    
+        pdf.set_font('Times', '', 12)
+        pdf.cell(30, 5, 'Tester: {}'.format(logs["tester"]), 0, 0)
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Date: {}'.format(logs["date"]), 0, 1)
+    
+    
+        pdf.cell(30, 5, 'Temperature: {}'.format(logs["env"]), 0, 0)
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(logs["toytpc"]), 0, 1)
+        pdf.cell(30, 5, 'Note: {}'.format(logs["note"][0:80]), 0, 1)
+        pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
+    
+        pwr_image = fp_pwr+".png"
+        pdf.image(pwr_image,0,40,200,40)
+    
+        mon_image = plotdir+"mon_meas.png"
+        pdf.image(mon_image,0,80,200,40)
+    
+        chk_image = fp_data+".png"
+        pdf.image(chk_image,3,120,200,120)
+    
+        outfile = plotdir+'report.pdf'
+        pdf.output(outfile, "F")
+
 
 ####### Input FEMB slots #######
 
@@ -116,6 +169,11 @@ logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
 ####### Create data save directory #######
 if save:
+    datadir,PLOTDIR=CreateFolders(fembNo, env, toytpc)
+    fp = datadir + "logs_env.bin"
+    with open(fp, 'wb') as fn:
+         pickle.dump(logs, fn)
+
 t1 = time.time()
 ####### Power and configue FEMBs #######
 chk = WIB_CFGS()
@@ -200,59 +258,8 @@ print("Turning off FEMBs")
 chk.femb_powering([])
 
 ####### Generate report #######
-qc_tools = QC_tools()
-#pldata = qc_tools.data_valid(rawdata)  # old data format decoder
-#pldata = np.array(pldata,dtype=object)
-
-pldata = qc_tools.data_decode(rawdata)
-pldata = np.array(pldata)
-
-qc_tools.PrintMON(fembNo, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR)
-
-for ifemb,femb_no in fembNo.items():
-    i=int(ifemb[-1])
-
-    plotdir = PLOTDIR[ifemb]
-    ana = qc_tools.data_ana(pldata,i)
-    fp_data = plotdir+"SE_response"
-    qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
-
-    fp_pwr = plotdir+"pwr_meas"
-    qc_tools.PrintPWR( pwr_meas['femb{}'.format(i)], fp_pwr)
-
-    pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
-    pdf.alias_nb_pages()
-    pdf.add_page()
-    pdf.set_auto_page_break(False,0)
-    pdf.set_font('Times', 'B', 20)
-    pdf.cell(85)
-    pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(femb_no)), 0, 1, 'C')
-    pdf.ln(2)
-
-    pdf.set_font('Times', '', 12)
-    pdf.cell(30, 5, 'Tester: {}'.format(logs["tester"]), 0, 0)
-    pdf.cell(80)
-    pdf.cell(30, 5, 'Date: {}'.format(logs["date"]), 0, 1)
-
-
-    pdf.cell(30, 5, 'Temperature: {}'.format(logs["env"]), 0, 0)
-    pdf.cell(80)
-    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(logs["toytpc"]), 0, 1)
-    pdf.cell(30, 5, 'Note: {}'.format(logs["note"][0:80]), 0, 1)
-    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
-
-    pwr_image = fp_pwr+".png"
-    pdf.image(pwr_image,0,40,200,40)
-
-    mon_image = plotdir+"mon_meas.png"
-    pdf.image(mon_image,0,80,200,40)
-
-    chk_image = fp_data+".png"
-    pdf.image(chk_image,3,120,200,120)
-
-    outfile = plotdir+'report.pdf'
-    pdf.output(outfile, "F")
+if save:
+   GenReport(rawdata, fembNo, mon_refs, mon_temps, mon_adcs, PLOTDIR)
 
 t2=time.time()
 print(t2-t1)
