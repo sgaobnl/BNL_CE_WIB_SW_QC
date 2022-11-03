@@ -81,7 +81,7 @@ def GenReport(rawdata, fembNo, mon_refs, mon_temps, mon_adcs, PLOTDIR):
         qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
     
         fp_pwr = plotdir+"pwr_meas"
-        qc_tools.PrintPWR( pwr_meas['femb{}'.format(i)], fp_pwr)
+        #qc_tools.PrintPWR( pwr_meas['femb{}'.format(i)], fp_pwr)
     
         pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
         pdf.alias_nb_pages()
@@ -105,8 +105,8 @@ def GenReport(rawdata, fembNo, mon_refs, mon_temps, mon_adcs, PLOTDIR):
         pdf.cell(30, 5, 'Note: {}'.format(logs["note"][0:80]), 0, 1)
         pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
     
-        pwr_image = fp_pwr+".png"
-        pdf.image(pwr_image,0,40,200,40)
+        #pwr_image = fp_pwr+".png"
+        #pdf.image(pwr_image,0,40,200,40)
     
         mon_image = plotdir+"mon_meas.png"
         pdf.image(mon_image,0,80,200,40)

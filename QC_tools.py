@@ -7,7 +7,6 @@ from spymemory_decode import wib_spy_dec_syn
 import time
 import pickle
 import os
-import glob
 
 class QC_tools:
     def __init__(self):
