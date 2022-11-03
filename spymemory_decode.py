@@ -196,17 +196,25 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             i = i + 1
     return ordered_frames
 
-def wib_spy_dec_syn(buf0, buf1, trigmode="SW", buf_end_addr=0x0,  trigger_rec_ticks=0x3f000): #synchronize samples in two spy buffers
-    print ("Decoding BUF0")
-    frames0 = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
-    print ("Decoding BUF1")
-    frames1 = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
-    flen = len(frames0)
-    len1 = len(frames1)
-    if flen>len1:
-        flen = len1
-    frames0 = frames0[0:flen]
-    frames1 = frames1[0:flen]
+def wib_spy_dec_syn(buf0, buf1, trigmode="SW", buf_end_addr=0x0,  trigger_rec_ticks=0x3f000, fembs=range(4)): #synchronize samples in two spy buffers
+
+    frames0={}
+    frames1={}
+  
+    if (0 in fembs) or (1 in fembs):
+       print ("Decoding BUF0")
+       frames0 = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
+    if (2 in fembs) or (3 in fembs):
+       print ("Decoding BUF1")
+       frames1 = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
+     
+    if fembs==[0,1,2,3]:
+       flen = len(frames0)
+       len1 = len(frames1)
+       if flen>len1:
+           flen = len1
+       frames0 = frames0[0:flen]
+       frames1 = frames1[0:flen]
 
     #if frames0[0]["TMTS"] == frames1[0]["TMTS"]:
     #    pass #two spymemory are synced 

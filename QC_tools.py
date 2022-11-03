@@ -13,21 +13,50 @@ class QC_tools:
     def __init__(self):
         self.fadc = 1/(2**14)*2048 # mV
 
-    def data_decode(self,raw):
+    def data_decode(self,raw,fembs):
 
         nevent = len(raw) 
         sss=[]
      
         for i in range(nevent):
-            buf0 = raw[i][0]
-            buf1 = raw[i][1]
-            
-            wib_data = wib_spy_dec_syn(buf0, buf1)
+            data = raw[0]
+            buf_end_addr = raw[1]
+            trigger_rec_ticks = raw[2]
+            if raw[3] != 0:
+                trigmode = 'HW';
+            else:
+                trigmode = 'SW';
+
+            buf0 = data[0]
+            buf1 = data[1]
+           
+            wib_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
+ 
             nsamples = len(wib_data[0])
 
             chns=[]
             for j in range(nsamples):
-                a0 = wib_data[0][j]["FEMB0_2"]
+                if 0 in fembs:
+                   a0 = wib_data[0][j]["FEMB0_2"]
+                else:
+                   a0 = [0]*128
+
+                if 1 in fembs:
+                   a1 = wib_data[0][j]["FEMB1_3"]
+                else:
+                   a1 = [0]*128
+
+                if 2 in fembs:
+                   a2 = wib_data[1][j]["FEMB0_2"]
+                else:
+                   a2 = [0]*128
+
+                if 3 in fembs:
+                   a3 = wib_data[1][j]["FEMB1_3"]
+                else:
+                   a3 = [0]*128
+
+                
                 a1 = wib_data[0][j]["FEMB1_3"]
                 a2 = wib_data[1][j]["FEMB0_2"]
                 a3 = wib_data[1][j]["FEMB1_3"]

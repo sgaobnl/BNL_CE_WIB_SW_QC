@@ -64,8 +64,10 @@ def CreateFolders(fembNo, env, toytpc):
 def GenReport(rawdata, fembNo, mon_refs, mon_temps, mon_adcs, PLOTDIR):
 
     qc_tools = QC_tools()
-    
-    pldata = qc_tools.data_decode(rawdata)
+   
+    femb_list = [ifemb for ifemb,_ in fembNo.items()]
+ 
+    pldata = qc_tools.data_decode(rawdata, femb_list)
     pldata = np.array(pldata)
     
     qc_tools.PrintMON(fembNo, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR)
