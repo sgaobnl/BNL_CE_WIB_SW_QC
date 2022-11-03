@@ -6,8 +6,8 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-#from QC_tools import QC_tools
-#from fpdf import FPDF
+from QC_tools import QC_tools
+from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
 
