@@ -6,12 +6,12 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-from QC_tools import QC_tools
-from fpdf import FPDF
+#from QC_tools import QC_tools
+#from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
 
-    datadir = "D:/IO-1865-1C/CHKOUT/data/"
+    datadir = "tmp_data/"
     for key,femb_no in fembNo.items():
         datadir = datadir + "femb{}_".format(femb_no)
     
@@ -35,7 +35,7 @@ def CreateFolders(fembNo, env, toytpc):
     
     datadir = datadir+"/"
     
-    reportdir = "D:/IO-1865-1C/CHKOUT/reports/"
+    reportdir = "reports/"
     PLOTDIR = {}
 
     for ifemb,femb_no in fembNo.items():
@@ -133,11 +133,11 @@ if 'save' in sys.argv:
             break
     sample_N = int(sys.argv[pos+1] )
     sys.argv.remove('save')
+    fembs = [int(a) for a in sys.argv[1:pos]]
 else:
     save = False
     sample_N = 1
-
-fembs = [int(a) for a in sys.argv[1:pos]]
+    fembs = [int(a) for a in sys.argv[1:]]
 
 ####### Input test information #######
 
