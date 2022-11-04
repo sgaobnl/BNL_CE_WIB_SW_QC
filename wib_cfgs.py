@@ -20,6 +20,22 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adcs_paras = self.adcs_paras_init
         self.adac_cali_quo = False
 
+    def wib_rst_tp(self):
+        print ("Configuring PLL")
+        #self.script_fp(fp=bytes("scripts/conf_pll_timing", 'utf-8'))
+        #self.script_fp(fp="/scripts/conf_pll_timing")
+        self.script_exe(script="conf_pll_timing")
+        #self.script_exe(script="startup")
+        bp = self.peek(0xA00C008C)
+        bp_slot_addr = bp&0x0f
+        bp_crate_addr = (bp>>4)&0x0f
+        timing_addr = (bp_crate_addr<<3) + bp_slot_addr&0x07
+        self.poke(0xA00C0000, timing_addr + (1<<28))
+        self.poke(0xA00C0000, timing_addr + (1<<28))
+        time.sleep(2)
+        self.poke(0xA00C0000, timing_addr + (0<<28))
+        self.poke(0xA00C0000, timing_addr + (0<<28))
+
     def wib_fw(self):
         val = self.peek(regaddr = 0xA00C0088)
         fw_second = val&0x3f
@@ -131,52 +147,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.all_femb_bias_ctrl(enable=1 )
         for femb_id in fembs:
             self.femb_power_en_ctrl(femb_id )
-
-    def femb_powering_script(self, fembs = []):
-        print (f"FEMB powering...")
-        if 0 in fembs:
-            femb0 = True
-        else:
-            femb0 = False
-        if 1 in fembs:
-            femb1 = True
-        else:
-            femb1 = False
-        if 2 in fembs:
-            femb2 = True
-        else:
-            femb2 = False
-        if 3 in fembs:
-            femb3 = True
-        else:
-            femb3 = False
-        if (femb0 | femb1 | femb2 | femb3 ):
-            self.script_fp (fp = B'scripts/bias_on')
-        else:
-            self.script_fp (fp = B'scripts/bias_off')
-        time.sleep(1)
-        if femb0 == True:
-            self.script_fp (fp = B'scripts/femb0_on')
-        else:
-            self.script_fp (fp = B'scripts/femb0_off')
-        time.sleep(1)
-        if femb1 == True:
-            self.script_fp (fp = B'scripts/femb1_on')
-        else:
-            self.script_fp (fp = B'scripts/femb1_off')
-        time.sleep(1)
-        if femb2 == True:
-            self.script_fp (fp = B'scripts/femb2_on')
-        else:
-            self.script_fp (fp = B'scripts/femb2_off')
-        time.sleep(1)
-        if femb3 == True:
-            self.script_fp (fp = B'scripts/femb3_on')
-        else:
-            self.script_fp (fp = B'scripts/femb3_off')
-        print ("Wait 5 seconds")
-        time.sleep(1)
-
 
 #    def get_sensors(self):
         #print ("Power configuration measurement is not ready yet...")

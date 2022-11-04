@@ -4,6 +4,7 @@ import struct, os
 class LLC():
     def __init__(self):
         super().__init__()
+        self.script_path = "./scripts/"
         self.wib_path = os.getcwd() + "/build/wib_util.so"
         self.wib = ctypes.CDLL(self.wib_path)
 
@@ -67,14 +68,35 @@ class LLC():
 
         self.wib.script_cmd.argtypes =  [ctypes.POINTER(ctypes.c_char) ] 
         self.wib.script_cmd.restype = ctypes.c_bool       
-        self.wib.script.argtypes =  [ctypes.POINTER(ctypes.c_char), ctypes.c_bool  ] 
-        self.wib.script.restype = ctypes.c_bool       
+#        self.wib.script.argtypes =  [ctypes.POINTER(ctypes.c_char), ctypes.c_bool  ] 
+#        self.wib.script.restype = ctypes.c_bool       
 
     def script_cmd(self, cmd):
         return self.wib.script_cmd(cmd)
 
-    def script_fp(self, fp, fp_flg=True): #false means argument is a raw script line
-        return self.wib.script(fp, fp_flg)
+    def script_rd (self, script, cmds=[]):
+        fdir = self.script_path
+        fn = fdir + script
+        with open(fn, 'r') as f:
+            cmdline = f.readline() 
+            while len(cmdline)>0: 
+                if ("i2c" in cmdline) or ("delay" in cmdline) or ("mem" in cmdline):
+                    cmds.append(cmdline)
+                elif ("run" in cmdline):
+                    x = cmdline[0:-1].split(" ")
+                    if (len(x[1]) >0) and (len(x)>=2):
+                        self.script_rd(script=x[1], cmds=cmds)
+                    else:
+                        print ("Error - file(%s) has an invalid RUN command: %s"%(fn, cmdline))
+                        exit()
+                cmdline = f.readline() 
+            return cmds
+
+    def script_exe (self, script):
+        cmds = self.script_rd(script=script, cmds=[])
+        for cmd in cmds:
+            cmd = bytes(cmd, 'utf-8')
+            self.script_cmd(cmd)
 
     def peek(self, regaddr):
         val = self.wib.peek(regaddr)

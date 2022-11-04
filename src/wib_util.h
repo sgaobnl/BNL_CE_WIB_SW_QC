@@ -123,5 +123,5 @@ extern "C" {
     bool femb_power_en_ctrl(int femb_id, uint8_t dc2dco1, uint8_t dc2dco2, uint8_t dc2dco3, uint8_t dc2dco4, uint8_t bias  );
 
 	bool script_cmd(char* line);
-	bool script(char* script, bool file=true);
+	//bool script(char* script, bool file=true);
 } 

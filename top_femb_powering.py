@@ -26,18 +26,16 @@ if 'on' in sys.argv[4]:
 
 chk = WIB_CFGS()
 
+chk.wib_rst_tp()
 chk.wib_fw()
 chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 
 ####################FEMBs powering################################
 #set FEMB voltages
-#chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
-#chk.femb_powering(fembs)
-#time.sleep(5)
-chk.femb_powering_script(fembs)
-
+chk.femb_powering(fembs)
 
 if len(fembs) != 0:
     print (f"Turn FEMB {fembs} on")
