@@ -30,8 +30,12 @@ class QC_tools:
             buf1 = data[1]
            
             wib_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
- 
-            nsamples = len(wib_data[0])
+
+            if (0 in fembs) or (1 in fembs):
+               nsamples = len(wib_data[0])
+            else:
+               nsamples = len(wib_data[1])
+            
 
             chns=[]
             for j in range(nsamples):
