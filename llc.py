@@ -73,7 +73,7 @@ class LLC():
     def script_cmd(self, cmd):
         return self.wib.script_cmd(cmd)
 
-    def script(self, fp, fp_flg=True): #false means argument is a raw script line
+    def script_fp(self, fp, fp_flg=True): #false means argument is a raw script line
         return self.wib.script(fp, fp_flg)
 
     def peek(self, regaddr):
@@ -327,8 +327,8 @@ class LLC():
         self.wib.femb_power_en_ctrl(femb_id, vfe_en, vcd_en, vadc_en, 0, bias_en)
 
 
-    def femb_power_set(self, femb_id=0, on=1, vfe=3.0, vcd=3.0, vadc=3.5, allon=1):
-        self.femb_power_config(femb_id, vfe, vcd, vadc)
-        self.all_femb_bias_ctrl(enable=allon)
-        self.femb_power_en_ctrl(femb_id, vfe_en=on, vcd_en=on, vadc_en=on, bias_en=on)
+#    def femb_power_set(self, femb_id=0, on=1, vfe=3.0, vcd=3.0, vadc=3.5, allon=1):
+#        self.femb_power_config(femb_id, vfe, vcd, vadc)
+#        self.all_femb_bias_ctrl(enable=allon)
+#        self.femb_power_en_ctrl(femb_id, vfe_en=on, vcd_en=on, vadc_en=on, bias_en=on)
             
