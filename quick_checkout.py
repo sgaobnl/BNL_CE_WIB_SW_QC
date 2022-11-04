@@ -261,7 +261,7 @@ chk.femb_powering([])
 
 ####### Generate report #######
 if save:
-   GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, PLOTDIR)
+   GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
 
 t2=time.time()
 print(t2-t1)
