@@ -18,10 +18,10 @@ class QC_tools:
         sss=[]
      
         for i in range(nevent):
-            data = raw[0]
-            buf_end_addr = raw[1]
-            trigger_rec_ticks = raw[2]
-            if raw[3] != 0:
+            data = raw[i][0]
+            buf_end_addr = raw[i][1]
+            trigger_rec_ticks = raw[i][2]
+            if raw[i][3] != 0:
                 trigmode = 'HW';
             else:
                 trigmode = 'SW';
@@ -55,10 +55,6 @@ class QC_tools:
                 else:
                    a3 = [0]*128
 
-                
-                a1 = wib_data[0][j]["FEMB1_3"]
-                a2 = wib_data[1][j]["FEMB0_2"]
-                a3 = wib_data[1][j]["FEMB1_3"]
                 aa=a0+a1+a2+a3
                 chns.append(aa)
 
@@ -402,21 +398,37 @@ class QC_tools:
         plt.savefig(fn)
         plt.close(fig)
 
-    def PrintPWR(self, pwr_data, fp):
+    def PrintPWR(self, pwr_data, nfemb, fp):
 
-        pwr_names=['BIAS','LArASIC','ColdDATA','ColdADC']
         pwr_set=[5,3,3,3.5]
         pwr_dic={'name':[],'V_set/V':[],'V_meas/V':[],'I_meas/A':[],'P_meas/W':[]}
         i=0
         total_p = 0
-        for ilist in pwr_data:
-            pwr_dic['name'].append(pwr_names[i])
-            pwr_dic['V_set/V'].append(pwr_set[i])
-            i=i+1
-            pwr_dic['V_meas/V'].append(round(ilist[1],3))
-            pwr_dic['I_meas/A'].append(round(ilist[2],3))
-            pwr_dic['P_meas/W'].append(round(ilist[3],3))
-            total_p = total_p + ilist[3]
+       
+        pwr_dic['name'] = ['BIAS','LArASIC','ColdDATA','ColdADC']
+        bias_v = round(pwr_data['FEMB%d_BIAS_V'%nfemb],3)
+        bias_i = round(pwr_data['FEMB%d_BIAS_I'%nfemb],3)
+
+        if abs(bias_i)>0.005:
+           print('Warning: FEMB{} Bias current abs({})>0.005'.format(nfemb,bias_i))
+
+        pwr_dic['V_set/V'].append(pwr_set[0])
+        pwr_dic['V_meas/V'].append(bias_v)
+        pwr_dic['I_meas/A'].append(bias_i)
+        pwr_dic['P_meas/W'].append(round(bias_v*bias_i,3))
+        total_p = total_p + round(bias_v*bias_i,3)
+
+        for i in range(3):
+            tmpv = round(pwr_data['FEMB{}_DC2DC{}_V'.format(nfemb,i)],3)
+            tmpi = round(pwr_data['FEMB{}_DC2DC{}_I'.format(nfemb,i)],3)
+            tmpp = round(tmpv*tmpi,3)
+
+            pwr_dic['V_set/V'].append(pwr_set[i+1])
+            pwr_dic['V_meas/V'].append(tmpv)
+            pwr_dic['I_meas/A'].append(tmpi)
+            pwr_dic['P_meas/W'].append(tmpp)
+
+            total_p = total_p + tmpp
 
         df=pd.DataFrame(data=pwr_dic)
 
