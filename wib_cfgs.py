@@ -480,16 +480,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_fe_cfg(femb_id)
         if adac_pls_en:
             self.femb_adac_cali(femb_id)
+        link_mask = 0xffff
         if femb_id == 0:
-            unmask = 0xFFFFFFF0
+            link_mask = link_mask&0xfff0
         if femb_id == 1:
-            unmask = 0xFFFFFF0F
+            link_mask = link_mask&0xff0f
         if femb_id == 2:
-            unmask = 0xFFFFF0FF
+            link_mask = link_mask&0xf0ff
         if femb_id == 3:
-            unmask = 0xFFFF0FFF
-        link_mask = self.peek(0xA00c0008 ) 
-        self.poke(0xA00c0008, link_mask&unmask) #enable the link
+            link_mask = link_mask&0x0fff
+        self.poke(0xA00C0008, link_mask)
         #self.femb_cd_sync()
         print (f"FEMB{femb_id} is configurated")
 
@@ -645,6 +645,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print (f"Data collection for FEMB {fembs} with software trigger")
         else:
             print (f"Data collection for FEMB {fembs} with trigger operations")
+
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:
