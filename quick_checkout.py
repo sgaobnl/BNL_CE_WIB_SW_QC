@@ -179,7 +179,7 @@ if save:
 t1 = time.time()
 ####### Power and configue FEMBs #######
 chk = WIB_CFGS()
-
+chk.wib_rst_tp()
 chk.wib_fw()
 chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 
