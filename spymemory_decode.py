@@ -126,7 +126,7 @@ def deframe(words): #based on WIB-DAQ_Format_2021-12-01_daq_hdr.xlsx
     frame_dict["Ready"]       = (words[117]>>23)&0x01
     frame_dict["Contex_code"] = (words[117]>>24)&0xff
 
-    if frame_dict["TMTS_low5"] != frame_dict["FEMB_CDTS_low5"]:
+    if (frame_dict["TMTS_low5"] != frame_dict["FEMB_CDTS_low5"]) and (frame_dict["link_mask_femb0_2"] == 0x00) and (frame_dict["link_mask_femb1_3"] == 0x00):
         print ("Warning, fast command 'edge' and 'sync' are missing for Coldata chips")
 
     return frame_dict
