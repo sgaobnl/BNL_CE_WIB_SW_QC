@@ -145,8 +145,24 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_powering(self, fembs = []):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
-        for femb_id in fembs:
-            self.femb_power_en_ctrl(femb_id )
+            if 0 in fembs: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 1 in fembs: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 2 in fembs: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 3 in fembs: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+        else:
+            self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
         #print ("Power configuration measurement is not ready yet...")
@@ -228,7 +244,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             rddata = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
             i = i + 1
             if wrdata != rddata:
-                print (f"Error, I2C: wrdata {wrdata} != redata {rddata}, retry!")
+                print ("Warning, I2C: femb_id=%x, chip_addr=%x, reg_page=%x, reg_addr=%x, wrdata=%x, rddata=%x, retry!"%(femb_id, chip_addr, reg_page, reg_addr, wrdata, rddata))
                 time.sleep(0.01)
                 if i >= 5:
                     exit()

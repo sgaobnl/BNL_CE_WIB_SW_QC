@@ -60,7 +60,11 @@ for femb_id in fembs:
     adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
 #step 3
-    chk.femb_cfg(femb_id, adac_pls_en )
+    i = 0
+    while True:
+        chk.femb_cfg(femb_id, adac_pls_en )
+        i = i + 1
+        print ("configuration %d times"%i)
 
 #chk.data_align()
 
