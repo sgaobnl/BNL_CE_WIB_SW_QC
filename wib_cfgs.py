@@ -7,6 +7,7 @@ import sys, time, random
 class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def __init__(self):
         super().__init__()
+        self.i2cerror = False 
         self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                             [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                             [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
@@ -46,6 +47,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         fw_day    = (val>>27)&0x1f
         print (f"WIB FW generated at {fw_year}-{fw_month}-{fw_day} {fw_hour}:{fw_minute}:{fw_second}")
 
+    def wib_i2c_adj(self, n = 300):
+        rdreg = self.peek(0xA00C0004)
+        for i in range(n):
+            self.poke(0xA00C0004 , rdreg|0x00040000) 
+            rdreg = self.peek(0xA00C0004)
+            self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
     def wib_timing(self, pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
@@ -239,17 +246,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def femb_i2c_wrchk(self, femb_id, chip_addr, reg_page, reg_addr, wrdata):
         i = 0 
-        while True:
-            self.femb_i2c_wr(femb_id, chip_addr, reg_page, reg_addr, wrdata)
-            rddata = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
-            i = i + 1
-            if wrdata != rddata:
-                print ("Warning, I2C: femb_id=%x, chip_addr=%x, reg_page=%x, reg_addr=%x, wrdata=%x, rddata=%x, retry!"%(femb_id, chip_addr, reg_page, reg_addr, wrdata, rddata))
-                time.sleep(0.01)
-                if i >= 5:
-                    exit()
-            else:
-                break
+        self.femb_i2c_wr(femb_id, chip_addr, reg_page, reg_addr, wrdata)
+        rddata = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+        i = i + 1
+        if wrdata != rddata:
+            print ("Error, I2C: femb_id=%x, chip_addr=%x, reg_page=%x, reg_addr=%x, wrdata=%x, rddata=%x, retry!"%(femb_id, chip_addr, reg_page, reg_addr, wrdata, rddata))
+            self.i2cerror = True
 
     def data_cable_latency(self, femb_id):
         print ("data_cable_latency measurement is not verified yet")
@@ -491,24 +493,34 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return self.adac_cali_quo
 
     def femb_cfg(self, femb_id, adac_pls_en = False):
-        self.femb_cd_cfg(femb_id)
-        self.femb_adc_cfg(femb_id)
-        self.femb_fe_cfg(femb_id)
-        if adac_pls_en:
-            self.femb_adac_cali(femb_id)
-        link_mask = 0xffff
-        if femb_id == 0:
-            link_mask = link_mask&0xfff0
-        if femb_id == 1:
-            link_mask = link_mask&0xff0f
-        if femb_id == 2:
-            link_mask = link_mask&0xf0ff
-        if femb_id == 3:
-            link_mask = link_mask&0x0fff
-        self.poke(0xA00C0008, link_mask)
-        #self.femb_cd_sync()
-        print (f"FEMB{femb_id} is configurated")
-
+        refi= 0
+        while True:
+            self.femb_cd_cfg(femb_id)
+            self.femb_adc_cfg(femb_id)
+            self.femb_fe_cfg(femb_id)
+            if adac_pls_en:
+                self.femb_adac_cali(femb_id)
+            link_mask = 0xffff
+            if femb_id == 0:
+                link_mask = link_mask&0xfff0
+            if femb_id == 1:
+                link_mask = link_mask&0xff0f
+            if femb_id == 2:
+                link_mask = link_mask&0xf0ff
+            if femb_id == 3:
+                link_mask = link_mask&0x0fff
+            self.poke(0xA00C0008, link_mask)
+            #self.femb_cd_sync()
+            if self.i2cerror:
+                print ("Reconfigure due to i2c error!")
+                self.i2cerror = False
+                refi += 1
+                if refi > 5:
+                    print ("I2C failed! exit anyway")
+                    exit()
+            else:
+                print (f"FEMB{femb_id} is configurated")
+                break
 
     def femb_fe_mon(self, femb_id, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0 ):
         if (rst_fe != 0):
