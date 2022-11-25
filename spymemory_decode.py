@@ -200,13 +200,17 @@ def wib_spy_dec_syn(buf0, buf1, trigmode="SW", buf_end_addr=0x0,  trigger_rec_ti
 
     frames0={}
     frames1={}
+    buf0_flg = False
+    buf1_flg = False
   
     if (0 in fembs) or (1 in fembs):
        print ("Decoding BUF0")
        frames0 = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
+       buf0_flg = True
     if (2 in fembs) or (3 in fembs):
        print ("Decoding BUF1")
        frames1 = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
+       buf1_flg = True
      
     if fembs==[0,1,2,3]:
        flen = len(frames0)
@@ -216,19 +220,20 @@ def wib_spy_dec_syn(buf0, buf1, trigmode="SW", buf_end_addr=0x0,  trigger_rec_ti
        frames0 = frames0[0:flen]
        frames1 = frames1[0:flen]
 
-    #if frames0[0]["TMTS"] == frames1[0]["TMTS"]:
-    #    pass #two spymemory are synced 
-    #elif frames0[0]["TMTS"] > frames1[0]["TMTS"]:
-    #    oft = frames0[0]["TMTS"] - frames1[0]["TMTS"]
-    #    if frames0[0]["TMTS"] == frames1[oft]["TMTS"]:
-    #        frames0 =frames0[0: 0-oft] 
-    #        frames1 =frames1[oft:] 
-    #elif frames0[0]["TMTS"] < frames1[0]["TMTS"]:
-    #    oft = abs(frames0[0]["TMTS"] - frames1[0]["TMTS"])
-    #    print (oft, hex(frames0[0]["TMTS"]), hex(frames1[0]["TMTS"]))
-    #    if frames0[oft]["TMTS"] == frames1[0]["TMTS"]:
-    #        frames0 =frames0[oft:] 
-    #        frames1 =frames1[0: 0-oft] 
+    if buf0_flg and buf1_flg:
+        if frames0[0]["TMTS"] == frames1[0]["TMTS"]:
+            pass #two spymemory are synced 
+        elif frames0[0]["TMTS"] > frames1[0]["TMTS"]:
+            oft = frames0[0]["TMTS"] - frames1[0]["TMTS"]
+            if frames0[0]["TMTS"] == frames1[oft]["TMTS"]:
+                frames0 =frames0[0: 0-oft] 
+                frames1 =frames1[oft:] 
+        elif frames0[0]["TMTS"] < frames1[0]["TMTS"]:
+            oft = abs(frames0[0]["TMTS"] - frames1[0]["TMTS"])
+            print (oft, hex(frames0[0]["TMTS"]), hex(frames1[0]["TMTS"]))
+            if frames0[oft]["TMTS"] == frames1[0]["TMTS"]:
+                frames0 =frames0[oft:] 
+                frames1 =frames1[0: 0-oft] 
     return frames0, frames1
 
 

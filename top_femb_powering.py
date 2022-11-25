@@ -26,11 +26,7 @@ if 'on' in sys.argv[4]:
 
 chk = WIB_CFGS()
 
-chk.wib_rst_tp()
-chk.wib_i2c_adj(n=300)
 chk.wib_fw()
-chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
-
 ####################FEMBs powering################################
 #set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
