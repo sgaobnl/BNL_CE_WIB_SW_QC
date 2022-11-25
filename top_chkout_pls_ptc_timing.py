@@ -62,7 +62,7 @@ for femb_id in fembs:
 #step 3
     chk.femb_cfg(femb_id, adac_pls_en )
 
-#chk.data_align()
+chk.data_align()
 
 time.sleep(0.5)
 
