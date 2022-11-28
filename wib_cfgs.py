@@ -677,6 +677,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:
+                init_ts = time.time_ns()//512
+                self.poke( 0xA00C0018, init_ts&0xffffffff)
+                self.poke( 0xA00C001c, (init_ts>>32)&0xffffffff)
+
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer
