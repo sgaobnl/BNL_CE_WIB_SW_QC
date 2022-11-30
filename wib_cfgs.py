@@ -7,6 +7,7 @@ import sys, time, random
 class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def __init__(self):
         super().__init__()
+        self.i2cerror = False 
         self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                             [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                             [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
@@ -20,6 +21,22 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adcs_paras = self.adcs_paras_init
         self.adac_cali_quo = False
 
+    def wib_rst_tp(self):
+        print ("Configuring PLL")
+        #self.script_fp(fp=bytes("scripts/conf_pll_timing", 'utf-8'))
+        #self.script_fp(fp="/scripts/conf_pll_timing")
+        self.script_exe(script="conf_pll_timing")
+        #self.script_exe(script="startup")
+        bp = self.peek(0xA00C008C)
+        bp_slot_addr = bp&0x0f
+        bp_crate_addr = (bp>>4)&0x0f
+        timing_addr = (bp_crate_addr<<3) + bp_slot_addr&0x07
+        self.poke(0xA00C0000, timing_addr + (1<<28))
+        self.poke(0xA00C0000, timing_addr + (1<<28))
+        time.sleep(2)
+        self.poke(0xA00C0000, timing_addr + (0<<28))
+        self.poke(0xA00C0000, timing_addr + (0<<28))
+
     def wib_fw(self):
         val = self.peek(regaddr = 0xA00C0088)
         fw_second = val&0x3f
@@ -30,6 +47,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         fw_day    = (val>>27)&0x1f
         print (f"WIB FW generated at {fw_year}-{fw_month}-{fw_day} {fw_hour}:{fw_minute}:{fw_second}")
 
+    def wib_i2c_adj(self, n = 300):
+        rdreg = self.peek(0xA00C0004)
+        for i in range(n):
+            self.poke(0xA00C0004 , rdreg|0x00040000) 
+            rdreg = self.peek(0xA00C0004)
+            self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
     def wib_timing(self, pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
@@ -117,16 +140,36 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
-        self.femb_power_set(0, 0, vfe, vcd, vadc)
-        self.femb_power_set(1, 0, vfe, vcd, vadc)
-        self.femb_power_set(2, 0, vfe, vcd, vadc)
-        self.femb_power_set(3, 0, vfe, vcd, vadc)
+        #self.femb_power_set(0, 0, vfe, vcd, vadc)
+        #self.femb_power_set(1, 0, vfe, vcd, vadc)
+        #self.femb_power_set(2, 0, vfe, vcd, vadc)
+        #self.femb_power_set(3, 0, vfe, vcd, vadc)
+        self.femb_power_config(0,  vfe, vcd, vadc)
+        self.femb_power_config(1,  vfe, vcd, vadc)
+        self.femb_power_config(2,  vfe, vcd, vadc)
+        self.femb_power_config(3,  vfe, vcd, vadc)
 
     def femb_powering(self, fembs = []):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
-        for femb_id in fembs:
-            self.femb_power_en_ctrl(femb_id )
+            if 0 in fembs: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 1 in fembs: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 2 in fembs: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            if 3 in fembs: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            else: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+        else:
+            self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
         #print ("Power configuration measurement is not ready yet...")
@@ -203,17 +246,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def femb_i2c_wrchk(self, femb_id, chip_addr, reg_page, reg_addr, wrdata):
         i = 0 
-        while True:
-            self.femb_i2c_wr(femb_id, chip_addr, reg_page, reg_addr, wrdata)
-            rddata = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
-            i = i + 1
-            if wrdata != rddata:
-                print (f"Error, I2C: wrdata {wrdata} != redata {rddata}, retry!")
-                time.sleep(0.01)
-                if i >= 5:
-                    exit()
-            else:
-                break
+        self.femb_i2c_wr(femb_id, chip_addr, reg_page, reg_addr, wrdata)
+        rddata = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+        i = i + 1
+        if wrdata != rddata:
+            print ("Error, I2C: femb_id=%x, chip_addr=%x, reg_page=%x, reg_addr=%x, wrdata=%x, rddata=%x, retry!"%(femb_id, chip_addr, reg_page, reg_addr, wrdata, rddata))
+            self.i2cerror = True
 
     def data_cable_latency(self, femb_id):
         print ("data_cable_latency measurement is not verified yet")
@@ -305,7 +343,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         time.sleep(0.01)
         self.femb_cd_edge()
         time.sleep(0.5)
-        
+
         rdaddr = 0xA00C0010
         rdreg = self.peek(rdaddr)
         wrvalue = 0x10 #cmd_code_edge = 0x10
@@ -455,24 +493,34 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return self.adac_cali_quo
 
     def femb_cfg(self, femb_id, adac_pls_en = False):
-        self.femb_cd_cfg(femb_id)
-        self.femb_adc_cfg(femb_id)
-        self.femb_fe_cfg(femb_id)
-        if adac_pls_en:
-            self.femb_adac_cali(femb_id)
-        if femb_id == 0:
-            unmask = 0xFFFFFFF0
-        if femb_id == 1:
-            unmask = 0xFFFFFF0F
-        if femb_id == 2:
-            unmask = 0xFFFFF0FF
-        if femb_id == 3:
-            unmask = 0xFFFF0FFF
-        link_mask = self.peek(0xA00c0008 ) 
-        self.poke(0xA00c0008, link_mask&unmask) #enable the link
-        #self.femb_cd_sync()
-        print (f"FEMB{femb_id} is configurated")
-
+        refi= 0
+        while True:
+            self.femb_cd_cfg(femb_id)
+            self.femb_adc_cfg(femb_id)
+            self.femb_fe_cfg(femb_id)
+            if adac_pls_en:
+                self.femb_adac_cali(femb_id)
+            link_mask = self.peek(0xA00C0008)
+            if femb_id == 0:
+                link_mask = link_mask&0xfff0
+            if femb_id == 1:
+                link_mask = link_mask&0xff0f
+            if femb_id == 2:
+                link_mask = link_mask&0xf0ff
+            if femb_id == 3:
+                link_mask = link_mask&0x0fff
+            self.poke(0xA00C0008, link_mask)
+            #self.femb_cd_sync()
+            if self.i2cerror:
+                print ("Reconfigure due to i2c error!")
+                self.i2cerror = False
+                refi += 1
+                if refi > 5:
+                    print ("I2C failed! exit anyway")
+                    exit()
+            else:
+                print (f"FEMB{femb_id} is configurated")
+                break
 
     def femb_fe_mon(self, femb_id, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0 ):
         if (rst_fe != 0):
@@ -625,6 +673,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print (f"Data collection for FEMB {fembs} with software trigger")
         else:
             print (f"Data collection for FEMB {fembs} with trigger operations")
+
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:

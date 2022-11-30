@@ -413,13 +413,13 @@ bool script_cmd(char* line) {
         usleep(micros);
 		//printf("slept %d micros\n",micros);
         return true;
-    } else if (not strcmp(token,"run")) {
-		token = strtok(NULL," \n");
-		if (token == NULL) { //no more arguments
-            printf("Invalid run\n");
-            return false;
-        }
-        return script(token);
+    //} else if (not strcmp(token,"run")) {
+	//	token = strtok(NULL," \n");
+	//	if (token == NULL) { //no more arguments
+    //        printf("Invalid run\n");
+    //        return false;
+    //    }
+    //    return script(token);
     } else if (not strcmp(token,"i2c")) {
 		char* bus = strtok(NULL," \n");
 		bool res;
@@ -511,65 +511,5 @@ bool script_cmd(char* line) {
     return false;	
 }
 
-bool script(char* script, bool file) { //file=true (default) means argument is a file name or path, false means argument is a raw script line
-	if (file) {
-		//printf(".Tryin to find file %s!\n",script);
-		FILE* fp;
-		fp = fopen(script,"r");
-
-        if (fp == NULL) {
-            char path[70];
-			strcpy(path,"scripts/");
-			strcat(path,script);
-			fp = fopen(path,"r");
-            if (fp == NULL) {
-                char path2[70];
-				strcpy(path2,"/etc/wib/");
-				strcat(path2,script);
-				fp = fopen(path2,"r");
-      
-                if (fp == NULL) {
-                    printf("Could not find script %s\n",script);
-					return false;
-                } else {
-                    printf("Running /etc/wib/%s\n",script);
-                }
-            } else {
-                printf("Running scripts/%s\n",script);
-            }
-        } else {
-            printf("Running ./%s\n",script);
-        }
-		
-		size_t size = 0;
-		char *line = NULL; //ref https://linux.die.net/man/3/getline
-		
-		// printf("getline args: %p, %p, %p\n",&line, &size, fp);
-		// return false;
-		while(getline(&line, &size, fp) != -1) {
-			//printf("Exiting after 1 getline\n");
-			//return false;		
-			if (!script_cmd(line)) {
-				free(line);
-				fclose(fp);
-				return false;
-			}
-		}
-		free(line);
-		fclose(fp);
-    } else {
-		
-		printf("Running remote/generated script: %s\n",script);
-		//strtok by \n
-		char* token = strtok(script, "\n");
-		while(token != NULL) {
-			if (!script_cmd(token)) return false;
-			token = strtok(NULL, "\n");
-		}
- 
-    }
-
-    return true;	
-}
 
 } 
