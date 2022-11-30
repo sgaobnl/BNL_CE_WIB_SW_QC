@@ -1,4 +1,5 @@
 from wib_cfgs import WIB_CFGS
+
 import time
 import sys
 import numpy as np
@@ -26,14 +27,13 @@ if 'on' in sys.argv[4]:
 chk = WIB_CFGS()
 
 chk.wib_fw()
-chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
-
 ####################FEMBs powering################################
 #set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
 chk.femb_powering(fembs)
+
 if len(fembs) != 0:
     print (f"Turn FEMB {fembs} on")
     chk.femb_cd_rst()
@@ -42,7 +42,9 @@ else:
 #Measure powers on FEMB
 time.sleep(2)
 pwr_meas = chk.get_sensors()
-print (pwr_meas)
+for key in pwr_meas:
+    print (key, ":", pwr_meas[key])
+#print (pwr_meas)
 
 #fdir = "D:/debug_data/"
 #ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
