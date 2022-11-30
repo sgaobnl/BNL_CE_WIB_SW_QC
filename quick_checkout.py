@@ -6,7 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-from QC_tools import QC_tools
+from tools import ana_tools
 from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
@@ -63,7 +63,7 @@ def CreateFolders(fembNo, env, toytpc):
 
 def GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips):
 
-    qc_tools = QC_tools()
+    qc_tools = ana_tools()
    
     femb_list = [int(ifemb[-1]) for ifemb,_ in fembNo.items()]
     print(femb_list)

@@ -135,6 +135,7 @@ def deframe(words): #based on WIB-DAQ_Format_2021-12-01_daq_hdr.xlsx
 def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000):
     num_words = int(len(buf) // 4)
     words = list(struct.unpack_from("<%dI"%(num_words),buf))       
+    print(words[2])
 
     if trigmode == "SW" :
         pass
