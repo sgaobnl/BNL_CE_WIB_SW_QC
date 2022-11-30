@@ -252,6 +252,7 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [mon_refs, mon_temps, mon_adcs, logs], fn)
 
+chk.wib_timing(pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 ####### Generate report #######
 if save:
    GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
