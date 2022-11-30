@@ -4,6 +4,10 @@ These scripts are developed for standalone WIB operation on WIB
 
 ## Compile
 ```
+find . -type f -exec touch {} +
+(optional: if the computer time is wrong)
+```
+```
 mkdir build
 make
 ```
