@@ -180,7 +180,7 @@ t1 = time.time()
 ####### Power and configue FEMBs #######
 chk = WIB_CFGS()
 chk.wib_fw()
-chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+chk.wib_timing(pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 
 #set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
@@ -252,7 +252,6 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [mon_refs, mon_temps, mon_adcs, logs], fn)
 
-chk.wib_timing(pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 ####### Generate report #######
 if save:
    GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
