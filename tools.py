@@ -95,7 +95,7 @@ class ana_tools:
                 pmax = np.amax(evtdata)
                 pos = np.argmax(evtdata)
 
-                pos_peaks, _ = find_peaks(evtdata,height=pmax-100) 
+                pos_peaks, _ = find_peaks(evtdata,height=pmax-1000) 
 
                 for ipos in pos_peaks:
                     startpos=ipos-50
@@ -129,10 +129,14 @@ class ana_tools:
             if npulse>0:
                 avgwf.append(wfdata/npulse)
             else:
-                print("femb {} ch{} doesn't have pulse!".format(nfemb,ich))
+                print("Error: femb {} ch{} may not have pulse! Check the plot!".format(nfemb,ich))
+                evdata = data[0][128*nfemb+ich] 
+                plt.plot(range(len(evdata)),evdata)
+                plt.show()
                 sys.exit()
 
         return rms,ped,pkp,pkn,onewf,avgwf 
+
 
     def GetRMS(self, data, nfemb, fp, fname):
         
