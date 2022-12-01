@@ -32,7 +32,7 @@ python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 The four arguments correspond to the four slots 
 #### 3. FEMBs quick checkout
 Generate a report that includes pulse response at 200 mV 14mV/fC 2us, power consumption, and ColdADC monitoring data
-Use PLL timing
+Use time master
 ```
 python3 quick_checkout.py <slot lists> save <number of events>
 ```
@@ -58,7 +58,7 @@ python3 rd_demo_raw.py tmp_data/Raw_19_06_2021_23_37_10.bin
 ```
 
 ## Run quick checkout test
-#### step 0 (optional: only run if encounter i2c errors)
+#### step 0 (optional: only run if encounter i2c errors and use PLL clock)
 ```
 python3 wib_startup.py
 ```
@@ -66,7 +66,7 @@ python3 wib_startup.py
 ```
 python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 ```
-#### step 2: run the quick checkout test
+#### step 2: run the quick checkout test (use time master, can be changed to PLL clock)
 ```
 python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
 ```
