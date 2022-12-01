@@ -130,9 +130,9 @@ class ana_tools:
                 avgwf.append(wfdata/npulse)
             else:
                 print("Error: femb {} ch{} may not have pulse! Check the plot!".format(nfemb,ich))
-                evdata = data[0][128*nfemb+ich] 
-                plt.plot(range(len(evdata)),evdata)
-                plt.show()
+               # evdata = data[0][128*nfemb+ich] 
+               # plt.plot(range(len(evdata)),evdata)
+               # plt.show()
                 sys.exit()
 
         return rms,ped,pkp,pkn,onewf,avgwf 
