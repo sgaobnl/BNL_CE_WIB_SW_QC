@@ -1,6 +1,12 @@
 # BNL_CE_WIB_SW_QC
  
-These scripts are developed for standalone WIB operation on WIB
+These scripts are developed for standalone WIB operation on WIB at CERN
+
+note: 
+
+at CERN, the FEMBs are always on;
+
+the DAQ doesn't reconfigure WIB for every run, so we need to reconfigure the WIB back to its start status
 
 ## Compile
 ```
