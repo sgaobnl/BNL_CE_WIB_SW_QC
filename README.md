@@ -32,6 +32,7 @@ python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 The four arguments correspond to the four slots 
 #### 3. FEMBs quick checkout
 Generate a report that includes pulse response at 200 mV 14mV/fC 2us, power consumption, and ColdADC monitoring data
+
 Use time master
 ```
 python3 quick_checkout.py <slot lists> save <number of events>
