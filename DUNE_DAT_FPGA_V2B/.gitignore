@@ -21,6 +21,7 @@ timing
 .qsys_edit
 output_files
 
+
 # ignore Quartus II generated files
 *_generation_script*
 *_inst.vhd
@@ -33,6 +34,7 @@ output_files
 *.jdi
 *.jpg
 *.json #added
+qar_info.json
 *.mif
 *.pin
 *.pof
