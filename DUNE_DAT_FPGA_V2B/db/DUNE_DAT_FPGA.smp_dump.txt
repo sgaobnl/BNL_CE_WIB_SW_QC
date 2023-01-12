@@ -1,0 +1,580 @@
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:DAC_ADC_N_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:DAC_ADC_P_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:1:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:2:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:3:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:5:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:6:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:\gen_FE_DAC_TP:7:FE_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|DAC8411:FE1_DAC_TP_inst|state
+Name state.S_done state.S_SET_DAC_DATA state.S_IDLE 
+state.S_IDLE 0 0 0 
+state.S_SET_DAC_DATA 0 1 1 
+state.S_done 1 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:1:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:2:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:3:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:4:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:5:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:6:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_FE_MonADC:7:FE_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:FE1_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:1:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:2:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:3:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:4:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:5:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:6:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:\gen_ADC_MonADC:7:ADC_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:ADC1_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:CD2_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|COTS_AD7274:CD1_MonADC_inst|state
+Name state.DONE state.QUIT state.TAILZ2 state.TAILZ1 state.CONV state.LEADZ2 state.LEADZ1 state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 0 
+state.LEADZ1 0 0 0 0 0 0 1 1 
+state.LEADZ2 0 0 0 0 0 1 0 1 
+state.CONV 0 0 0 0 1 0 0 1 
+state.TAILZ1 0 0 0 1 0 0 0 1 
+state.TAILZ2 0 0 1 0 0 0 0 1 
+state.QUIT 0 1 0 0 0 0 0 1 
+state.DONE 1 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:7:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:6:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:5:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:4:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:3:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:2:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:1:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:\gen_FE_INA:0:FE_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:CD2_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2c_master:CD1_INA226_master|I2C_STATE
+Name I2C_STATE.s_done I2C_STATE.S_I2C_STOP_2 I2C_STATE.S_I2C_STOP I2C_STATE.s_READ_ack_4 I2C_STATE.s_READ_ack_3 I2C_STATE.s_READ_ack_2 I2C_STATE.s_READ_ack_1 I2C_STATE.S_READ_DATA_4 I2C_STATE.S_READ_DATA_3 I2C_STATE.S_READ_DATA_2 I2C_STATE.S_READ_DATA_1 I2C_STATE.s_WRITE_ack_4 I2C_STATE.s_WRITE_ack_3 I2C_STATE.s_WRITE_ack_2 I2C_STATE.s_WRITE_ack_1 I2C_STATE.s_WRTIE_DATA_3 I2C_STATE.s_WRTIE_DATA_2 I2C_STATE.s_WRTIE_DATA_1 I2C_STATE.s_addr_ack_4 I2C_STATE.s_addr_ack_3 I2C_STATE.s_addr_ack_2 I2C_STATE.s_addr_ack_1 I2C_STATE.s_send_addr_3 I2C_STATE.s_send_addr_2 I2C_STATE.s_send_addr_1 I2C_STATE.s_send_start I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_send_start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_send_addr_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_send_addr_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_addr_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_addr_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_addr_ack_4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRTIE_DATA_3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_2 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_3 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_WRITE_ack_4 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_3 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_READ_DATA_4 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_3 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_READ_ack_4 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.S_I2C_STOP_2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_done 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |DUNE_DAT_FPGA|I2CSLAVE:I2CSLAVE|I2C_STATE
+Name I2C_STATE.s_get_data_ack I2C_STATE.s_get_wait_data_ack I2C_STATE.s_write_data I2C_STATE.s_wait_data_ack I2C_STATE.s_send_data_ack I2C_STATE.s_read_data I2C_STATE.s_wait_addr_ack I2C_STATE.s_send_reg_addr_ack I2C_STATE.s_read_reg_addr I2C_STATE.s_wait_ack I2C_STATE.s_send_addr_ack I2C_STATE.s_get_addr I2C_STATE.s_idle 
+I2C_STATE.s_idle 0 0 0 0 0 0 0 0 0 0 0 0 0 
+I2C_STATE.s_get_addr 0 0 0 0 0 0 0 0 0 0 0 1 1 
+I2C_STATE.s_send_addr_ack 0 0 0 0 0 0 0 0 0 0 1 0 1 
+I2C_STATE.s_wait_ack 0 0 0 0 0 0 0 0 0 1 0 0 1 
+I2C_STATE.s_read_reg_addr 0 0 0 0 0 0 0 0 1 0 0 0 1 
+I2C_STATE.s_send_reg_addr_ack 0 0 0 0 0 0 0 1 0 0 0 0 1 
+I2C_STATE.s_wait_addr_ack 0 0 0 0 0 0 1 0 0 0 0 0 1 
+I2C_STATE.s_read_data 0 0 0 0 0 1 0 0 0 0 0 0 1 
+I2C_STATE.s_send_data_ack 0 0 0 0 1 0 0 0 0 0 0 0 1 
+I2C_STATE.s_wait_data_ack 0 0 0 1 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_write_data 0 0 1 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_get_wait_data_ack 0 1 0 0 0 0 0 0 0 0 0 0 1 
+I2C_STATE.s_get_data_ack 1 0 0 0 0 0 0 0 0 0 0 0 1 

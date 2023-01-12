@@ -1,0 +1,91 @@
+Restore Archived Project report for DUNE_DAT_FPGA
+Wed Nov 09 15:07:55 2022
+Quartus Prime Version 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Restore Archived Project Summary
+  3. Restore Archived Project Messages
+  4. Files Restored
+  5. Files Not Restored
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2017  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details.
+
+
+
++-------------------------------------------------------------------------+
+; Restore Archived Project Summary                                        ;
++---------------------------------+---------------------------------------+
+; Restore Archived Project Status ; Successful - Wed Nov 09 15:07:55 2022 ;
+; Revision Name                   ; DUNE_DAT_FPGA                         ;
+; Top-level Entity Name           ; DUNE_DAT_FPGA                         ;
+; Family                          ; Cyclone IV GX                         ;
++---------------------------------+---------------------------------------+
+
+
++-----------------------------------+
+; Restore Archived Project Messages ;
++-----------------------------------+
+Info: Successfully restored 'C:/Users/jdonohue/OneDrive - Brookhaven National Laboratory/Documents/DUNE/DAT/DUNE_DAT_FPGA_V2B.qar' into the 'C:/Users/jdonohue/OneDrive - Brookhaven National Laboratory/Documents/DUNE/DAT/DUNE_DAT_FPGA_V2B/' directory
+Info: Generated report 'DUNE_DAT_FPGA.restore.rpt'
+Info (23030): Evaluation of Tcl script c:/intelfpga/17.1/quartus/common/tcl/apps/qpm/qar.tcl was successful
+Info: Quartus Prime Shell was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 4849 megabytes
+    Info: Processing ended: Wed Nov 09 15:07:55 2022
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:01
+
+
++---------------------------------------+
+; Files Restored                        ;
++---------------------------------------+
+; File Name                             ;
++---------------------------------------+
+; qar_info.json                         ;
+; DUNE_DAT_FPGA.qpf                     ;
+; DUNE_DAT_FPGA.qsf                     ;
+; DUNE_DAT_FPGA_assignment_defaults.qdf ;
+; SRC/DAT_PLL.cmp                       ;
+; SRC/DAT_PLL.ppf                       ;
+; SRC/DAT_PLL.qip                       ;
+; SRC/DAT_PLL.vhd                       ;
+; SRC/DUNE_DAT_FPGA.vhd                 ;
+; SRC/DUNE_DAT_Registers.vhd            ;
+; SRC/I2CSLAVE.vhd                      ;
+; SRC/VER_ID.tcl                        ;
+; SRC/Version_Reg.tcl                   ;
+; SRC/Version_Reg.vhd                   ;
+; SRC/sys_rst.vhd                       ;
+; db/stp1_auto_stripped.stp             ;
+; output_files/stp1.stp                 ;
+; src/Version_Reg.tcl                   ;
++---------------------------------------+
+
+
++--------------------+
+; Files Not Restored ;
++--------------------+
+; File Name          ;
++--------------------+
+
+

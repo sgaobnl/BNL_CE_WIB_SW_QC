@@ -1,0 +1,20 @@
+Fitter Status : Successful - Tue Jan 10 18:23:48 2023
+Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+Revision Name : DUNE_DAT_FPGA
+Top-level Entity Name : DUNE_DAT_FPGA
+Family : Cyclone IV GX
+Device : EP4CGX50DF27C7
+Timing Models : Final
+Total logic elements : 8,579 / 49,888 ( 17 % )
+    Total combinational functions : 5,463 / 49,888 ( 11 % )
+    Dedicated logic registers : 6,386 / 49,888 ( 13 % )
+Total registers : 6386
+Total pins : 232 / 343 ( 68 % )
+Total virtual pins : 0
+Total memory bits : 1,409,280 / 2,562,048 ( 55 % )
+Embedded Multiplier 9-bit elements : 0 / 280 ( 0 % )
+Total GXB Receiver Channel PCS : 0 / 8 ( 0 % )
+Total GXB Receiver Channel PMA : 0 / 8 ( 0 % )
+Total GXB Transmitter Channel PCS : 0 / 8 ( 0 % )
+Total GXB Transmitter Channel PMA : 0 / 8 ( 0 % )
+Total PLLs : 2 / 8 ( 25 % )

@@ -1,0 +1,1056 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, the Altera Quartus II License Agreement,
+# the Altera MegaCore Function License Agreement, or other 
+# applicable license agreement, including, without limitation, 
+# that your use is for the sole purpose of programming logic 
+# devices manufactured by Altera and sold by Altera or its 
+# authorized distributors.  Please refer to the applicable 
+# agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II 64-Bit
+# Version 15.0.0 Build 145 04/22/2015 SJ Full Version
+# Date created = 11:28:57  July 16, 2015
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		SBND_FEMB_FPGA_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:.\\src\\Version_Reg.tcl"
+set_global_assignment -name FAMILY "Cyclone IV GX"
+set_global_assignment -name DEVICE EP4CGX50DF27C7
+set_global_assignment -name TOP_LEVEL_ENTITY DUNE_DAT_FPGA
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 15.0.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "11:28:57  JULY 16, 2015"
+set_global_assignment -name LAST_QUARTUS_VERSION "17.1.0 Standard Edition"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name DEVICE_FILTER_PIN_COUNT 672
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 7
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name EDA_BOARD_DESIGN_SYMBOL_TOOL "ViewDraw (Symbol)"
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VIEWDRAW -section_id eda_board_design_symbol
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "2.5 V"
+set_global_assignment -name ENABLE_OCT_DONE OFF
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name CYCLONEIII_CONFIGURATION_DEVICE EPCS64
+set_global_assignment -name FORCE_CONFIGURATION_VCCIO ON
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+set_global_assignment -name ACTIVE_SERIAL_CLOCK FREQ_20MHZ
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to I2C_SDA_DIF_N
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to I2C_SDA_DIF_P
+set_global_assignment -name CONFIGURATION_VCCIO_LEVEL AUTO
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_location_assignment PIN_F5 -to altera_reserved_tms
+set_location_assignment PIN_G8 -to altera_reserved_tck
+set_location_assignment PIN_G6 -to altera_reserved_tdi
+set_location_assignment PIN_H8 -to altera_reserved_tdo
+set_location_assignment PIN_AC7 -to ~ALTERA_NCEO~
+
+
+
+#DAT_FPGA_WIB_CD_IO
+
+set_location_assignment PIN_P19 -to CD1_CLK_64MHZ_SYS_P
+#set_location_assignment PIN_P20 -to CD1_CLK_64MHZ_SYS_N
+set_location_assignment PIN_R19 -to CD1_FASTCOMMAND_IN_P
+#set_location_assignment PIN_R20 -to CD1_FASTCOMMAND_IN_N
+set_location_assignment PIN_T22 -to CD1_I2C_LVDS_SCL_P
+#set_location_assignment PIN_T23 -to CD1_I2C_LVDS_SCL_N
+set_location_assignment PIN_T21 -to CD1_I2C_LVDS_SDA_C2W_P
+#set_location_assignment PIN_U22 -to CD1_I2C_LVDS_SDA_C2W_N
+set_location_assignment PIN_V22 -to CD1_I2C_LVDS_SDA_W2C_P
+#set_location_assignment PIN_U23 -to CD1_I2C_LVDS_SDA_W2C_N
+set_location_assignment PIN_V21 -to CD2_CLK_64MHZ_SYS_P
+#set_location_assignment PIN_W22 -to CD2_CLK_64MHZ_SYS_N
+set_location_assignment PIN_V23 -to CD2_FASTCOMMAND_IN_P
+#set_location_assignment PIN_V24 -to CD2_FASTCOMMAND_IN_N
+set_location_assignment PIN_W24 -to CD2_I2C_LVDS_SCL_P
+#set_location_assignment PIN_W25 -to CD2_I2C_LVDS_SCL_N
+set_location_assignment PIN_Y24 -to CD2_I2C_LVDS_SDA_C2W_P
+#set_location_assignment PIN_Y25 -to CD2_I2C_LVDS_SDA_C2W_N
+set_location_assignment PIN_U19 -to CD2_I2C_LVDS_SDA_W2C_P
+#set_location_assignment PIN_T19 -to CD2_I2C_LVDS_SDA_W2C_N
+
+#set_location_assignment PIN_R23 -to I2C_LVDS_SDA_W2C_N
+set_location_assignment PIN_R22 -to I2C_LVDS_SDA_W2C_P
+#set_location_assignment PIN_U26 -to I2C_LVDS_SDA_C2W_N
+set_location_assignment PIN_U25 -to I2C_LVDS_SDA_C2W_P
+#set_location_assignment PIN_T25 -to I2C_LVDS_SCL_N
+set_location_assignment PIN_T24 -to I2C_LVDS_SCL_P
+#set_location_assignment PIN_T26 -to FASTCOMMAND_IN_N
+set_location_assignment PIN_R25 -to FASTCOMMAND_IN_P
+#set_location_assignment PIN_P26 -to CLK_64MHZ_SYS_N
+set_location_assignment PIN_R26 -to CLK_64MHZ_SYS_P
+set_location_assignment PIN_A15 -to CD1_CMOS_MODE
+set_location_assignment PIN_C14 -to CD1_PAD_RESET
+set_location_assignment PIN_D15 -to CD1_CHIP_ID
+set_location_assignment PIN_D16 -to CD2_CMOS_MODE
+set_location_assignment PIN_E15 -to CD2_PAD_RESET
+set_location_assignment PIN_C15 -to CD2_CHIP_ID
+
+
+#DAT_FPGA_IO_CD1
+
+set_location_assignment PIN_AE18 -to FE_CALI_CS[0]
+set_location_assignment PIN_AE19 -to FE_INS_PLS_CS[0]
+set_location_assignment PIN_AD20 -to FE_TEST_INH_ARR[0]
+set_location_assignment PIN_AE21 -to ADC_TEST_INH[0]
+set_location_assignment PIN_AE22 -to FE_INA_SDA[0]
+set_location_assignment PIN_AF16 -to FE_INA_SCL[0]
+set_location_assignment PIN_AF17 -to FE_MonADC_SDO[0]
+set_location_assignment PIN_AF18 -to ADC_MonADC_SDO[0]
+set_location_assignment PIN_AF19 -to ADC1_POR_NAND
+set_location_assignment PIN_AF20 -to FE_DAC_TP_DIN[0]
+set_location_assignment PIN_AF21 -to FE_CALI_CS[1]
+set_location_assignment PIN_AF22 -to FE_INS_PLS_CS[1]
+set_location_assignment PIN_AE23 -to FE_TEST_INH_ARR[1]
+set_location_assignment PIN_AF23 -to ADC_TEST_INH[1]
+set_location_assignment PIN_AF24 -to FE_INA_SDA[1]
+set_location_assignment PIN_AF25 -to FE_INA_SCL[1]
+set_location_assignment PIN_AC17 -to FE_MonADC_SDO[1]
+set_location_assignment PIN_AD18 -to ADC_MonADC_SDO[1]
+set_location_assignment PIN_AD23 -to ADC2_POR_NAND
+set_location_assignment PIN_AC12 -to FE_DAC_TP_DIN[1]
+set_location_assignment PIN_AD9 -to CD1_MonADC_SDO
+set_location_assignment PIN_AC10 -to CD1_MonADC_SCK
+set_location_assignment PIN_AD10 -to CD1_MonADC_CS
+set_location_assignment PIN_AE10 -to CD1_AMON_INH
+set_location_assignment PIN_AF8 -to CD1_AMON_CSB
+set_location_assignment PIN_AE11 -to CD1_AMON_CSA
+set_location_assignment PIN_AE9 -to CD1_AMON_CSC
+
+set_location_assignment PIN_AD16 -to FE_CALI_CS[2]
+set_location_assignment PIN_AE25 -to FE_INS_PLS_CS[2]
+set_location_assignment PIN_AE26 -to FE_TEST_INH_ARR[2]
+set_location_assignment PIN_AD21 -to ADC_TEST_INH[2]
+set_location_assignment PIN_AD22 -to FE_INA_SDA[2]
+set_location_assignment PIN_AF15 -to FE_INA_SCL[2]
+set_location_assignment PIN_AD24 -to FE_MonADC_SDO[2]
+set_location_assignment PIN_AF6 -to ADC_MonADC_SDO[2]
+set_location_assignment PIN_AE7 -to ADC3_POR_NAND
+set_location_assignment PIN_AE17 -to FE_DAC_TP_DIN[2]
+set_location_assignment PIN_AD17 -to FE_CALI_CS[3]
+set_location_assignment PIN_AC18 -to FE_INS_PLS_CS[3]
+set_location_assignment PIN_AD26 -to FE_TEST_INH_ARR[3]
+set_location_assignment PIN_AD13 -to ADC_TEST_INH[3]
+set_location_assignment PIN_AD12 -to FE_INA_SDA[3]
+set_location_assignment PIN_AD25 -to FE_INA_SCL[3]
+set_location_assignment PIN_A13 -to FE_MonADC_SDO[3]
+set_location_assignment PIN_B13 -to ADC_MonADC_SDO[3]
+set_location_assignment PIN_C13 -to ADC4_POR_NAND
+set_location_assignment PIN_C12 -to FE_DAC_TP_DIN[3]
+set_location_assignment PIN_A12 -to ADC_TST_SEL[0]
+set_location_assignment PIN_A11 -to ADC_TST_SEL[1]
+set_location_assignment PIN_B11 -to ADC_TST_SEL[2]
+set_location_assignment PIN_C11 -to ADC_TST_SEL[3]
+#set_location_assignment PIN_C10 -to CD1_FPGA_CD_INA_SDA #SCL & SDA were swapped on DAT schematic (page 4)
+#set_location_assignment PIN_B10 -to CD1_FPGA_CD_INA_SCL
+set_location_assignment PIN_B10 -to CD1_FPGA_CD_INA_SDA
+set_location_assignment PIN_C10 -to CD1_FPGA_CD_INA_SCL
+
+#DAT_FPGA_IO_CD2
+
+set_location_assignment PIN_C26 -to FE_CALI_CS[4]
+set_location_assignment PIN_B25 -to FE_INS_PLS_CS[4]
+set_location_assignment PIN_B26 -to FE_TEST_INH_ARR[4]
+set_location_assignment PIN_D2 -to ADC_TEST_INH[4]
+set_location_assignment PIN_C2 -to FE_INA_SDA[4]
+set_location_assignment PIN_D3 -to FE_INA_SCL[4]
+set_location_assignment PIN_C3 -to FE_MonADC_SDO[4]
+set_location_assignment PIN_C4 -to ADC_MonADC_SDO[4]
+set_location_assignment PIN_B4 -to ADC5_POR_NAND
+set_location_assignment PIN_A4 -to FE_DAC_TP_DIN[4]
+set_location_assignment PIN_C5 -to FE_CALI_CS[5]
+set_location_assignment PIN_C6 -to FE_INS_PLS_CS[5]
+set_location_assignment PIN_C7 -to FE_TEST_INH_ARR[5]
+set_location_assignment PIN_B7 -to ADC_TEST_INH[5]
+set_location_assignment PIN_B6 -to FE_INA_SDA[5]
+set_location_assignment PIN_B5 -to FE_INA_SCL[5]
+set_location_assignment PIN_H26 -to FE_MonADC_SDO[5]
+set_location_assignment PIN_G25 -to ADC_MonADC_SDO[5]
+set_location_assignment PIN_G26 -to ADC6_POR_NAND
+set_location_assignment PIN_F26 -to FE_DAC_TP_DIN[5]
+set_location_assignment PIN_G22 -to CD2_MonADC_SDO
+set_location_assignment PIN_F21 -to CD2_MonADC_SCK
+set_location_assignment PIN_F23 -to CD2_MonADC_CS
+set_location_assignment PIN_F24 -to CD2_AMON_INH
+set_location_assignment PIN_E24 -to CD2_AMON_CSB
+set_location_assignment PIN_E25 -to CD2_AMON_CSA
+set_location_assignment PIN_E26 -to CD2_AMON_CSC
+
+set_location_assignment PIN_J26 -to FE_CALI_CS[6]
+set_location_assignment PIN_H25 -to FE_INS_PLS_CS[6]
+set_location_assignment PIN_J25 -to FE_TEST_INH_ARR[6]
+set_location_assignment PIN_H24 -to ADC_TEST_INH[6]
+set_location_assignment PIN_G24 -to FE_INA_SDA[6]
+set_location_assignment PIN_K26 -to FE_INA_SCL[6]
+set_location_assignment PIN_L26 -to FE_MonADC_SDO[6]
+set_location_assignment PIN_L25 -to ADC_MonADC_SDO[6]
+set_location_assignment PIN_M26 -to ADC7_POR_NAND
+set_location_assignment PIN_M25 -to FE_DAC_TP_DIN[6]
+set_location_assignment PIN_M24 -to FE_CALI_CS[7]
+set_location_assignment PIN_B9 -to FE_INS_PLS_CS[7]
+set_location_assignment PIN_C9 -to FE_TEST_INH_ARR[7]
+set_location_assignment PIN_C8 -to ADC_TEST_INH[7]
+set_location_assignment PIN_D10 -to FE_INA_SDA[7]
+set_location_assignment PIN_D9 -to FE_INA_SCL[7]
+set_location_assignment PIN_D7 -to FE_MonADC_SDO[7]
+set_location_assignment PIN_E7 -to ADC_MonADC_SDO[7]
+set_location_assignment PIN_L22 -to ADC8_POR_NAND
+set_location_assignment PIN_K22 -to FE_DAC_TP_DIN[7]
+set_location_assignment PIN_H23 -to ADC_TST_SEL[4]
+set_location_assignment PIN_H22 -to ADC_TST_SEL[5]
+set_location_assignment PIN_K24 -to ADC_TST_SEL[6]
+set_location_assignment PIN_J23 -to ADC_TST_SEL[7]
+#set_location_assignment PIN_L24 -to CD2_FPGA_CD_INA_SDA #SCL & SDA were swapped on DAT schematic (page 4)
+#set_location_assignment PIN_L23 -to CD2_FPGA_CD_INA_SCL
+set_location_assignment PIN_L23 -to CD2_FPGA_CD_INA_SDA
+set_location_assignment PIN_L24 -to CD2_FPGA_CD_INA_SCL
+
+#DAT_FPGA_2.25V IO
+
+set_location_assignment PIN_A23 -to CD1_CONTROL[0]
+set_location_assignment PIN_D20 -to CD1_CONTROL[1]
+set_location_assignment PIN_B23 -to CD1_CONTROL[2]
+set_location_assignment PIN_A18 -to CD1_CONTROL[3]
+set_location_assignment PIN_E17 -to CD1_CONTROL[4]
+set_location_assignment PIN_C21 -to CD2_CONTROL[0]
+set_location_assignment PIN_C20 -to CD2_CONTROL[1]
+set_location_assignment PIN_B19 -to CD2_CONTROL[2]
+set_location_assignment PIN_A24 -to CD2_CONTROL[3]
+set_location_assignment PIN_A22 -to CD2_CONTROL[4]
+set_location_assignment PIN_C19 -to I2C_CD1_ADD_GND
+set_location_assignment PIN_D21 -to I2C_CD1_ADD_VDD
+set_location_assignment PIN_A20 -to I2C_CD2_ADD_VDD
+set_location_assignment PIN_E22 -to I2C_CD2_ADD_GND
+set_location_assignment PIN_A19 -to CD2_ADC_I2C_ADD2
+set_location_assignment PIN_B22 -to CD2_ADC_I2C_ADD3
+set_location_assignment PIN_B21 -to CD1_ADC_I2C_ADD2
+set_location_assignment PIN_C23 -to CD1_ADC_I2C_ADD3
+set_location_assignment PIN_B17 -to ADC_RO_OUT[0]
+set_location_assignment PIN_D18 -to ADC1_CHIP_ACTIVE
+set_location_assignment PIN_A25 -to ADC2_CHIP_ACTIVE
+set_location_assignment PIN_A21 -to ADC_RO_OUT[1]
+set_location_assignment PIN_D22 -to ADC3_CHIP_ACTIVE
+set_location_assignment PIN_D19 -to ADC_RO_OUT[2]
+set_location_assignment PIN_E20 -to ADC4_CHIP_ACTIVE
+set_location_assignment PIN_C18 -to ADC_RO_OUT[3]
+set_location_assignment PIN_C16 -to ADC5_CHIP_ACTIVE
+set_location_assignment PIN_B15 -to ADC_RO_OUT[4]
+set_location_assignment PIN_C17 -to ADC6_CHIP_ACTIVE
+set_location_assignment PIN_C22 -to ADC_RO_OUT[5]
+set_location_assignment PIN_A17 -to ADC7_CHIP_ACTIVE
+set_location_assignment PIN_E16 -to ADC_RO_OUT[6]
+set_location_assignment PIN_D17 -to ADC8_CHIP_ACTIVE
+set_location_assignment PIN_A16 -to ADC_RO_OUT[7]
+
+
+#DAT_FPGA_MISC_IO
+
+set_location_assignment PIN_AF9 -to FE_IN_TST_SEL[0]
+set_location_assignment PIN_AF10 -to FE_IN_TST_SEL[1]
+set_location_assignment PIN_AF11 -to FE_IN_TST_SEL[2]
+set_location_assignment PIN_AF12 -to FE_IN_TST_SEL[3]
+set_location_assignment PIN_AD19 -to FE_IN_TST_SEL[4]
+set_location_assignment PIN_AB26 -to FE_IN_TST_SEL[5]
+set_location_assignment PIN_AF4 -to FE_IN_TST_SEL[6]
+set_location_assignment PIN_AF5 -to FE_IN_TST_SEL[7]
+set_location_assignment PIN_AF7 -to FE_IN_TST_SEL[8]
+set_location_assignment PIN_D26 -to FE_IN_TST_SEL[9]
+set_location_assignment PIN_D25 -to FE_IN_TST_SEL[10]
+set_location_assignment PIN_D24 -to FE_IN_TST_SEL[11]
+set_location_assignment PIN_C24 -to FE_IN_TST_SEL[12]
+set_location_assignment PIN_C25 -to FE_IN_TST_SEL[13]
+set_location_assignment PIN_A3 -to FE_IN_TST_SEL[14]
+set_location_assignment PIN_B1 -to FE_IN_TST_SEL[15]
+set_location_assignment PIN_B2 -to ADC_P_TST_CSA
+set_location_assignment PIN_A2 -to ADC_P_TST_CSB
+set_location_assignment PIN_AB11 -to ADC_P_TST_CSC
+set_location_assignment PIN_AE13 -to ADC_P_TST_AMON_INH
+set_location_assignment PIN_AD11 -to ADC_N_TST_CSA
+set_location_assignment PIN_AC4 -to ADC_N_TST_CSB
+set_location_assignment PIN_AB12 -to ADC_N_TST_CSC
+set_location_assignment PIN_AC5 -to ADC_N_TST_AMON_INH
+set_location_assignment PIN_AE6 -to DAC_ADC_N_SYNC
+set_location_assignment PIN_AF2 -to DAC_ADC_N_SCK
+set_location_assignment PIN_AF3 -to DAC_ADC_N_DIN
+set_location_assignment PIN_AE1 -to DAC_ADC_P_SYNC
+set_location_assignment PIN_AE2 -to DAC_ADC_P_SCK
+set_location_assignment PIN_AD7 -to DAC_ADC_P_DIN
+set_location_assignment PIN_AD8 -to EXT_PULSE_CNTL
+
+set_location_assignment PIN_A10 -to FE_DAC_TP_SCK
+set_location_assignment PIN_A9 -to FE_DAC_TP_SYNC
+set_location_assignment PIN_A5 -to ADC_TEST_CSC
+set_location_assignment PIN_AE5 -to ADC_TEST_CSB
+set_location_assignment PIN_AC26 -to ADC_TEST_CSA
+set_location_assignment PIN_AA26 -to ADC_MonADC_SCK
+set_location_assignment PIN_AC11 -to ADC_MonADC_CS
+set_location_assignment PIN_K23 -to FE_MonADC_SCK
+set_location_assignment PIN_N24 -to FE_MonADC_CS
+set_location_assignment PIN_P24 -to FE_TEST_CSA
+set_location_assignment PIN_P23 -to FE_TEST_CSB
+set_location_assignment PIN_N23 -to FE_TEST_CSC
+set_location_assignment PIN_K21 -to FE_TEST_INH
+set_location_assignment PIN_E2 -to DAC_TP_SYNC
+set_location_assignment PIN_E1 -to DAC_TP_SCK
+set_location_assignment PIN_D1 -to DAC_TP_DIN
+set_location_assignment PIN_C1 -to ADC_TEST_IN_SEL
+
+#DAT_FPGA_CLK
+
+#set_location_assignment PIN_U9 -to SBND_CLK_N
+set_location_assignment PIN_T9 -to SBND_CLK_P
+#set_location_assignment PIN_U10 -to CLK_100MHz_OSC_N
+set_location_assignment PIN_T10 -to CLK_100MHz_OSC_P
+#set_location_assignment PIN_L14 -to CLK_DAQ_N
+set_location_assignment PIN_L15 -to CLK_DAQ_P
+#set_location_assignment PIN_K9 -to CLK_125MHz_OSC_N
+set_location_assignment PIN_L9 -to CLK_125MHz_OSC_P
+#set_location_assignment PIN_AA23 -to c125_LP_P
+#set_location_assignment PIN_AA24 -to c125_LP_N
+#set_location_assignment PIN_K10 -to c125_LP_P
+#set_location_assignment PIN_L10 -to c125_LP_N
+#set_location_assignment PIN_W26 -to CLK_LP_P
+#set_location_assignment PIN_V26 -to CLK_LP_N
+#set_location_assignment PIN_T15 -to CLK_LP_P
+#set_location_assignment PIN_T14 -to CLK_LP_N
+
+#DAT_FPGA_NC
+
+set_location_assignment PIN_N25 -to MISC_U1_IO[7]
+set_location_assignment PIN_A14 -to MISC_U1_IO[6]
+
+set_location_assignment PIN_AB23 -to MISC_U1_IO[5]
+set_location_assignment PIN_AB24 -to MISC_U1_IO[4]
+
+set_location_assignment PIN_AC23 -to MISC_U1_IO[3]
+set_location_assignment PIN_AC24 -to MISC_U1_IO[2]
+
+set_location_assignment PIN_AE3 -to MISC_U1_IO[1]
+
+set_location_assignment PIN_AD3 -to MISC_U1_IO[0]
+
+#set_location_assignment PIN_M22 -to ADC_SRC_CS_P[0]
+#set_location_assignment PIN_N19 -to ADC_SRC_CS_P[1]
+#set_location_assignment PIN_Y26 -to ADC_SRC_CS_P[2]
+#set_location_assignment PIN_AA21 -to ADC_SRC_CS_P[3]
+#set_location_assignment PIN_N26 -to ADC_SRC_CS_P[4]
+#set_location_assignment PIN_AA25 -to ADC_SRC_CS_P[5]
+#set_location_assignment PIN_B14 -to ADC_SRC_CS_P[6]
+#set_location_assignment PIN_AB21 -to ADC_SRC_CS_P[7]
+#set_location_assignment PIN_N20 -to ADC_SRC_CS_P[8]
+#set_location_assignment PIN_Y21 -to ADC_SRC_CS_P[9]
+#set_location_assignment PIN_E21 -to ADC_SRC_CS_P[10]
+#set_location_assignment PIN_L21 -to ADC_SRC_CS_P[11]
+#set_location_assignment PIN_N22 -to ADC_SRC_CS_P[12]
+#set_location_assignment PIN_M19 -to ADC_SRC_CS_P[13]
+#set_location_assignment PIN_AC16 -to ADC_SRC_CS_P[14]
+#set_location_assignment PIN_AC19 -to ADC_SRC_CS_P[15]
+
+
+#set_instance_assignment -name IO_STANDARD LVDS -to clk_OUT_LP
+#set_instance_assignment -name IO_STANDARD LVDS -to clk_IN_LP
+
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_CS[0]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_SCK[2]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_FE8_SDO[2]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_FE8_SDO[3]
+#
+#
+
+#set_instance_assignment -name IO_STANDARD LVDS -to CD2_I2C_SDA_C2W_P
+#set_instance_assignment -name IO_STANDARD LVDS -to CD2_I2C_SDA_W2C_P
+
+#set_instance_assignment -name IO_STANDARD "1.8 V" -to CD1_CMOS_MODE
+#set_instance_assignment -name IO_STANDARD "1.8 V" -to CD1_CHIP_ID
+
+set_instance_assignment -name IO_STANDARD LVDS -to I2C_SDA_DIF_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD1_CLK_64MHZ_SYS_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD1_FASTCOMMAND_IN_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD1_I2C_LVDS_SCL_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD1_I2C_LVDS_SDA_C2W_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD1_I2C_LVDS_SDA_W2C_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD2_CLK_64MHZ_SYS_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD2_FASTCOMMAND_IN_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD2_I2C_LVDS_SCL_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD2_I2C_LVDS_SDA_C2W_P
+set_instance_assignment -name IO_STANDARD LVDS -to CD2_I2C_LVDS_SDA_W2C_P
+set_instance_assignment -name IO_STANDARD LVDS -to CLK_64MHZ_SYS_P
+set_instance_assignment -name IO_STANDARD LVDS -to FASTCOMMAND_IN_P
+set_instance_assignment -name IO_STANDARD LVDS -to I2C_LVDS_SCL_P
+set_instance_assignment -name IO_STANDARD LVDS -to I2C_LVDS_SDA_C2W_P
+set_instance_assignment -name IO_STANDARD LVDS -to I2C_LVDS_SDA_W2C_P
+
+
+
+
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_INS_PLS_CS[2]
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_TEST_INH_ARR[2]
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_TEST_INH_ARR[3]
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_INA_SCL[3]
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_IN_TST_SEL[5]
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_TEST_CSB
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to FE_TEST_CSA
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_TEST_CSA
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_MonADC_sck
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to MISC_U1_IO[3]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_SRC_CS_P[2]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_SRC_CS_P[4]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_SRC_CS_P[5]
+#set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "0 MHz" -to ADC_SRC_CS_P[6]
+
+
+
+
+set_global_assignment -name USE_SIGNALTAP_FILE output_files/stp1.stp
+set_instance_assignment -name IO_STANDARD LVDS -to CLK_DAQ_P
+set_location_assignment PIN_L14 -to "CLK_DAQ_P(n)"
+set_instance_assignment -name IO_STANDARD LVDS -to SBND_CLK_P
+set_location_assignment PIN_U9 -to "SBND_CLK_P(n)"
+set_instance_assignment -name IO_STANDARD LVDS -to CLK_100MHz_OSC_P
+set_location_assignment PIN_U10 -to "CLK_100MHz_OSC_P(n)"
+set_instance_assignment -name IO_STANDARD LVDS -to CLK_125MHz_OSC_P
+set_location_assignment PIN_K9 -to "CLK_125MHz_OSC_P(n)"
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id dac_fe5
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|clk" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[10]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[11]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[12]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[13]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[14]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[15]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[16]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[17]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[18]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[19]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[20]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[21]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[22]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[23]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[8]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[9]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[10]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[11]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[12]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[13]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[14]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[15]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[8]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[9]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DIN" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|SCLK" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|SYNC" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|reset" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|start" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_IDLE" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_SET_DAC_DATA" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_done" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to FE_DAC_TP_DIN[0] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to FE_DAC_TP_DIN[1] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to FE_DAC_TP_DIN[2] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to FE_DAC_TP_DIN[3] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to FE_DAC_TP_DIN[4] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to FE_DAC_TP_DIN[5] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to FE_DAC_TP_DIN[6] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to FE_DAC_TP_DIN[7] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to FE_DAC_TP_SCK -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to FE_DAC_TP_SYNC -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|CLK_CNT[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[10]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[11]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[12]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[13]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[14]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[15]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[16]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[17]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[18]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[19]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[20]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[21]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[22]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[23]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[8]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DAC_data[9]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[0]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[10]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[11]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[12]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[13]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[14]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[15]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[1]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[2]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[3]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[4]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[5]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[6]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[7]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[8]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DATA[9]" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|DIN" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|SCLK" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|SYNC" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|reset" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|start" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_IDLE" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_SET_DAC_DATA" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "DAC8411:\\gen_FE_DAC_TP:4:FE_DAC_TP_inst|state.S_done" -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to FE_DAC_TP_DIN[0] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to FE_DAC_TP_DIN[1] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to FE_DAC_TP_DIN[2] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to FE_DAC_TP_DIN[3] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to FE_DAC_TP_DIN[4] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to FE_DAC_TP_DIN[5] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to FE_DAC_TP_DIN[6] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to FE_DAC_TP_DIN[7] -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to FE_DAC_TP_SCK -section_id dac_fe5
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to FE_DAC_TP_SYNC -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=66" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=66" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=66" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334542" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=219" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=128" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to dac_fe5|vcc -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to dac_fe5|gnd -section_id dac_fe5
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to dac_fe5|gnd -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=128" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id dac_fe5
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "I2CSLAVE:I2CSLAVE|sys_clk" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|rst" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "I2CSLAVE:I2CSLAVE|CD_I2C_SCL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "I2CSLAVE:I2CSLAVE|CD_W2C_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "I2CSLAVE:I2CSLAVE|CD_c2W_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "I2CSLAVE:I2CSLAVE|CHIP_IO_SEL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_addr" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_wait_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_idle" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_read_data" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_read_reg_addr" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_reg_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_write_data" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "I2CSLAVE:I2CSLAVE|I2C_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "I2CSLAVE:I2CSLAVE|I2C_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "I2CSLAVE:I2CSLAVE|I2C_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "I2CSLAVE:I2CSLAVE|I2C_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "I2CSLAVE:I2CSLAVE|I2C_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "I2CSLAVE:I2CSLAVE|I2C_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "I2CSLAVE:I2CSLAVE|I2C_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "I2CSLAVE:I2CSLAVE|I2C_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "I2CSLAVE:I2CSLAVE|I2C_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "I2CSLAVE:I2CSLAVE|I2C_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "I2CSLAVE:I2CSLAVE|I2C_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "I2CSLAVE:I2CSLAVE|I2C_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "I2CSLAVE:I2CSLAVE|I2C_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "I2CSLAVE:I2CSLAVE|I2C_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "I2CSLAVE:I2CSLAVE|I2C_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "I2CSLAVE:I2CSLAVE|I2C_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "I2CSLAVE:I2CSLAVE|I2C_dout[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "I2CSLAVE:I2CSLAVE|I2C_dout[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "I2CSLAVE:I2CSLAVE|I2C_dout[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "I2CSLAVE:I2CSLAVE|I2C_dout[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "I2CSLAVE:I2CSLAVE|I2C_dout[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "I2CSLAVE:I2CSLAVE|I2C_dout[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "I2CSLAVE:I2CSLAVE|I2C_dout[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "I2CSLAVE:I2CSLAVE|I2C_dout[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to "I2CSLAVE:I2CSLAVE|I2C_start" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to "I2CSLAVE:I2CSLAVE|I2C_stop" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to "I2CSLAVE:I2CSLAVE|REG_DIN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to "I2CSLAVE:I2CSLAVE|REG_DIN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to "I2CSLAVE:I2CSLAVE|REG_DIN[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to "I2CSLAVE:I2CSLAVE|REG_DIN[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to "I2CSLAVE:I2CSLAVE|REG_DIN[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to "I2CSLAVE:I2CSLAVE|REG_DIN[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to "I2CSLAVE:I2CSLAVE|REG_DIN[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to "I2CSLAVE:I2CSLAVE|REG_DIN[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to "I2CSLAVE:I2CSLAVE|SCL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to "I2CSLAVE:I2CSLAVE|SCL_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to "I2CSLAVE:I2CSLAVE|SCL_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to "I2CSLAVE:I2CSLAVE|SCL_fall" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to "I2CSLAVE:I2CSLAVE|SCL_rise" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to "I2CSLAVE:I2CSLAVE|SDA_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to "I2CSLAVE:I2CSLAVE|SDA_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to "I2CSLAVE:I2CSLAVE|SDA_IO_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to "I2CSLAVE:I2CSLAVE|SDA_IO_OUT" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[167] -to "I2CSLAVE:I2CSLAVE|SDA_OUT" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[168] -to "I2CSLAVE:I2CSLAVE|SDA_fall" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[169] -to "I2CSLAVE:I2CSLAVE|SDA_rise" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[170] -to "I2CSLAVE:I2CSLAVE|rst" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_RD_address[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_WR_address[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|WIB_data_out[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_i[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg0_o[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_i[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|reg2_o[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "DUNE_DAT_Registers:DUNE_DAT_Registers_inst|rst" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "I2CSLAVE:I2CSLAVE|CD_I2C_SCL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "I2CSLAVE:I2CSLAVE|CD_W2C_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "I2CSLAVE:I2CSLAVE|CD_c2W_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "I2CSLAVE:I2CSLAVE|CHIP_IO_SEL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_addr" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_get_wait_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_idle" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_read_data" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_read_reg_addr" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_send_reg_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_addr_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_wait_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "I2CSLAVE:I2CSLAVE|I2C_STATE.s_write_data" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "I2CSLAVE:I2CSLAVE|I2C_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "I2CSLAVE:I2CSLAVE|I2C_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "I2CSLAVE:I2CSLAVE|I2C_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "I2CSLAVE:I2CSLAVE|I2C_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "I2CSLAVE:I2CSLAVE|I2C_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "I2CSLAVE:I2CSLAVE|I2C_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "I2CSLAVE:I2CSLAVE|I2C_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "I2CSLAVE:I2CSLAVE|I2C_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "I2CSLAVE:I2CSLAVE|I2C_addr_in[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "I2CSLAVE:I2CSLAVE|I2C_bit_cnt[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "I2CSLAVE:I2CSLAVE|I2C_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "I2CSLAVE:I2CSLAVE|I2C_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "I2CSLAVE:I2CSLAVE|I2C_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "I2CSLAVE:I2CSLAVE|I2C_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "I2CSLAVE:I2CSLAVE|I2C_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "I2CSLAVE:I2CSLAVE|I2C_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "I2CSLAVE:I2CSLAVE|I2C_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "I2CSLAVE:I2CSLAVE|I2C_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "I2CSLAVE:I2CSLAVE|I2C_dout[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "I2CSLAVE:I2CSLAVE|I2C_dout[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "I2CSLAVE:I2CSLAVE|I2C_dout[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "I2CSLAVE:I2CSLAVE|I2C_dout[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "I2CSLAVE:I2CSLAVE|I2C_dout[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "I2CSLAVE:I2CSLAVE|I2C_dout[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "I2CSLAVE:I2CSLAVE|I2C_dout[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "I2CSLAVE:I2CSLAVE|I2C_dout[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "I2CSLAVE:I2CSLAVE|I2C_reg_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to "I2CSLAVE:I2CSLAVE|I2C_reg_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to "I2CSLAVE:I2CSLAVE|I2C_start" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to "I2CSLAVE:I2CSLAVE|I2C_stop" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to "I2CSLAVE:I2CSLAVE|REG_ADDRESS[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to "I2CSLAVE:I2CSLAVE|REG_DIN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to "I2CSLAVE:I2CSLAVE|REG_DIN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to "I2CSLAVE:I2CSLAVE|REG_DIN[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to "I2CSLAVE:I2CSLAVE|REG_DIN[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to "I2CSLAVE:I2CSLAVE|REG_DIN[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to "I2CSLAVE:I2CSLAVE|REG_DIN[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to "I2CSLAVE:I2CSLAVE|REG_DIN[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to "I2CSLAVE:I2CSLAVE|REG_DIN[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to "I2CSLAVE:I2CSLAVE|REG_DOUT[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to "I2CSLAVE:I2CSLAVE|SCL" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to "I2CSLAVE:I2CSLAVE|SCL_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to "I2CSLAVE:I2CSLAVE|SCL_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to "I2CSLAVE:I2CSLAVE|SCL_fall" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to "I2CSLAVE:I2CSLAVE|SCL_rise" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to "I2CSLAVE:I2CSLAVE|SDA_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to "I2CSLAVE:I2CSLAVE|SDA_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to "I2CSLAVE:I2CSLAVE|SDA_IO_IN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to "I2CSLAVE:I2CSLAVE|SDA_IO_OUT" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[167] -to "I2CSLAVE:I2CSLAVE|SDA_OUT" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[168] -to "I2CSLAVE:I2CSLAVE|SDA_fall" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[169] -to "I2CSLAVE:I2CSLAVE|SDA_rise" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[170] -to "I2CSLAVE:I2CSLAVE|rst" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=171" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=171" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=171" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334528" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=540" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=8192" -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=8192" -section_id auto_signaltap_0
+set_global_assignment -name VHDL_FILE SRC/SBND_TST_PULSE.vhd
+set_global_assignment -name VHDL_FILE SRC/coldadc_ro_cnt.vhd
+set_global_assignment -name VHDL_FILE SRC/DAC8411.vhd
+set_global_assignment -name VHDL_FILE SRC/COTS_AD7274.vhd
+set_global_assignment -name VHDL_FILE SRC/I2c_master.vhd
+set_global_assignment -name VHDL_FILE SRC/Version_Reg.vhd
+set_global_assignment -name VHDL_FILE SRC/sys_rst.vhd
+set_global_assignment -name VHDL_FILE SRC/I2CSLAVE.vhd
+set_global_assignment -name VHDL_FILE SRC/DUNE_DAT_Registers.vhd
+set_global_assignment -name VHDL_FILE SRC/DUNE_DAT_FPGA.vhd
+set_global_assignment -name QIP_FILE SRC/DAT_PLL.qip
+set_global_assignment -name SIGNALTAP_FILE output_files/stp1.stp
+set_global_assignment -name QIP_FILE DAT_PLL2.qip
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
