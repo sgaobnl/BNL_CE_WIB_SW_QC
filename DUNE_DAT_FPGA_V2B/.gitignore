@@ -18,6 +18,7 @@ incremental_db
 simulation
 testbench
 timing
+.qsys_edit
 
 # ignore Quartus II generated files
 *_generation_script*
@@ -30,6 +31,7 @@ timing
 *.html
 *.jdi
 *.jpg
+*.json #added
 *.mif
 *.pin
 *.pof
