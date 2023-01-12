@@ -1,0 +1,7 @@
+{
+	"common_dir" : "C:/share/DUNE/FPGA/testers/DUNE_DAT/",
+	"acds_version" : "Version 17.1.0",
+	"platform" : "windows",
+	"os" : "Windows 10",
+	"qpf" : "DUNE_DAT_FPGA.qpf"
+}
