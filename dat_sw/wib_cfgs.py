@@ -54,16 +54,17 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             rdreg = self.peek(0xA00C0004)
             self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
-    def wib_timing(self, pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
+    def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
-        # 0[pll=False]  = CDR recovered clock(default)
-        # 1[pll=True]   = PLL clock synchronized with CDR or running independently if CDR clock is 
+        # 0[ts_clk_sel=False]  = CDR recovered clock(default)
+        # 1[ts_clk_sel=True]   = PLL clock synchronized with CDR or running independently if CDR clock is 
         # missing. PLL clock should only be used on test stand when timing master 
         # is not available.            
-        reg_read = self.peek(0xA00C0004)
-        val = (reg_read&0xFFFEFFFF) | (int(pll) << 16)
-        self.poke(0xA00C0004, val)    
-        if pll == True:
+        if ts_clk_sel == True:
+            reg_read = self.peek(0xA00C0004)
+            val = (reg_read&0xFFFEFFFF) | (int(ts_clk_sel) << 16)
+            self.poke(0xA00C0004, val)    
+
             print ("PLL clock synchronized with CDR or running independently if CDR clock is missing")
             print ("PLL clock should only be used on test stand when timing master is not available.")
             print ("Enable fake timing system")
@@ -86,6 +87,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print ("timing point status(addr 0x%08x) = 0x%08x"%(addr, rdreg))
         
             rdreg = self.peek(0xA00c0004)
+            rdreg = rdreg & 0xFFFEFFFF #external clock from DTS is chosen
             if fp1_ptc0_sel == 0:
                 print ("timing master is available through backplane (PTC)")
                 self.poke(0xA00c0004, (rdreg&0xFFFFFFDF)) #backplane
@@ -118,23 +120,26 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         rdreg = self.peek(0xA0030004)
         #print ("edge_to_act_delay = 0x%08x"%rdreg)
 
-        #reset COLDATA RX to clear buffers
-        rdreg = self.peek(0xA00C0004)
-        #print ("coldata_rx_reset = 0x%08x"%rdreg)
-        self.poke(0xA00C0004, rdreg&0xffffdfff)
-        self.poke(0xA00C0004, rdreg|0x00002000)
-        self.poke(0xA00C0004, rdreg&0xffffdfff)
-        rdreg = self.peek(0xA00C0004)
-        #print ("coldata_rx_reset = 0x%08x"%rdreg)
+        for x in range(2):
+            #reset COLDATA RX to clear buffers
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0004, rdreg&0xffffdfff)
+            self.poke(0xA00C0004, rdreg|0x00002000)
+            self.poke(0xA00C0004, rdreg&0xffffdfff)
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
 
-        #reset FELIX TX and loopback RX
-        rdreg = self.peek(0xA00C0038)
-        #print ("felix_rx_reset = 0x%08x"%rdreg)
-        self.poke(0xA00C0038, rdreg&0xffffffdf)
-        self.poke(0xA00C0038, rdreg|0x00000020)
-        self.poke(0xA00C0038, rdreg&0xffffffdf)
-        rdreg = self.peek(0xA00C0038)
-        #print ("felix_rx_reset = 0x%08x"%rdreg)
+            #reset FELIX TX and loopback RX
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            self.poke(0xA00C0038, rdreg|0x00000020)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
 
         return self.peek(0xA00C0004)
 
@@ -154,21 +159,45 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.all_femb_bias_ctrl(enable=1 )
             if 0 in fembs: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB0 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                print ("FEMB0 is off")
+            time.sleep(2)
             if 1 in fembs: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB1 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                print ("FEMB1 is off")
+            time.sleep(2)
             if 2 in fembs: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB2 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                print ("FEMB2 is off")
+            time.sleep(2)
             if 3 in fembs: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB3 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                print ("FEMB3 is off")
+            time.sleep(2)
         else:
+            self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            print ("FEMB0 is off")
+            time.sleep(2)
+            self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            print ("FEMB1 is off")
+            time.sleep(2)
+            self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            print ("FEMB2 is off")
+            time.sleep(2)
+            self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            print ("FEMB3 is off")
+            time.sleep(2)
             self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
@@ -362,7 +391,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
         self.poke(rdaddr, wrreg) 
             
-        for dts_time_delay in  range(0x58, 0x70,1):
+        for dts_time_delay in  range(0x48, 0x80,1):
             rdaddr = 0xA00C000C
             rdreg = self.peek(rdaddr)
             wrvalue = dts_time_delay #0x58 #dts_time_delay = 1
@@ -394,7 +423,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0):
                 print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                 break
-            if dts_time_delay >= 0x6f:
+            if dts_time_delay >= 0x7f:
                 print ("Error: data can't be aligned, exit anyway")
                 exit()
 
@@ -668,7 +697,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return mon_dict
 
 
-    def spybuf_trig(self, fembs,  num_samples=1, trig_cmd=0x04, spy_rec_ticks=0x3f00): 
+    def spybuf_trig(self, fembs,  num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
         if trig_cmd == 0x00:
             print (f"Data collection for FEMB {fembs} with software trigger")
         else:
@@ -677,10 +706,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:
-                init_ts = time.time_ns()//512
-                self.poke( 0xA00C0018, init_ts&0xffffffff)
-                self.poke( 0xA00C001c, (init_ts>>32)&0xffffffff)
-
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer
@@ -699,33 +724,34 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 wrreg = (rdreg&0xffffff3f)|0x00
                 self.poke(0xA00C0004, wrreg) #release spy buffer
                 
-                self.poke(0xA00C0024, trigger_rec_ticks) #spy rec time
+                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
                 rdreg = self.peek(0xA00C0014)
-                wrreg = (rdreg&0xff00ffff)|(trigger_command<<16)
+                wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
                 self.poke(0xA00C0014, wrreg) #program cmd_code_trigger
 
                 while True:
                     spy_full_flgs = False
                     rdreg = self.peek(0xA00C0080)
                     if rdreg&0x03 == 0x03:
+                        print ("Recived %d of %d triggers"%((i+1), num_samples))
                         spy_full_flgs = True
                         buf0_end_addr = self.peek(0xA00C0094)
                         buf1_end_addr = self.peek(0xA00C0098)
-                        if buf0_end_addr == buf1_end_addr:
+                        if (abs(buf0_end_addr - buf1_end_addr)<32) or (abs(buf1_end_addr - buf0_end_addr)<32):
                             spy_full_flgs = True
+                            rawdata = self.spybuf(fembs)
+                            data0 = (rawdata, buf0_end_addr, spy_rec_ticks, trig_cmd)
+                            data.append(data0)
                         else:
-                            spy_full_flgs = False
-                        rawdata = self.spybuf(fembs)
-                        data = (rawdata, buf0_end_addr, trigger_rec_ticks, trigger_command)
+                            print ("Two buffers out of synced")
+                            pass
                     else:
                         spy_full_flgs = False
-                        break
                     if spy_full_flgs:
                         break
                     else:
                         print ("No external trigger received, Wait a second ")
                         time.sleep(1)
-                data.append(data)
         return data
   
 #wib = WIB_CFGS()
