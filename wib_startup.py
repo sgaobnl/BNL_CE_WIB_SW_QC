@@ -21,7 +21,8 @@ if ("Y" in ynstr) or ("y" in ynstr):
             chk.wib_timing(ts_clk_sel=False, fp1_ptc0_sel=1, cmd_stamp_sync = 0x0)
         chk.wib_i2c_adj(n = int(sys.argv[1]))
     else:
-        chk.wib_i2c_adj(n = 500)
+        print ("EFMB I2C phase adjustment...")
+        chk.wib_i2c_adj(n = 300)
     print ("Done")
 
 else:
