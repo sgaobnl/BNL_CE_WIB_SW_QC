@@ -25,7 +25,7 @@ python3 wib_startup.py
 ```
 It adjusts the i2c phase by 300 steps
 
-#### 2. Power on/off FEMBs
+#### 2. Power on/off FEMBs (Optional, this step can be skipped )
 ```
 python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 ```
