@@ -180,12 +180,12 @@ t1 = time.time()
 ####### Power and configue FEMBs #######
 chk = WIB_CFGS()
 chk.wib_fw()
-chk.wib_timing(pll=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
 
 #set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+chk.femb_powering(fembs)
+time.sleep(2)
 
-time.sleep(1)
 pwr_meas = chk.get_sensors()
 chk.femb_cd_rst()
 
@@ -251,6 +251,9 @@ if save:
 
     with open(fp, 'wb') as fn:
         pickle.dump( [mon_refs, mon_temps, mon_adcs, logs], fn)
+####### Power off FEMBs #######
+print("Turning off FEMBs")
+chk.femb_powering([])
 
 ####### Generate report #######
 if save:

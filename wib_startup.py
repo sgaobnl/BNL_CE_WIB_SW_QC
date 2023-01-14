@@ -7,11 +7,23 @@ ynstr = input ("Do you want to run this scrit (y/n)?: ")
 
 if ("Y" in ynstr) or ("y" in ynstr):
     chk = WIB_CFGS()
-    chk.wib_rst_tp()
-    chk.wib_i2c_adj(n=300)
     chk.wib_fw()
-    chk.wib_timing(pll=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+    chk.wib_rst_tp()
+    time.sleep(1)
+    chk.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+    time.sleep(1)
+    if len(sys.argv) > 2: 
+        if "PTC"in sys.argv[2]:
+            time.sleep(1)
+            chk.wib_timing(ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+        elif "FP"in sys.argv[2]:#timing from front-panel
+            time.sleep(1)
+            chk.wib_timing(ts_clk_sel=False, fp1_ptc0_sel=1, cmd_stamp_sync = 0x0)
+        chk.wib_i2c_adj(n = int(sys.argv[1]))
+    else:
+        chk.wib_i2c_adj(n = 500)
     print ("Done")
+
 else:
     print ("Exit")
 
