@@ -52,6 +52,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for i in range(n):
             self.poke(0xA00C0004 , rdreg|0x00040000) 
             rdreg = self.peek(0xA00C0004)
+            time.sleep(0.001)
             self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
@@ -544,12 +545,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(0xA00C0008, link_mask)
             #self.femb_cd_sync()
             if self.i2cerror:
-                print ("Reconfigure due to i2c error!")
                 self.i2cerror = False
                 refi += 1
-                if refi > 5:
+                print ("add i2c phase 50 steps")
+                self.wib_i2c_adj(n=50)
+                print ("Reconfigure FEMB due to i2c error!")
+                if refi > 25:
                     self.femb_powering(fembs =[])
-                    print ("I2C failed! Turn All FEMB off and exit anyway")
+                    print ("I2C failed! exit anyway, please check connection!")
                     exit()
             else:
                 print (f"FEMB{femb_id} is configurated")
@@ -732,7 +735,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.poke(0xA00C0004, wrreg) #reset spy buffer
                 wrreg = (rdreg&0xffffff3f)|0x00
                 self.poke(0xA00C0004, wrreg) #release spy buffer
-                time.sleep(0.01)
+                time.sleep(0.002)
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer

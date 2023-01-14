@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 import copy
 import os
-from QC_tools import ana_tools
+from tools import ana_tools
 from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
