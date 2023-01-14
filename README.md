@@ -37,9 +37,13 @@ Use time master
 ```
 python3 quick_checkout.py <slot lists> save <number of events>
 ```
-e.g. take data from four fembs and record 10 events
+e.g (1). take data from four fembs and record 10 events
 ```
 python3 quick_checkout.py 0 1 2 3 save 10
+```
+e.g (2). take data from 1 femb at slot 3 and record 1 events
+```
+python3 quick_checkout.py 3 save 1
 ```
 #### 4. Data taking using PLL timing
 ```
