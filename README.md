@@ -1,6 +1,6 @@
 # BNL_CE_WIB_SW_QC
  
-These scripts are developed for standalone WIB operation on WIB at CERN
+These scripts are developed for standalone WIB operation on WIB 
 
 note: 
 
