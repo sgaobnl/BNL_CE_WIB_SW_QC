@@ -3,6 +3,7 @@ extern "C" {
 #define io_reg_h
 
 #include <stdint.h>
+#include <stddef.h>
 //#include "log.h"
 
 typedef struct io_reg_t {

@@ -1,4 +1,8 @@
 extern "C" {
+#include <stdio.h>
+#include <stdint.h>
+
+#include "dat_util.h"
 #include "wib_util.h"
 
 void datpower_poke(uint8_t dev_addr, uint8_t reg_addr, uint16_t data, uint8_t cd, uint8_t fe) {
