@@ -20,6 +20,7 @@ testbench
 timing
 .qsys_edit
 output_files
+!/output_files/*.sof
 
 
 # ignore Quartus II generated files
