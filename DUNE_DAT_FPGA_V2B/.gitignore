@@ -38,7 +38,7 @@ output_files/*
 qar_info.json
 *.mif
 *.pin
-*.pof
+# *.pof #keep one of these
 *.ptf.*
 # *.qar #keep this?
 *.qarlog

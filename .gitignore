@@ -2,3 +2,5 @@
 /*/
 !/DUNE_DAT_FPGA_V2B/
 !/dat_sw/
+!.gitignore
+!README.md
