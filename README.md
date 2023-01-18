@@ -2,12 +2,16 @@
 Working repository for DAT firmware and WIB SW that deals with the DAT.
 
 ### To load firmware onto FPGA (DUNE_DAT_FPGA_V2B):
+The latest .sof file is in DUNE_DAT_FPGA_V2B/output_files.
+#### Compile to make a new bitfile:
 1) Open DUNE_DAT_FPGA_V2B/DUNE_DAT_FPGA.qpf in Quartus Prime 17.1.
 2) Click Start Compilation.
-3) When compilation finishes, click Programmer.
-4) Click Hardware Setup to select your JTAG blaster.
-5) Click Add Files to add the .sof file if not already present
-6) Check Program/Configure if not checked already, and click Start.
+#### Program using the .sof file:
+1) Open Quartus Prime (any version) or Quartus Programmer. [Here are instructions for downloading Quartus Programmer](http://www.terasic.com.tw/wiki/Chapter_1_Download_and_install_Quartus_Programmer).
+2) Click Programmer.
+3) Click Hardware Setup to select your JTAG blaster.
+4) Click Add Files to add the .sof file if not already present
+5) Check Program/Configure if not checked already, and click Start.
 
 ### To run software (dat_sw):
 Copy dat_sw and paste into the WIB at /home. Run make.
@@ -23,4 +27,5 @@ A script created by me testing basic communication and control with the DAT. It 
  - Verifying that writing to COLDATA's CD_CONTROL registers changes COLDATA's CD_CONTROL output pins accordingly
  - Writing values to DACs (these values are verified with the monitoring ADCs)
  - Reading out all possible inputs to monitoring ADCs
-The script is messy from previously being used to test wib_util, so I need to fix it.
+
+This script is messy from previously being used to test wib_util, so I need to clean it up.
