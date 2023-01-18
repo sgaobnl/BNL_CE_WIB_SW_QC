@@ -44,7 +44,7 @@ qar_info.json
 *.qws
 *.rpt
 *.smsg
-*.sof
+#*.sof #keep this
 *.sopc_builder
 *.summary
 *.tcl
