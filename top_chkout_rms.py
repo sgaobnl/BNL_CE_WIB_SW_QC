@@ -6,6 +6,34 @@ import pickle
 import copy
 import time, datetime, random, statistics
 
+def CreateFolders(fembNo, env):
+
+    datadir = "coldbox_data/"
+    for key,femb_no in fembNo.items():
+        datadir = datadir + "femb{}_".format(femb_no)
+
+    datadir = datadir + env
+
+    n=1
+    while (os.path.exists(datadir)):
+        if n==1:
+            datadir = datadir + "_R{:03d}".format(n)
+        else:
+            datadir = datadir[:-3] + "{:03d}".format(n)
+        n=n+1
+        if n>20:
+            raise Exception("There are more than 20 folders...")
+
+    try:
+        os.makedirs(datadir)
+    except OSError:
+        print ("Error to create folder %s"%datadir)
+        sys.exit()
+
+    datadir = datadir+"/"
+
+    return datadir
+
 if len(sys.argv) < 2:
     print('Please specify at least one FEMB # to test')
     print('Usage: python wib.py 0')
@@ -25,8 +53,31 @@ else:
     save = False
     sample_N = 10
 
+logs={}
+tester=input("please input your name:  ")
+logs['tester']=tester
+
+env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
+if ("Y" in env_cs) or ("y" in env_cs):
+    env = "LN"
+else:
+    env = "RT"
+logs['env']=env
+
 fembs = [int(a) for a in sys.argv[1:pos]] 
-print (fembs)
+
+fembNo={}
+for i in fembs:
+    fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
+
+logs['femb id']=fembNo
+logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+
+if save:
+    datadir=CreateFolders(fembNo, env)
+    fp = datadir + "logs_env.bin"
+    with open(fp, 'wb') as fn:
+         pickle.dump(logs, fn)
 
 chk = WIB_CFGS()
 
@@ -60,7 +111,7 @@ for snc in [0,1]:
         
         #LArASIC register configuration
             chk.set_fe_board(sts=0, snc=snc,sg0=0, sg1=0, st0=st0, st1=st1, swdac=0, sdd=0,dac=0x00 )
-            adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+            adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
         #step 3
             chk.femb_cfg(femb_id, adac_pls_en )
@@ -75,9 +126,7 @@ for snc in [0,1]:
         pwr_meas = chk.get_sensors()
         
         if save:
-            fdir = "./tmp_data/"
-            ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-            fp = fdir + "Raw_snc%d_st0%d_st1%d_"%(snc,st0,st1) + ts  + ".bin"
+            fp = datadir + "Raw_snc%d_st0%d_st1%d"%(snc,st0,st1) + ".bin"
             with open(fp, 'wb') as fn:
                 pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
