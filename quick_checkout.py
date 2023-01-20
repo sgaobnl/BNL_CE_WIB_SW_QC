@@ -6,7 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-from tools import ana_tools
+from QC_tools import QC_tools
 from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
@@ -63,7 +63,7 @@ def CreateFolders(fembNo, env, toytpc):
 
 def GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips):
 
-    qc_tools = ana_tools()
+    qc_tools = QC_tools()
    
     femb_list = [int(ifemb[-1]) for ifemb,_ in fembNo.items()]
     print(femb_list)
@@ -78,6 +78,10 @@ def GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PL
     
         plotdir = PLOTDIR[ifemb]
         ana = qc_tools.data_ana(pldata,i)
+        ana_bin = plotdir+"ana_results.bin" 
+        with open(ana_bin, 'wb') as fn:
+             pickle.dump([ana[0], ana[1], ana[2], ana[3], ana[4], ana[5]], fn)
+        
         fp_data = plotdir+"SE_response"
         qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
     
@@ -180,12 +184,14 @@ t1 = time.time()
 ####### Power and configue FEMBs #######
 chk = WIB_CFGS()
 chk.wib_fw()
+time.sleep(1)
 
 #set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+
+#power on FEMBs
 chk.femb_powering(fembs)
 time.sleep(2)
-
 pwr_meas = chk.get_sensors()
 chk.femb_cd_rst()
 
@@ -251,13 +257,14 @@ if save:
 
     with open(fp, 'wb') as fn:
         pickle.dump( [mon_refs, mon_temps, mon_adcs, logs], fn)
+
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
 
 ####### Generate report #######
-if save:
-   GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
+#if save:
+#   GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
 
 t2=time.time()
 print(t2-t1)

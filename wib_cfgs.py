@@ -1,7 +1,7 @@
 from llc import LLC
 from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 import copy
-from datetime import datetime
+
 import sys, time, random
 
 class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
@@ -52,7 +52,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for i in range(n):
             self.poke(0xA00C0004 , rdreg|0x00040000) 
             rdreg = self.peek(0xA00C0004)
-            time.sleep(0.001)
             self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
@@ -64,7 +63,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         if ts_clk_sel == True:
             reg_read = self.peek(0xA00C0004)
             val = (reg_read&0xFFFEFFFF) | (int(ts_clk_sel) << 16)
-            self.poke(0xA00C0004, val)    
             self.poke(0xA00C0004, val)    
 
             print ("PLL clock synchronized with CDR or running independently if CDR clock is missing")
@@ -126,9 +124,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #reset COLDATA RX to clear buffers
             rdreg = self.peek(0xA00C0004)
             #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            self.poke(0xA00C0004, rdreg|0x00003000)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
+            self.poke(0xA00C0004, rdreg&0xffffdfff)
+            self.poke(0xA00C0004, rdreg|0x00002000)
+            self.poke(0xA00C0004, rdreg&0xffffdfff)
             rdreg = self.peek(0xA00C0004)
             #print ("coldata_rx_reset = 0x%08x"%rdreg)
             time.sleep(0.1)
@@ -137,7 +135,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             rdreg = self.peek(0xA00C0038)
             #print ("felix_rx_reset = 0x%08x"%rdreg)
             self.poke(0xA00C0038, rdreg&0xffffffdf)
-            self.poke(0xA00C0038, rdreg|0x00000040)
+            self.poke(0xA00C0038, rdreg|0x00000020)
             self.poke(0xA00C0038, rdreg&0xffffffdf)
             rdreg = self.peek(0xA00C0038)
             #print ("felix_rx_reset = 0x%08x"%rdreg)
@@ -426,8 +424,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                 break
             if dts_time_delay >= 0x7f:
-                self.femb_powering(fembs =[])
-                print ("Error: data can't be aligned, turn all femb off and exit anyway")
+                print("hex(link0to3), hex(link4to7), hex(link8tob), hex(linkctof)")
+                print(hex(link0to3), hex(link4to7), hex(link8tob), hex(linkctof))
+                print("hex(link0to3 & 0xe0e0e0e0), hex(link4to7& 0xe0e0e0e0), hex(link8tob& 0xe0e0e0e0), hex(linkctof& 0xe0e0e0e0)")
+                print(hex(link0to3 & 0xe0e0e0e0), hex(link4to7& 0xe0e0e0e0), hex(link8tob& 0xe0e0e0e0), hex(linkctof& 0xe0e0e0e0))
+                print ("Error: data can't be aligned, exit anyway: ",dts_time_delay)
                 exit()
 
     def femb_adc_cfg(self, femb_id):
@@ -507,8 +508,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 print ("LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2))
                 if i > 10:
-                    self.femb_powering(fembs =[])
-                    print ("Turn all FEMBs off, exit anyway")
+                    print ("exit anyway")
                     exit()
                 else:
                     time.sleep(0.1)
@@ -533,7 +533,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_fe_cfg(femb_id)
             if adac_pls_en:
                 self.femb_adac_cali(femb_id)
-            link_mask = 0xffff
+            link_mask = self.peek(0xA00C0008)
             if femb_id == 0:
                 link_mask = link_mask&0xfff0
             if femb_id == 1:
@@ -545,14 +545,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(0xA00C0008, link_mask)
             #self.femb_cd_sync()
             if self.i2cerror:
+                print ("Reconfigure due to i2c error!")
                 self.i2cerror = False
                 refi += 1
-                print ("add i2c phase 50 steps")
-                self.wib_i2c_adj(n=50)
-                print ("Reconfigure FEMB due to i2c error!")
-                if refi > 25:
-                    self.femb_powering(fembs =[])
-                    print ("I2C failed! exit anyway, please check connection!")
+                if refi > 5:
+                    print ("I2C failed! exit anyway")
                     exit()
             else:
                 print (f"FEMB{femb_id} is configurated")
@@ -713,23 +710,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:
-                clk_cs = (self.peek(0xA00C0004) >> 16) & 0x01
-                if clk_cs: #local clock, timestamp is assigned by WIB itself
-                    now = datetime.now()
-                    init_ts = int(datetime.timestamp(now) * 1e9)
-                    init_ts = time.time_ns()
-                    init_ts = init_ts//16 #WIB system clock is 62.5MHz
-
-                    self.poke(0xA00C0018, init_ts&0xffffffff)
-                    self.poke(0xA00C001c, (init_ts>>32)&0xffffffff)
-                    rdreg = self.peek(0xA00C000C)
-                    wrreg = rdreg&0xfffffffd
-                    self.poke(0xA00C000C, wrreg) #disable fake timestamp
-                    wrreg = rdreg|0x02
-                    self.poke(0xA00C000C, wrreg) #enable fake timestamp and reload the init value
-
-                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer
@@ -742,7 +722,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 rawdata = self.spybuf(fembs)
                 data.append((rawdata, 0, 0x3ffff, 0x00))
             else:
-                print ("DTS trigger mode only supports 4 FEMBs attached")
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer
