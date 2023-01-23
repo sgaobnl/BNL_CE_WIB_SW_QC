@@ -157,13 +157,14 @@ DAT_FE_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(wib, 'DAT_FE_TEST_SEL_INHIBIT')
 DAT_FE_IN_TST_SEL_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_IN_TST_SEL_LSB')
 DAT_FE_IN_TST_SEL_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_IN_TST_SEL_MSB')
 DAT_FE_CALI_CS = ctypes.c_uint8.in_dll(wib, 'DAT_FE_CALI_CS')
-DAT_FE_INS_PLS_CS = ctypes.c_uint8.in_dll(wib, 'DAT_FE_INS_PLS_CS')
+#DAT_FE_INS_PLS_CS = ctypes.c_uint8.in_dll(wib, 'DAT_FE_INS_PLS_CS')
 DAT_ADC_TST_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_TST_SEL')
 DAT_ADC_SRC_CS_P_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_SRC_CS_P_LSB')
 DAT_ADC_SRC_CS_P_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_SRC_CS_P_MSB')
 DAT_ADC_PN_TST_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_PN_TST_SEL')
 DAT_ADC_TEST_IN_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_TEST_IN_SEL')
 DAT_EXT_PULSE_CNTL = ctypes.c_uint8.in_dll(wib, 'DAT_EXT_PULSE_CNTL')
+
 DAT_FE_DAC_TP_SET = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_SET')
 DAT_FE_DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_DATA_LSB')
 DAT_FE_DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_DATA_MSB')
@@ -174,6 +175,19 @@ DAT_ADC_N_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_N_DATA_LSB')
 DAT_ADC_N_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_N_DATA_MSB')
 DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TP_DATA_LSB')
 DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TP_DATA_MSB')
+
+DAC_ADC_RING_OSC_COUNT_B0 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B0')
+DAC_ADC_RING_OSC_COUNT_B1 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B1')
+DAC_ADC_RING_OSC_COUNT_B2 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B2')
+DAC_ADC_RING_OSC_COUNT_B3 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B3')
+DAC_TEST_PULSE_EN = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_EN')
+DAC_TEST_PULSE_WIDTH_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_LSB')
+DAC_TEST_PULSE_WIDTH_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_MSB')
+DAC_TEST_PULSE_AMPLITUDE = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_AMPLITUDE')
+DAC_TEST_PULSE_DELAY = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_DELAY')
+DAC_TEST_PULSE_FREQ_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_FREQ_LSB')
+DAC_TEST_PULSE_FREQ_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_FREQ_MSB')
+
 
 
 #INA226 registers
@@ -437,10 +451,44 @@ for select in [0,1,2,3,4,5,6,7]:
         data = dat_monadc_getdata(fe=fe)
         print("FE MonADC:",data*AD_LSB,"V\t",hex(data),"\t",format(data,'b').zfill(12))
 
+#Test pulse gen testing
+#Write pulse settings
+    #Width
+width = 0x4B
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_LSB, width&0xFF)
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
+    #Amplitude
+amplitude = 0xAB
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_AMPLITUDE, amplitude)  
+    #Delay
+delay = 0x25
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_DELAY, delay) 
+    #Freq
+freq = 0x4B #period?
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_LSB, freq&0xFF)
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_MSB, (freq&0xFF00)>>8)
 
+# #Test with all TP_EN combinations
+# for tp_en in range(16): #0 to F
+    # wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_EN, tp_en)
+    # fpga = tp_en & 0x1 is 0x1
+    # asic = tp_en & 0x2 is 0x2
+    # int_ = tp_en & 0x4 is 0x4
+    # ext = tp_en & 0x8 is 0x8
+    # print("FPGA = %d, ASIC = %d, INT = %d, EXT = %d"%(fpga, asic, int_, ext))
+    # input("Check signal tap, press enter to continue")
+tp_en = 0x7
+wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_EN, tp_en)
+
+
+
+
+
+
+###This doesn't work for some reason:
 #power_off = input("Turn off FEMBs?")
 # power_off = "y"
 # if ("Y" in power_off) or ("y" in power_off):
-print("Turning off FEMBs")
-chk.femb_powering([])
+# print("Turning off FEMBs") 
+# chk.femb_powering([])
 
