@@ -3,6 +3,8 @@ extern "C" {
 //DAT
 //8-bit register index in DAT FPGA
 
+//See also firmware README: https://github.com/jdonohue-bnl/bnl-dat-fw-sw/blob/main/DUNE_DAT_FPGA_V2B/README.md
+
 	extern constexpr uint8_t DAT_CD_CONFIG				= 1;
 	extern constexpr uint8_t DAT_CD1_CONTROL			= 2;
 	extern constexpr uint8_t DAT_CD2_CONTROL			= 3;
@@ -42,26 +44,41 @@ extern "C" {
 	extern constexpr uint8_t DAT_FE_IN_TST_SEL_LSB			= 30;
 	extern constexpr uint8_t DAT_FE_IN_TST_SEL_MSB			= 31;
 	extern constexpr uint8_t DAT_FE_CALI_CS					= 32;
-	extern constexpr uint8_t DAT_FE_INS_PLS_CS				= 33;
-	extern constexpr uint8_t DAT_ADC_TST_SEL				= 34;
-	extern constexpr uint8_t DAT_ADC_SRC_CS_P_LSB			= 35;
-	extern constexpr uint8_t DAT_ADC_SRC_CS_P_MSB			= 36;
-	extern constexpr uint8_t DAT_ADC_PN_TST_SEL				= 37;
-	extern constexpr uint8_t DAT_ADC_TEST_IN_SEL			= 38;
-	extern constexpr uint8_t DAT_EXT_PULSE_CNTL				= 39;
+	extern constexpr uint8_t DAT_ADC_TST_SEL				= 33;
+	extern constexpr uint8_t DAT_ADC_SRC_CS_P_LSB			= 34; //currently not implemented in fw
+	extern constexpr uint8_t DAT_ADC_SRC_CS_P_MSB			= 35; // ^
+	extern constexpr uint8_t DAT_ADC_PN_TST_SEL				= 36;
+	extern constexpr uint8_t DAT_ADC_TEST_IN_SEL			= 37;
+	extern constexpr uint8_t DAT_EXT_PULSE_CNTL				= 38;
 	
-	//AD5683R DACs	
-	extern constexpr uint8_t DAT_FE_DAC_TP_SET				= 40; //writing 0x1<<X triggers DAC[X] (0 to 7)
-	extern constexpr uint8_t DAT_FE_DAC_TP_DATA_LSB			= 41;
-	extern constexpr uint8_t DAT_FE_DAC_TP_DATA_MSB			= 42;
-	extern constexpr uint8_t DAT_DAC_OTHER_SET				= 43;	//0x1 triggers DAC_ADC_P, 0x2 (0x1<<1) triggers DAC_ADC_N,
-																	//0x4 (0x1<<2) triggers DAC_TP	
-	extern constexpr uint8_t DAT_ADC_P_DATA_LSB				= 44;
-	extern constexpr uint8_t DAT_ADC_P_DATA_MSB				= 45;	
-	extern constexpr uint8_t DAT_ADC_N_DATA_LSB				= 46;
-	extern constexpr uint8_t DAT_ADC_N_DATA_MSB				= 47;
-	extern constexpr uint8_t DAC_TP_DATA_LSB				= 48;
-	extern constexpr uint8_t DAC_TP_DATA_MSB				= 49;
+	//AD5683R DACs
+	extern constexpr uint8_t DAT_FE_DAC_TP_SET				= 39; //writing 0x1<<X triggers DAC[X] (0 to 7)
+	extern constexpr uint8_t DAT_FE_DAC_TP_DATA_LSB			= 40; 
+	extern constexpr uint8_t DAT_FE_DAC_TP_DATA_MSB			= 41;
+	extern constexpr uint8_t DAT_DAC_OTHER_SET				= 42; //0x1 triggers DAC_ADC_P, 0x2 (0x1<<1) triggers DAC_ADC_N,
+																  //0x4 (0x1<<2) triggers DAC_TP
+	extern constexpr uint8_t DAT_ADC_P_DATA_LSB				= 43;	
+	extern constexpr uint8_t DAT_ADC_P_DATA_MSB				= 44;
+	extern constexpr uint8_t DAT_ADC_N_DATA_LSB				= 45;	
+	extern constexpr uint8_t DAT_ADC_N_DATA_MSB				= 46;
+	extern constexpr uint8_t DAC_TP_DATA_LSB				= 47;
+	extern constexpr uint8_t DAC_TP_DATA_MSB				= 48;
+	
+	
+	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B0		= 49;
+	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B1		= 50;
+	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B2		= 51;
+	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B3		= 52;
+		
+	//TEST PULSE GEN
+	extern constexpr uint8_t DAC_TEST_PULSE_EN				= 53; 	//bit 0 = FPGA_TP_EN, 1 = ASIC_TP_EN, 
+																	    //2 = INT_TP_EN (FPGA or ASIC pulse), 3 = EXT_TP_EN (WIB pulse)
+	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_LSB		= 54; 
+	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_MSB		= 55; 
+	extern constexpr uint8_t DAC_TEST_PULSE_AMPLITUDE		= 56; 
+	extern constexpr uint8_t DAC_TEST_PULSE_DELAY			= 57;
+	extern constexpr uint8_t DAC_TEST_PULSE_FREQ_LSB		= 58; 	
+	extern constexpr uint8_t DAC_TEST_PULSE_FREQ_MSB		= 59; 
 	
 	
 /////INA226 Internal register map
