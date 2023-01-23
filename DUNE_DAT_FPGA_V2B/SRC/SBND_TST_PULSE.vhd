@@ -27,7 +27,7 @@ ENTITY SBND_TST_PULSE IS
 	PORT
 	(
 		sys_rst     	: IN STD_LOGIC;			
-		clk_100Mhz    	: IN STD_LOGIC;				-- clock
+		clk    			: IN STD_LOGIC;				-- clock --name edited to remove "100mhz"
 		FPGA_TP_EN		: IN STD_LOGIC;		
 		ASIC_TP_EN		: IN STD_LOGIC;					
 		INT_TP_EN		: IN STD_LOGIC;
@@ -77,9 +77,9 @@ begin
 		
 		
 	
- process(clk_100Mhz,sys_rst) 
+ process(clk,sys_rst) 
 begin
-	if clk_100Mhz'event and clk_100Mhz = '1' then
+	if clk'event and clk = '1' then
 		LA_SYNC_D1		<= LA_SYNC;
 		LA_SYNC_D2		<= LA_SYNC_D1;
 		TP_EXT_GEN_S1	<= TP_EXT_GEN;
@@ -90,7 +90,7 @@ end process;
 
 			
 
- process(clk_100Mhz,sys_rst) 
+ process(clk,sys_rst) 
 begin
 	if  (sys_rst = '1') then
 		TP_FRQ_CNT		<= x"0000";
@@ -99,7 +99,7 @@ begin
 		TP_DLY_CNT  	<=  x"0000";
 		GEN_EXT_PUL 	<= '0';
 		Test_pulse		<= '0';
-	elsif clk_100Mhz'event and clk_100Mhz = '1' then
+	elsif clk'event and clk = '1' then
 		if(TP_EXT_GEN_S1 = '1') and (TP_EXT_GEN_S2 = '0') and (EXT_TP_EN = '1') then
 				GEN_EXT_PUL <= '1';
 		end if;	

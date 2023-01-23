@@ -9,7 +9,7 @@ ENTITY version_reg IS
 END version_reg;
 ARCHITECTURE rtl OF version_reg IS
 BEGIN
-    data_out <= X"209";
-    Date_s <= X"20230110";
-    Time_s <= X"182244";     
+    data_out <= X"20B";
+    Date_s <= X"20230123";
+    Time_s <= X"134501";     
 END rtl;

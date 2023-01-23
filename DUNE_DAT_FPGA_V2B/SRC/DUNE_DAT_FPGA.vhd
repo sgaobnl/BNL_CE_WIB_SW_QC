@@ -1086,7 +1086,7 @@ TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE
 	PORT MAP 
 	(
 		sys_rst 				=> reset,	
-		clk_100Mhz			=> CLK_62_5MHz,
+		clk					=> CLK_62_5MHz,
 		FPGA_TP_EN			=> FPGA_TP_EN, --reg
 		ASIC_TP_EN			=> ASIC_TP_EN,	--reg	
 		INT_TP_EN			=> INT_TP_EN,  --reg --internal means coming from FPGA or ASIC
