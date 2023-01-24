@@ -183,7 +183,7 @@ chk.wib_fw()
 time.sleep(1)
 
 #set FEMB voltages
-chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+chk.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
 
 #power on FEMBs
 chk.femb_powering(fembs)
