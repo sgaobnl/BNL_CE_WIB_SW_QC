@@ -189,9 +189,9 @@ chk.wib_fw()
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
-chk.femb_powering(fembs)
-time.sleep(2)
-pwr_meas = chk.get_sensors()
+#chk.femb_powering(fembs)
+#time.sleep(2)
+#pwr_meas = chk.get_sensors()
 chk.femb_cd_rst()
 
 snc = 1 # 200 mV
@@ -217,6 +217,7 @@ for femb_id in fembs:
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
 
+chk.data_align(fembs)
 time.sleep(0.5)
 
 ####### Take data #######
@@ -264,8 +265,8 @@ else:
     nchips=[0,4]
 
 ####### Power off FEMBs #######
-print("Turning off FEMBs")
-chk.femb_powering([])
+#print("Turning off FEMBs")
+#chk.femb_powering([])
 
 ####### Generate report #######
 if save:

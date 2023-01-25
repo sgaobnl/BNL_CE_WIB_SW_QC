@@ -74,10 +74,19 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #disable fake time stamp
             self.poke(0xA00c000C, (rdreg&0xFFFFFFF1))
             #set the init time stamp
-            self.poke(0xA00c0018, 0x00000000)
-            self.poke(0xA00c001C, 0x00000000)
+            #self.poke(0xA00c0018, 0x00000000)
+            #self.poke(0xA00c001C, 0x00000000)
+            now = datetime.now()
+            init_ts = int(datetime.timestamp(now) * 1e9)
+            init_ts = time.time_ns()
+            init_ts = init_ts//16 #WIB system clock is 62.5MHz
+
+            self.poke(0xA00C0018, init_ts&0xffffffff)
+            self.poke(0xA00C001c, (init_ts>>32)&0xffffffff)
+
             #enable fake time stamp
-            self.poke(0xA00c000C, (rdreg|0x0e))
+            self.poke(0xA00c000C, (rdreg|0x02))
+
         else:
             #timing point reset
             addr = 0xA00c0000
@@ -713,23 +722,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         data = []
         for i in range(num_samples):
             if trig_cmd == 0x00:
-                clk_cs = (self.peek(0xA00C0004) >> 16) & 0x01
-                if clk_cs: #local clock, timestamp is assigned by WIB itself
-                    now = datetime.now()
-                    init_ts = int(datetime.timestamp(now) * 1e9)
-                    init_ts = time.time_ns()
-                    init_ts = init_ts//16 #WIB system clock is 62.5MHz
-
-                    self.poke(0xA00C0018, init_ts&0xffffffff)
-                    self.poke(0xA00C001c, (init_ts>>32)&0xffffffff)
-                    rdreg = self.peek(0xA00C000C)
-                    wrreg = rdreg&0xfffffffd
-                    self.poke(0xA00C000C, wrreg) #disable fake timestamp
-                    wrreg = rdreg|0x02
-                    self.poke(0xA00C000C, wrreg) #enable fake timestamp and reload the init value
-
                 self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-
                 rdreg = self.peek(0xA00C0004)
                 wrreg = (rdreg&0xffffff3f)|0xC0
                 self.poke(0xA00C0004, wrreg) #reset spy buffer

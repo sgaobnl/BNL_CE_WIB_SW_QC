@@ -9,6 +9,7 @@ import struct
 from spymemory_decode import wib_spy_dec_syn
 
 fp = sys.argv[1]
+femb = int(sys.argv[2])
 if "/" in fp:
     sfn = fp.split("/")
 elif "\\" in fp:
@@ -31,9 +32,15 @@ if rawdata[runi][3] != 0:
     trigmode = 'HW'; 
 else:
     trigmode = 'SW'; 
-dec_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks)
+dec_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks, [femb])
 
-flen = len(dec_data[0])
+if femb<=1:
+    link = 0
+else:
+    link = 1
+
+flen = len(dec_data[link])
+print (flen)
 
 tmts = []
 sfs0 = []
@@ -45,15 +52,15 @@ femb1 = []
 femb2 = []
 femb3 = []
 for i in range(flen):
-    tmts.append(dec_data[0][i]["TMTS"])  # timestampe(64bit) * 512ns  = real time in ns (UTS)
-    sfs0.append(dec_data[0][i]["FEMB_SF"])
-    sfs1.append(dec_data[1][i]["FEMB_SF"])
-    cdts_l0.append(dec_data[0][i]["FEMB_CDTS"])
-    cdts_l1.append(dec_data[1][i]["FEMB_CDTS"])
-    femb0.append(dec_data[0][i]["FEMB0_2"])
-    femb1.append(dec_data[0][i]["FEMB1_3"])
-    femb2.append(dec_data[1][i]["FEMB0_2"])
-    femb3.append(dec_data[1][i]["FEMB1_3"])
+    tmts.append(dec_data[link][i]["TMTS"])  # timestampe(64bit) * 512ns  = real time in ns (UTS)
+    sfs0.append(dec_data[link][i]["FEMB_SF"])
+    cdts_l0.append(dec_data[link][i]["FEMB_CDTS"])
+    femb0.append(dec_data[link][i]["FEMB0_2"])
+    femb1.append(dec_data[link][i]["FEMB1_3"])
+    #sfs1.append(dec_data[1][i]["FEMB_SF"])
+    #cdts_l1.append(dec_data[1][i]["FEMB_CDTS"])
+    #femb2.append(dec_data[1][i]["FEMB0_2"])
+    #femb3.append(dec_data[1][i]["FEMB1_3"])
  
 print (f"timestampe of first 10 events {tmts[0:10]}")
 
@@ -70,13 +77,14 @@ if True:
     fig = plt.figure(figsize=(10,6))
     plt.plot(x, np.array(tmts)-tmts[0], label ="Time Master Timestamp")
     plt.plot(x, np.array(cdts_l0)-cdts_l0[0], label ="Coldata Timestamp")
-    plt.plot(x, np.array(cdts_l1)-cdts_l1[0], label ="Coldata Timestamp")
+#    plt.plot(x, np.array(cdts_l1)-cdts_l1[0], label ="Coldata Timestamp")
     plt.legend()
     #plt.show()
     plt.savefig(fdir + "timestamp.jpg")
     plt.close()
         
-    for fembi in range(4):
+    #for fembi in range(4):
+    for fembi in [femb]:
         maxpos = np.where(wibs[fembi][0][0:1500] == np.max(wibs[fembi][0][0:1500]))[0][0]
         fig = plt.figure(figsize=(10,6))
         for chip in range(8):
