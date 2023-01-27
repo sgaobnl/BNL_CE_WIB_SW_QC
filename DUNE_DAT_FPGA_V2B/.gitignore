@@ -21,7 +21,7 @@ timing
 .qsys_edit
 output_files/*
 !/output_files/*.sof
-!/output_files/DUNE_DAT_FPGA_femb.pof
+!/output_files/*.pof
 
 # ignore Quartus II generated files
 *_generation_script*
@@ -38,7 +38,7 @@ output_files/*
 qar_info.json
 *.mif
 *.pin
-# *.pof #keep one of these
+# *.pof #keep this
 *.ptf.*
 # *.qar #keep this?
 *.qarlog

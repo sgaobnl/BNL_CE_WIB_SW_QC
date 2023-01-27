@@ -1,18 +1,27 @@
+
 # bnl-dat-fw-sw
 Working repository for DAT firmware and WIB SW that deals with the DAT.
 
 ### To load firmware onto FPGA (DUNE_DAT_FPGA_V2B):
-The latest .sof file is in DUNE_DAT_FPGA_V2B/output_files.
-#### Compile to make a new bitfile:
+The latest .sof and .pof files are in DUNE_DAT_FPGA_V2B/output_files; so is Jack's original .pof that replicates only FEMB behavior.
+#### Compile to make new bitfiles:
 1) Open DUNE_DAT_FPGA_V2B/DUNE_DAT_FPGA.qpf in Quartus Prime 17.1.
 2) Click Start Compilation.
 #### Program using the .sof file:
-1) Open Quartus Prime (any version) or Quartus Programmer. [Here are instructions for downloading Quartus Programmer](http://www.terasic.com.tw/wiki/Chapter_1_Download_and_install_Quartus_Programmer).
-2) Click Programmer.
+1) Plug the JTAG into header **P4** with the ribbon cable coming towards the FPGA.
+2) Open Quartus Prime (any version) or Quartus Programmer. [Here are instructions for downloading Quartus Programmer](http://www.terasic.com.tw/wiki/Chapter_1_Download_and_install_Quartus_Programmer).
+3) Click Programmer.
+4) Click Hardware Setup to select your JTAG blaster.
+5) Click Add Files to add the .sof file if not already present and select the file.
+6) Under mode, select **JTAG**. 
+7) Check Program/Configure if not checked already, and click Start.
+#### Program using the .pof file:
+1) Plug the JTAG into header **P5** with the ribbon cable coming towards the FPGA.
+2) Open Quartus Programmer.
 3) Click Hardware Setup to select your JTAG blaster.
-4) Click Add Files to add the .sof file if not already present
-5) Check Program/Configure if not checked already, and click Start.
-
+5) Click Add Files to add the .pof file if not already present and select the file.
+6) Under mode, select **Active Serial Programming**. 
+7) Check Program/Configure if not checked already, and click Start.
 ### To run software (dat_sw):
 Copy dat_sw and paste into the WIB at /home. Run make.
 #### python3 quick_checkout.py [FEMBs] [save number_to_save]
