@@ -131,7 +131,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         rdreg = self.peek(0xA0030004)
         #print ("edge_to_act_delay = 0x%08x"%rdreg)
 
-        for x in range(2):
+        for x in range(1):
             #reset COLDATA RX to clear buffers
             rdreg = self.peek(0xA00C0004)
             #print ("coldata_rx_reset = 0x%08x"%rdreg)
@@ -195,6 +195,27 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB3 is off")
+            for x in range(1):
+                #reset COLDATA RX to clear buffers
+                rdreg = self.peek(0xA00C0004)
+                #print ("coldata_rx_reset = 0x%08x"%rdreg)
+                self.poke(0xA00C0004, rdreg&0xffffcfff)
+                self.poke(0xA00C0004, rdreg|0x00003000)
+                self.poke(0xA00C0004, rdreg&0xffffcfff)
+                rdreg = self.peek(0xA00C0004)
+                #print ("coldata_rx_reset = 0x%08x"%rdreg)
+                time.sleep(0.1)
+
+                #reset FELIX TX and loopback RX
+                rdreg = self.peek(0xA00C0038)
+                #print ("felix_rx_reset = 0x%08x"%rdreg)
+                self.poke(0xA00C0038, rdreg&0xffffffdf)
+                self.poke(0xA00C0038, rdreg|0x00000040)
+                self.poke(0xA00C0038, rdreg&0xffffffdf)
+                rdreg = self.peek(0xA00C0038)
+                #print ("felix_rx_reset = 0x%08x"%rdreg)
+                time.sleep(0.1)
+
             time.sleep(2)
         else:
             self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
