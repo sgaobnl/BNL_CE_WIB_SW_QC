@@ -167,46 +167,52 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_powering(self, fembs = []):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
-            link_mask=self.peek(0xA00C0008) 
-            link_mask=link_mask|0xffff 
 
             if 0 in fembs: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                link_mask = link_mask&0xfff0
                 print ("FEMB0 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                link_mask = link_mask&0xf
                 print ("FEMB0 is off")
             time.sleep(2)
             if 1 in fembs: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                link_mask = link_mask&0xff0f
                 print ("FEMB1 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                link_mask = link_mask&0xf0
                 print ("FEMB1 is off")
             time.sleep(2)
             if 2 in fembs: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                link_mask = link_mask&0xf0ff
                 print ("FEMB2 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                link_mask = link_mask&0xf00
                 print ("FEMB2 is off")
             time.sleep(2)
             if 3 in fembs: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                link_mask = link_mask&0x0fff
                 print ("FEMB3 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                link_mask = link_mask&0xf000
                 print ("FEMB3 is off")
-
+            
+            #enable WIB data link
+            link_mask=self.peek(0xA00C0008) 
+            self.poke(0xA00C0008, link_mask&0xffff0000)
+            time.sleep(0.1)
+            link_mask=self.peek(0xA00C0008) 
+            link_mask=link_mask|0xffff 
+            time.sleep(0.1)
+            if 0 in fembs: 
+                link_mask = link_mask&0xfffffff0
+            if 1 in fembs: 
+                link_mask = link_mask&0xffffff0f
+            if 2 in fembs: 
+                link_mask = link_mask&0xfffff0ff
+            if 3 in fembs: 
+                link_mask = link_mask&0xffff0fff
             self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008)
  
             #reset COLDATA RX to clear buffers
             rdreg = self.peek(0xA00C0004)
@@ -570,22 +576,26 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_cfg(self, femb_id, adac_pls_en = False):
         refi= 0
         while True:
+            link_mask=self.peek(0xA00C0008) 
+            if femb_id == 0:
+                link_mask = link_mask&0xfffffff0
+            if femb_id == 1:
+                link_mask = link_mask&0xffffff0f
+            if femb_id == 2:
+                link_mask = link_mask&0xfffff0ff
+            if femb_id == 3:
+                link_mask = link_mask&0xffff0fff
+            self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008 )
+            time.sleep(0.01)
+
             self.femb_cd_cfg(femb_id)
             self.femb_adc_cfg(femb_id)
             self.femb_fe_cfg(femb_id)
             if adac_pls_en:
                 self.femb_adac_cali(femb_id)
-#            link_mask = 0xffff
-            link_mask=self.peek(0xA00C0008) 
-            if femb_id == 0:
-                link_mask = link_mask&0xfff0
-            if femb_id == 1:
-                link_mask = link_mask&0xff0f
-            if femb_id == 2:
-                link_mask = link_mask&0xf0ff
-            if femb_id == 3:
-                link_mask = link_mask&0x0fff
-            self.poke(0xA00C0008, link_mask)
+
+
             #self.femb_cd_sync()
             if self.i2cerror:
                 self.i2cerror = False

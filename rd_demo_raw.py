@@ -102,6 +102,6 @@ if True:
                 plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
         plt.title(f"Waveform of FEMB{fembi}")
         #plt.legend()
-        #plt.show()
-        plt.savefig(fdir + f"{fembi}_wf.jpg")
+        plt.show()
+        #plt.savefig(fdir + f"{fembi}_wf.jpg")
         plt.close()
