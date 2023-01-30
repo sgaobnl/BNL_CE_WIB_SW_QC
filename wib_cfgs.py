@@ -468,8 +468,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                 break
             if dts_time_delay >= 0x7f:
-                self.femb_powering(fembs =[])
-                print ("Error: data can't be aligned, turn all femb off and exit anyway")
+                #self.femb_powering(fembs =[])
+                print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
                 exit()
 
     def femb_adc_cfg(self, femb_id):
