@@ -131,7 +131,83 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         rdreg = self.peek(0xA0030004)
         #print ("edge_to_act_delay = 0x%08x"%rdreg)
 
-        for x in range(1):
+        #reset COLDATA RX to clear buffers
+        rdreg = self.peek(0xA00C0004)
+        #print ("coldata_rx_reset = 0x%08x"%rdreg)
+        self.poke(0xA00C0004, rdreg&0xffffcfff)
+        self.poke(0xA00C0004, rdreg|0x00003000)
+        self.poke(0xA00C0004, rdreg&0xffffcfff)
+        rdreg = self.peek(0xA00C0004)
+        #print ("coldata_rx_reset = 0x%08x"%rdreg)
+        time.sleep(0.1)
+
+        #reset FELIX TX and loopback RX
+        rdreg = self.peek(0xA00C0038)
+        #print ("felix_rx_reset = 0x%08x"%rdreg)
+        self.poke(0xA00C0038, rdreg&0xffffffdf)
+        self.poke(0xA00C0038, rdreg|0x00000040)
+        self.poke(0xA00C0038, rdreg&0xffffffdf)
+        rdreg = self.peek(0xA00C0038)
+        #print ("felix_rx_reset = 0x%08x"%rdreg)
+        time.sleep(0.1)
+
+        return self.peek(0xA00C0004)
+
+
+    def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
+        #self.femb_power_set(0, 0, vfe, vcd, vadc)
+        #self.femb_power_set(1, 0, vfe, vcd, vadc)
+        #self.femb_power_set(2, 0, vfe, vcd, vadc)
+        #self.femb_power_set(3, 0, vfe, vcd, vadc)
+        self.femb_power_config(0,  vfe, vcd, vadc)
+        self.femb_power_config(1,  vfe, vcd, vadc)
+        self.femb_power_config(2,  vfe, vcd, vadc)
+        self.femb_power_config(3,  vfe, vcd, vadc)
+
+    def femb_powering(self, fembs = []):
+        if len(fembs) > 0:
+            self.all_femb_bias_ctrl(enable=1 )
+            link_mask=self.peek(0xA00C0008) 
+            link_mask=link_mask|0xffff 
+
+            if 0 in fembs: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                link_mask = link_mask&0xfff0
+                print ("FEMB0 is on")
+            else: 
+                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                link_mask = link_mask&0xf
+                print ("FEMB0 is off")
+            time.sleep(2)
+            if 1 in fembs: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                link_mask = link_mask&0xff0f
+                print ("FEMB1 is on")
+            else: 
+                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                link_mask = link_mask&0xf0
+                print ("FEMB1 is off")
+            time.sleep(2)
+            if 2 in fembs: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                link_mask = link_mask&0xf0ff
+                print ("FEMB2 is on")
+            else: 
+                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                link_mask = link_mask&0xf00
+                print ("FEMB2 is off")
+            time.sleep(2)
+            if 3 in fembs: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                link_mask = link_mask&0x0fff
+                print ("FEMB3 is on")
+            else: 
+                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                link_mask = link_mask&0xf000
+                print ("FEMB3 is off")
+
+            self.poke(0xA00C0008, link_mask)
+ 
             #reset COLDATA RX to clear buffers
             rdreg = self.peek(0xA00C0004)
             #print ("coldata_rx_reset = 0x%08x"%rdreg)
@@ -151,70 +227,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             rdreg = self.peek(0xA00C0038)
             #print ("felix_rx_reset = 0x%08x"%rdreg)
             time.sleep(0.1)
-
-        return self.peek(0xA00C0004)
-
-
-    def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
-        #self.femb_power_set(0, 0, vfe, vcd, vadc)
-        #self.femb_power_set(1, 0, vfe, vcd, vadc)
-        #self.femb_power_set(2, 0, vfe, vcd, vadc)
-        #self.femb_power_set(3, 0, vfe, vcd, vadc)
-        self.femb_power_config(0,  vfe, vcd, vadc)
-        self.femb_power_config(1,  vfe, vcd, vadc)
-        self.femb_power_config(2,  vfe, vcd, vadc)
-        self.femb_power_config(3,  vfe, vcd, vadc)
-
-    def femb_powering(self, fembs = []):
-        if len(fembs) > 0:
-            self.all_femb_bias_ctrl(enable=1 )
-            if 0 in fembs: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB0 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB0 is off")
-            time.sleep(2)
-            if 1 in fembs: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB1 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB1 is off")
-            time.sleep(2)
-            if 2 in fembs: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB2 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB2 is off")
-            time.sleep(2)
-            if 3 in fembs: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB3 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB3 is off")
-            for x in range(1):
-                #reset COLDATA RX to clear buffers
-                rdreg = self.peek(0xA00C0004)
-                #print ("coldata_rx_reset = 0x%08x"%rdreg)
-                self.poke(0xA00C0004, rdreg&0xffffcfff)
-                self.poke(0xA00C0004, rdreg|0x00003000)
-                self.poke(0xA00C0004, rdreg&0xffffcfff)
-                rdreg = self.peek(0xA00C0004)
-                #print ("coldata_rx_reset = 0x%08x"%rdreg)
-                time.sleep(0.1)
-
-                #reset FELIX TX and loopback RX
-                rdreg = self.peek(0xA00C0038)
-                #print ("felix_rx_reset = 0x%08x"%rdreg)
-                self.poke(0xA00C0038, rdreg&0xffffffdf)
-                self.poke(0xA00C0038, rdreg|0x00000040)
-                self.poke(0xA00C0038, rdreg&0xffffffdf)
-                rdreg = self.peek(0xA00C0038)
-                #print ("felix_rx_reset = 0x%08x"%rdreg)
-                time.sleep(0.1)
 
             time.sleep(2)
         else:
@@ -563,7 +575,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_fe_cfg(femb_id)
             if adac_pls_en:
                 self.femb_adac_cali(femb_id)
-            link_mask = 0xffff
+#            link_mask = 0xffff
+            link_mask=self.peek(0xA00C0008) 
             if femb_id == 0:
                 link_mask = link_mask&0xfff0
             if femb_id == 1:

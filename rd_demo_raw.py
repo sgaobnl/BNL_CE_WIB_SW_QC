@@ -55,8 +55,14 @@ for i in range(flen):
     tmts.append(dec_data[link][i]["TMTS"])  # timestampe(64bit) * 512ns  = real time in ns (UTS)
     sfs0.append(dec_data[link][i]["FEMB_SF"])
     cdts_l0.append(dec_data[link][i]["FEMB_CDTS"])
-    femb0.append(dec_data[link][i]["FEMB0_2"])
-    femb1.append(dec_data[link][i]["FEMB1_3"])
+
+    if link == 0:
+        femb0.append(dec_data[0][i]["FEMB0_2"])
+        femb1.append(dec_data[0][i]["FEMB1_3"])
+    else:
+        femb2.append(dec_data[1][i]["FEMB0_2"])
+        femb3.append(dec_data[1][i]["FEMB1_3"])
+
     #sfs1.append(dec_data[1][i]["FEMB_SF"])
     #cdts_l1.append(dec_data[1][i]["FEMB_CDTS"])
     #femb2.append(dec_data[1][i]["FEMB0_2"])
@@ -85,7 +91,7 @@ if True:
         
     #for fembi in range(4):
     for fembi in [femb]:
-        maxpos = np.where(wibs[fembi][0][0:1500] == np.max(wibs[fembi][0][0:1500]))[0][0]
+        #maxpos = np.where(wibs[fembi][0][0:1500] == np.max(wibs[fembi][0][0:1500]))[0][0]
         fig = plt.figure(figsize=(10,6))
         for chip in range(8):
             for chn in range(16):
