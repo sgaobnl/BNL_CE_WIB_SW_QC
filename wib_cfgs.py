@@ -55,6 +55,26 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             time.sleep(0.001)
             self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
+    def wib_femb_link_en(self, fembs):
+        link_mask=self.peek(0xA00C0008) 
+        self.poke(0xA00C0008, link_mask&0xffff0000)
+        time.sleep(0.1)
+        link_mask=self.peek(0xA00C0008) 
+        link_mask=link_mask|0xffff 
+        time.sleep(0.1)
+        if 0 in fembs: 
+            link_mask = link_mask&0xfffffff0
+        if 1 in fembs: 
+            link_mask = link_mask&0xffffff0f
+        if 2 in fembs: 
+            link_mask = link_mask&0xfffff0ff
+        if 3 in fembs: 
+            link_mask = link_mask&0xffff0fff
+        self.poke(0xA00C0008, link_mask)
+        link_mask = self.peek(0xA00C0008)
+        print ("WIB FEMB LINK = %x"%link_mask)
+ 
+
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
         # 0[ts_clk_sel=False]  = CDR recovered clock(default)
