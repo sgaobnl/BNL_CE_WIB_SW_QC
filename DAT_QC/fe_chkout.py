@@ -27,6 +27,9 @@ fembs = [int(a) for a in sys.argv[1:pos]]
 
 chk = WIB_CFGS()
 
+wib_path = "/home/root/dat_sw/build/wib_util.so" #os.getcwd() + "/build/wib_util.so"
+wib = ctypes.CDLL(wib_path)
+
 ####################WIB init################################
 #check if WIB is in position
 chk.wib_fw()
@@ -130,3 +133,36 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
+
+################## FE Power Measurement ######################
+def datpower_getvoltage(addr, cd=-1, fe=-1):
+    return wib.datpower_getvoltage(addr, cd, fe)
+
+def datpower_getcurrent(addr, cd=-1, fe=-1):
+    return wib.datpower_getcurrent(addr, cd, fe)
+
+fe_name = ["FE1", "FE2", "FE3", "FE4", "FE5", "FE6", "FE7", "FE8"]
+addrs = [0x40, 0x41, 0x42, 0x43, 0x45, 0x46, 0x44]
+name = ["VDD", "VDDO", "VPPP", "VDDA2P5", "VDDD2P5", "VDDIO", "VDDD1P2"]
+V_LSB = 1.25e-3
+I_LSB = 0.01e-3 #amps
+R = 0.1 #ohms
+cal = 0.00512/(I_LSB*R)
+print("cal is",hex(int(cal)))
+for fe in range(8):
+# for cd in range(1):
+    total_pwr_mw = 0
+    for i in range(7):
+    #addr = 0x40
+        addr = addrs[i]
+
+
+        bus_voltage = datpower_getvoltage(addr, fe=fe)
+        current = datpower_getcurrent(addr, fe=fe)
+        total_pwr_mw = total_pwr_mw + bus_voltage*current*1e+3
+
+        print (fe_name[fe], name[i], "Voltage =\t", bus_voltage, "V") #0x40 nominal vals: 1.19 V
+        print (fe_name[fe], name[i], "Current =\t", current*1e+3, "mA")# print("Current I (mA)=",  current*1e+3, "mA", hex(current_reg))                  #9.2 mA
+        print (fe_name[fe], name[i], "Power =\t", bus_voltage*current*1e+3, "mW")
+    print (fe_name[fe], "Total Power =\t", total_pwr_mw, "mW")
+    print("")
