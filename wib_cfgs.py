@@ -435,11 +435,15 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                 break
             if dts_time_delay >= 0x7f:
-                self.femb_powering(fembs =[])
+                #self.femb_powering(fembs =[])
                 print ("Error: data can't be aligned, turn all femb off and exit anyway")
                 exit()
 
     def femb_adc_cfg(self, femb_id):
+        #while femb_id==0:
+        #    self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+        #    time.sleep(0.1)
+        #    print ("dedlll")
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
 
         for adc_no in range(8):
@@ -473,6 +477,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(0.01)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x03)
         if autocali&0x01:
+            print ("perform auto cali")
             time.sleep(0.5) #wait for ADC automatic calbiraiton process to complete
             for adc_no in range(8):
                 c_id    = self.adcs_paras[adc_no][0]
@@ -489,6 +494,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_fe_cfg(self, femb_id):
         #reset LARASIC chips
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        #while True:
+        #    self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        #    time.sleep(0.1)
+        #    print ("FE reset")
         time.sleep(0.01)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
         #program LARASIC chips
@@ -516,7 +525,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 print ("LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2))
                 if i > 10:
-                    self.femb_powering(fembs =[])
+                    #self.femb_powering(fembs =[])
                     print ("Turn all FEMBs off, exit anyway")
                     exit()
                 else:
@@ -540,6 +549,15 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_cfg(femb_id)
             self.femb_adc_cfg(femb_id)
             self.femb_fe_cfg(femb_id)
+           # for i in range(100):
+           #     self.femb_cd_cfg(femb_id)
+           #     print (i)
+           # for i in range(100):
+           #     print (i)
+           #     self.femb_fe_cfg(femb_id)
+           # for i in range(100):
+           #     print (i)
+           #     self.femb_adc_cfg(femb_id)
             if adac_pls_en:
                 self.femb_adac_cali(femb_id)
             link_mask = 0xffff
@@ -556,11 +574,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.i2cerror:
                 self.i2cerror = False
                 refi += 1
-                print ("add i2c phase 50 steps")
-                self.wib_i2c_adj(n=50)
+                #print ("add i2c phase 50 steps")
+                #self.wib_i2c_adj(n=50)
+                #time.sleep(0.5)
                 print ("Reconfigure FEMB due to i2c error!")
+                exit()
                 if refi > 25:
-                    self.femb_powering(fembs =[])
+                    #self.femb_powering(fembs =[])
                     print ("I2C failed! exit anyway, please check connection!")
                     exit()
             else:
