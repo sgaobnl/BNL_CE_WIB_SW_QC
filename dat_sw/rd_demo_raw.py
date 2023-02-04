@@ -24,7 +24,7 @@ pwr_meas = raw[1]
 runi = 0
 
 buf0 = rawdata[runi][0][0]
-buf1 = rawdata[runi][0][1]
+buf1 = rawdata[runi][0][0]
 buf_end_addr = rawdata[runi][1] 
 trigger_rec_ticks = rawdata[runi][2]
 if rawdata[runi][3] != 0:
@@ -86,8 +86,10 @@ if True:
                 #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
                 #else:
                 plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
+        plt.xlim((0,200))
         plt.title(f"Waveform of FEMB{fembi}")
         #plt.legend()
-        #plt.show()
+        ##plt.show()
         plt.savefig(fdir + f"{fembi}_wf.jpg")
         plt.close()
+
