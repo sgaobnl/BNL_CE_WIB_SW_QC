@@ -1,74 +1,38 @@
-# BNL_CE_WIB_SW_QC
- 
-These scripts are developed for standalone WIB operation on WIB 
 
-note: 
+# bnl-dat-fw-sw
+Working repository for DAT firmware and WIB SW that deals with the DAT.
 
-at CERN, the FEMBs are always on;
-
-the DAQ doesn't reconfigure WIB for every run, so we need to reconfigure the WIB back to its start status
-
-## Compile
-```
-find . -type f -exec touch {} +
-(optional: if the computer time is wrong)
-```
-
-```
-mkdir build
-make
-```
-## Available scripts
-#### 1. Set up PLL timing and I2C phase adjustment
-```
-python3 wib_startup.py
-```
-It adjusts the i2c phase by 300 steps
-
-#### 2. Power on/off FEMBs (Optional, this step can be skipped )
-```
-python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
-```
-The four arguments correspond to the four slots 
-#### 3. FEMBs quick checkout
-Generate a report that includes pulse response at 200 mV 14mV/fC 2us, power consumption, and ColdADC monitoring data
-
-Use time master
-```
-python3 quick_checkout.py <slot lists> save <number of events>
-```
-e.g. take data from four fembs and record 10 events
-```
-python3 quick_checkout.py 0 1 2 3 save 10
-```
-#### 4. Data taking using PLL timing
-```
-python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
-```
-#### 5. Data taking using the time master
-```
-python3 top_chkout_pls_ptc_timing.py <slot lists> save <number of events>
-```
-#### 6. Data decoder for 4. and 5.
-```
-python3 rd_demo_raw.py <file_path/file_name>   
-```
-e.g.
-```
-python3 rd_demo_raw.py tmp_data/Raw_19_06_2021_23_37_10.bin
-```
-
-## Run quick checkout test
-#### step 0 (optional: only run if encounter i2c errors and use PLL clock)
-```
-python3 wib_startup.py
-```
-#### step 1: power on the FEMBs if they are off
-```
-python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
-```
-#### step 2: run the quick checkout test (use time master, can be changed to PLL clock)
-```
-python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
-```
-#### step 3: check the reports, saved at reports/
+### To load firmware onto FPGA (DUNE_DAT_FPGA_V2B):
+The latest .sof and .pof files are in DUNE_DAT_FPGA_V2B/output_files; so is Jack's original .pof that replicates only FEMB behavior.
+#### Compile to make new bitfiles:
+1) Open DUNE_DAT_FPGA_V2B/DUNE_DAT_FPGA.qpf in Quartus Prime 17.1.
+2) Click Start Compilation.
+#### Program using the .sof file:
+1) Plug the JTAG into header **P4** with the ribbon cable coming towards the FPGA.
+2) Open Quartus Prime (any version) or Quartus Programmer. [Here are instructions for downloading Quartus Programmer](http://www.terasic.com.tw/wiki/Chapter_1_Download_and_install_Quartus_Programmer).
+3) Click Programmer.
+4) Click Hardware Setup to select your JTAG blaster.
+5) Click Add Files to add the .sof file if not already present and select the file.
+6) Under mode, select **JTAG**. 
+7) Check Program/Configure if not checked already, and click Start.
+#### Program using the .pof file:
+1) Plug the JTAG into header **P5** with the ribbon cable coming towards the FPGA.
+2) Open Quartus Programmer.
+3) Click Hardware Setup to select your JTAG blaster.
+5) Click Add Files to add the .pof file if not already present and select the file.
+6) Under mode, select **Active Serial Programming**. 
+7) Check Program/Configure if not checked already, and click Start.
+### To run software (dat_sw):
+Copy dat_sw and paste into the WIB at /home. Run make.
+#### python3 quick_checkout.py [FEMBs] [save number_to_save]
+Unmodified from original repo other than 1) an increased waiting time for powerup (20 seconds) and 2) an increase in voltage setting for VFE, VCD, and VADC from 3-3.5 to 4.0. These modifications are due to the increased size and power requirements of DAT- it's a large board.
+#### python3 dat_test.py
+A script created by me testing basic communication and control with the DAT. It will be updated as features are added. Currently it tests:
+ - Basic peek/poking of WIB
+ - Prints out the contents of COLDATA (for debugging purposes, to be commented out)
+ - Basic peek/poking of COLDATA
+ - Basic peeking/poking of DAT FPGA
+ - Reading out INA226 power monitors (for COLDATA, ColdADC, and FE)
+ - Verifying that writing to COLDATA's CD_CONTROL registers changes COLDATA's CD_CONTROL output pins accordingly
+ - Writing values to DACs (these values are verified with the monitoring ADCs)
+ - Reading out all possible inputs to monitoring ADCs
