@@ -189,7 +189,7 @@ chk.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
 chk.femb_powering(fembs)
 print("Waiting for powerup (20 seconds)")
 time.sleep(20)
-print("Powered, program FPGA if needed. Press enter when done:")
+input("Powered, program FPGA if needed. Press enter when done:")
 pwr_meas = chk.get_sensors()
 chk.femb_cd_rst()
 
