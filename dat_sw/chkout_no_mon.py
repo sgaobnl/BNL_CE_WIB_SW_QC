@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 import copy
 import os
-from QC_tools import QC_tools
+from tools import ana_tools
 from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
@@ -64,7 +64,7 @@ def CreateFolders(fembNo, env, toytpc):
 
 def GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips):
 
-    qc_tools = QC_tools()
+    qc_tools = ana_tools()
    
     femb_list = [int(ifemb[-1]) for ifemb,_ in fembNo.items()]
     print(femb_list)
@@ -189,9 +189,9 @@ chk.wib_fw()
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
-chk.femb_powering(fembs)
-time.sleep(2)
-pwr_meas = chk.get_sensors()
+#chk.femb_powering(fembs)
+#time.sleep(2)
+#pwr_meas = chk.get_sensors()
 chk.femb_cd_rst()
 
 snc = 1 # 200 mV
@@ -217,6 +217,7 @@ for femb_id in fembs:
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
 
+chk.data_align(fembs)
 time.sleep(0.5)
 
 ####### Take data #######
@@ -264,8 +265,8 @@ else:
     nchips=[0,4]
 
 ####### Power off FEMBs #######
-print("Turning off FEMBs")
-chk.femb_powering([])
+#print("Turning off FEMBs")
+#chk.femb_powering([])
 
 ####### Generate report #######
 if save:
