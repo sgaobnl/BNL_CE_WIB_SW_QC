@@ -61,6 +61,28 @@ for femb_id in fembs:
 #step 3
     chk.femb_cfg(femb_id, adac_pls_en )
 
+
+
+####ADDED: Create pulse
+width = 0x5c8
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_WIDTH_LSB, width&0xFF)
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
+    #Amplitude
+amplitude = 0xAB
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_AMPLITUDE, amplitude)  
+    #Delay
+delay = 0x0
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_DELAY, delay) 
+    #Freq
+freq = 0x2e4 #period?
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_FREQ_LSB, freq&0xFF)
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_FREQ_MSB, (freq&0xFF00)>>8)
+
+tp_en = 0x7
+chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_EN, tp_en)
+
+
+
 #chk.data_align()
 
 time.sleep(0.5)
