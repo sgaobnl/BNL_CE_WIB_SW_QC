@@ -120,6 +120,9 @@ def setup(): #define C functions' argument types and return types
     
     wib.datpower_getcurrent.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
     wib.datpower_getcurrent.restype = ctypes.c_double    
+    
+    wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+    wib.dat_set_dac.restype = None
 #DAT registers
 DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
 DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
@@ -226,6 +229,8 @@ def datpower_getvoltage(addr, cd=-1, fe=-1):
     
 def datpower_getcurrent(addr, cd=-1, fe=-1):
     return wib.datpower_getcurrent(addr, cd, fe)
+    
+    
     
 sel = 0
 pwr = 2
@@ -454,6 +459,7 @@ for select in [0,1,2,3,4,5,6,7]:
 #Test pulse gen testing
 #Write pulse settings
     #Width
+
 width = 0x4B
 wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_LSB, width&0xFF)
 wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
@@ -467,6 +473,13 @@ wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_DELAY, delay)
 freq = 0x4B #period?
 wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_LSB, freq&0xFF)
 wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_MSB, (freq&0xFF00)>>8)
+
+print("\nSetting FE DAC for TP")
+for dac in range(8):
+    #Set DAC output
+    dac_float = 1.0 #(dac+1)*2.5/8 - 2.5/65546
+    print("DAC %d: %f"%(dac,dac_float))
+    dat_set_dac(dac_float, fe=dac)
 
 # #Test with all TP_EN combinations
 # for tp_en in range(16): #0 to F

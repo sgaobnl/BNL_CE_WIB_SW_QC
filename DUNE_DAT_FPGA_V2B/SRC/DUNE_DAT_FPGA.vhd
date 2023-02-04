@@ -389,7 +389,7 @@ signal 	FE_DAC_TP_set				: std_logic_vector(7 downto 0);
 
 signal	FE_DAC_TP_data			: std_logic_vector(15 downto 0);
 signal	FE_DAC_TP_data_arr	: DAC_data;
-signal	FE_DAC_TP_SYNC_arr	: std_logic_vector(7 downto 0);
+--signal	FE_DAC_TP_SYNC_arr	: std_logic_vector(7 downto 0);
 
 signal	DAC_other_set			: std_logic_vector(2 downto 0);
 
@@ -408,14 +408,17 @@ SIGNAL	INT_TP_EN				: STD_LOGIC;
 SIGNAL	EXT_TP_EN				: STD_LOGIC;	
 SIGNAL   TP_INT_GEN           : STD_LOGIC;
 SIGNAL	TP_EXT_GEN				: STD_LOGIC;	
+SIGNAL 	TP_SOCKET_EN			: STD_LOGIC_VECTOR(7 downto 0);
 
 SIGNAL	Test_PULSE_WIDTH		: STD_LOGIC_VECTOR(15  downto 0);  
 SIGNAL	TP_AMPL					: STD_LOGIC_VECTOR(7 downto 0);
 SIGNAL	TP_DLY					: STD_LOGIC_VECTOR(7 downto 0);
-SIGNAL	TP_FREQ					: STD_LOGIC_VECTOR(15 downto 0);
+SIGNAL	TP_PERIOD				: STD_LOGIC_VECTOR(15 downto 0);
 
 SIGNAL	DAC_CNTL					: STD_LOGIC_VECTOR(12 downto 0);
 SIGNAL	ASIC_DAC_CNTL			: STD_LOGIC;
+SIGNAL	Test_pulse				: STD_LOGIC;
+SIGNAL	Test_pulse_buffer		: STD_LOGIC_VECTOR(7 downto 0);
 
 --Registers
 SIGNAL	reg0_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
@@ -532,7 +535,12 @@ I2C_CD2_ADD_GND 		<= '0';
 I2C_CD2_ADD_VDD 		<= '1';
 CD2_ADC_I2C_ADD2 		<= not CD_sEL;
 CD2_ADC_I2C_ADD3 		<= CD_sEL;
-	
+
+--Test pulse gen
+Test_pulse_buffer <= (others => Test_pulse);
+FE_INS_PLS_CS <= TP_SOCKET_EN AND Test_pulse_buffer; --bitwise and
+
+
 --------------------------------------
 
 
@@ -671,10 +679,12 @@ ASIC_TP_EN           <= reg53_p(1);
 INT_TP_EN            <= reg53_p(2); --internal means coming from FPGA or ASIC
 EXT_TP_EN            <= reg53_p(3); --external means coming from WIB
 
-Test_PULSE_WIDTH     <= reg55_p & reg54_p;
-TP_AMPL              <= reg56_p;
+TP_SOCKET_EN			<= reg54_p;
+
+Test_PULSE_WIDTH     <= reg56_p & reg55_p;
+--TP_AMPL              <= reg56_p;
 TP_DLY               <= reg57_p;
-TP_FREQ 					<= reg59_p & reg58_p;
+TP_PERIOD				<= reg59_p & reg58_p; 
 
 
 
@@ -776,7 +786,6 @@ FE_DAC_TP_data_arr(5) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"101" else (oth
 FE_DAC_TP_data_arr(6) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"110" else (others => '0');
 FE_DAC_TP_data_arr(7) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"111" else (others => '0');
 							
-FE_DAC_TP_SYNC <= FE_DAC_TP_SYNC_arr(0) and FE_DAC_TP_SYNC_arr(1) and FE_DAC_TP_SYNC_arr(2) and FE_DAC_TP_SYNC_arr(3) and FE_DAC_TP_SYNC_arr(4) and FE_DAC_TP_SYNC_arr(5) and FE_DAC_TP_SYNC_arr(6) and FE_DAC_TP_SYNC_arr(7);
 
 ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else 
 				ro_cnt_arr(1) when SOCKET_RDOUT_SEL = b"001" else 
@@ -1019,7 +1028,7 @@ FE1_DAC_TP_inst : entity work.DAC8411 --AD5683R
 		 DATA				=> FE_DAC_TP_data_arr(0),
 		 SCLK				=> FE_DAC_TP_SCK,
 		 DIN				=> FE_DAC_TP_DIN(0),
-		 SYNC				=> FE_DAC_TP_SYNC_arr(0)
+		 SYNC				=> FE_DAC_TP_SYNC
 	);
 
 gen_FE_DAC_TP : for i in 7 downto 1 generate
@@ -1032,7 +1041,7 @@ gen_FE_DAC_TP : for i in 7 downto 1 generate
 			 DATA				=> FE_DAC_TP_data_arr(i),
 			 SCLK				=> open,
 			 DIN				=> FE_DAC_TP_DIN(i),
-			 SYNC				=> FE_DAC_TP_SYNC_arr(i)
+			 SYNC				=> open
 		);
 end generate gen_FE_DAC_TP;
 
@@ -1094,10 +1103,10 @@ TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE
 		TP_EXT_GEN			=> TP_EXT_GEN, --coming from PWM module --WIB calibration. not used
 		LA_SYNC		 		=> TP_INT_GEN, --coming from ProtoDUNE_RDOUT module --<= clk_2Mhz;
 		TP_WIDTH				=> Test_PULSE_WIDTH,
-		TP_AMPL				=> b"00" & TP_AMPL & b"00",
+		TP_AMPL				=> b"00" & TP_AMPL & b"00", --not used
 		TP_DLY				=>	x"00" & TP_DLY,
-		TP_FREQ				=> TP_FREQ,	 
-		DAC_CNTL				=> DAC_CNTL(11 DOWNTO 0),
+		TP_FREQ				=> TP_PERIOD,	 
+		DAC_CNTL				=> DAC_CNTL(11 DOWNTO 0), --not used
 		ASIC_DAC_CNTL		=> ASIC_DAC_CNTL,
 		Test_pulse			=> open
 	);

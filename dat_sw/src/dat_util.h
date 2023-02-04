@@ -73,12 +73,12 @@ extern "C" {
 	//TEST PULSE GEN
 	extern constexpr uint8_t DAC_TEST_PULSE_EN				= 53; 	//bit 0 = FPGA_TP_EN, 1 = ASIC_TP_EN, 
 																	    //2 = INT_TP_EN (FPGA or ASIC pulse), 3 = EXT_TP_EN (WIB pulse)
-	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_LSB		= 54; 
-	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_MSB		= 55; 
-	extern constexpr uint8_t DAC_TEST_PULSE_AMPLITUDE		= 56; 
+	extern constexpr uint8_t DAC_TEST_PULSE_SOCKET_EN		= 54; //enable test pulse for each socket
+	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_LSB		= 55; 
+	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_MSB		= 56; 
 	extern constexpr uint8_t DAC_TEST_PULSE_DELAY			= 57;
-	extern constexpr uint8_t DAC_TEST_PULSE_FREQ_LSB		= 58; 	
-	extern constexpr uint8_t DAC_TEST_PULSE_FREQ_MSB		= 59; 
+	extern constexpr uint8_t DAC_TEST_PULSE_PERIOD_LSB		= 58; 	
+	extern constexpr uint8_t DAC_TEST_PULSE_PERIOD_MSB		= 59; 
 	
 	
 /////INA226 Internal register map
@@ -104,4 +104,5 @@ extern "C" {
 	uint16_t dat_monadc_getdata(uint8_t cd, uint8_t adc, uint8_t fe);
 	
 	void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal);
+	void dat_set_pulse(uint8_t en, uint16_t period, uint16_t width, float amplitude);
 }
