@@ -84,18 +84,28 @@ if True:
     plt.close()
         
     #for fembi in range(4):
-    for fembi in [femb]:
-        maxpos = np.where(wibs[fembi][0][0:1500] == np.max(wibs[fembi][0][0:1500]))[0][0]
-        fig = plt.figure(figsize=(10,6))
-        for chip in range(8):
-            for chn in range(16):
-                i = chip*16 + chn
-                #if chn == 0:
-                #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
-                #else:
-                plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
-        plt.title(f"Waveform of FEMB{fembi}")
-        #plt.legend()
-        #plt.show()
-        plt.savefig(fdir + f"{fembi}_wf.jpg")
-        plt.close()
+    if True :
+#        chn_cs = int(input("Chn = "))
+        for chn in range(16):
+            print (chn)
+            for fembi in [femb]:
+                maxpos = np.where(wibs[fembi][0][0:1500] == np.max(wibs[fembi][0][0:1500]))[0][0]
+                fig = plt.figure(figsize=(10,6))
+                for chip in range(8):
+                    plt.subplot(2,4,chip+1)
+                    #for chn in range(16):
+                    if True:
+                        i = chip*16 + chn
+                        #if chn == 0:
+                        #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
+                        #else:
+                        xmin = 0
+                        xmax = 1000
+                        plt.plot(x[xmin:xmax], wibs[fembi][i][xmin:xmax],color = 'C%d'%chip, label = "Chip%dCH%d"%(chip, chn))
+                        plt.ylim((0,16000))
+                        plt.legend()
+                #plt.title(f"Waveform of FEMB{fembi}_CHN{chn}")
+                plt.show()
+                plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+                #plt.savefig(fdir + f"FEMB_{fembi}_wf_{chn}_ab.jpg")
+                plt.close()
