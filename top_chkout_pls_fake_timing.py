@@ -35,6 +35,8 @@ time.sleep(1)
 ####################FEMBs Configuration################################
 #step 1
 #reset all FEMBs on WIB
+chk.wib_femb_link_en(fembs)
+
 chk.femb_cd_rst()
 
 cfg_paras_rec = []
@@ -55,60 +57,7 @@ for femb_id in fembs:
                       ]
 
 #LArASIC register configuration
-    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=1, st1=1, sdf=0, swdac=1, sdd=0,dac=0x20 )
- #   chk.set_fechn_reg(chip=3,chn=0, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
- #   chk.set_fechn_reg(chip=7,chn=0, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
- #   chk.set_fechn_reg(chip=3,chn=1, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
- #   chk.set_fechn_reg(chip=7,chn=1, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
- #   chk.set_fechn_reg(chip=3,chn=2, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
- #   chk.set_fechn_reg(chip=7,chn=2, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
- #   chk.set_fechn_reg(chip=3,chn=3, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
- #   chk.set_fechn_reg(chip=7,chn=3, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
-#    for tmp in range(16):
-#        chk.set_fechn_reg(chip=3,chn=tmp, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0) #, sdf=1)
-
- #   for tmp in [0,3,5,7]:
- #       chk.set_fechn_reg(chip=tmp,chn=5, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
- #   for tmp in [0,3,7]:
- #       chk.set_fechn_reg(chip=tmp,chn=6, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
- #   for tmp in [0,3,7]:
- #       chk.set_fechn_reg(chip=tmp,chn=7, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    for tmp in range(16):
-#        chk.set_fechn_reg(chip=6,chn=tmp, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-
-
-
-#    chk.set_fechn_reg(chip=0,chn=0, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=1,chn=1, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=2,chn=2, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=3,chn=3, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=4,chn=4, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=5,chn=5, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=6,chn=6, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=7,chn=7, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-
-#    chk.set_fechn_reg(chip=0,chn=8+0, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=1,chn=8+1, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=2,chn=8+2, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=3,chn=8+3, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=4,chn=8+4, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=5,chn=8+5, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=6,chn=8+6, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=7,chn=8+7, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, sdf=1)
-#    chk.set_fechn_reg(chip=4,chn=8, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=4,chn=9, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=6,chn=8, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=6,chn=9, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=6,chn=10, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=7,chn=8, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=7,chn=9, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
-#    chk.set_fechn_reg(chip=7,chn=10, sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0)
+    chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
     adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
 #step 3

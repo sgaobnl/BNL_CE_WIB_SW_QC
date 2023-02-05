@@ -55,6 +55,26 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             time.sleep(0.001)
             self.poke(0xA00C0004 , rdreg&0xfffBffff) 
 
+    def wib_femb_link_en(self, fembs):
+        link_mask=self.peek(0xA00C0008) 
+        self.poke(0xA00C0008, link_mask&0xffff0000)
+        time.sleep(0.1)
+        link_mask=self.peek(0xA00C0008) 
+        link_mask=link_mask|0xffff 
+        time.sleep(0.1)
+        if 0 in fembs: 
+            link_mask = link_mask&0xfffffff0
+        if 1 in fembs: 
+            link_mask = link_mask&0xffffff0f
+        if 2 in fembs: 
+            link_mask = link_mask&0xfffff0ff
+        if 3 in fembs: 
+            link_mask = link_mask&0xffff0fff
+        self.poke(0xA00C0008, link_mask)
+        link_mask = self.peek(0xA00C0008)
+        print ("WIB FEMB LINK = %x"%link_mask)
+ 
+
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
         # 0[ts_clk_sel=False]  = CDR recovered clock(default)
@@ -131,26 +151,25 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         rdreg = self.peek(0xA0030004)
         #print ("edge_to_act_delay = 0x%08x"%rdreg)
 
-        for x in range(2):
-            #reset COLDATA RX to clear buffers
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            self.poke(0xA00C0004, rdreg|0x00003000)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            time.sleep(0.1)
+        #reset COLDATA RX to clear buffers
+        rdreg = self.peek(0xA00C0004)
+        #print ("coldata_rx_reset = 0x%08x"%rdreg)
+        self.poke(0xA00C0004, rdreg&0xffffcfff)
+        self.poke(0xA00C0004, rdreg|0x00003000)
+        self.poke(0xA00C0004, rdreg&0xffffcfff)
+        rdreg = self.peek(0xA00C0004)
+        #print ("coldata_rx_reset = 0x%08x"%rdreg)
+        time.sleep(0.1)
 
-            #reset FELIX TX and loopback RX
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            self.poke(0xA00C0038, rdreg|0x00000040)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
-            time.sleep(0.1)
+        #reset FELIX TX and loopback RX
+        rdreg = self.peek(0xA00C0038)
+        #print ("felix_rx_reset = 0x%08x"%rdreg)
+        self.poke(0xA00C0038, rdreg&0xffffffdf)
+        self.poke(0xA00C0038, rdreg|0x00000040)
+        self.poke(0xA00C0038, rdreg&0xffffffdf)
+        rdreg = self.peek(0xA00C0038)
+        #print ("felix_rx_reset = 0x%08x"%rdreg)
+        time.sleep(0.1)
 
         return self.peek(0xA00C0004)
 
@@ -168,6 +187,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_powering(self, fembs = []):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
+
             if 0 in fembs: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
                 print ("FEMB0 is on")
@@ -195,6 +215,45 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB3 is off")
+            
+            #enable WIB data link
+            link_mask=self.peek(0xA00C0008) 
+            self.poke(0xA00C0008, link_mask&0xffff0000)
+            time.sleep(0.1)
+            link_mask=self.peek(0xA00C0008) 
+            link_mask=link_mask|0xffff 
+            time.sleep(0.1)
+            if 0 in fembs: 
+                link_mask = link_mask&0xfffffff0
+            if 1 in fembs: 
+                link_mask = link_mask&0xffffff0f
+            if 2 in fembs: 
+                link_mask = link_mask&0xfffff0ff
+            if 3 in fembs: 
+                link_mask = link_mask&0xffff0fff
+            self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008)
+ 
+            #reset COLDATA RX to clear buffers
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0004, rdreg&0xffffcfff)
+            self.poke(0xA00C0004, rdreg|0x00003000)
+            self.poke(0xA00C0004, rdreg&0xffffcfff)
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
+
+            #reset FELIX TX and loopback RX
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            self.poke(0xA00C0038, rdreg|0x00000040)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
+
             time.sleep(2)
         else:
             self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
@@ -436,14 +495,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 break
             if dts_time_delay >= 0x7f:
                 #self.femb_powering(fembs =[])
-                print ("Error: data can't be aligned, turn all femb off and exit anyway")
+                print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
                 exit()
 
     def femb_adc_cfg(self, femb_id):
-        #while femb_id==0:
-        #    self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
-        #    time.sleep(0.1)
-        #    print ("dedlll")
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
 
         for adc_no in range(8):
@@ -477,7 +532,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(0.01)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x03)
         if autocali&0x01:
-            print ("perform auto cali")
             time.sleep(0.5) #wait for ADC automatic calbiraiton process to complete
             for adc_no in range(8):
                 c_id    = self.adcs_paras[adc_no][0]
@@ -494,10 +548,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_fe_cfg(self, femb_id):
         #reset LARASIC chips
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-        #while True:
-        #    self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-        #    time.sleep(0.1)
-        #    print ("FE reset")
         time.sleep(0.01)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
         #program LARASIC chips
@@ -525,7 +575,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 print ("LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2))
                 if i > 10:
-                    #self.femb_powering(fembs =[])
+                    self.femb_powering(fembs =[])
                     print ("Turn all FEMBs off, exit anyway")
                     exit()
                 else:
@@ -546,39 +596,33 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_cfg(self, femb_id, adac_pls_en = False):
         refi= 0
         while True:
+            link_mask=self.peek(0xA00C0008) 
+            if femb_id == 0:
+                link_mask = link_mask&0xfffffff0
+            if femb_id == 1:
+                link_mask = link_mask&0xffffff0f
+            if femb_id == 2:
+                link_mask = link_mask&0xfffff0ff
+            if femb_id == 3:
+                link_mask = link_mask&0xffff0fff
+            self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008 )
+            time.sleep(0.01)
+
             self.femb_cd_cfg(femb_id)
             self.femb_adc_cfg(femb_id)
             self.femb_fe_cfg(femb_id)
-           # for i in range(100):
-           #     self.femb_cd_cfg(femb_id)
-           #     print (i)
-           # for i in range(100):
-           #     print (i)
-           #     self.femb_fe_cfg(femb_id)
-           # for i in range(100):
-           #     print (i)
-           #     self.femb_adc_cfg(femb_id)
             if adac_pls_en:
                 self.femb_adac_cali(femb_id)
-            link_mask = 0xffff
-            if femb_id == 0:
-                link_mask = link_mask&0xfff0
-            if femb_id == 1:
-                link_mask = link_mask&0xff0f
-            if femb_id == 2:
-                link_mask = link_mask&0xf0ff
-            if femb_id == 3:
-                link_mask = link_mask&0x0fff
-            self.poke(0xA00C0008, link_mask)
+
+
             #self.femb_cd_sync()
             if self.i2cerror:
                 self.i2cerror = False
                 refi += 1
-                #print ("add i2c phase 50 steps")
-                #self.wib_i2c_adj(n=50)
-                #time.sleep(0.5)
+                print ("add i2c phase 50 steps")
+                self.wib_i2c_adj(n=50)
                 print ("Reconfigure FEMB due to i2c error!")
-                exit()
                 if refi > 25:
                     #self.femb_powering(fembs =[])
                     print ("I2C failed! exit anyway, please check connection!")
