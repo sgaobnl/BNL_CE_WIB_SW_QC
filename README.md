@@ -36,3 +36,4 @@ A script created by me testing basic communication and control with the DAT. It 
  - Verifying that writing to COLDATA's CD_CONTROL registers changes COLDATA's CD_CONTROL output pins accordingly
  - Writing values to DACs (these values are verified with the monitoring ADCs)
  - Reading out all possible inputs to monitoring ADCs
+ - Test pulse generation from the DAT

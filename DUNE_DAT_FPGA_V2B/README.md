@@ -8,7 +8,7 @@ The top level consists of these sub entities:
  - Many pass-through signals to/from COLDATAs
  - Various PLLs
  - Reset manager
- - Register bank
+ - Register bank (see dat_sw/src/dat_util.h for mapping list)
 	 - Socket select muxes & demuxes: Most components have 8 instances so the data written to or read from them would take up a lot of registers. Instead of creating a much larger register bank, I reserved a single register (SOCKET_RDOUT_SEL) indicating which socket you're referring to when you try to write to or read from a particular LArASIC or ADC's power monitor/monitoring ADC/etc. Registers that have multiplexers feeding into them or demultiplexers being fed by them are:
 		 - FE/ADC INA226 read & write strobes (I2C address, write data, etc is also shared between the INA226 controllers)
 		 - FE/ADC INA226 output data
