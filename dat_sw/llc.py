@@ -7,6 +7,8 @@ class LLC():
         self.script_path = "./scripts/"
         self.wib_path = os.getcwd() + "/build/wib_util.so"
         self.wib = ctypes.CDLL(self.wib_path)
+        
+        self.dat_reg_map_init()
 
         #define C functions' argument types and return types
         self.wib.peek.argtypes = [ctypes.c_size_t]
@@ -69,83 +71,40 @@ class LLC():
         self.wib.script_cmd.argtypes =  [ctypes.POINTER(ctypes.c_char) ] 
         self.wib.script_cmd.restype = ctypes.c_bool    
 
+        self.wib.datpower_poke.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint8]
+        self.wib.datpower_poke.restype = None
+        
+        self.wib.datpower_peek.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+        self.wib.datpower_peek.restype = ctypes.c_uint16 
+
         self.wib.datpower_getvoltage.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
         self.wib.datpower_getvoltage.restype = ctypes.c_double
         
         self.wib.datpower_getcurrent.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-        self.wib.datpower_getcurrent.restype = ctypes.c_double    
+        self.wib.datpower_getcurrent.restype = ctypes.c_double            
+
+        self.wib.dat_monadc_trigger.argtypes = None
+        self.wib.dat_monadc_trigger.restype = None
+        
+        self.wib.dat_monadc_busy.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+        self.wib.dat_monadc_busy.restype = ctypes.c_bool
+        
+        self.wib.dat_monadc_getdata.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+        self.wib.dat_monadc_getdata.restype = ctypes.c_uint16
         
         self.wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
         self.wib.dat_set_dac.restype = None
+              
+        self.wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+        self.wib.dat_set_dac.restype = None
+        
+        self.wib.dat_set_pulse.argtypes = [ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint16, ctypes.c_float]
+        self.wib.dat_set_pulse.restype = None
+        
 
 #        self.wib.script.argtypes =  [ctypes.POINTER(ctypes.c_char), ctypes.c_bool  ] 
 #        self.wib.script.restype = ctypes.c_bool       
-        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
-        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
-        self.DAT_CD1_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_CONTROL')
-        self.DAT_CD2_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_CONTROL')
-        self.DAT_SOCKET_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_SOCKET_SEL')
-
-        self.DAT_INA226_REG_ADDR = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_REG_ADDR')
-        self.DAT_INA226_DEVICE_ADDR = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DEVICE_ADDR')
-        self.DAT_INA226_NUM_BYTES = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_NUM_BYTES')
-        self.DAT_INA226_DIN_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DIN_MSB')
-        self.DAT_INA226_DIN_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DIN_LSB')
-        self.DAT_INA226_STRB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_STRB')
-        self.DAT_INA226_CD1_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD1_DOUT_MSB')
-        self.DAT_INA226_CD1_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD1_DOUT_LSB')
-        self.DAT_INA226_CD2_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD2_DOUT_MSB')
-        self.DAT_INA226_CD2_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD2_DOUT_LSB')
-        self.DAT_INA226_FE_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_FE_DOUT_MSB')
-        self.DAT_INA226_FE_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_FE_DOUT_LSB')
-
-        self.DAT_MONADC_START = ctypes.c_uint8.in_dll(self.wib, 'DAT_MONADC_START')
-        self.DAT_CD1_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_MONADC_DATA_LSB')
-        self.DAT_CD1_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_MONADC_DATA_MSB_BUSY')
-        self.DAT_CD2_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_MONADC_DATA_LSB')
-        self.DAT_CD2_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_MONADC_DATA_MSB_BUSY')
-        self.DAT_ADC_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_MONADC_DATA_LSB')
-        self.DAT_ADC_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_MONADC_DATA_MSB_BUSY')
-        self.DAT_FE_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_MONADC_DATA_LSB')
-        self.DAT_FE_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_MONADC_DATA_MSB_BUSY')
-
-        self.DAT_CD_AMON_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_AMON_SEL')
-        self.DAT_ADC_FE_TEST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_FE_TEST_SEL')
-        self.DAT_ADC_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TEST_SEL_INHIBIT')
-        self.DAT_FE_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_TEST_SEL_INHIBIT')
-        self.DAT_FE_IN_TST_SEL_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_IN_TST_SEL_LSB')
-        self.DAT_FE_IN_TST_SEL_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_IN_TST_SEL_MSB')
-        self.DAT_FE_CALI_CS = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_CALI_CS')
-        #DAT_FE_INS_PLS_CS = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_INS_PLS_CS')
-        self.DAT_ADC_TST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TST_SEL')
-        self.DAT_ADC_SRC_CS_P_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_SRC_CS_P_LSB')
-        self.DAT_ADC_SRC_CS_P_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_SRC_CS_P_MSB')
-        self.DAT_ADC_PN_TST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_PN_TST_SEL')
-        self.DAT_ADC_TEST_IN_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TEST_IN_SEL')
-        self.DAT_EXT_PULSE_CNTL = ctypes.c_uint8.in_dll(self.wib, 'DAT_EXT_PULSE_CNTL')
-
-        self.DAT_FE_DAC_TP_SET = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_SET')
-        self.DAT_FE_DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_LSB')
-        self.DAT_FE_DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_MSB')
-        self.DAT_DAC_OTHER_SET = ctypes.c_uint8.in_dll(self.wib, 'DAT_DAC_OTHER_SET')
-        self.DAT_ADC_P_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_P_DATA_LSB')
-        self.DAT_ADC_P_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_P_DATA_MSB')
-        self.DAT_ADC_N_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_N_DATA_LSB')
-        self.DAT_ADC_N_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_N_DATA_MSB')
-        self.DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TP_DATA_LSB')
-        self.DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TP_DATA_MSB')
-
-        self.DAC_ADC_RING_OSC_COUNT_B0 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B0')
-        self.DAC_ADC_RING_OSC_COUNT_B1 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B1')
-        self.DAC_ADC_RING_OSC_COUNT_B2 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B2')
-        self.DAC_ADC_RING_OSC_COUNT_B3 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B3')
-        self.DAC_TEST_PULSE_EN = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_EN')
-        self.DAC_TEST_PULSE_WIDTH_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_WIDTH_LSB')
-        self.DAC_TEST_PULSE_WIDTH_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_WIDTH_MSB')
-        self.DAC_TEST_PULSE_AMPLITUDE = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_AMPLITUDE')
-        self.DAC_TEST_PULSE_DELAY = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_DELAY')
-        self.DAC_TEST_PULSE_FREQ_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_FREQ_LSB')
-        self.DAC_TEST_PULSE_FREQ_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_FREQ_MSB')
+        
     def script_cmd(self, cmd):
         return self.wib.script_cmd(cmd)
 
@@ -423,10 +382,93 @@ class LLC():
     def femb_power_en_ctrl(self, femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1):
         self.wib.femb_power_en_ctrl(femb_id, vfe_en, vcd_en, vadc_en, 0, bias_en)
 
-    def dat_set_dac(self, val, fe=-1, adc=-1, fe_cal=-1):
-        self.wib.dat_set_dac(val, fe, adc, fe_cal)
+
 #    def femb_power_set(self, femb_id=0, on=1, vfe=3.0, vcd=3.0, vadc=3.5, allon=1):
 #        self.femb_power_config(femb_id, vfe, vcd, vadc)
 #        self.all_femb_bias_ctrl(enable=allon)
 #        self.femb_power_en_ctrl(femb_id, vfe_en=on, vcd_en=on, vadc_en=on, bias_en=on)
-            
+    def datpower_getvoltage(self, addr, cd=-1, fe=-1):
+        return self.wib.datpower_getvoltage(addr, cd, fe)
+        
+    def datpower_getcurrent(self, addr, cd=-1, fe=-1):
+        return self.wib.datpower_getcurrent(addr, cd, fe)    
+        
+    def dat_monadc_busy(self, cd=-1, fe=-1, adc=-1):
+        return self.wib.dat_monadc_busy(cd, adc, fe)
+        
+    def dat_monadc_getdata(self, cd=-1, adc=-1, fe=-1): 
+        return self.wib.dat_monadc_getdata(cd, adc, fe)     
+
+    def dat_set_dac(self, val, fe=-1, adc=-1, fe_cal=-1):
+        self.wib.dat_set_dac(val, fe, adc, fe_cal)
+        
+    def dat_set_pulse(self, en=0, period=0, width=0, amplitude=0):
+        self.wib.dat_set_pulse(en, period, width, amplitude)        
+        
+    def dat_reg_map_init(self):
+        #DAT registers in case needed
+        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
+        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
+        self.DAT_CD1_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_CONTROL')
+        self.DAT_CD2_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_CONTROL')
+        self.DAT_SOCKET_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_SOCKET_SEL')
+
+        self.DAT_INA226_REG_ADDR = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_REG_ADDR')
+        self.DAT_INA226_DEVICE_ADDR = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DEVICE_ADDR')
+        self.DAT_INA226_NUM_BYTES = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_NUM_BYTES')
+        self.DAT_INA226_DIN_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DIN_MSB')
+        self.DAT_INA226_DIN_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_DIN_LSB')
+        self.DAT_INA226_STRB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_STRB')
+        self.DAT_INA226_CD1_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD1_DOUT_MSB')
+        self.DAT_INA226_CD1_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD1_DOUT_LSB')
+        self.DAT_INA226_CD2_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD2_DOUT_MSB')
+        self.DAT_INA226_CD2_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_CD2_DOUT_LSB')
+        self.DAT_INA226_FE_DOUT_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_FE_DOUT_MSB')
+        self.DAT_INA226_FE_DOUT_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_INA226_FE_DOUT_LSB')
+
+        self.DAT_MONADC_START = ctypes.c_uint8.in_dll(self.wib, 'DAT_MONADC_START')
+        self.DAT_CD1_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_MONADC_DATA_LSB')
+        self.DAT_CD1_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_MONADC_DATA_MSB_BUSY')
+        self.DAT_CD2_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_MONADC_DATA_LSB')
+        self.DAT_CD2_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_MONADC_DATA_MSB_BUSY')
+        self.DAT_ADC_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_MONADC_DATA_LSB')
+        self.DAT_ADC_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_MONADC_DATA_MSB_BUSY')
+        self.DAT_FE_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_MONADC_DATA_LSB')
+        self.DAT_FE_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_MONADC_DATA_MSB_BUSY')
+
+        self.DAT_CD_AMON_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_AMON_SEL')
+        self.DAT_ADC_FE_TEST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_FE_TEST_SEL')
+        self.DAT_ADC_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TEST_SEL_INHIBIT')
+        self.DAT_FE_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_TEST_SEL_INHIBIT')
+        self.DAT_FE_IN_TST_SEL_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_IN_TST_SEL_LSB')
+        self.DAT_FE_IN_TST_SEL_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_IN_TST_SEL_MSB')
+        self.DAT_FE_CALI_CS = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_CALI_CS')
+        self.DAT_ADC_TST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TST_SEL')
+        self.DAT_ADC_SRC_CS_P_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_SRC_CS_P_LSB')
+        self.DAT_ADC_SRC_CS_P_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_SRC_CS_P_MSB')
+        self.DAT_ADC_PN_TST_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_PN_TST_SEL')
+        self.DAT_ADC_TEST_IN_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TEST_IN_SEL')
+        self.DAT_EXT_PULSE_CNTL = ctypes.c_uint8.in_dll(self.wib, 'DAT_EXT_PULSE_CNTL')
+
+        self.DAT_FE_DAC_TP_SET = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_SET')
+        self.DAT_FE_DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_LSB')
+        self.DAT_FE_DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_MSB')
+        self.DAT_DAC_OTHER_SET = ctypes.c_uint8.in_dll(self.wib, 'DAT_DAC_OTHER_SET')
+        self.DAT_ADC_P_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_P_DATA_LSB')
+        self.DAT_ADC_P_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_P_DATA_MSB')
+        self.DAT_ADC_N_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_N_DATA_LSB')
+        self.DAT_ADC_N_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_N_DATA_MSB')
+        self.DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TP_DATA_LSB')
+        self.DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TP_DATA_MSB')
+
+        self.DAC_ADC_RING_OSC_COUNT_B0 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B0')
+        self.DAC_ADC_RING_OSC_COUNT_B1 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B1')
+        self.DAC_ADC_RING_OSC_COUNT_B2 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B2')
+        self.DAC_ADC_RING_OSC_COUNT_B3 = ctypes.c_uint8.in_dll(self.wib, 'DAC_ADC_RING_OSC_COUNT_B3')
+        self.DAC_TEST_PULSE_EN = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_EN')
+        self.DAC_TEST_PULSE_SOCKET_EN = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_SOCKET_EN')
+        self.DAC_TEST_PULSE_WIDTH_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_WIDTH_LSB')
+        self.DAC_TEST_PULSE_WIDTH_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_WIDTH_MSB')
+        self.DAC_TEST_PULSE_DELAY = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_DELAY')
+        self.DAC_TEST_PULSE_PERIOD_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_PERIOD_LSB')
+        self.DAC_TEST_PULSE_PERIOD_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAC_TEST_PULSE_PERIOD_MSB')

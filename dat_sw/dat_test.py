@@ -55,24 +55,6 @@ def setup(): #define C functions' argument types and return types
     wib.cdpoke.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
     wib.cdpoke.restype = None  
     
-    wib.datpower_poke.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint8]
-    wib.datpower_poke.restype = None
-    
-    wib.datpower_peek.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-    wib.datpower_peek.restype = ctypes.c_uint16    
-
-    wib.dat_monadc_trigger.argtypes = None
-    wib.dat_monadc_trigger.restype = None
-    
-    wib.dat_monadc_busy.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-    wib.dat_monadc_busy.restype = ctypes.c_bool
-    
-    wib.dat_monadc_getdata.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-    wib.dat_monadc_getdata.restype = ctypes.c_uint16
-    
-    wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-    wib.dat_set_dac.restype = None
-    
     wib.bufread.argtypes = [ctypes.POINTER(ctypes.c_char), ctypes.c_size_t]
     wib.bufread.restype = None
 
@@ -114,6 +96,24 @@ def setup(): #define C functions' argument types and return types
 
     wib.script_cmd.argtypes =  [ctypes.POINTER(ctypes.c_char) ] 
     wib.script_cmd.restype = ctypes.c_bool 
+
+    wib.datpower_poke.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint8]
+    wib.datpower_poke.restype = None
+    
+    wib.datpower_peek.argtypes = [ctypes.c_uint8,  ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+    wib.datpower_peek.restype = ctypes.c_uint16    
+
+    wib.dat_monadc_trigger.argtypes = None
+    wib.dat_monadc_trigger.restype = None
+    
+    wib.dat_monadc_busy.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+    wib.dat_monadc_busy.restype = ctypes.c_bool
+    
+    wib.dat_monadc_getdata.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+    wib.dat_monadc_getdata.restype = ctypes.c_uint16
+    
+    wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+    wib.dat_set_dac.restype = None
     
     wib.datpower_getvoltage.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
     wib.datpower_getvoltage.restype = ctypes.c_double
@@ -123,6 +123,9 @@ def setup(): #define C functions' argument types and return types
     
     wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
     wib.dat_set_dac.restype = None
+    
+    wib.dat_set_pulse.argtypes = [ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint16, ctypes.c_float]
+    wib.dat_set_pulse.restype = None
 #DAT registers
 DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
 DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
@@ -184,12 +187,13 @@ DAC_ADC_RING_OSC_COUNT_B1 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B
 DAC_ADC_RING_OSC_COUNT_B2 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B2')
 DAC_ADC_RING_OSC_COUNT_B3 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B3')
 DAC_TEST_PULSE_EN = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_EN')
+DAC_TEST_PULSE_SOCKET_EN = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_SOCKET_EN')
 DAC_TEST_PULSE_WIDTH_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_LSB')
 DAC_TEST_PULSE_WIDTH_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_MSB')
-DAC_TEST_PULSE_AMPLITUDE = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_AMPLITUDE')
+#DAC_TEST_PULSE_AMPLITUDE = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_AMPLITUDE')
 DAC_TEST_PULSE_DELAY = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_DELAY')
-DAC_TEST_PULSE_FREQ_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_FREQ_LSB')
-DAC_TEST_PULSE_FREQ_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_FREQ_MSB')
+DAC_TEST_PULSE_PERIOD_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_PERIOD_LSB')
+DAC_TEST_PULSE_PERIOD_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_PERIOD_MSB')
 
 
 
@@ -215,6 +219,12 @@ def datpower_poke(dev_addr, reg_addr, data, cd=-1, fe=-1):
 def datpower_peek(dev_addr, reg_addr, cd=-1, fe=-1):
     return wib.datpower_peek(dev_addr, reg_addr, cd, fe)
     
+def datpower_getvoltage(addr, cd=-1, fe=-1):
+    return wib.datpower_getvoltage(addr, cd, fe)
+    
+def datpower_getcurrent(addr, cd=-1, fe=-1):
+    return wib.datpower_getcurrent(addr, cd, fe)    
+    
 def dat_monadc_busy(cd=-1, fe=-1, adc=-1):
     return wib.dat_monadc_busy(cd, adc, fe)
     
@@ -224,11 +234,8 @@ def dat_monadc_getdata(cd=-1, adc=-1, fe=-1):
 def dat_set_dac(val, fe=-1, adc=-1, fe_cal=-1):
     wib.dat_set_dac(val, fe, adc, fe_cal)
     
-def datpower_getvoltage(addr, cd=-1, fe=-1):
-    return wib.datpower_getvoltage(addr, cd, fe)
-    
-def datpower_getcurrent(addr, cd=-1, fe=-1):
-    return wib.datpower_getcurrent(addr, cd, fe)
+def dat_set_pulse(en=0, period=0, width=0, amplitude=0):
+    wib.dat_set_pulse(en, period, width, amplitude)
     
     
     
@@ -456,23 +463,8 @@ for select in [0,1,2,3,4,5,6,7]:
         data = dat_monadc_getdata(fe=fe)
         print("FE MonADC:",data*AD_LSB,"V\t",hex(data),"\t",format(data,'b').zfill(12))
 
-#Test pulse gen testing
-#Write pulse settings
-    #Width
+dat_set_pulse(0x7, 0x2e4, 0x50, 1.0)
 
-width = 0x4B
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_LSB, width&0xFF)
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
-    #Amplitude
-amplitude = 0xAB
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_AMPLITUDE, amplitude)  
-    #Delay
-delay = 0x25
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_DELAY, delay) 
-    #Freq
-freq = 0x4B #period?
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_LSB, freq&0xFF)
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_FREQ_MSB, (freq&0xFF00)>>8)
 
 print("\nSetting FE DAC for TP")
 for dac in range(8):

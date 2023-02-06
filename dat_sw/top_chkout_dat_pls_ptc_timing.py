@@ -55,33 +55,13 @@ for femb_id in fembs:
                       ]
 
 #LArASIC register configuration
-    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=0, sdd=0,dac=0x0 )
+    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=0, sdd=0,dac=0x0 ) #CHANGED
     adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
 #step 3
     chk.femb_cfg(femb_id, adac_pls_en )
 
-
-
-####ADDED: Create pulse
-width = 0x5c8
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_WIDTH_LSB, width&0xFF)
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
-    #Amplitude
-amplitude = 0xAB
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_AMPLITUDE, amplitude)  
-    #Delay
-delay = 0x0
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_DELAY, delay) 
-    #Freq
-freq = 0x2e4 #period?
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_FREQ_LSB, freq&0xFF)
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_FREQ_MSB, (freq&0xFF00)>>8)
-
-tp_en = 0x7
-chk.cdpoke(0, 0xC, 0, chk.DAC_TEST_PULSE_EN, tp_en)
-
-
+chk.wib.dat_set_pulse(0x7, 0x2e4, 0x50, 1.0)
 
 #chk.data_align()
 
@@ -91,6 +71,9 @@ time.sleep(0.5)
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 pwr_meas = chk.get_sensors()
+
+#turn dat pulse off
+chk.dat_set_pulse()
 
 if save:
     fdir = "./tmp_data/"
