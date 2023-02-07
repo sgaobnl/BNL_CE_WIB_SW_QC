@@ -100,6 +100,10 @@ if True:
                 #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
                 #else:
                 plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
+                pp = np.max(wibs[fembi][i])
+                pm = np.mean(wibs[fembi][i])
+                if pp-pm < 2000:
+                    print ("FEMB%d CHIP%d CHN%d"%(fembi, chip, chn))
         plt.title(f"Waveform of FEMB{fembi}")
         #plt.legend()
         plt.show()
