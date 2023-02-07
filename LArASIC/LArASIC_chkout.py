@@ -63,26 +63,19 @@ for femb_id in fembs:
 #step 3
     chk.femb_cfg(femb_id, adac_pls_en )
 
-if True: # FE monitoring 
-    if True: # FE monitoring 
-        sps = 3
-        chips = 8
-        if True:
-            print ("monitor bandgap reference")
-            mon_refs = {}
-            #for mon_chip in range(chips):
-            #for mon_chip in [1]:
-            for mon_chip in range(chips):
-                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
-                chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
-                exit()
-        
-        #if True:
-        #    print ("monitor temperature")
-        #    mon_temps = {}
-        #    for mon_chip in range(chips):
-        #        adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
-        #        mon_ts=time.time_ns()
-        #        mon_temps[f"chip{mon_chip}_temper"] = adcrst
-        #    mon_paras.append([ip,mon_temps, mon_ts])
+chk.data_align(fembs)
+
+time.sleep(0.5)
+
+####################FEMBs Data taking################################
+rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+
+pwr_meas = chk.get_sensors()
+
+if save:
+    fdir = "./tmp_data/"
+    ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    fp = fdir + "Raw_" + ts  + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
