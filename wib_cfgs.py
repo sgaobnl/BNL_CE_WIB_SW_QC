@@ -194,21 +194,21 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else: 
                 self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB0 is off")
-            time.sleep(2)
+            time.sleep(1)
             if 1 in fembs: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
                 print ("FEMB1 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB1 is off")
-            time.sleep(2)
+            time.sleep(1)
             if 2 in fembs: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
                 print ("FEMB2 is on")
             else: 
                 self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB2 is off")
-            time.sleep(2)
+            time.sleep(1)
             if 3 in fembs: 
                 self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
                 print ("FEMB3 is on")
@@ -254,20 +254,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #print ("felix_rx_reset = 0x%08x"%rdreg)
             time.sleep(0.1)
 
-            time.sleep(2)
         else:
             self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB0 is off")
-            time.sleep(2)
+            time.sleep(1)
             self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB1 is off")
-            time.sleep(2)
+            time.sleep(1)
             self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB2 is off")
-            time.sleep(2)
+            time.sleep(1)
             self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB3 is off")
-            time.sleep(2)
             self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
@@ -441,7 +439,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_cd_sync() #sync should be sent before edge
         time.sleep(0.01)
         self.femb_cd_edge()
-        time.sleep(0.5)
+        time.sleep(0.1)
 
         rdaddr = 0xA00C0010
         rdreg = self.peek(rdaddr)
@@ -561,7 +559,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         i = 0
         while True:
             self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
-            time.sleep(0.01)
+            time.sleep(0.001)
             self.femb_cd_fc_act(femb_id, act_cmd="prm_larasics")
             time.sleep(0.05)
             self.femb_cd_fc_act(femb_id, act_cmd="save_status")
@@ -624,7 +622,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.wib_i2c_adj(n=50)
                 print ("Reconfigure FEMB due to i2c error!")
                 if refi > 25:
-                    #self.femb_powering(fembs =[])
+                    self.femb_powering(fembs =[])
                     print ("I2C failed! exit anyway, please check connection!")
                     exit()
             else:
@@ -654,11 +652,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
         self.set_fe_sync()
 
-        #self.femb_cfg(femb_id )
         self.femb_fe_cfg(femb_id)
-
         self.femb_cd_gpio(femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
-
 
     def wib_fe_mon(self, femb_ids, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sps=10 ):
         #step 1
@@ -668,11 +663,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         #step 2
         for femb_id in femb_ids:
             self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1 )
-            print (f"FEMB{femb_id} is configurated")
-
         #step4
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
-        time.sleep(1)
+        #time.sleep(1)
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
@@ -681,32 +674,30 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return adcss
 
     def femb_fe_dac_mon(self, femb_id, mon_chip=0,sgp=False, sg0=0, sg1=0, vdac=0  ):
-        self.set_fe_reset()
-        self.set_fe_board(sg0=sg0, sg1=sg1)
-        self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
-        self.set_fe_sync()
-        #self.femb_cfg(femb_id )
         self.femb_fe_cfg(femb_id)
         self.femb_cd_gpio(femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
-    def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdac=0, sps = 10 ): 
+    def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
+        self.set_fe_reset()
+        self.set_fe_board(sg0=sg0, sg1=sg1)
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
-        
         #step 2
-        for femb_id in femb_ids:
-            self.femb_fe_dac_mon(femb_id, mon_chip,sgp=sgp, sg0=sg0, sg1=sg1, vdac=vdac  )
-            print (f"FEMB{femb_id} is configurated")
+        for vdac in vdacs:
+            self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
+            self.set_fe_sync()
 
-        #step4
-        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
-        time.sleep(1)
-        adcss = []
-        self.wib_mon_adcs() #get rid of previous result
-        for i in range(sps):
-            adcs = self.wib_mon_adcs()
-            adcss.append(adcs)
+            for femb_id in femb_ids:
+                self.femb_fe_dac_mon(femb_id, mon_chip,sgp=sgp, sg0=sg0, sg1=sg1, vdac=vdac  )
+            #step4
+            self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
+            #time.sleep(1)
+            adcss = []
+            self.wib_mon_adcs() #get rid of previous result
+            for i in range(sps):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs)
         return adcss
 
     def femb_adc_mon(self, femb_id, mon_chip=0, mon_i=0  ):
@@ -743,8 +734,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
                     print (f"FEMB{femb_id} is configurated")
                 adcss = []
-                time.sleep(1)
-                self.wib_mon_adcs() #get rid of previous result
+                #time.sleep(1)
                 self.wib_mon_adcs() #get rid of previous result
                 for i in range(sps):
                     adcs = self.wib_mon_adcs()
@@ -767,8 +757,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
                 print (f"FEMB{femb_id} is configurated")
             adcss = []
-            time.sleep(1)
-            self.wib_mon_adcs() #get rid of previous result
+            #time.sleep(1)
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
