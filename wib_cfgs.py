@@ -678,11 +678,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_cd_gpio(femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
+        t3 = time.time_ns()
         self.set_fe_reset()
         self.set_fe_board(sg0=sg0, sg1=sg1)
+        print ("KKKK", time.time_ns() - t3)
+
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
+        print ("KKKK", time.time_ns() - t3)
+        
         #step 2
         for vdac in vdacs:
             self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
@@ -698,6 +703,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
+            print ("KKKK", vdac, time.time_ns() - t3, adcss[0])
+        print ("KKKK", vdac, time.time_ns() - t3, adcss[0])
         return adcss
 
     def femb_adc_mon(self, femb_id, mon_chip=0, mon_i=0  ):

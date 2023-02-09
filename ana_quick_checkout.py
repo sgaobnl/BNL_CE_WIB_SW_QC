@@ -1,10 +1,13 @@
 from wib_cfgs import WIB_CFGS
 import time
 import sys
+import numpy as np
 import pickle
 import copy
 import os
 import time, datetime, random, statistics
+from tools import ana_tools
+from fpdf import FPDF
 
 def CreateFolders(fembNo, env, toytpc):
 
@@ -57,6 +60,63 @@ def CreateFolders(fembNo, env, toytpc):
         PLOTDIR[ifemb] = plotdir+'/'
 
     return datadir,PLOTDIR 
+
+def GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips):
+
+    qc_tools = ana_tools()
+   
+    femb_list = [int(ifemb[-1]) for ifemb,_ in fembNo.items()]
+    print(femb_list)
+ 
+    pldata = qc_tools.data_decode(rawdata, femb_list)
+    pldata = np.array(pldata)
+    
+    qc_tools.PrintMON(fembNo, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR)
+    
+    for ifemb,femb_no in fembNo.items():
+        i=int(ifemb[-1])
+    
+        plotdir = PLOTDIR[ifemb]
+        ana = qc_tools.data_ana(pldata,i)
+        fp_data = plotdir+"SE_response"
+        qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
+    
+        fp_pwr = plotdir+"pwr_meas"
+        qc_tools.PrintPWR(pwr_meas, i, fp_pwr)
+    
+        pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_auto_page_break(False,0)
+        pdf.set_font('Times', 'B', 20)
+        pdf.cell(85)
+        pdf.l_margin = pdf.l_margin*2
+        pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(femb_no)), 0, 1, 'C')
+        pdf.ln(2)
+    
+        pdf.set_font('Times', '', 12)
+        pdf.cell(30, 5, 'Tester: {}'.format(logs["tester"]), 0, 0)
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Date: {}'.format(logs["date"]), 0, 1)
+    
+    
+        pdf.cell(30, 5, 'Temperature: {}'.format(logs["env"]), 0, 0)
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(logs["toytpc"]), 0, 1)
+        pdf.cell(30, 5, 'Note: {}'.format(logs["note"][0:80]), 0, 1)
+        pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
+    
+        pwr_image = fp_pwr+".png"
+        pdf.image(pwr_image,0,40,200,40)
+    
+        mon_image = plotdir+"mon_meas.png"
+        pdf.image(mon_image,0,80,200,40)
+    
+        chk_image = fp_data+".png"
+        pdf.image(chk_image,3,120,200,120)
+    
+        outfile = plotdir+'report.pdf'
+        pdf.output(outfile, "F")
 
 ####### Input FEMB slots #######
 
@@ -127,8 +187,6 @@ chk.femb_powering(fembs)
 time.sleep(2)
 
 pwr_meas = chk.get_sensors()
-
-chk.wib_femb_link_en(fembs)
 chk.femb_cd_rst()
 
 snc = 1 # 200 mV
@@ -154,7 +212,6 @@ for femb_id in fembs:
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
 
-chk.data_align(fembs)
 time.sleep(0.5)
 
 ####### Take data #######
@@ -171,7 +228,7 @@ if save:
 ####### Take monitoring data #######
 sps=1
 print ("monitor bandgap reference")
-nchips=range(8)
+nchips=[0,4]
 mon_refs = {}
 for i in nchips:   # 8 chips per femb
     adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
@@ -197,6 +254,10 @@ if save:
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
+
+####### Generate report #######
+if save:
+   GenReport(fembNo, rawdata, pwr_meas, mon_refs, mon_temps, mon_adcs, logs, PLOTDIR, nchips)
 
 t2=time.time()
 print(t2-t1)
