@@ -32,31 +32,7 @@ def CreateFolders(fembNo, env, toytpc):
     
     datadir = datadir+"/"
     
-    reportdir = "reports/"
-    PLOTDIR = {}
-
-    for ifemb,femb_no in fembNo.items():
-        plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc)
-    
-        n=1
-        while (os.path.exists(plotdir)):
-            if n==1:
-                plotdir = plotdir + "_R{:03d}".format(n)
-            else:
-                plotdir = plotdir[:-3] + "{:03d}".format(n)
-            n=n+1
-            if n>20:
-                raise Exception("There are more than 20 FEMB{} folders...".format(femb_no))
-        
-        try:
-            os.makedirs(plotdir)
-        except OSError:
-            print ("Error to create folder %s"%plotdir)
-            sys.exit()
-    
-        PLOTDIR[ifemb] = plotdir+'/'
-
-    return datadir,PLOTDIR 
+    return datadir
 
 ####### Input FEMB slots #######
 
@@ -111,7 +87,7 @@ logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
 ####### Create data save directory #######
 if save:
-    datadir,PLOTDIR=CreateFolders(fembNo, env, toytpc)
+    datadir=CreateFolders(fembNo, env, toytpc)
     fp = datadir + "logs_env.bin"
     with open(fp, 'wb') as fn:
          pickle.dump(logs, fn)
