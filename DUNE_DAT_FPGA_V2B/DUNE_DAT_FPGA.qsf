@@ -132,7 +132,7 @@ set_location_assignment PIN_AE22 -to FE_INA_SDA[0]
 set_location_assignment PIN_AF16 -to FE_INA_SCL[0]
 set_location_assignment PIN_AF17 -to FE_MonADC_SDO[0]
 set_location_assignment PIN_AF18 -to ADC_MonADC_SDO[0]
-set_location_assignment PIN_AF19 -to ADC1_POR_NAND
+set_location_assignment PIN_AF19 -to ADC_POR_NAND[0]
 set_location_assignment PIN_AF20 -to FE_DAC_TP_DIN[0]
 set_location_assignment PIN_AF21 -to FE_CALI_CS[1]
 set_location_assignment PIN_AF22 -to FE_INS_PLS_CS[1]
@@ -142,7 +142,7 @@ set_location_assignment PIN_AF24 -to FE_INA_SDA[1]
 set_location_assignment PIN_AF25 -to FE_INA_SCL[1]
 set_location_assignment PIN_AC17 -to FE_MonADC_SDO[1]
 set_location_assignment PIN_AD18 -to ADC_MonADC_SDO[1]
-set_location_assignment PIN_AD23 -to ADC2_POR_NAND
+set_location_assignment PIN_AD23 -to ADC_POR_NAND[1]
 set_location_assignment PIN_AC12 -to FE_DAC_TP_DIN[1]
 set_location_assignment PIN_AD9 -to CD1_MonADC_SDO
 set_location_assignment PIN_AC10 -to CD1_MonADC_SCK
@@ -160,7 +160,7 @@ set_location_assignment PIN_AD22 -to FE_INA_SDA[2]
 set_location_assignment PIN_AF15 -to FE_INA_SCL[2]
 set_location_assignment PIN_AD24 -to FE_MonADC_SDO[2]
 set_location_assignment PIN_AF6 -to ADC_MonADC_SDO[2]
-set_location_assignment PIN_AE7 -to ADC3_POR_NAND
+set_location_assignment PIN_AE7 -to ADC_POR_NAND[2]
 set_location_assignment PIN_AE17 -to FE_DAC_TP_DIN[2]
 set_location_assignment PIN_AD17 -to FE_CALI_CS[3]
 set_location_assignment PIN_AC18 -to FE_INS_PLS_CS[3]
@@ -170,7 +170,7 @@ set_location_assignment PIN_AD12 -to FE_INA_SDA[3]
 set_location_assignment PIN_AD25 -to FE_INA_SCL[3]
 set_location_assignment PIN_A13 -to FE_MonADC_SDO[3]
 set_location_assignment PIN_B13 -to ADC_MonADC_SDO[3]
-set_location_assignment PIN_C13 -to ADC4_POR_NAND
+set_location_assignment PIN_C13 -to ADC_POR_NAND[3]
 set_location_assignment PIN_C12 -to FE_DAC_TP_DIN[3]
 set_location_assignment PIN_A12 -to ADC_TST_SEL[0]
 set_location_assignment PIN_A11 -to ADC_TST_SEL[1]
@@ -191,7 +191,7 @@ set_location_assignment PIN_C2 -to FE_INA_SDA[4]
 set_location_assignment PIN_D3 -to FE_INA_SCL[4]
 set_location_assignment PIN_C3 -to FE_MonADC_SDO[4]
 set_location_assignment PIN_C4 -to ADC_MonADC_SDO[4]
-set_location_assignment PIN_B4 -to ADC5_POR_NAND
+set_location_assignment PIN_B4 -to ADC_POR_NAND[4]
 set_location_assignment PIN_A4 -to FE_DAC_TP_DIN[4]
 set_location_assignment PIN_C5 -to FE_CALI_CS[5]
 set_location_assignment PIN_C6 -to FE_INS_PLS_CS[5]
@@ -201,7 +201,7 @@ set_location_assignment PIN_B6 -to FE_INA_SDA[5]
 set_location_assignment PIN_B5 -to FE_INA_SCL[5]
 set_location_assignment PIN_H26 -to FE_MonADC_SDO[5]
 set_location_assignment PIN_G25 -to ADC_MonADC_SDO[5]
-set_location_assignment PIN_G26 -to ADC6_POR_NAND
+set_location_assignment PIN_G26 -to ADC_POR_NAND[5]
 set_location_assignment PIN_F26 -to FE_DAC_TP_DIN[5]
 set_location_assignment PIN_G22 -to CD2_MonADC_SDO
 set_location_assignment PIN_F21 -to CD2_MonADC_SCK
@@ -219,7 +219,7 @@ set_location_assignment PIN_G24 -to FE_INA_SDA[6]
 set_location_assignment PIN_K26 -to FE_INA_SCL[6]
 set_location_assignment PIN_L26 -to FE_MonADC_SDO[6]
 set_location_assignment PIN_L25 -to ADC_MonADC_SDO[6]
-set_location_assignment PIN_M26 -to ADC7_POR_NAND
+set_location_assignment PIN_M26 -to ADC_POR_NAND[6]
 set_location_assignment PIN_M25 -to FE_DAC_TP_DIN[6]
 set_location_assignment PIN_M24 -to FE_CALI_CS[7]
 set_location_assignment PIN_B9 -to FE_INS_PLS_CS[7]
@@ -229,7 +229,7 @@ set_location_assignment PIN_D10 -to FE_INA_SDA[7]
 set_location_assignment PIN_D9 -to FE_INA_SCL[7]
 set_location_assignment PIN_D7 -to FE_MonADC_SDO[7]
 set_location_assignment PIN_E7 -to ADC_MonADC_SDO[7]
-set_location_assignment PIN_L22 -to ADC8_POR_NAND
+set_location_assignment PIN_L22 -to ADC_POR_NAND[7]
 set_location_assignment PIN_K22 -to FE_DAC_TP_DIN[7]
 set_location_assignment PIN_H23 -to ADC_TST_SEL[4]
 set_location_assignment PIN_H22 -to ADC_TST_SEL[5]
@@ -261,20 +261,20 @@ set_location_assignment PIN_B22 -to CD2_ADC_I2C_ADD3
 set_location_assignment PIN_B21 -to CD1_ADC_I2C_ADD2
 set_location_assignment PIN_C23 -to CD1_ADC_I2C_ADD3
 set_location_assignment PIN_B17 -to ADC_RO_OUT[0]
-set_location_assignment PIN_D18 -to ADC1_CHIP_ACTIVE
-set_location_assignment PIN_A25 -to ADC2_CHIP_ACTIVE
+set_location_assignment PIN_D18 -to ADC_CHIP_ACTIVE[0]
+set_location_assignment PIN_A25 -to ADC_CHIP_ACTIVE[1]
 set_location_assignment PIN_A21 -to ADC_RO_OUT[1]
-set_location_assignment PIN_D22 -to ADC3_CHIP_ACTIVE
+set_location_assignment PIN_D22 -to ADC_CHIP_ACTIVE[2]
 set_location_assignment PIN_D19 -to ADC_RO_OUT[2]
-set_location_assignment PIN_E20 -to ADC4_CHIP_ACTIVE
+set_location_assignment PIN_E20 -to ADC_CHIP_ACTIVE[3]
 set_location_assignment PIN_C18 -to ADC_RO_OUT[3]
-set_location_assignment PIN_C16 -to ADC5_CHIP_ACTIVE
+set_location_assignment PIN_C16 -to ADC_CHIP_ACTIVE[4]
 set_location_assignment PIN_B15 -to ADC_RO_OUT[4]
-set_location_assignment PIN_C17 -to ADC6_CHIP_ACTIVE
+set_location_assignment PIN_C17 -to ADC_CHIP_ACTIVE[5]
 set_location_assignment PIN_C22 -to ADC_RO_OUT[5]
-set_location_assignment PIN_A17 -to ADC7_CHIP_ACTIVE
+set_location_assignment PIN_A17 -to ADC_CHIP_ACTIVE[6]
 set_location_assignment PIN_E16 -to ADC_RO_OUT[6]
-set_location_assignment PIN_D17 -to ADC8_CHIP_ACTIVE
+set_location_assignment PIN_D17 -to ADC_CHIP_ACTIVE[7]
 set_location_assignment PIN_A16 -to ADC_RO_OUT[7]
 
 
@@ -1014,5 +1014,5 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=771" -section_id test_pulse_gen
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=8192" -section_id test_pulse_gen
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=8192" -section_id test_pulse_gen
-set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp

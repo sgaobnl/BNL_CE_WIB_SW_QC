@@ -100,7 +100,8 @@ ENTITY DUNE_DAT_Registers IS
 		reg57_i		: IN  STD_LOGIC_VECTOR(7 downto 0);	
 		reg58_i		: IN  STD_LOGIC_VECTOR(7 downto 0);		
 		reg59_i		: IN  STD_LOGIC_VECTOR(7 downto 0);	
-		reg60_i		: IN  STD_LOGIC_VECTOR(7 downto 0);		
+		reg60_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg61_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 
 		
 		reg0_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
@@ -163,8 +164,8 @@ ENTITY DUNE_DAT_Registers IS
 		reg57_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
 		reg58_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
 		reg59_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
-		reg60_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)
-
+		reg60_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg61_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)
 		
 	);
 	
@@ -271,7 +272,8 @@ VERSION(15 downto 12)	<=  x"0";
 								 reg57_i	when (WIB_RD_address = x"39")	else
 								 reg58_i	when (WIB_RD_address = x"3A")	else
 								 reg59_i	when (WIB_RD_address = x"3B")	else		
-								 reg60_i	when (WIB_RD_address = x"3C")	else	
+								 reg60_i	when (WIB_RD_address = x"3C")	else
+								 reg61_i	when (WIB_RD_address = x"3D")	else
 								 BOARD_ID						when (WIB_RD_address = x"f3")	else
 								 VERSION_ID						when (WIB_RD_address = x"f4")	else
 								 VERSION(7 downto 0)			when (WIB_RD_address = x"f5") else	
@@ -350,6 +352,7 @@ VERSION(15 downto 12)	<=  x"0";
 			reg58_o		<= X"00";		
 			reg59_o		<= X"00";
 			reg60_o		<= X"00";
+			reg61_o		<= X"00";
 	
 		elsif (clk'event  AND  clk = '1') then				
 
@@ -420,6 +423,7 @@ VERSION(15 downto 12)	<=  x"0";
 					when x"3A" => 	reg58_o  <= WIB_data;	
 					when x"3B" => 	reg59_o  <= WIB_data;	
 					when x"3C" => 	reg60_o  <= WIB_data;
+					when x"3D" => 	reg61_o  <= WIB_data;
 					when x"FE" =>	SCRATCH_PAD	<= WIB_data;					
 					WHEN OTHERS =>  
 				end case;  

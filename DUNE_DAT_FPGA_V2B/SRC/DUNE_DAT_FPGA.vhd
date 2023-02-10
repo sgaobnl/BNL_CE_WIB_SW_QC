@@ -36,6 +36,7 @@ entity DUNE_DAT_FPGA is
 		--#set_location_assignment PIN_W26 -to CLK_LP_P
 		--#set_location_assignment PIN_T15 -to CLK_LP_P
 
+		
 	--CLOCKS	
 		CLK_64MHZ_SYS_P 					: IN STD_LOGIC;	
 		CD1_CLK_64MHZ_SYS_P 				: OUT STD_LOGIC;	
@@ -187,15 +188,15 @@ entity DUNE_DAT_FPGA is
 		FE_DAC_TP_DIN 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 
 	--ADC ASIC 
-		ADC1_POR_NAND 						: OUT STD_LOGIC;
-		ADC2_POR_NAND 						: OUT STD_LOGIC;
-		ADC3_POR_NAND 						: OUT STD_LOGIC;
-		ADC4_POR_NAND 						: OUT STD_LOGIC;
-		ADC5_POR_NAND 						: OUT STD_LOGIC;
-		ADC6_POR_NAND 						: OUT STD_LOGIC;
-		ADC7_POR_NAND 						: OUT STD_LOGIC;
-		ADC8_POR_NAND 						: OUT STD_LOGIC;
---		ADC_POR_NAND 						: OUT STD_LOGIC_VECTOR(7 downto 0);
+--		ADC1_POR_NAND 						: OUT STD_LOGIC;
+--		ADC2_POR_NAND 						: OUT STD_LOGIC;
+--		ADC3_POR_NAND 						: OUT STD_LOGIC;
+--		ADC4_POR_NAND 						: OUT STD_LOGIC;
+--		ADC5_POR_NAND 						: OUT STD_LOGIC;
+--		ADC6_POR_NAND 						: OUT STD_LOGIC;
+--		ADC7_POR_NAND 						: OUT STD_LOGIC;
+--		ADC8_POR_NAND 						: OUT STD_LOGIC;
+		ADC_POR_NAND 						: OUT STD_LOGIC_VECTOR(7 downto 0);
 		
 		
 		I2C_CD1_ADD_VDD 					: OUT STD_LOGIC; --I2C_ADD0
@@ -220,15 +221,15 @@ entity DUNE_DAT_FPGA is
 		ADC_RO_OUT							: IN STD_LOGIC_VECTOR(7 downto 0);
  		
 
-		ADC1_CHIP_ACTIVE 					: OUT STD_LOGIC;
-		ADC2_CHIP_ACTIVE 					: OUT STD_LOGIC;
-		ADC3_CHIP_ACTIVE 					: OUT STD_LOGIC;
-		ADC4_CHIP_ACTIVE 					: OUT STD_LOGIC;
-		ADC5_CHIP_ACTIVE 					: OUT STD_LOGIC; 
-		ADC6_CHIP_ACTIVE					: OUT STD_LOGIC; 
-		ADC7_CHIP_ACTIVE					: OUT STD_LOGIC; 
-		ADC8_CHIP_ACTIVE					: OUT STD_LOGIC; 
---		ADC_CHIP_ACTIVE						: OUT STD_LOGIC_VECTOR(7 downto 0); 		
+--		ADC1_CHIP_ACTIVE 					: OUT STD_LOGIC;
+--		ADC2_CHIP_ACTIVE 					: OUT STD_LOGIC;
+--		ADC3_CHIP_ACTIVE 					: OUT STD_LOGIC;
+--		ADC4_CHIP_ACTIVE 					: OUT STD_LOGIC;
+--		ADC5_CHIP_ACTIVE 					: OUT STD_LOGIC; 
+--		ADC6_CHIP_ACTIVE					: OUT STD_LOGIC; 
+--		ADC7_CHIP_ACTIVE					: OUT STD_LOGIC; 
+--		ADC8_CHIP_ACTIVE					: OUT STD_LOGIC; 
+		ADC_CHIP_ACTIVE						: OUT STD_LOGIC_VECTOR(7 downto 0); 		
 		
 		--CALIBRATION & MONITORING
 		--work.ADC_LTC2314
@@ -482,7 +483,7 @@ SIGNAL	reg57_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg58_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg59_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg60_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
-
+SIGNAL	reg61_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 
 
 SIGNAL	I2C_SDA_c2w		:  STD_LOGIC;
@@ -673,18 +674,21 @@ reg50_p <= ro_cnt(15 downto 8);
 reg51_p <= ro_cnt(23 downto 16);
 reg52_p <= ro_cnt(31 downto 24);
 
+ADC_POR_NAND <= reg53_p;
+ADC_CHIP_ACTIVE <= reg54_p;
 
-FPGA_TP_EN           <= reg53_p(0);
-ASIC_TP_EN           <= reg53_p(1);
-INT_TP_EN            <= reg53_p(2); --internal means coming from FPGA or ASIC
-EXT_TP_EN            <= reg53_p(3); --external means coming from WIB
 
-TP_SOCKET_EN			<= reg54_p;
+FPGA_TP_EN           <= reg55_p(0);
+ASIC_TP_EN           <= reg55_p(1);
+INT_TP_EN            <= reg55_p(2); --internal means coming from FPGA or ASIC
+EXT_TP_EN            <= reg55_p(3); --external means coming from WIB
 
-Test_PULSE_WIDTH     <= reg56_p & reg55_p;
+TP_SOCKET_EN			<= reg56_p;
+
+Test_PULSE_WIDTH     <= reg58_p & reg57_p;
 --TP_AMPL              <= reg56_p;
-TP_DLY               <= reg57_p;
-TP_PERIOD				<= reg59_p & reg58_p; 
+TP_DLY               <= reg59_p;
+TP_PERIOD				<= reg61_p & reg60_p; 
 
 
 
@@ -1199,7 +1203,7 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg58_i 	=> reg58_p,
 		reg59_i 	=> reg59_p,	
 		reg60_i 	=> reg60_p,	
-
+		reg61_i 	=> reg61_p,
 
 		
 		reg0_o 	=> reg0_p,
@@ -1262,8 +1266,8 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg57_o 	=> reg57_p,
 		reg58_o 	=> reg58_p,
 		reg59_o 	=> reg59_p,
-		reg60_o 	=> reg60_p
-
+		reg60_o 	=> reg60_p,
+		reg61_o 	=> reg61_p
 
 		
 	);
