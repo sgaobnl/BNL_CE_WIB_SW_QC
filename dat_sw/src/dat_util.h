@@ -57,31 +57,31 @@ extern "C" {
 	extern constexpr uint8_t DAT_FE_DAC_TP_DATA_MSB			= 41;
 	extern constexpr uint8_t DAT_DAC_OTHER_SET				= 42; //0x1 triggers DAC_ADC_P, 0x2 (0x1<<1) triggers DAC_ADC_N,
 																  //0x4 (0x1<<2) triggers DAC_TP
-	extern constexpr uint8_t DAT_ADC_P_DATA_LSB				= 43;	
-	extern constexpr uint8_t DAT_ADC_P_DATA_MSB				= 44;
-	extern constexpr uint8_t DAT_ADC_N_DATA_LSB				= 45;	
-	extern constexpr uint8_t DAT_ADC_N_DATA_MSB				= 46;
-	extern constexpr uint8_t DAC_TP_DATA_LSB				= 47;
-	extern constexpr uint8_t DAC_TP_DATA_MSB				= 48;
+	extern constexpr uint8_t DAT_DAC_ADC_P_DATA_LSB			= 43;	
+	extern constexpr uint8_t DAT_DAC_ADC_P_DATA_MSB			= 44;
+	extern constexpr uint8_t DAT_DAC_ADC_N_DATA_LSB			= 45;	
+	extern constexpr uint8_t DAT_DAC_ADC_N_DATA_MSB			= 46;
+	extern constexpr uint8_t DAT_DAC_TP_DATA_LSB			= 47;
+	extern constexpr uint8_t DAT_DAC_TP_DATA_MSB			= 48;
 	
 	
-	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B0		= 49;
-	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B1		= 50;
-	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B2		= 51;
-	extern constexpr uint8_t DAC_ADC_RING_OSC_COUNT_B3		= 52;
+	extern constexpr uint8_t DAT_ADC_RING_OSC_COUNT_B0		= 49;
+	extern constexpr uint8_t DAT_ADC_RING_OSC_COUNT_B1		= 50;
+	extern constexpr uint8_t DAT_ADC_RING_OSC_COUNT_B2		= 51;
+	extern constexpr uint8_t DAT_ADC_RING_OSC_COUNT_B3		= 52;
 	
-	extern constexpr uint8_t DAC_ADC_POR_NAND				= 53;
-	extern constexpr uint8_t DAC_ADC_CHIP_ACTIVE			= 54;
+	extern constexpr uint8_t DAT_ADC_POR_NAND				= 53;
+	extern constexpr uint8_t DAT_ADC_CHIP_ACTIVE			= 54;
 		
 	//TEST PULSE GEN
-	extern constexpr uint8_t DAC_TEST_PULSE_EN				= 55; 	//bit 0 = FPGA_TP_EN, 1 = ASIC_TP_EN, 
+	extern constexpr uint8_t DAT_TEST_PULSE_EN				= 55; 	//bit 0 = FPGA_TP_EN, 1 = ASIC_TP_EN, 
 																	    //2 = INT_TP_EN (FPGA or ASIC pulse), 3 = EXT_TP_EN (WIB pulse)
-	extern constexpr uint8_t DAC_TEST_PULSE_SOCKET_EN		= 56; //enable test pulse for each socket
-	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_LSB		= 57; 
-	extern constexpr uint8_t DAC_TEST_PULSE_WIDTH_MSB		= 58; 
-	extern constexpr uint8_t DAC_TEST_PULSE_DELAY			= 59;
-	extern constexpr uint8_t DAC_TEST_PULSE_PERIOD_LSB		= 60; 	
-	extern constexpr uint8_t DAC_TEST_PULSE_PERIOD_MSB		= 61; 
+	extern constexpr uint8_t DAT_TEST_PULSE_SOCKET_EN		= 56; //enable test pulse for each socket
+	extern constexpr uint8_t DAT_TEST_PULSE_WIDTH_LSB		= 57; 
+	extern constexpr uint8_t DAT_TEST_PULSE_WIDTH_MSB		= 58; 
+	extern constexpr uint8_t DAT_TEST_PULSE_DELAY			= 59;
+	extern constexpr uint8_t DAT_TEST_PULSE_PERIOD_LSB		= 60; 	
+	extern constexpr uint8_t DAT_TEST_PULSE_PERIOD_MSB		= 61; 
 	
 	
 /////INA226 Internal register map

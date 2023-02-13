@@ -126,74 +126,7 @@ def setup(): #define C functions' argument types and return types
     
     wib.dat_set_pulse.argtypes = [ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint16, ctypes.c_float]
     wib.dat_set_pulse.restype = None
-#DAT registers
-DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
-DAT_CD_CONFIG = ctypes.c_uint8.in_dll(wib, 'DAT_CD_CONFIG')
-DAT_CD1_CONTROL = ctypes.c_uint8.in_dll(wib, 'DAT_CD1_CONTROL')
-DAT_CD2_CONTROL = ctypes.c_uint8.in_dll(wib, 'DAT_CD2_CONTROL')
-DAT_SOCKET_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_SOCKET_SEL')
 
-DAT_INA226_REG_ADDR = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_REG_ADDR')
-DAT_INA226_DEVICE_ADDR = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_DEVICE_ADDR')
-DAT_INA226_NUM_BYTES = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_NUM_BYTES')
-DAT_INA226_DIN_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_DIN_MSB')
-DAT_INA226_DIN_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_DIN_LSB')
-DAT_INA226_STRB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_STRB')
-DAT_INA226_CD1_DOUT_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_CD1_DOUT_MSB')
-DAT_INA226_CD1_DOUT_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_CD1_DOUT_LSB')
-DAT_INA226_CD2_DOUT_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_CD2_DOUT_MSB')
-DAT_INA226_CD2_DOUT_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_CD2_DOUT_LSB')
-DAT_INA226_FE_DOUT_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_FE_DOUT_MSB')
-DAT_INA226_FE_DOUT_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_INA226_FE_DOUT_LSB')
-
-DAT_MONADC_START = ctypes.c_uint8.in_dll(wib, 'DAT_MONADC_START')
-DAT_CD1_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_CD1_MONADC_DATA_LSB')
-DAT_CD1_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(wib, 'DAT_CD1_MONADC_DATA_MSB_BUSY')
-DAT_CD2_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_CD2_MONADC_DATA_LSB')
-DAT_CD2_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(wib, 'DAT_CD2_MONADC_DATA_MSB_BUSY')
-DAT_ADC_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_MONADC_DATA_LSB')
-DAT_ADC_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_MONADC_DATA_MSB_BUSY')
-DAT_FE_MONADC_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_MONADC_DATA_LSB')
-DAT_FE_MONADC_DATA_MSB_BUSY = ctypes.c_uint8.in_dll(wib, 'DAT_FE_MONADC_DATA_MSB_BUSY')
-
-DAT_CD_AMON_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_CD_AMON_SEL')
-DAT_ADC_FE_TEST_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_FE_TEST_SEL')
-DAT_ADC_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_TEST_SEL_INHIBIT')
-DAT_FE_TEST_SEL_INHIBIT = ctypes.c_uint8.in_dll(wib, 'DAT_FE_TEST_SEL_INHIBIT')
-DAT_FE_IN_TST_SEL_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_IN_TST_SEL_LSB')
-DAT_FE_IN_TST_SEL_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_IN_TST_SEL_MSB')
-DAT_FE_CALI_CS = ctypes.c_uint8.in_dll(wib, 'DAT_FE_CALI_CS')
-#DAT_FE_INS_PLS_CS = ctypes.c_uint8.in_dll(wib, 'DAT_FE_INS_PLS_CS')
-DAT_ADC_TST_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_TST_SEL')
-DAT_ADC_SRC_CS_P_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_SRC_CS_P_LSB')
-DAT_ADC_SRC_CS_P_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_SRC_CS_P_MSB')
-DAT_ADC_PN_TST_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_PN_TST_SEL')
-DAT_ADC_TEST_IN_SEL = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_TEST_IN_SEL')
-DAT_EXT_PULSE_CNTL = ctypes.c_uint8.in_dll(wib, 'DAT_EXT_PULSE_CNTL')
-
-DAT_FE_DAC_TP_SET = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_SET')
-DAT_FE_DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_DATA_LSB')
-DAT_FE_DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_FE_DAC_TP_DATA_MSB')
-DAT_DAC_OTHER_SET = ctypes.c_uint8.in_dll(wib, 'DAT_DAC_OTHER_SET')
-DAT_ADC_P_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_P_DATA_LSB')
-DAT_ADC_P_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_P_DATA_MSB')
-DAT_ADC_N_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_N_DATA_LSB')
-DAT_ADC_N_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAT_ADC_N_DATA_MSB')
-DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TP_DATA_LSB')
-DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TP_DATA_MSB')
-
-DAC_ADC_RING_OSC_COUNT_B0 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B0')
-DAC_ADC_RING_OSC_COUNT_B1 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B1')
-DAC_ADC_RING_OSC_COUNT_B2 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B2')
-DAC_ADC_RING_OSC_COUNT_B3 = ctypes.c_uint8.in_dll(wib, 'DAC_ADC_RING_OSC_COUNT_B3')
-DAC_TEST_PULSE_EN = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_EN')
-DAC_TEST_PULSE_SOCKET_EN = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_SOCKET_EN')
-DAC_TEST_PULSE_WIDTH_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_LSB')
-DAC_TEST_PULSE_WIDTH_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_WIDTH_MSB')
-#DAC_TEST_PULSE_AMPLITUDE = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_AMPLITUDE')
-DAC_TEST_PULSE_DELAY = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_DELAY')
-DAC_TEST_PULSE_PERIOD_LSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_PERIOD_LSB')
-DAC_TEST_PULSE_PERIOD_MSB = ctypes.c_uint8.in_dll(wib, 'DAC_TEST_PULSE_PERIOD_MSB')
 
 
 
@@ -316,12 +249,12 @@ for fe in range(8):
 
 print("CD_CONTROL r/w checking")
 for cd_swap in range(2):
-    sel_reg = wib.cdpeek(0, 0xC, 0, DAT_CD_CONFIG)
+    sel_reg = wib.cdpeek(0, 0xC, 0, chk.DAT_CD_CONFIG)
     CD_SEL = sel_reg & 0x1
     print("CD_SEL =", CD_SEL)
     print("Toggling CD_SEL")
     sel_reg = sel_reg ^ 0x1
-    wib.cdpoke(0, 0xC, 0, DAT_CD_CONFIG, sel_reg)
+    wib.cdpoke(0, 0xC, 0, chk.DAT_CD_CONFIG, sel_reg)
     print("")
     for cd in [0x2, 0x3]:
     #making sure  DC-type level signals for the Front-end Mother Board (pads
@@ -342,8 +275,8 @@ for cd_swap in range(2):
         wib.cdpoke(0, cd, 0, 0x26, 0x0)
         print(hex(cd),": ",hex(wib.cdpeek(0, cd, 0, 0x26)))
         # time.sleep(5)
-        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD1_CONTROL)))   
-        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD2_CONTROL))) 
+        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD1_CONTROL)))   
+        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD2_CONTROL))) 
         print("")
         # input("Press enter to continue")
         
@@ -351,24 +284,24 @@ for cd_swap in range(2):
         wib.cdpoke(0, cd, 0, 0x26, 0x10)
         print(hex(cd),": ",hex(wib.cdpeek(0, cd, 0, 0x26)))
         # time.sleep(5)
-        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD1_CONTROL)))   
-        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD2_CONTROL)))   
+        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD1_CONTROL)))   
+        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD2_CONTROL)))   
         print("")
         # input("Press enter to continue")
         print("Poking to 0x15")
         wib.cdpoke(0, cd, 0, 0x26, 0x15)
         print(hex(cd),": ",hex(wib.cdpeek(0, cd, 0, 0x26)))
         # time.sleep(5)
-        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD1_CONTROL)))   
-        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD2_CONTROL))) 
+        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD1_CONTROL)))   
+        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD2_CONTROL))) 
         print("")
         # input("Press enter to continue")
         print("Poking to 0x0a")
         wib.cdpoke(0, cd, 0, 0x26, 0x0A)
         print(hex(cd),": ",hex(wib.cdpeek(0, cd, 0, 0x26)))
         # time.sleep(5)
-        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD1_CONTROL)))   
-        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, DAT_CD2_CONTROL))) 
+        print("CONTROL 1:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD1_CONTROL)))   
+        print("CONTROL 2:", hex(wib.cdpeek(0, 0xC, 0, chk.DAT_CD2_CONTROL))) 
         print("")
     
 
@@ -411,7 +344,7 @@ dat_set_dac(dac_float,fe_cal=0)
 for select in [0,1,2,3,4,5,6,7]:
     print("\n\nSelect =",hex(select),select_names_cd[select])
     
-    wib.cdpoke(0, 0xC, 0, DAT_CD_AMON_SEL, select)    
+    wib.cdpoke(0, 0xC, 0, chk.DAT_CD_AMON_SEL, select)    
     wib.dat_monadc_trigger()   
     time.sleep(1e-6)
     for loop in range(10):
@@ -424,7 +357,7 @@ for select in [0,1,2,3,4,5,6,7]:
 
 #CD2
     print("\nSelect =",hex(select),select_names_cd[select])
-    wib.cdpoke(0, 0xC, 0, DAT_CD_AMON_SEL, select<<4)    
+    wib.cdpoke(0, 0xC, 0, chk.DAT_CD_AMON_SEL, select<<4)    
     wib.dat_monadc_trigger() 
     time.sleep(1e-6)    
     for loop in range(10):
@@ -437,7 +370,7 @@ for select in [0,1,2,3,4,5,6,7]:
 
 #ADC
     print("\nSelect =",hex(select),select_names_adc[select])
-    wib.cdpoke(0, 0xC, 0, DAT_ADC_FE_TEST_SEL, select)    
+    wib.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, select)    
     wib.dat_monadc_trigger()    
     time.sleep(1e-6)
     for adc in range(8):
@@ -451,7 +384,7 @@ for select in [0,1,2,3,4,5,6,7]:
         
 #FE
     print("\nSelect =",hex(select),select_names_fe[select])
-    wib.cdpoke(0, 0xC, 0, DAT_ADC_FE_TEST_SEL, select<<4)    
+    wib.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, select<<4)    
     time.sleep(1e-6)
     wib.dat_monadc_trigger()    
     for fe in range(8):
@@ -483,7 +416,7 @@ for dac in range(8):
     # print("FPGA = %d, ASIC = %d, INT = %d, EXT = %d"%(fpga, asic, int_, ext))
     # input("Check signal tap, press enter to continue")
 tp_en = 0x7
-wib.cdpoke(0, 0xC, 0, DAC_TEST_PULSE_EN, tp_en)
+wib.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_EN, tp_en)
 
 
 
