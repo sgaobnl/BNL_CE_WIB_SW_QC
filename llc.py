@@ -240,7 +240,7 @@ class LLC():
 
     def cdpoke(self, femb_id, chip_addr, reg_page, reg_addr, data):
         self.wib.cdpoke(femb_id, chip_addr, reg_page, reg_addr, data)
-   
+
 #    def cdpoke_chk(self, femb_id, chip_addr, reg_page, reg_addr, data):
 #        for i in range(10):
 #            self.wib.cdpoke(femb_id, chip_addr, reg_page, reg_addr, data)
@@ -484,6 +484,8 @@ class LLC():
     def dat_set_pulse(self, en=0, period=0, width=0, amplitude=0):
         self.wib.dat_set_pulse(en, period, width, amplitude)
     
+    def dat_monadc_trig(self):
+        return self.wib.dat_monadc_trigger()
 
 #    def femb_power_set(self, femb_id=0, on=1, vfe=3.0, vcd=3.0, vadc=3.5, allon=1):
 #        self.femb_power_config(femb_id, vfe, vcd, vadc)
