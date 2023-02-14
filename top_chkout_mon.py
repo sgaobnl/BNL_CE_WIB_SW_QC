@@ -57,7 +57,7 @@ for femb_id in fembs:
                       ]
 
 #LArASIC register configuration
-    chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
+    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
     adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
 #step 3
@@ -65,18 +65,73 @@ for femb_id in fembs:
 
 if True: # FE monitoring 
     if True: # FE monitoring 
-        sps = 3
-        chips = 8
+        sps = 1
+        chips = 1
         if True:
             print ("monitor bandgap reference")
             mon_refs = {}
             #for mon_chip in range(chips):
             #for mon_chip in [1]:
             for mon_chip in range(chips):
-                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
-                chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
-                exit()
-        
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
+                #chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
+                print (adcrst)
+
+        if True:
+            print ("monitor temperature")
+            mon_temps = {}
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
+                print (adcrst)
+
+        if True:
+            print ("monitor BL")
+            mon_temps = {}
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=0, sdf=0, sps=sps)
+                print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=0, sdf=1, sps=sps)
+                print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=0, sps=sps)
+                print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=1, sps=sps)
+                print (adcrst)
+
+        if True:
+            print ("monitor vdac ")
+            mon_refs = {}
+            #for mon_chip in range(chips):
+            #for mon_chip in [1]:
+            while True:
+                for mon_chip in range(chips):
+                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
+                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[63], sps = 1 )
+                    print (adcrst)
+                for mon_chip in range(chips):
+                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
+                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[0], sps = 1 )
+                    print (adcrst)
+                break
+
+#        if True:
+#            print ("monitor vdac ")
+#            mon_refs = {}
+#            #for mon_chip in range(chips):
+#            #for mon_chip in [1]:
+#            for mon_chip in range(chips):
+#                adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=1, sg1=0, vdacs=[64], sps = 1 )
+#                print (adcrst)
+
+        if True:
+            print ("monitor bandgap reference")
+            mon_refs = {}
+            #for mon_chip in range(chips):
+            #for mon_chip in [1]:
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
+                #chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
+                print (adcrst)
+     
         #if True:
         #    print ("monitor temperature")
         #    mon_temps = {}
