@@ -66,23 +66,50 @@ for femb_id in fembs:
 if True: # FE monitoring 
     if True: # FE monitoring 
         sps = 1
-        chips = 1
+        chips = 8
         if True:
             print ("monitor bandgap reference")
             mon_refs = {}
             #for mon_chip in range(chips):
             #for mon_chip in [1]:
             for mon_chip in range(chips):
-                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
-                #chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=1)
                 print (adcrst)
 
-        if True:
+#        for femb_id in fembs:
+#            chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
+#            adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+#            cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
+#    #ste    p 3
+#            chk.femb_cfg(femb_id, adac_pls_en )
+#        input()
+#
+        while True:
             print ("monitor temperature")
             mon_temps = {}
             for mon_chip in range(chips):
-                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
+                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
+                #print (adcrst)
+                #time.sleep(1)
+                #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[63], sps = 1 )
+                while True:
+                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
+                    print (adcrst)
+                    time.sleep(1)
+
+        print ("########################################")
+        for tmp in range(5):
+            print ("monitor temperature")
+            mon_temps = {}
+            for mon_chip in range(chips):
+                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
+                #print (adcrst)
+                #time.sleep(1)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=1)
                 print (adcrst)
+                print ("########################################")
+
+        exit()
 
         if True:
             print ("monitor BL")
