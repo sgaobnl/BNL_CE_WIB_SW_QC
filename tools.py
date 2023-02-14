@@ -314,7 +314,7 @@ class ana_tools:
                ax1[0].legend()
 
                ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
-               ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
+               ax1[1].plot(nchips, mon_dic['ADC VCMO'],marker='.',label='ADC VCMO')
                ax1[1].plot(nchips, mon_dic['ADC VREFP'],marker='.',label='ADC VREFP')
                ax1[1].plot(nchips, mon_dic['ADC VREFN'],marker='.',label='ADC VREFN')
                ax1[1].plot(nchips, mon_dic['ADC VSSA'],marker='.',label='ADC VSSA')
