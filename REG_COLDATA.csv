@@ -1,0 +1,9 @@
+reg_page,reg_addr,default_value
+#number in hex
+0,01,00
+0,03,28
+0,11,02
+0,1f,00
+0,20,00
+
+
