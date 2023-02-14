@@ -151,13 +151,13 @@ nchips=range(8)
 mon_refs = {}
 for i in nchips:   # 8 chips per femb
     adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
-    mon_refs[f"chip{i}"] = adcrst
+    mon_refs[f"chip{i}"] = adcrst[7]
 
 print ("monitor temperature")
 mon_temps = {}
 for i in nchips:
     adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
-    mon_temps[f"chip{i}"] = adcrst
+    mon_temps[f"chip{i}"] = adcrst[7]
 
 print ("monitor ColdADCs")
 mon_adcs = {}
