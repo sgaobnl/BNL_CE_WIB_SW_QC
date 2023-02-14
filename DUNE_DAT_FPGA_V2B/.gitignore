@@ -40,7 +40,7 @@ qar_info.json
 *.pin
 # *.pof #keep this
 *.ptf.*
-*.qar #keep this?
+*.qar
 *.qarlog
 *.qws
 *.rpt

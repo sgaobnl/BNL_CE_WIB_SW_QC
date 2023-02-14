@@ -6,7 +6,8 @@
 --
 --   Version History
 --   Version 1.0 03/20/2019 JunbinZhang
--- 
+--   Version 1.1 02/13/2023 Jack Fried
+
 --------------------------------------------------------------------------------
 
 LIBRARY ieee;
@@ -40,8 +41,27 @@ ARCHITECTURE logic OF COTS_AD7274 IS
   signal bit_cnt       : INTEGER RANGE 0 TO 15 := 0;      --tracks bit number in transaction
   signal	 rdy			  : STD_LOGIC; 	                   -- ready
   signal	 DATA_OUT	  :STD_LOGIC_VECTOR(11 downto 0);   -- data output 12-bit
+  
+  
+  signal start_s1       : STD_LOGIC; 
+  signal start_s2       : STD_LOGIC; 
+  
+  
   --signal busy          : std_logic;
 BEGIN  
+  
+  
+   process(clk)
+   begin
+	   if(clk'event and clk = '1') then
+  
+		start_s1	<= start;
+		start_s2	<= start_s1;
+  
+      end if;
+  end process; 
+  
+  
   
   SCLK <= clk when (sclk_ena='1') else '0';
   --state machine for Read out
@@ -59,7 +79,7 @@ BEGIN
          case state is 
 				when IDLE =>
 					--rdy <= '0';
-					if(start = '1') then
+					if(start_s2 = '1') then
 						busy <= '1';
 						CSn <= '0';
 						sclk_ena <= '1';
@@ -103,7 +123,7 @@ BEGIN
 					end if;
 					
 				when DONE =>
-					if(start = '1') then
+					if(start_s2 = '1') then
 						state <= DONE;
 					else
 						state <= IDLE;

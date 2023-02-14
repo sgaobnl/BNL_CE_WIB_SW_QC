@@ -622,7 +622,7 @@ ADC_TEST_CSC 	<= reg27_p(2);
 FE_TEST_CSA	 	<= reg27_p(4);		
 FE_TEST_CSB	 	<= reg27_p(5); 
 FE_TEST_CSC	 	<= reg27_p(6);
-FE_TEST_INH	 	<= reg27_p(7); --?
+FE_TEST_INH	 	<= reg27_p(7);
 
 ADC_TEST_INH 	<= reg28_p;
 
