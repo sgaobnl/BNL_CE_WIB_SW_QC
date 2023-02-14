@@ -772,6 +772,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 mon_dict[f"chip{mon_chip}"] = [mon_chip, mons[mon_i], self.adcs_paras[mon_chip], adcss]
                 print (mon_dict[f"chip{mon_chip}"])
             mon_items.append(mon_dict)
+        return mon_items
 
     def wib_adc_mon_chip(self, femb_ids, mon_chip=0, sps=10):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
@@ -788,6 +789,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print (f"FEMB{femb_id} is configurated")
             adcss = []
             #time.sleep(1)
+            if self.longcable:
+                time.sleep(0.5)
+            else:
+                time.sleep(0.1)
+
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
