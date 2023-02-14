@@ -379,12 +379,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(btr + 0x8, 0) #dummy writes
             self.femb_i2c_wr(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0x00)
 
-    def femb_cd_chk(self, femb_id):
-        for chip_addr in [2, 3]:
-            #page = 0
-            for reg_addr in range(0xff):
-                rdreg = self.femb_i2c_rd(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=reg_addr)
-                print (femb_id, chip_addr, 0, reg_addr, hex(rdreg))
+    def femb_cd_chkreg(self, femb_id):
+        for chip_addr in [2,3]:
+            reg_page=0
+            for reg_addr in range(0,2e):
+                rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+  
 
     def femb_cd_cfg(self, femb_id):
 #set coldata 8b10 
