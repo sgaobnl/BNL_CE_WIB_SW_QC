@@ -382,7 +382,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_cd_chkreg(self, femb_id):
         for chip_addr in [2,3]:
             reg_page=0
-            for reg_addr in range(0,2e):
+            for reg_addr in range(0,0x2e):
                 rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
 
     def femb_cd_cfg(self, femb_id):

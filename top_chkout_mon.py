@@ -73,17 +73,21 @@ if True: # FE monitoring
             for mon_chip in range(chips):
                 adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=1)
                 print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=0)
+                print (adcrst)
+                print ("###################")
 
 #
-        while True:
+        if True:
             print ("monitor temperature")
             mon_temps = {}
             for mon_chip in range(chips):
                 adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=1)
                 print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
+                print (adcrst)
+                print ("###################")
 
-
-        exit()
 
         if True:
             print ("monitor BL")
