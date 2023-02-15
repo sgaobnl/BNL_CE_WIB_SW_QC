@@ -384,7 +384,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             reg_page=0
             for reg_addr in range(0,2e):
                 rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
-  
 
     def femb_cd_cfg(self, femb_id):
 #set coldata 8b10 
@@ -642,7 +641,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print (f"FEMB{femb_id} is configurated")
                 break
 
-    def femb_fe_mon(self, femb_id=0, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=0 ):
+    def femb_fe_mon(self, femb_id=0, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1 ):
         if (rst_fe != 0):
             self.set_fe_reset()
 
@@ -668,7 +667,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_fe_cfg(femb_id)
         self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
-    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=0, sps=10 ):
+    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
@@ -758,7 +757,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print (f"Monitor ADC {mons[mon_i]}")
             mon_dict = {}
             for mon_chip in range(8):
-            #for mon_chip in range(1):
                 for femb_id in femb_ids:
                     self.femb_adc_cfg(femb_id)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
