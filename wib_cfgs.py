@@ -9,17 +9,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         super().__init__()
         self.i2cerror = False 
         self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
         self.adcs_paras = self.adcs_paras_init
         self.adac_cali_quo = False
+        self.longcable = False #>7m
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -378,6 +379,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(btr + 0x8, 0) #dummy writes
             self.femb_i2c_wr(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0x00)
 
+    def femb_cd_chkreg(self, femb_id):
+        for chip_addr in [2,3]:
+            reg_page=0
+            for reg_addr in range(0,0x2e):
+                rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+
     def femb_cd_cfg(self, femb_id):
 #set coldata 8b10 
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x03, wrdata=0x3c)
@@ -553,9 +560,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for chip in range(8):
             for reg_id in range(16+2):
                 if (chip < 4):
-                    self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
+                    rdreg = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=(chip%4+1), reg_addr=(0x91-reg_id))
+                    if rdreg != self.regs_int8[chip][reg_id]:
+                        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
                 else:
-                    self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
+                    rdreg = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=(chip%4+1), reg_addr=(0x91-reg_id))
+                    if rdreg != self.regs_int8[chip][reg_id]:
+                        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
         i = 0
         while True:
             self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
@@ -575,7 +586,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if i > 10:
                     #self.femb_powering(fembs =[])
                     #print ("Turn all FEMBs off, exit anyway")
-                    exit()
+                    print ("exit anyway")
                 else:
                     time.sleep(0.1)
             i = i + 1
@@ -623,13 +634,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print ("Reconfigure FEMB due to i2c error!")
                 if refi > 25:
                     #self.femb_powering(fembs =[])
-                    #print ("I2C failed! exit anyway, please check connection!")
+                    print ("I2C failed! exit anyway, please check connection!")
                     exit()
             else:
                 print (f"FEMB{femb_id} is configurated")
                 break
 
-    def femb_fe_mon(self, femb_id, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0 ):
+    def femb_fe_mon(self, femb_id=0, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1 ):
         if (rst_fe != 0):
             self.set_fe_reset()
 
@@ -648,62 +659,79 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
-        self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=1) 
+        self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
         self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
         self.set_fe_sync()
 
         self.femb_fe_cfg(femb_id)
-        self.femb_cd_gpio(femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+        self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
-    def wib_fe_mon(self, femb_ids, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sps=10 ):
+    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
+        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
         
         #step 2
         for femb_id in femb_ids:
-            self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1 )
+            self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
         #step4
-        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
-        #time.sleep(1)
+        if self.longcable:
+            time.sleep(0.5)
+        else:
+            time.sleep(0.1)
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
             adcs = self.wib_mon_adcs()
             adcss.append(adcs)
-        return adcss
-
-    def femb_fe_dac_mon(self, femb_id, mon_chip=0,sgp=False, sg0=0, sg1=0, vdac=0  ):
-        self.femb_fe_cfg(femb_id)
-        self.femb_cd_gpio(femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+        if mon_type == 2:
+            mon_str = "VBGR"
+        elif mon_type == 1:
+            mon_str = "Temperature"
+        else:
+            mon_str = "Channel"
+        mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss]
+        self.wib_mon_switches()
+        return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
+        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         self.set_fe_reset()
         self.set_fe_board(sg0=sg0, sg1=sg1)
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
         #step 2
+        vdac_mons = []
+
         for vdac in vdacs:
             self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
 
             for femb_id in femb_ids:
-                self.femb_fe_dac_mon(femb_id, mon_chip,sgp=sgp, sg0=sg0, sg1=sg1, vdac=vdac  )
+                self.femb_fe_cfg(femb_id)
+                self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
             #step4
-            self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
-            #time.sleep(1)
+
+            if self.longcable:
+                time.sleep(0.5)
+            else:
+                time.sleep(0.1)
+                pass
             adcss = []
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
-        return adcss
+            vdac_mons.append(["ASICDAC", mon_chip, vdac, sps, adcss])
+        self.wib_mon_switches()
+        return vdac_mons
 
     def femb_adc_mon(self, femb_id, mon_chip=0, mon_i=0  ):
         adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07]  
         cd2_iobit432 = [6,4,5,7,3,1,0,2]
-        self.femb_cd_gpio(femb_id, cd1_0x26 = 0x04,cd1_0x27 = 0x1f, cd2_0x26 = cd2_iobit432[mon_chip]<<2,cd2_0x27 = 0x1f)
+        self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x04,cd1_0x27 = 0x1f, cd2_0x26 = cd2_iobit432[mon_chip]<<2,cd2_0x27 = 0x1f)
         vrefp   = self.adcs_paras[mon_chip][4] 
         vrefn   = self.adcs_paras[mon_chip][5]  
         vcmo    = self.adcs_paras[mon_chip][6] 
@@ -728,13 +756,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print (f"Monitor ADC {mons[mon_i]}")
             mon_dict = {}
             for mon_chip in range(8):
-            #for mon_chip in range(1):
                 for femb_id in femb_ids:
                     self.femb_adc_cfg(femb_id)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
                     print (f"FEMB{femb_id} is configurated")
                 adcss = []
                 #time.sleep(1)
+                if self.longcable:
+                    time.sleep(0.5)
+                else:
+                    time.sleep(0.1)
                 self.wib_mon_adcs() #get rid of previous result
                 for i in range(sps):
                     adcs = self.wib_mon_adcs()
@@ -742,6 +773,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 mon_dict[f"chip{mon_chip}"] = [mon_chip, mons[mon_i], self.adcs_paras[mon_chip], adcss]
                 print (mon_dict[f"chip{mon_chip}"])
             mon_items.append(mon_dict)
+        self.wib_mon_switches()
+        return mon_items
 
     def wib_adc_mon_chip(self, femb_ids, mon_chip=0, sps=10):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
@@ -758,11 +791,17 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print (f"FEMB{femb_id} is configurated")
             adcss = []
             #time.sleep(1)
+            if self.longcable:
+                time.sleep(0.5)
+            else:
+                time.sleep(0.1)
+
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             mon_dict[mons[mon_i]] = [self.adcs_paras[mon_chip], adcss]
+        self.wib_mon_switches()
         return mon_dict
 
 

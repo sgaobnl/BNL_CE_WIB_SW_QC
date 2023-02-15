@@ -59,8 +59,8 @@ class FE_ASIC_REG_MAPPING:
                 self.regs_int8[chip][i ] = sum(v<<j for j, v in enumerate(bits8))
 
     def set_fe_reset(self):
-        self.REGS = self.REGS
-        self.regs_int8 = self.Cregs_int8
+        self.REGS = [False]*(8*16+16)*8 
+        self.regs_int8 =[[0x00]*(16+2), [0x00]*(16+2), [0x00]*(16+2), [0x00]*(16+2),[0x00]*(16+2), [0x00]*(16+2), [0x00]*(16+2), [0x00]*(16+2)] 
 
     #__INIT__#
     def __init__(self):
