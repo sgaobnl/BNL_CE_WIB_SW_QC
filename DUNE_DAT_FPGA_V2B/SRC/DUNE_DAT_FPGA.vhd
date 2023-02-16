@@ -140,7 +140,7 @@ entity DUNE_DAT_FPGA is
 --		FE8_INS_PLS_CS 						: OUT STD_LOGIC;
 		FE_INS_PLS_CS 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 
-		FE_TEST_INH							: OUT STD_LOGIC; 
+--		FE_TEST_INH							: OUT STD_LOGIC; 
 --		FE1_TEST_INH 						: OUT STD_LOGIC;
 --		FE2_TEST_INH 						: OUT STD_LOGIC;
 --		FE3_TEST_INH 						: OUT STD_LOGIC;
@@ -153,6 +153,11 @@ entity DUNE_DAT_FPGA is
 		FE_TEST_CSA							: OUT STD_LOGIC; 		
 		FE_TEST_CSB							: OUT STD_LOGIC; 
 		FE_TEST_CSC							: OUT STD_LOGIC; 
+
+		FE_CMN_CSA							: OUT STD_LOGIC; 		
+		FE_CMN_CSB							: OUT STD_LOGIC; 
+		FE_CMN_CSC							: OUT STD_LOGIC; 
+		FE_CMN_INH							: OUT STD_LOGIC; 
 		
 		EXT_PULSE_CNTL						: OUT STD_LOGIC; 
 		
@@ -301,8 +306,8 @@ entity DUNE_DAT_FPGA is
 		
 
 	--MISC
-		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
-	
+		--MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
+		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 3)	
 	
 	);
 
@@ -501,6 +506,16 @@ SIGNAL	reg58_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg59_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg60_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg61_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg62_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg63_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg64_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg65_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg66_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg67_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg68_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg69_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg70_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg71_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 
 
 SIGNAL	I2C_SDA_c2w		:  STD_LOGIC;
@@ -571,7 +586,7 @@ FE_INS_PLS_CS <= TP_SOCKET_EN AND Test_pulse_buffer; --bitwise and
 --MISC_U1_IO(2) <= CLK_64MHZ_SYS_P;
 --MISC_U1_IO(3) <= CLK_62_5MHz;
 --MISC_U1_IO(4) <= CLK_100MHz;
-MISC_U1_IO	<= b"101010";
+MISC_U1_IO	<= reg63_p(2 downto 0);
 			
 CD_sEL				<= reg1_p(0);
 CD1_PAD_RESET 		<= not reg1_p(4);
@@ -639,7 +654,7 @@ ADC_TEST_CSC 	<= reg27_p(2);
 FE_TEST_CSA	 	<= reg27_p(4);		
 FE_TEST_CSB	 	<= reg27_p(5); 
 FE_TEST_CSC	 	<= reg27_p(6);
-FE_TEST_INH	 	<= reg27_p(7);
+
 
 ADC_TEST_INH 	<= reg28_p;
 
@@ -724,6 +739,10 @@ Test_PULSE_WIDTH     <= reg58_p & reg57_p;
 TP_DLY               <= reg59_p;
 TP_PERIOD				<= reg61_p & reg60_p; 
 
+FE_CMN_CSA	 	<= reg62_p(0);		
+FE_CMN_CSB	 	<= reg62_p(2); 
+FE_CMN_CSC	 	<= reg62_p(2);
+FE_CMN_INH	 	<= reg62_p(3);
 
 
 ----------------------------------------------------
@@ -1238,6 +1257,16 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg59_i 	=> reg59_p,	
 		reg60_i 	=> reg60_p,	
 		reg61_i 	=> reg61_p,
+		reg62_i 	=> reg62_p,
+		reg63_i 	=> reg63_p,
+		reg64_i 	=> reg64_p,
+		reg65_i 	=> reg65_p,	
+		reg66_i 	=> reg66_p,
+		reg67_i 	=> reg67_p,
+		reg68_i 	=> reg68_p,
+		reg69_i 	=> reg69_p,	
+		reg70_i 	=> reg70_p,	
+		reg71_i 	=> reg71_p,
 
 		
 		reg0_o 	=> reg0_p,
@@ -1301,7 +1330,17 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg58_o 	=> reg58_p,
 		reg59_o 	=> reg59_p,
 		reg60_o 	=> reg60_p,
-		reg61_o 	=> reg61_p
+		reg61_o 	=> reg61_p,
+		reg62_o 	=> open,
+		reg63_o 	=> reg63_p,
+		reg64_o 	=> reg64_p,
+		reg65_o 	=> reg65_p,
+		reg66_o 	=> reg66_p,
+		reg67_o 	=> reg67_p,
+		reg68_o 	=> reg68_p,
+		reg69_o 	=> reg69_p,
+		reg70_o 	=> reg70_p,
+		reg71_o 	=> reg71_p
 
 		
 	);

@@ -102,6 +102,16 @@ ENTITY DUNE_DAT_Registers IS
 		reg59_i		: IN  STD_LOGIC_VECTOR(7 downto 0);	
 		reg60_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 		reg61_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg62_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg63_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg64_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg65_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg66_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg67_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg68_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg69_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg70_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg71_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 
 		
 		reg0_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
@@ -165,7 +175,18 @@ ENTITY DUNE_DAT_Registers IS
 		reg58_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
 		reg59_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
 		reg60_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
-		reg61_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)
+		reg61_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg62_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
+		reg63_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg64_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg65_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg66_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg67_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg68_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
+		reg69_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg70_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg71_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)	
+
 		
 	);
 	
@@ -274,6 +295,16 @@ VERSION(15 downto 12)	<=  x"0";
 								 reg59_i	when (WIB_RD_address = x"3B")	else		
 								 reg60_i	when (WIB_RD_address = x"3C")	else
 								 reg61_i	when (WIB_RD_address = x"3D")	else
+								 reg62_i	when (WIB_RD_address = x"3E")	else
+								 reg63_i	when (WIB_RD_address = x"3F")	else
+								 reg64_i	when (WIB_RD_address = x"40")	else
+								 reg65_i	when (WIB_RD_address = x"41")	else
+								 reg66_i	when (WIB_RD_address = x"42")	else
+								 reg67_i	when (WIB_RD_address = x"43")	else
+								 reg68_i	when (WIB_RD_address = x"44")	else
+								 reg69_i	when (WIB_RD_address = x"45")	else
+								 reg70_i	when (WIB_RD_address = x"46")	else
+								 reg71_i	when (WIB_RD_address = x"47")	else
 								 BOARD_ID						when (WIB_RD_address = x"f3")	else
 								 VERSION_ID						when (WIB_RD_address = x"f4")	else
 								 VERSION(7 downto 0)			when (WIB_RD_address = x"f5") else	
@@ -353,7 +384,17 @@ VERSION(15 downto 12)	<=  x"0";
 			reg59_o		<= X"00";
 			reg60_o		<= X"00";
 			reg61_o		<= X"00";
-	
+			reg62_o		<= X"00";		
+			reg63_o		<= X"00";
+			reg64_o		<= X"00";	
+			reg65_o		<= X"00";
+			reg66_o		<= X"00";	
+			reg67_o		<= X"00";	
+			reg68_o		<= X"00";		
+			reg69_o		<= X"00";
+			reg70_o		<= X"00";
+			reg71_o		<= X"00";
+
 		elsif (clk'event  AND  clk = '1') then				
 
 
@@ -424,6 +465,17 @@ VERSION(15 downto 12)	<=  x"0";
 					when x"3B" => 	reg59_o  <= WIB_data;	
 					when x"3C" => 	reg60_o  <= WIB_data;
 					when x"3D" => 	reg61_o  <= WIB_data;
+					when x"3E" => 	reg62_o  <= WIB_data;	
+					when x"3F" => 	reg63_o  <= WIB_data;	
+					when x"40" => 	reg64_o  <= WIB_data;	
+					when x"41" => 	reg65_o  <= WIB_data;		
+					when x"42" => 	reg66_o  <= WIB_data;	
+					when x"43" => 	reg67_o  <= WIB_data;	
+					when x"44" => 	reg68_o  <= WIB_data;	
+					when x"45" => 	reg69_o  <= WIB_data;	
+					when x"46" => 	reg70_o  <= WIB_data;
+					when x"47" => 	reg71_o  <= WIB_data;
+
 					when x"FE" =>	SCRATCH_PAD	<= WIB_data;					
 					WHEN OTHERS =>  
 				end case;  
