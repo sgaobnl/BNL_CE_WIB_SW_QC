@@ -740,7 +740,7 @@ TP_DLY               <= reg59_p;
 TP_PERIOD				<= reg61_p & reg60_p; 
 
 FE_CMN_CSA	 	<= reg62_p(0);		
-FE_CMN_CSB	 	<= reg62_p(2); 
+FE_CMN_CSB	 	<= reg62_p(1); 
 FE_CMN_CSC	 	<= reg62_p(2);
 FE_CMN_INH	 	<= reg62_p(3);
 
