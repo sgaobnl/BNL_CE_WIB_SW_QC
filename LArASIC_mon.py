@@ -86,9 +86,16 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
                         [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                         [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                       ]
-    chk.set_fe_reset()
     chk.femb_cfg(femb_id=0)
+
+    mux_cs=5
+    mux_name = select_names_fe[mux_cs]
+    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
+
     if mon_type == 1:
+        chk.set_fe_reset()
         print ("measure Temperatue through Monitoring pin")
         chn = 0
         stb0=0
@@ -100,19 +107,12 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
         chk.set_fe_sync()
         chk.femb_fe_cfg(femb_id=0)
 
-        mux_cs=5
-        mux_name = select_names_fe[mux_cs]
-        chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, fe<<mux_cs)    
-        chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
-        chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
-        #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
-        #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
-
         datas = dat_monadcs()[0]
         for fe in range(8):
             print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
     if mon_type == 2:
+        chk.set_fe_reset()
         print ("measure VBGR through Monitoring pin")
         chn = 0
         stb1=1
@@ -123,19 +123,12 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
         chk.set_fe_sync()
         chk.femb_fe_cfg(femb_id=0)
         
-        mux_cs=5
-        mux_name = select_names_fe[mux_cs]
-        chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, fe<<mux_cs)    
-        chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
-        chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
-        #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
-        #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
-
         datas = dat_monadcs()[0]
         for fe in range(8):
             print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
     if mon_type == 3:
+        chk.set_fe_reset()
         print ("measure LArASIC DAC through Monitoring pin")
         chk.set_fe_board(sg0=sg0, sg1=sg1)
         chn = 0
@@ -145,20 +138,42 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
             
-            mux_cs=5
-            mux_name = select_names_fe[mux_cs]
-            chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, fe<<mux_cs)    
-            chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
-            chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
-            #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
-            #chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
-
             datas = dat_monadcs()[0]
             for fe in range(8):
                 print(dac, "FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
+    if mon_type == 0:
+        print ("measure LArASIC 200mV BL through Monitoring pin")
+        chn = 0
+        stb0=0
+        stb1=0
+ 
+        for chn in range(16):
+            chk.set_fe_reset()
+            for fe in range(8):
+                chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=0, smn=1,st0=1, st1=1, sdf=1) 
+            chk.set_fe_sync()
+            chk.femb_fe_cfg(femb_id=0)
+
+            datas = dat_monadcs()[0]
+            for fe in range(8):
+                print("900mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
+
+ 
+        for chn in range(16):
+            chk.set_fe_reset()
+            for fe in range(8):
+                chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=1, smn=1,st0=1, st1=1, sdf=1) 
+            chk.set_fe_sync()
+            chk.femb_fe_cfg(femb_id=0)
+
+            datas = dat_monadcs()[0]
+            for fe in range(8):
+                print("200mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
 
-dat_fe_mons(mon_type=3)
+dat_fe_mons(mon_type=0)
+#dat_fe_mons(mon_type=2)
+#dat_fe_mons(mon_type=3)
