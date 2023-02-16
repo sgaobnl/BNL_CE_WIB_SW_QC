@@ -347,7 +347,7 @@ SIGNAL	CLK_50MHz 		:  STD_LOGIC;
 SIGNAL	CLK_25MHz 		:  STD_LOGIC;
 SIGNAL	CLK_12_5MHz   	:  STD_LOGIC;
 
-SIGNAL	SYS_RESET		:  STD_LOGIC;
+--SIGNAL	SYS_RESET		:  STD_LOGIC;
 SIGNAL	reset 			:  STD_LOGIC;
 SIGNAL	start				:  STD_LOGIC;
 
@@ -736,6 +736,7 @@ TP_SOCKET_EN			<= reg56_p;
 
 Test_PULSE_WIDTH     <= reg58_p & reg57_p;
 --TP_AMPL              <= reg56_p;
+TP_AMPL              <= x"00";
 TP_DLY               <= reg59_p;
 TP_PERIOD				<= reg61_p & reg60_p; 
 
@@ -857,7 +858,7 @@ ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else
 
 sys_rst_inst : entity work.sys_rst
 PORT MAP(	clk 			=> CLK_50MHz,
-				reset_in 	=> SYS_RESET,
+				reset_in 	=> '0' , --SYS_RESET,
 				start 		=> start,
 				RST_OUT 		=> reset);
 		
@@ -899,7 +900,7 @@ I2CSLAVE : entity work.I2CSLAVE
 
 	port MAP(
 		sys_clk			=> CLK_62_5MHz,
-		rst				=> SYS_RESET,
+		rst				=> reset,
 		FPGA_ADDRESS	=> '0',
 		I2C_BRD_ADDR	=> b"1100000",
 		SDA_IO_IN		=> I2C_LVDS_SDA_W2C_P ,
@@ -1168,16 +1169,6 @@ TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE
 		Test_pulse			=> open
 	);
 
-
-		
-		
-		
-		
-
-	
-	
-	
-	
 DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 	PORT MAP
 	(
@@ -1331,7 +1322,7 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg59_o 	=> reg59_p,
 		reg60_o 	=> reg60_p,
 		reg61_o 	=> reg61_p,
-		reg62_o 	=> open,
+		reg62_o 	=> reg62_p, 
 		reg63_o 	=> reg63_p,
 		reg64_o 	=> reg64_p,
 		reg65_o 	=> reg65_p,
