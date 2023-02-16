@@ -236,6 +236,23 @@ entity DUNE_DAT_FPGA is
 		ADC_TST_SEL 						: OUT STD_LOGIC_VECTOR(7 downto 0);
 		
 --		ADC_SRC_CS_P						: OUT STD_LOGIC_VECTOR(15 downto 0);
+		ADC_SRC_CS_P0					   : OUT STD_LOGIC;
+		ADC_SRC_CS_P1					   : OUT STD_LOGIC;
+		ADC_SRC_CS_P2					   : OUT STD_LOGIC;
+		ADC_SRC_CS_P3					   : OUT STD_LOGIC;
+--		ADC_SRC_CS_P4					   : OUT STD_LOGIC; --comment due to schemacits error
+		ADC_SRC_CS_P5					   : OUT STD_LOGIC;	 --comment due to schemacits error	
+--		ADC_SRC_CS_P6					   : OUT STD_LOGIC;		
+		ADC_SRC_CS_P7					   : OUT STD_LOGIC;		
+		
+		ADC_SRC_CS_P8					   : OUT STD_LOGIC;
+		ADC_SRC_CS_P9					   : OUT STD_LOGIC;
+		ADC_SRC_CS_PA					   : OUT STD_LOGIC;
+		ADC_SRC_CS_PB					   : OUT STD_LOGIC;
+		ADC_SRC_CS_PC					   : OUT STD_LOGIC;
+		ADC_SRC_CS_PD					   : OUT STD_LOGIC;		
+		ADC_SRC_CS_PE					   : OUT STD_LOGIC;		
+		ADC_SRC_CS_PF					   : OUT STD_LOGIC;				
 		
 		ADC_MonADC_CS						: OUT STD_LOGIC; 		
 		ADC_MonADC_SCK						: OUT STD_LOGIC; 
@@ -549,12 +566,12 @@ FE_INS_PLS_CS <= TP_SOCKET_EN AND Test_pulse_buffer; --bitwise and
 
 ----- register map -------
 
-MISC_U1_IO(0) <= I2C_LVDS_SDA_W2C_P;
-MISC_U1_IO(1) <= FASTCOMMAND_IN_P;
-MISC_U1_IO(2) <= CLK_64MHZ_SYS_P;
-MISC_U1_IO(3) <= CLK_62_5MHz;
-MISC_U1_IO(4) <= CLK_100MHz;
-		
+--MISC_U1_IO(0) <= I2C_LVDS_SDA_W2C_P;
+--MISC_U1_IO(1) <= FASTCOMMAND_IN_P;
+--MISC_U1_IO(2) <= CLK_64MHZ_SYS_P;
+--MISC_U1_IO(3) <= CLK_62_5MHz;
+--MISC_U1_IO(4) <= CLK_100MHz;
+MISC_U1_IO	<= b"101010";
 			
 CD_sEL				<= reg1_p(0);
 CD1_PAD_RESET 		<= not reg1_p(4);
@@ -638,6 +655,23 @@ ADC_TST_SEL <= reg33_p;
 
 --ADC_SRC_CS_P(7 downto 0) <= reg34_p;
 --ADC_SRC_CS_P(15 downto 8) <= reg35_p;
+ADC_SRC_CS_P0	<=reg34_p(0); --'1';
+ADC_SRC_CS_P1	<=reg34_p(1); --'1';
+ADC_SRC_CS_P2	<=reg34_p(2); --'1';
+ADC_SRC_CS_P3	<=reg34_p(3); --'1';
+--ADC_SRC_CS_P4	<=reg34_p(4); --'1'; --comment due to schematics error 
+ADC_SRC_CS_P5	<=reg34_p(5); --'1';--comment due to schematics error		
+--ADC_SRC_CS_P6	<=reg34_p(6); --'1';		
+ADC_SRC_CS_P7	<=reg34_p(7); --'1';		
+
+ADC_SRC_CS_P8	<=reg35_p(0); --'1';
+ADC_SRC_CS_P9	<=reg35_p(1); --'1';
+ADC_SRC_CS_PA	<=reg35_p(2); --'1';
+ADC_SRC_CS_PB	<=reg35_p(3); --'1';
+ADC_SRC_CS_PC	<=reg35_p(4); --'1';
+ADC_SRC_CS_PD	<=reg35_p(5); --'1';		
+ADC_SRC_CS_PE	<=reg35_p(6); --'1';		
+ADC_SRC_CS_PF	<=reg35_p(7); --'1';	
 
 ADC_P_TST_CSA 			<= reg36_p(0);
 ADC_P_TST_CSB 			<= reg36_p(1);

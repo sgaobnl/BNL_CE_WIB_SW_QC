@@ -48,7 +48,7 @@ qar_info.json
 #*.sof #keep this
 *.sopc_builder
 *.summary
-*.tcl
+#*.tcl
 *.txt # Explicitly add any text files used
 *~
 *example*
