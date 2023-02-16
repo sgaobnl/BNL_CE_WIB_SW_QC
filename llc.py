@@ -145,6 +145,9 @@ class LLC():
         self.DAT_ADC_TEST_IN_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_ADC_TEST_IN_SEL')
         self.DAT_EXT_PULSE_CNTL = ctypes.c_uint8.in_dll(self.wib, 'DAT_EXT_PULSE_CNTL')
 
+        self.DAT_FE_CMN_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_CMN_SEL')
+        self.DAT_MISC_IO = ctypes.c_uint8.in_dll(self.wib, 'DAT_MISC_IO')
+
         self.DAT_FE_DAC_TP_SET = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_SET')
         self.DAT_FE_DAC_TP_DATA_LSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_LSB')
         self.DAT_FE_DAC_TP_DATA_MSB = ctypes.c_uint8.in_dll(self.wib, 'DAT_FE_DAC_TP_DATA_MSB')

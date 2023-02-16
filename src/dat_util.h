@@ -82,6 +82,8 @@ extern "C" {
 	extern constexpr uint8_t DAT_TEST_PULSE_DELAY			= 59;
 	extern constexpr uint8_t DAT_TEST_PULSE_PERIOD_LSB		= 60; 	
 	extern constexpr uint8_t DAT_TEST_PULSE_PERIOD_MSB		= 61; 
+	extern constexpr uint8_t DAT_FE_CMN_SEL		     	= 62;
+	extern constexpr uint8_t DAT_MISC_IO    			= 63;
 	
 	
 /////INA226 Internal register map
