@@ -58,13 +58,13 @@ def dat_fe_vbgrs():
     print ("measure VBGR through VBGR pin")
     mux_cs = 4
     mux_name = select_names_fe[mux_cs]
-    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, 4<<4)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
     datas = dat_monadcs()[0]
     print (datas)
     for fe in range(8):
         print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
-#dat_fe_vbgrs()
 
 
 def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
@@ -87,13 +87,6 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
                         [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                       ]
     chk.femb_cfg(femb_id=0)
-
-    while True:
-        a = int(input ("cmn--> "))
-        chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CMN_SEL, a)    
-        time.sleep(1)
-        b = int(input ("mon--> "))
-        chk.cdpoke(0, 0xC, 0, chk.DAT_MISC_IO, b)    
 
     mux_cs=5
     mux_name = select_names_fe[mux_cs]
@@ -168,6 +161,7 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
                 print("900mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
  
+        print ("measure LArASIC 900mV BL through Monitoring pin")
         for chn in range(16):
             chk.set_fe_reset()
             for fe in range(8):
@@ -181,6 +175,9 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
 
 
 
+dat_fe_vbgrs()
+
+dat_fe_mons(mon_type=2)
 dat_fe_mons(mon_type=0)
-#dat_fe_mons(mon_type=2)
-#dat_fe_mons(mon_type=3)
+dat_fe_mons(mon_type=1)
+dat_fe_mons(mon_type=3)
