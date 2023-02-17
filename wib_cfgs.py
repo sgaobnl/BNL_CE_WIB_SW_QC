@@ -380,10 +380,50 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wr(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0x00)
 
     def femb_cd_chkreg(self, femb_id):
+
+        reg_pages=range(0,6)
+        # page 0 registers
+        reg_addr0=[0x01,0x03,0x11,0x1f,0x20,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x18,0x19,0x1a,0x1b,0x21,0x22,0x23]
+        # page 0 registers default value
+        reg_dval0=[0x00,0x28,0x02,0x00,0x00,0x20,0x00,0x00,0x20,0x20,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+        # page 5 registers
+        reg_addr5=range(0x40,0x55)
+        # page 5 registers default value
+        reg_dval5=[0x03,0x20,0x02,0x02,0x00,0x00,0x01,0x00,0x03,0x07,0x00,0x02,0x00,0x00,0x01,0x00,0x00,0x0f,0x00,0x01,0x01]
+        # page 1-4 registers
+        reg_addr1=[0x06,0x07,0x08,0x09,0x0b,0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91]
+        # page 1-4 registers default value
+        reg_dval1=[0]*len(reg_addr1)
+
+        hasERROR = False
         for chip_addr in [2,3]:
-            reg_page=0
-            for reg_addr in range(0,0x2e):
-                rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+            for reg_page in reg_pages:
+                nreg=0
+                if reg_page==0:
+                   for reg_addr in reg_addr0:
+                       rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+                       defreg = reg_dval0[nreg]
+                       if rdreg!=defreg:
+                          print("ERROR: femb {} chip {} CD page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg))
+                          hasERROR = True
+
+                if reg_page==5:
+                   for reg_addr in reg_addr5:
+                       rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+                       defreg = reg_dval5[nreg]
+                       if rdreg!=defreg:
+                          print("ERROR: femb {} chip {} CD page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg))
+                          hasERROR = True
+
+                if reg_page>0 and reg_page<5:
+                   for reg_addr in reg_addr1:
+                       rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
+                       defreg = reg_dval1[nreg]
+                       if rdreg!=defreg:
+                          print("ERROR: femb {} chip {} CD page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg))
+                          hasERROR = True
+
+        return hasERROR
 
     def femb_cd_cfg(self, femb_id):
 #set coldata 8b10 
