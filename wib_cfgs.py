@@ -381,6 +381,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def femb_cd_chkreg(self, femb_id):
 
+        print("Check femb%d COLDATA default registers' value"%femb_id)
         reg_pages=range(0,6)
         # page 0 registers
         reg_addr0=[0x01,0x03,0x11,0x1f,0x20,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x18,0x19,0x1a,0x1b,0x21,0x22,0x23]
@@ -422,6 +423,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                        if rdreg!=defreg:
                           print("ERROR: femb {} chip {} CD page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg))
                           hasERROR = True
+                nreg = nreg+1 
 
         return hasERROR
 
@@ -542,6 +544,46 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 #self.femb_powering(fembs =[])
                 print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
                 exit()
+
+    def femb_adc_chkreg(self, femb_id):
+
+        print("Check femb%d COLDADC default registers' value"%femb_id)
+
+        # page 1 registers
+        reg_addr1=range(0x80,0xB67)
+        # page 1 registers default value
+        reg_dval1=[0xA3,0x00,0x00,0x00,0x33,0x33,0x33,0x33,0x0B,0x00,0xF1,0x29,0x8D,0x65,0x55,0xFF,0xFF,0xFF,0xFF,0x04,0x00,0x00,0xFF,0x2F,0xDF,0x33,0x89,0x67,0x15,0xFF,0xFF,0x00,0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x10,0x00,0xCD,0xAB,0x34,0x12]
+        
+        # page 2 registers
+        reg_addr2=range(1,5)
+        # page 2 registers default value
+        reg_dval2=[0x10,0x04,0x00,0x00]
+       
+        hasERROR = False 
+        for adc_no in range(8):
+            c_id = self.adcs_paras[adc_no][0]
+
+            reg_page=1
+            nreg=0
+            for reg_addr in reg_addr1:
+                rdreg = self.femb_i2c_rd(femb_id, c_id, reg_page, reg_addr)
+                defreg = reg_dval1[nreg]
+                nreg = nreg+1
+                if rdreg!=defreg:
+                   print("ERROR: femb {} chip {} ADC page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, c_id, reg_page, reg_addr,rdreg,defreg))
+                   hasERROR = True
+
+            reg_page=2
+            nreg=0
+            for reg_addr in reg_addr2:
+                rdreg = self.femb_i2c_rd(femb_id, c_id, reg_page, reg_addr)
+                defreg = reg_dval2[nreg]
+                nreg = nreg+1
+                if rdreg!=defreg:
+                   print("ERROR: femb {} chip {} ADC page_reg=0x{} reg_addr=0x{} read value(0x{}) is not default(0x{})".format(femb_id, c_id, reg_page, reg_addr,rdreg,defreg))
+                   hasERROR = True
+
+        return hasERROR
 
     def femb_adc_cfg(self, femb_id):
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
