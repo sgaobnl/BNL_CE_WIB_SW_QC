@@ -266,7 +266,7 @@ class ana_tools:
         fig.savefig(fp+".png")
         plt.close(fig)
 
-    def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp, makeplot=False):
+    def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp):
        
         for ifemb,femb_no in fembs.items():
             nfemb=int(ifemb[-1])
@@ -295,7 +295,7 @@ class ana_tools:
 
             df=pd.DataFrame(data=mon_dic)
 
-            fig, ax =plt.subplots(figsize=(10,5))
+            fig, ax =plt.subplots(figsize=(10,2))
             ax.axis('off')
             table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
             ax.set_title("Monitoring path for FE-ADC (#mV)")
@@ -304,28 +304,4 @@ class ana_tools:
             newfp=fp[ifemb]+"mon_meas.png"
             fig.savefig(newfp)
             plt.close(fig)
-
-            if makeplot:
-               fig1, ax1 =plt.subplots(1,2,figsize=(10,4))
-               ax1[0].plot(nchips, mon_dic['FE T'],marker='.',label='FE T')
-               ax1[0].plot(nchips, mon_dic['FE BGP'],marker='.',label='FE BGP')
-               ax1[0].set_title("Monitoring path for FE (mV)")
-               ax1[0].set_xlabel("nchip")
-               ax1[0].legend()
-
-               ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
-               ax1[1].plot(nchips, mon_dic['ADC VCMO'],marker='.',label='ADC VCMO')
-               ax1[1].plot(nchips, mon_dic['ADC VREFP'],marker='.',label='ADC VREFP')
-               ax1[1].plot(nchips, mon_dic['ADC VREFN'],marker='.',label='ADC VREFN')
-               ax1[1].plot(nchips, mon_dic['ADC VSSA'],marker='.',label='ADC VSSA')
-               ax1[1].set_title("Monitoring path for ADC (mV)")
-               ax1[1].set_xlabel("nchip")
-               ax1[1].legend()
-               plt.tight_layout()
-
-               newfp=fp[ifemb]+"mon_meas_plot.png"
-               fig1.savefig(newfp)
-               plt.close(fig1)
-
-  
  
