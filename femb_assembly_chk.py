@@ -91,7 +91,7 @@ if save:
     with open(fp, 'wb') as fn:
          pickle.dump(logs, fn)
 
-outfile = open("results_femb_assembly_chk.txt", "w")
+outfile = open(datadir+"chk_logs.txt", "w")
 t1 = time.time()
 
 ################## Power on FEMBs and check currents ##################
@@ -100,6 +100,8 @@ chk.wib_fw()
 
 # set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+
+print("Check FEMB currents")
 
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
@@ -128,55 +130,58 @@ for ifemb in fembs:
        hasERROR = True
 
     if hasERROR:
-       Print("FEMB ID {} faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild current #1 check".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f"%bias_i)
-       outfile.write("LArASIC current: %f"%fe_i)
-       outfile.write("COLDATA current: %f"%cd_i)
-       outfile.write("ColdADC current: %f"%adc_i)
+       print("FEMB ID {} faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb]))
+       outfile.write("BIAS current: %f\n"%bias_i)
+       outfile.write("LArASIC current: %f\n"%fe_i)
+       outfile.write("COLDATA current: %f\n"%cd_i)
+       outfile.write("ColdADC current: %f\n"%adc_i)
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
        chk.femb_powering_single(ifemb, 'off')
        
 ################# check the default COLDATA and COLDADC register ##################
+print("Check FEMB registers")
 for ifemb in fembs:
-    errflag = chk.femb_cd_chkreg(femb_id)
+    errflag = chk.femb_cd_chkreg(ifemb)
     if errflag:
-       Print("FEMB ID {} faild COLDATA register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDATA register 1 check".format(fembNo['femb%d'%ifemb]))
+       print("FEMB ID {} faild COLDATA register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
 
-    errflag = chk.femb_adc_chkreg(femb_id)
+    errflag = chk.femb_adc_chkreg(ifemb)
     if errflag:
-       Print("FEMB ID {} faild COLDADC register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDADC register 1 check".format(fembNo['femb%d'%ifemb]))
+       print("FEMB ID {} faild COLDADC register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
 
 ################ reset COLDATA, COLDADC and LArASIC ##############
+print("Reset FEMBs")
 chk.femb_cd_rst()
 time.sleep(0.01)
 for ifemb in fembs:
-    chk.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
     time.sleep(0.01)
-    chk.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
     time.sleep(0.01)
-    chk.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
 
 ################ check the default COLDATA and COLDADC register ###########
+print("Check FEMB registers")
 for ifemb in fembs:
-    errflag = chk.femb_cd_chkreg(femb_id)
+    errflag = chk.femb_cd_chkreg(ifemb)
     if errflag:
-       Print("FEMB ID {} faild COLDATA register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDATA register 2 check".format(fembNo['femb%d'%ifemb]))
+       print("FEMB ID {} faild COLDATA register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
 
-    errflag = chk.femb_adc_chkreg(femb_id)
+    errflag = chk.femb_adc_chkreg(ifemb)
     if errflag:
-       Print("FEMB ID {} faild COLDADC register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDADC register 2 check".format(fembNo['femb%d'%ifemb]))
+       print("FEMB ID {} faild COLDADC register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild COLDADC register 2 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
 
@@ -206,9 +211,10 @@ rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
-        pickle.dump( [rms_rawdata, cfg_paras_rec], fn)
+        pickle.dump( [rms_rawdata, cfg_paras_rec, logs, fembs], fn)
 
 ################ Measure FEMB current 2 ####################
+print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
 for ifemb in fembs:
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
@@ -234,17 +240,17 @@ for ifemb in fembs:
        hasERROR = True
 
     if hasERROR:
-       Print("FEMB ID {} faild current check 2. Test will continue".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild current #2 check".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f"%bias_i)
-       outfile.write("LArASIC current: %f"%fe_i)
-       outfile.write("COLDATA current: %f"%cd_i)
-       outfile.write("ColdADC current: %f"%adc_i)
+       print("FEMB ID {} faild current check 2. Test will continue".format(fembNo['femb%d'%ifemb]))
+       outfile.write("FEMB ID {} faild current #2 check\n".format(fembNo['femb%d'%ifemb]))
+       outfile.write("BIAS current: %f\n"%bias_i)
+       outfile.write("LArASIC current: %f\n"%fe_i)
+       outfile.write("COLDATA current: %f\n"%cd_i)
+       outfile.write("ColdADC current: %f\n"%adc_i)
 
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
-        pickle.dump(pwr_meas2, fn)
+        pickle.dump([pwr_meas2, logs, fembs], fn)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take pulse data")
@@ -269,7 +275,7 @@ pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x20)
     with open(fp, 'wb') as fn:
-        pickle.dump( [pls_rawdata, cfg_paras_rec], fn)
+        pickle.dump( [pls_rawdata, cfg_paras_rec, logs, fembs], fn)
 
 ####### Take monitoring data #######
 sps=1
@@ -296,7 +302,7 @@ if save:
     fp = datadir + "Mon_{}_{}.bin".format("200mVBL","14_0mVfC")
 
     with open(fp, 'wb') as fn:
-        pickle.dump( [mon_refs, mon_temps, mon_adcs], fn)
+        pickle.dump( [mon_refs, mon_temps, mon_adcs, logs, fembs], fn)
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
