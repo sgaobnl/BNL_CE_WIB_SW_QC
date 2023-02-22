@@ -94,22 +94,21 @@ if save:
 outfile = open("results_femb_assembly_chk.txt", "w")
 t1 = time.time()
 
-################## Power on FEMBs ##################
+################## Power on FEMBs and check currents ##################
 chk = WIB_CFGS()
 chk.wib_fw()
 
 # set FEMB voltages
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
-chk.femb_powering(fembs)
-time.sleep(2)
 
-################## check FEMBs current #############
-pwr_meas = chk.get_sensors()
 for ifemb in fembs:
-    bias_i = round(pwr_meas['FEMB%d_BIAS_I'%ifemb],3)  
-    fe_i = round(pwr_meas['FEMB%d_DC2DC0_I'%ifemb],3)
-    cd_i = round(pwr_meas['FEMB%d_DC2DC1_I'%ifemb],3)
-    adc_i = round(pwr_meas['FEMB%d_DC2DC2_I'%ifemb],3)
+    chk.femb_powering_single(ifemb, 'on')
+    pwr_meas1 = chk.get_sensors()
+
+    bias_i = round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)  
+    fe_i = round(pwr_meas1['FEMB%d_DC2DC0_I'%ifemb],3)
+    cd_i = round(pwr_meas1['FEMB%d_DC2DC1_I'%ifemb],3)
+    adc_i = round(pwr_meas1['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
     if abs(bias_i)>0.05:
@@ -137,10 +136,8 @@ for ifemb in fembs:
        outfile.write("ColdADC current: %f"%adc_i)
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
-
-################# enable certain fembs ###################
-chk.wib_femb_link_en(fembs)
-
+       chk.femb_powering_single(ifemb, 'off')
+       
 ################# check the default COLDATA and COLDADC register ##################
 for ifemb in fembs:
     errflag = chk.femb_cd_chkreg(femb_id)
@@ -156,7 +153,6 @@ for ifemb in fembs:
        outfile.write("FEMB ID {} faild COLDADC register 1 check".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
-
 
 ################ reset COLDATA, COLDADC and LArASIC ##############
 chk.femb_cd_rst()
@@ -184,6 +180,9 @@ for ifemb in fembs:
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
 
+################# enable certain fembs ###################
+chk.wib_femb_link_en(fembs)
+
 ################ Measure RMS at 200mV, 14mV/fC, 2us ###################
 print("Take RMS data")
 snc = 1 # 200 mV
@@ -210,12 +209,12 @@ if save:
         pickle.dump( [rms_rawdata, cfg_paras_rec], fn)
 
 ################ Measure FEMB current 2 ####################
-pwr_meas = chk.get_sensors()
+pwr_meas2 = chk.get_sensors()
 for ifemb in fembs:
-    bias_i = round(pwr_meas['FEMB%d_BIAS_I'%ifemb],3)  
-    fe_i = round(pwr_meas['FEMB%d_DC2DC0_I'%ifemb],3)
-    cd_i = round(pwr_meas['FEMB%d_DC2DC1_I'%ifemb],3)
-    adc_i = round(pwr_meas['FEMB%d_DC2DC2_I'%ifemb],3)
+    bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
+    fe_i = round(pwr_meas2['FEMB%d_DC2DC0_I'%ifemb],3)
+    cd_i = round(pwr_meas2['FEMB%d_DC2DC1_I'%ifemb],3)
+    adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
     if abs(bias_i)>0.02:
@@ -245,7 +244,7 @@ for ifemb in fembs:
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
-        pickle.dump(pwr_meas, fn)
+        pickle.dump(pwr_meas2, fn)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take pulse data")

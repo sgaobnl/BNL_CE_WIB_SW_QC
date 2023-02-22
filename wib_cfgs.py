@@ -273,6 +273,56 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         #print ("Power configuration measurement is not ready yet...")
         #return None
 
+    def femb_powering_single(self, femb_id, act):
+        if act=='on':
+            self.all_femb_bias_ctrl(enable=1 )
+
+            self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            print ("FEMB%d is on"%femb_id)
+            
+            #enable WIB data link
+            link_mask=self.peek(0xA00C0008) 
+            self.poke(0xA00C0008, link_mask&0xffff0000)
+            time.sleep(0.1)
+            link_mask=self.peek(0xA00C0008) 
+            link_mask=link_mask|0xffff 
+            time.sleep(0.1)
+            if femb_id==0: 
+                link_mask = link_mask&0xfffffff0
+            if femb_id==1: 
+                link_mask = link_mask&0xffffff0f
+            if femb_id==2: 
+                link_mask = link_mask&0xfffff0ff
+            if femb_id==3: 
+                link_mask = link_mask&0xffff0fff
+            self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008)
+ 
+            #reset COLDATA RX to clear buffers
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0004, rdreg&0xffffcfff)
+            self.poke(0xA00C0004, rdreg|0x00003000)
+            self.poke(0xA00C0004, rdreg&0xffffcfff)
+            rdreg = self.peek(0xA00C0004)
+            #print ("coldata_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
+
+            #reset FELIX TX and loopback RX
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            self.poke(0xA00C0038, rdreg|0x00000040)
+            self.poke(0xA00C0038, rdreg&0xffffffdf)
+            rdreg = self.peek(0xA00C0038)
+            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            time.sleep(0.1)
+
+        if act=='off':
+            self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+            print ("FEMB%d is off"%femb_id)
+            time.sleep(1)
+
     def en_ref10MHz(self, ref_en = False):
         if ref_en:
             self.poke(0xff5e00c4, 0x1033200)
