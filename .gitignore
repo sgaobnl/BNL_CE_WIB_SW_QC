@@ -1,4 +1,5 @@
-
+*.txt
+*.zip
 *.pyc
 *.swp
 *.swo
