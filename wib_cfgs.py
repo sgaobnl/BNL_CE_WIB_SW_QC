@@ -464,7 +464,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if reg_page==5:
                    for reg_addr in reg_addr5:
                        rdreg = self.femb_i2c_rd(femb_id, chip_addr, reg_page, reg_addr)
-                       rdreg = rdreg & reg_nbit5
+                       rdreg = rdreg & reg_nbit5[nreg]
                        defreg = reg_dval5[nreg]
                        if rdreg!=defreg:
                           print("ERROR: femb {} chip {} CD page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, chip_addr, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
