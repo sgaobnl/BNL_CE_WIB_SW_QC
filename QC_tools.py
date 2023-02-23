@@ -1,4 +1,5 @@
 from spymemory_decode import wib_spy_dec_syn
+import numpy as np
 
 class ana_tools:
     def __init__(self):
@@ -58,7 +59,7 @@ class ana_tools:
     
         return sss
     
-    def GetRMS(self, data, nfemb, snc, sgs, sts, fp, fname):
+    def GetRMS(self, data, nfemb, fp, fname):
     
         nevent = len(data)
     

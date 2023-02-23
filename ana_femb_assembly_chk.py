@@ -81,6 +81,10 @@ qc_tools = ana_tools()
 pldata = qc_tools.data_decode(rmsdata, fembs)
 pldata = np.array(pldata)
 
+for ifemb in fembs:
+    fp = PLOTDIR[ifemb]
+    qc_tools.GetRMS(rmsdata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
+
 
 #fpulse = fdata+"Raw_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
 #with open(fpulse, 'rb') as fn:
