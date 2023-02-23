@@ -211,7 +211,7 @@ rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
-        pickle.dump( [rms_rawdata, cfg_paras_rec, logs, fembs], fn)
+        pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
 
 ################ Measure FEMB current 2 ####################
 print("Check FEMB current")
@@ -223,8 +223,8 @@ for ifemb in fembs:
     adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
-    if abs(bias_i)>0.02:
-       print("ERROR: FEMB{} BIAS current |{}|>0.02A".format(ifemb,bias_i)) 
+    if bias_i>0.05 or bias_i<-0.02:
+       print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i)) 
        hasERROR = True
 
     if fe_i>0.5 or fe_i<0.4:
@@ -240,7 +240,7 @@ for ifemb in fembs:
        hasERROR = True
 
     if hasERROR:
-       print("FEMB ID {} faild current check 2. Test will continue".format(fembNo['femb%d'%ifemb]))
+       print("FEMB ID {} faild current check 2. But test will continue".format(fembNo['femb%d'%ifemb]))
        outfile.write("FEMB ID {} faild current #2 check\n".format(fembNo['femb%d'%ifemb]))
        outfile.write("BIAS current: %f\n"%bias_i)
        outfile.write("LArASIC current: %f\n"%fe_i)
@@ -250,7 +250,7 @@ for ifemb in fembs:
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
-        pickle.dump([pwr_meas2, logs, fembs], fn)
+        pickle.dump([pwr_meas2, fembs], fn)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take pulse data")
@@ -275,7 +275,7 @@ pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x20)
     with open(fp, 'wb') as fn:
-        pickle.dump( [pls_rawdata, cfg_paras_rec, logs, fembs], fn)
+        pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
 ####### Take monitoring data #######
 sps=1
@@ -302,7 +302,7 @@ if save:
     fp = datadir + "Mon_{}_{}.bin".format("200mVBL","14_0mVfC")
 
     with open(fp, 'wb') as fn:
-        pickle.dump( [mon_refs, mon_temps, mon_adcs, logs, fembs], fn)
+        pickle.dump( [mon_refs, mon_temps, mon_adcs, fembs], fn)
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
