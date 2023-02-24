@@ -83,7 +83,10 @@ pldata = np.array(pldata)
 
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
-    qc_tools.GetRMS(rmsdata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
+    print(ifemb)
+    qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
+    qc_tools.ChkRMS(env, fp, "SE_200mVBL_14_0mVfC_2_0us", 1, 0, 3)
+
 
 
 #fpulse = fdata+"Raw_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
