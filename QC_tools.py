@@ -168,3 +168,59 @@ class ana_tools:
         outfile.write("\n")
 
         return nfail
+
+    def GetPeaks(self, data, nfemb, fp, fname):
+    
+        nevent = len(data)
+        print(nevent)
+    
+        rms=[]
+        ped=[]
+    
+        for ich in range(5):
+            global_ch = nfemb*128+ich
+#            peddata=np.empty(0)
+#    
+#            npulse=0
+#            first = True
+            allpls=np.zeros(500)
+            for itr in range(nevent):
+                evtdata = data[itr][global_ch]
+#                allpls = allpls + evtdata[0:500] + evtdata[500:1000] + evtdata[1000:1500] + evtdata[1500:2000]
+                plt.plot(range(500),evtdata[0:500])
+                plt.plot(range(500),evtdata[500:1000])
+                plt.plot(range(500),evtdata[1000:1500])
+                plt.plot(range(500),evtdata[1500:2000])
+#                allpls=np.append(allpls,evtdata)
+            plt.show()
+#    
+#            ch_ped = np.mean(allpls)
+#            ch_rms = np.std(allpls)
+#
+#            ped.append(ch_ped)
+#            rms.append(ch_rms)
+#    
+#        fig,ax = plt.subplots(figsize=(6,4))
+#        ax.plot(range(128), rms, marker='.')
+#        ax.set_title(fname)
+#        ax.set_xlabel("chan")
+#        ax.set_ylabel("rms")
+#        fp_fig = fp+"rms_{}.png".format(fname)
+#        plt.savefig(fp_fig)
+#        plt.close(fig)
+#
+#        fig,ax = plt.subplots(figsize=(6,4))
+#        ax.plot(range(128), ped, marker='.')
+#        ax.set_title(fname)
+#        ax.set_xlabel("chan")
+#        ax.set_ylabel("ped")
+#        fp_fig = fp+"ped_{}.png".format(fname)
+#        plt.savefig(fp_fig)
+#        plt.close(fig)
+#    
+#        fp_bin = fp+"RMS_{}.bin".format(fname)
+#        with open(fp_bin, 'wb') as fn:
+#             pickle.dump( [ped, rms], fn)
+#    
+#        return ped,rms
+#

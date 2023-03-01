@@ -83,19 +83,22 @@ pldata = np.array(pldata)
 
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
-    print(ifemb)
     qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
-    qc_tools.ChkRMS(env, fp, "SE_200mVBL_14_0mVfC_2_0us", 1, 0, 3)
+#    qc_tools.ChkRMS(env, fp, "SE_200mVBL_14_0mVfC_2_0us", 1, 0, 3)
 
+fpulse = fdata+"Raw_SE_900mVBL_14_0mVfC_2_0us_0x20.bin"
+with open(fpulse, 'rb') as fn:
+    raw = pickle.load(fn)
 
+sedata = raw[0]
 
-#fpulse = fdata+"Raw_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
-#with open(fpulse, 'rb') as fn:
-#    raw = pickle.load(fn)
-#
-#rawdata = raw[0]
-#pwr_meas = raw[1]
-#
+pldata = qc_tools.data_decode(sedata, fembs)
+pldata = np.array(pldata)
+
+for ifemb in fembs:
+    fp = PLOTDIR[ifemb]
+    qc_tools.GetPeaks(pldata, ifemb, fp, "SE_900mVBL_14_0mVfC_2_0us")
+
 #fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
 #with open(fmon, 'rb') as fn:
 #    rawmon = pickle.load(fn)
