@@ -77,21 +77,21 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
 
     #measure VBGR/Temperature through Monitoring pin
     chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                        [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                        [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                       ]
     chk.femb_cfg(femb_id=0)
 
     mux_cs=5
     mux_name = select_names_fe[mux_cs]
-    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
 
     if mon_type == 1:
@@ -133,13 +133,15 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
         chk.set_fe_board(sg0=sg0, sg1=sg1)
         chn = 0
         for dac in range(64):
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 chk.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
             
             datas = dat_monadcs()[0]
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 print(dac, "FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
@@ -151,33 +153,37 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
  
         for chn in range(16):
             chk.set_fe_reset()
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=0, smn=1,st0=1, st1=1, sdf=1) 
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
 
             datas = dat_monadcs()[0]
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 print("900mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
  
         print ("measure LArASIC 900mV BL through Monitoring pin")
         for chn in range(16):
             chk.set_fe_reset()
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=1, smn=1,st0=1, st1=1, sdf=1) 
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
 
             datas = dat_monadcs()[0]
-            for fe in range(8):
+            #for fe in range(8):
+            for fe in [0]:
                 print("200mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
 
 dat_fe_vbgrs()
 
+dat_fe_mons(mon_type=1)
 dat_fe_mons(mon_type=2)
 dat_fe_mons(mon_type=0)
-dat_fe_mons(mon_type=1)
 dat_fe_mons(mon_type=3)
