@@ -262,7 +262,7 @@ st1 = 1 # 2us
 
 cfg_paras_rec = []
 for femb_id in fembs:
-    chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=0x20 )
+    chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=0x10 )
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
@@ -273,7 +273,7 @@ time.sleep(0.5)
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 if save:
-    fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x20)
+    fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
@@ -283,7 +283,7 @@ for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
 
 for femb_id in fembs:
-    chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x20 )
+    chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x10 )
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
@@ -294,7 +294,7 @@ time.sleep(0.5)
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 if save:
-    fp = datadir + "Raw_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x20)
+    fp = datadir + "Raw_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 

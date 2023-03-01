@@ -7,6 +7,8 @@ import os
 import time, datetime, random, statistics
 from QC_tools import ana_tools
 from fpdf import FPDF
+import matplotlib.pyplot as plt
+
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
@@ -83,7 +85,7 @@ pldata = np.array(pldata)
 
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
-    qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
+    ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
 #    qc_tools.ChkRMS(env, fp, "SE_200mVBL_14_0mVfC_2_0us", 1, 0, 3)
 
 fpulse = fdata+"Raw_SE_900mVBL_14_0mVfC_2_0us_0x20.bin"
@@ -97,77 +99,106 @@ pldata = np.array(pldata)
 
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
-    qc_tools.GetPeaks(pldata, ifemb, fp, "SE_900mVBL_14_0mVfC_2_0us")
+    ppk,npk,bl=qc_tools.GetPeaks(pldata, ifemb, fp, "SE_900mVBL_14_0mVfC_2_0us")
 
-#fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
-#with open(fmon, 'rb') as fn:
-#    rawmon = pickle.load(fn)
+    fig,ax = plt.subplots(figsize=(6,4))
+    ax.plot(range(128), ppk, marker='.',label='pos')
+    ax.plot(range(128), npk, marker='.',label='neg')
+    ax.plot(range(128), bl, marker='.',label='ped')
+    ax.set_title("SE_900mVBL_14_0mVfC_2_0us")
+    ax.set_xlabel("chan")
+    ax.set_ylabel("ADC")
+    plt.legend()
+    fp_fig = fp+"pulse_{}.png".format("SE_900mVBL_14_0mVfC_2_0us")
+    plt.savefig(fp_fig)
+    plt.close(fig)
+
+#fpulse_diff = fdata+"Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x20.bin"
+#with open(fpulse_diff, 'rb') as fn:
+#    raw = pickle.load(fn)
 #
-#mon_refs = rawmon[0]
-#mon_temps = rawmon[1]
-#mon_adcs = rawmon[2]
+#diff_data = raw[0]
 #
-#qc_tools = ana_tools()
-#
-#femb_list = [int(ifemb[-1]) for ifemb,_ in fembNo.items()]
-#print(femb_list)
-#
-#pldata = qc_tools.data_decode(rawdata, femb_list)
+#pldata = qc_tools.data_decode(diff_data, fembs)
 #pldata = np.array(pldata)
 #
-##nchips=[0,4]
-#nchips=range(8)
-#makeplot=True
-#qc_tools.PrintMON(fembNo, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplot)
+#for ifemb in fembs:
+#    fp = PLOTDIR[ifemb]
+#    ppk,npk,bl=qc_tools.GetPeaks(pldata, ifemb, fp, "DIFF_900mVBL_14_0mVfC_2_0us")
 #
+#    fig,ax = plt.subplots(figsize=(6,4))
+#    ax.plot(range(128), ppk, marker='.',label='pos')
+#    ax.plot(range(128), npk, marker='.',label='neg')
+#    ax.plot(range(128), bl, marker='.',label='ped')
+#    ax.set_title(fname)
+#    ax.set_xlabel("chan")
+#    ax.set_ylabel("ADC")
+#    plt.legend()
+#    fp_fig = fp+"pulse_{}.png".format("DIFF_900mVBL_14_0mVfC_2_0us")
+#    plt.savefig(fp_fig)
+#    plt.close(fig)
+
+fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
+with open(fmon, 'rb') as fn:
+    rawmon = pickle.load(fn)
+
+mon_refs = rawmon[0]
+mon_temps = rawmon[1]
+mon_adcs = rawmon[2]
+
+fpwr = fdata+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
+with open(fpwr, 'rb') as fn:
+    rawpwr = pickle.load(fn)
+
+pwr_meas=rawpwr[0]
+for ifemb in fembs:
+    fp_pwr = PLOTDIR[ifemb]+"pwr_meas"
+    qc_tools.PrintPWR(pwr_meas, ifemb, fp_pwr)
+
+nchips=range(8)
+makeplot=True
+qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplot)
+
 ####### Generate Report ######
-#
-#for ifemb,femb_no in fembNo.items():
-#    i=int(ifemb[-1])
-#
-#    plotdir = PLOTDIR[ifemb]
-#    ana = qc_tools.data_ana(pldata,i)
-#    fp_data = plotdir+"SE_response"
-#    qc_tools.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
-#
-#    fp_pwr = plotdir+"pwr_meas"
-#    qc_tools.PrintPWR(pwr_meas, i, fp_pwr)
-#
-#    pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
-#    pdf.alias_nb_pages()
-#    pdf.add_page()
-#    pdf.set_auto_page_break(False,0)
-#    pdf.set_font('Times', 'B', 20)
-#    pdf.cell(85)
-#    pdf.l_margin = pdf.l_margin*2
-#    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(femb_no)), 0, 1, 'C')
-#    pdf.ln(2)
-#
-#    pdf.set_font('Times', '', 12)
-#    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, 0)
-#    pdf.cell(80)
-#    pdf.cell(30, 5, 'Date: {}'.format(date), 0, 1)
-#
-#
-#    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, 0)
-#    pdf.cell(80)
-#    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, 1)
-#    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, 1)
-#    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
-#
-#    pwr_image = fp_pwr+".png"
-#    pdf.image(pwr_image,0,40,200,40)
-#
-#    if makeplot:
-#       mon_image = plotdir+"mon_meas_plot.png"
-#       pdf.image(mon_image,10,85,180,72)
-#    else:
-#       mon_image = plotdir+"mon_meas.png"
-#       pdf.image(mon_image,0,77,200,95)
-#
-#    chk_image = fp_data+".png"
+
+for ifemb in fembs:
+    plotdir = PLOTDIR[ifemb]
+
+    pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
+    pdf.alias_nb_pages()
+    pdf.add_page()
+    pdf.set_auto_page_break(False,0)
+    pdf.set_font('Times', 'B', 20)
+    pdf.cell(85)
+    pdf.l_margin = pdf.l_margin*2
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%ifemb])), 0, 1, 'C')
+    pdf.ln(2)
+
+    pdf.set_font('Times', '', 12)
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, 0)
+    pdf.cell(80)
+    pdf.cell(30, 5, 'Date: {}'.format(date), 0, 1)
+
+
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, 0)
+    pdf.cell(80)
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, 1)
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, 1)
+    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
+
+    pwr_image = fp_pwr+".png"
+    pdf.image(pwr_image,0,40,200,40)
+
+    if makeplot:
+       mon_image = plotdir+"mon_meas_plot.png"
+       pdf.image(mon_image,10,85,180,72)
+    else:
+       mon_image = plotdir+"mon_meas.png"
+       pdf.image(mon_image,0,77,200,95)
+
+#    rms_image = plotdir+
 #    pdf.image(chk_image,3,158,200,120)
-#
-#    outfile = plotdir+'report.pdf'
-#    pdf.output(outfile, "F")
-#
+
+    outfile = plotdir+'report.pdf'
+    pdf.output(outfile, "F")
+
