@@ -25,7 +25,8 @@ class ana_tools:
     
         nevent = len(raw)
         sss=[]
-    
+        ttt=[]
+   
         for i in range(nevent):
             data = raw[i][0]
             buf_end_addr = raw[i][1]
@@ -46,6 +47,8 @@ class ana_tools:
                nsamples = len(wib_data[1])
     
             chns=[]
+            tmst0=[]
+            tmst1=[]
             for j in range(nsamples):
                 if 0 in fembs:
                    a0 = wib_data[0][j]["FEMB0_2"]
@@ -66,14 +69,27 @@ class ana_tools:
                    a3 = wib_data[1][j]["FEMB1_3"]
                 else:
                    a3 = [0]*128
+
+                if 0 in fembs or 1 in fembs:
+                   t0 = wib_data[0][j]["TMTS_low5"]
+                else:
+                   t0 = [0]*128
+    
+                if 2 in fembs or 3 in fembs:
+                   t1 = wib_data[1][j]["TMTS_low5"]
+                else:
+                   t1 = [0]*128
     
                 aa=a0+a1+a2+a3
                 chns.append(aa)
+                tmst0.append(t0)
+                tmst1.append(t1)
     
             chns = list(zip(*chns))
             sss.append(chns)
+            ttt.append([tmst0,tmst1])
     
-        return sss
+        return sss,ttt
     
     def GetRMS(self, data, nfemb, fp, fname):
     
@@ -183,7 +199,7 @@ class ana_tools:
         return nfail
 
 
-    def GetPeaks(self, data, nfemb, fp, fname):
+    def GetPeaks(self, data, tmst, nfemb, fp, fname):
     
         nevent = len(data)
         print(nevent)
@@ -205,6 +221,11 @@ class ana_tools:
 #                plt.plot(range(500),evtdata[500:1000])
 #                plt.plot(range(500),evtdata[1000:1500])
 #                plt.plot(range(500),evtdata[1500:2000])
+                #plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2]-tmst[itr][nfemb//2][0])
+                plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2])
+
+            plt.show()
+            break
             apulse = allpls/npulse
             ax.plot(range(500),apulse)
  
