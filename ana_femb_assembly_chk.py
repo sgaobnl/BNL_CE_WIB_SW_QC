@@ -98,7 +98,7 @@ pldata,tmst = qc_tools.data_decode(sedata, fembs)
 pldata = np.array(pldata)
 tmst = np.array(tmst)
 
-for ifemb in fembs:
+for ifemb in [0]:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, "SE_900mVBL_14_0mVfC_2_0us_0x10")
 

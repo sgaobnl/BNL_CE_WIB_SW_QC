@@ -71,12 +71,12 @@ class ana_tools:
                    a3 = [0]*128
 
                 if 0 in fembs or 1 in fembs:
-                   t0 = wib_data[0][j]["TMTS_low5"]
+                   t0 = wib_data[0][j]["FEMB_CDTS"]
                 else:
                    t0 = [0]*128
     
                 if 2 in fembs or 3 in fembs:
-                   t1 = wib_data[1][j]["TMTS_low5"]
+                   t1 = wib_data[1][j]["FEMB_CDTS"]
                 else:
                    t1 = [0]*128
     
@@ -221,10 +221,12 @@ class ana_tools:
 #                plt.plot(range(500),evtdata[500:1000])
 #                plt.plot(range(500),evtdata[1000:1500])
 #                plt.plot(range(500),evtdata[1500:2000])
-                #plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2]-tmst[itr][nfemb//2][0])
+#                plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2]-tmst[itr][nfemb//2][0])
+                plt.plot(range(len(evtdata)),evtdata)
                 plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2])
+                plt.show()
 
-            plt.show()
+
             break
             apulse = allpls/npulse
             ax.plot(range(500),apulse)
