@@ -196,6 +196,7 @@ sg1 = 0 # 14mV/fC
 st0 = 1
 st1 = 1 # 2us 
 
+chk.femb_cd_rst()
 cfg_paras_rec = []
 for femb_id in fembs:
     chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
@@ -260,6 +261,7 @@ sg1 = 0 # 14mV/fC
 st0 = 1
 st1 = 1 # 2us 
 
+chk.femb_cd_rst()
 cfg_paras_rec = []
 for femb_id in fembs:
     chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=0x10 )
@@ -278,6 +280,7 @@ if save:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
 print("Take differential pulse data")
+chk.femb_cd_rst()
 cfg_paras_rec = []
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
@@ -299,6 +302,7 @@ if save:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
 ####### Take monitoring data #######
+chk.femb_cd_rst()
 sps=1
 print ("monitor bandgap reference")
 nchips=range(8)
