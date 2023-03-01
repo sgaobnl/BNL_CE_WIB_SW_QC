@@ -71,12 +71,12 @@ class ana_tools:
                    a3 = [0]*128
 
                 if 0 in fembs or 1 in fembs:
-                   t0 = wib_data[0][j]["FEMB_CDTS"]
+                   t0 = wib_data[0][j]["TMTS"]
                 else:
                    t0 = [0]*128
     
                 if 2 in fembs or 3 in fembs:
-                   t1 = wib_data[1][j]["FEMB_CDTS"]
+                   t1 = wib_data[1][j]["TMTS"]
                 else:
                    t1 = [0]*128
     
@@ -202,40 +202,59 @@ class ana_tools:
     def GetPeaks(self, data, tmst, nfemb, fp, fname):
     
         nevent = len(data)
-        print(nevent)
     
         ppk_val=[]
         npk_val=[]
         bl_val=[]
         fig,ax = plt.subplots(figsize=(6,4))
-
+       
         for ich in range(128):
             global_ch = nfemb*128+ich
             allpls=np.zeros(500)
             npulse=0
+            hasError=False
             for itr in range(nevent):
                 evtdata = data[itr][global_ch]
-                allpls = allpls + evtdata[0:500] + evtdata[500:1000] + evtdata[1000:1500] + evtdata[1500:2000]
-                npulse = npulse+4
-#                plt.plot(range(500),evtdata[0:500])
-#                plt.plot(range(500),evtdata[500:1000])
-#                plt.plot(range(500),evtdata[1000:1500])
-#                plt.plot(range(500),evtdata[1500:2000])
-#                plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2]-tmst[itr][nfemb//2][0])
-                plt.plot(range(len(evtdata)),evtdata)
-                plt.plot(range(len(tmst[itr][nfemb//2])),tmst[itr][nfemb//2])
-                plt.show()
+        
+                if itr==0:
+                   peak1_pos = np.argmax(evtdata[0:500]) 
+                   peak_val = evtdata[peak1_pos]
+                   if peak1_pos<100:
+                      tmp_bl = np.mean(evtdata[peak1_pos+200:500])
+                   else:
+                      tmp_bl = np.mean(evtdata[0:50])
+                   if abs(peak_val/tmp_bl-1)<0.1:
+                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan"%(nfemb,ich))
+                      hasError=True
+                      break
 
+                   if peak1_pos>400:
+                      t0 = np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
+                      t0 = t0-200
+                      t0 = tmst[0][nfemb//2][t0]
+                   else:
+                      t0 = tmst[0][nfemb//2][0]
 
-            break
+                start_t = 500-(tmst[itr][nfemb//2][0]-t0)%500
+                end_t = len(evtdata)-500
+                for tt in range(start_t, end_t, 500):
+                    allpls = allpls + evtdata[tt:tt+500]
+                    npulse = npulse+1
+
+            if hasError:
+               ppk_val.append(0)
+               npk_val.append(0)
+               bl_val.append(0)
+               continue
+ 
             apulse = allpls/npulse
             ax.plot(range(500),apulse)
- 
+
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse) 
             ppkt,pchi2 = Gauss_fit(range(40), apulse[maxpos-20:maxpos+20])
             ppk = ppkt[1] + ppkt[0]
-           
+      
 #            plt.scatter(range(40), apulse[maxpos-20:maxpos+20])
 #            xx = np.linspace(0,40,100)
 #            plt.plot(xx, Gauss(xx,ppkt[0],ppkt[1],ppkt[2],ppkt[3]))
