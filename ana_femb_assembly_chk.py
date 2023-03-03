@@ -102,6 +102,9 @@ tmst = np.array(tmst)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
+    outfp = fp + "pulse_{}.bin".format(fname)
+    with open(outfp, 'wb') as fn:
+         pickle.dump([ppk,npk,bl], fn)
 
     fig,ax = plt.subplots(figsize=(6,4))
     ax.plot(range(128), ppk, marker='.',label='pos')
@@ -129,6 +132,9 @@ tmst = np.array(tmst)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
+    outfp = fp + "pulse_{}.bin".format(fname)
+    with open(outfp, 'wb') as fn:
+         pickle.dump([ppk,npk,bl], fn)
 
     fig,ax = plt.subplots(figsize=(6,4))
     ax.plot(range(128), ppk, marker='.',label='pos')

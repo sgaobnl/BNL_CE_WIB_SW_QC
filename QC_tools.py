@@ -231,9 +231,12 @@ class ana_tools:
                    if peak1_pos>400:
                       t0 = np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
                       t0 = t0-200
+                      allpls = allpls + evtdata[t0:t0+500]
                       t0 = tmst[0][nfemb//2][t0]
                    else:
+                      allpls = allpls + evtdata[:500]
                       t0 = tmst[0][nfemb//2][0]
+                   npulse=1
 
                 start_t = 500-(tmst[itr][nfemb//2][0]-t0)%500
                 end_t = len(evtdata)-500
@@ -252,7 +255,7 @@ class ana_tools:
 
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse) 
-            ppkt,pchi2 = Gauss_fit(range(40), apulse[maxpos-20:maxpos+20])
+            ppkt,pchi2 = Gauss_fit(np.array(range(40)), apulse[maxpos-20:maxpos+20])
             ppk = ppkt[1] + ppkt[0]
       
 #            plt.scatter(range(40), apulse[maxpos-20:maxpos+20])
@@ -267,7 +270,7 @@ class ana_tools:
           
             pmin = np.amin(apulse)
             minpos = np.argmin(apulse) 
-            npkt,nchi2 = Gauss_fit(range(40), apulse[minpos-20:minpos+20])
+            npkt,nchi2 = Gauss_fit(np.array(range(40)), apulse[minpos-20:minpos+20])
             npk = npkt[1] + npkt[0]
 
 #            plt.scatter(range(40), apulse[minpos-20:minpos+20])
