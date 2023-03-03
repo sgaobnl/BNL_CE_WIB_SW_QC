@@ -208,22 +208,24 @@ for ifemb in fembs:
        pdf.image(mon_image,0,77,200,95)
 
     rms_image = plotdir+"rms_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(rms_image,3,158,100,60)
+    pdf.image(rms_image,5,158,100,70)
 
     ped200_image = plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(ped200_image,63,158,100,60)
+    pdf.image(ped200_image,105,158,100,70)
+
+    pdf.add_page()
 
     single_se_pulse_image = plotdir+"avg_pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(single_se_pulse_image,3,220,100,60)
+    pdf.image(single_se_pulse_image,5,10,100,70)
 
     pulse_se_image = plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_se_image,63,220,100,60)
+    pdf.image(pulse_se_image,105,10,100,70)
 
     single_diff_pulse_image = plotdir+"avg_pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(single_diff_pulse_image,3,280,200,60)
+    pdf.image(single_diff_pulse_image,5,80,100,70)
 
     pulse_diff_image = plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_diff_image,63,280,100,60)
+    pdf.image(pulse_diff_image,105,80,100,70)
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile, "F")
