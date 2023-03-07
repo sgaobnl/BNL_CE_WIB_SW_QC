@@ -129,7 +129,7 @@ class QC_Runs:
 
         if autocali==1:
            for i in range(8):
-               self.chk.adcs_paras[i][8]=1   # enable differential 
+               self.chk.adcs_paras[i][8]=1   # enable adc calibration
 
         for femb_id in self.fembs:
             if dac>0:
@@ -333,7 +333,7 @@ class QC_Runs:
  
                     self.chk.femb_cd_rst()
                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],sts[sti],dac)
-                    self.take_data(snci, sg0, sg1, st0, st1, dac, fp) 
+                    self.take_data(snci, sg0, sg1, st0, st1, dac, fp, autocali=1) 
 
     def femb_CALI_1(self):
 
@@ -441,6 +441,22 @@ class QC_Runs:
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
             mon_temps[f"chip{mon_chip}"] = adcrst
+
+chk.femb_cd_rst()
+sps=1
+print ("monitor bandgap reference")
+nchips=range(8)
+mon_refs = {}
+for i in nchips:   # 8 chips per femb
+    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
+    mon_refs[f"chip{i}"] = adcrst[7]
+
+print ("monitor temperature")
+mon_temps = {}
+for i in nchips:
+    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
+    mon_temps[f"chip{i}"] = adcrst[7]
+
 
         print ("monitor BL 200mV")
         mon_200bls = {}
