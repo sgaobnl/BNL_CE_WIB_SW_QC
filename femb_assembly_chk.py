@@ -149,6 +149,7 @@ for ifemb in fembs:
        outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
+       continue
 
     errflag = chk.femb_adc_chkreg(ifemb)
     if errflag:
@@ -177,6 +178,7 @@ for ifemb in fembs:
        outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
+       continue
 
     errflag = chk.femb_adc_chkreg(ifemb)
     if errflag:

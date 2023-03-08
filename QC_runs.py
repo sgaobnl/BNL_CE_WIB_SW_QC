@@ -49,7 +49,7 @@ class QC_Runs:
 
         ####### Create data saving directory #######
 
-        save_dir = "D:/IO-1865-1C/QC/data/"
+        save_dir = "QC_data/"
         for key,femb_no in self.fembNo.items():
             save_dir = save_dir + "femb{}_".format(femb_no)
 
@@ -83,7 +83,7 @@ class QC_Runs:
 
         self.chk = WIB_CFGS()
         self.chk.wib_fw()
-        self.chk.femb_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+        self.chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
         if status=='on':
             print("Turning on FEMBs")
@@ -95,8 +95,8 @@ class QC_Runs:
 
     def check_pwr_off(self, pwr_data):
 
-       pwr_sts = True
-       for i in self.fembs:
+        pwr_sts = True
+        for i in self.fembs:
            bias_v = pwr_data['FEMB%d_BIAS_V'%i]
            fe_v = pwr_data['FEMB%d_DC2DC0_V'%i]
            cd_v = pwr_data['FEMB%d_DC2DC1_V'%i]
@@ -107,7 +107,7 @@ class QC_Runs:
            else:
                pwr_sts = False
 
-          return pwr_sts
+        return pwr_sts
 
     def take_data(self, snc, sg0, sg1, st0, st1, dac, fp, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0, autocali=0):
          
