@@ -434,47 +434,45 @@ class QC_Runs:
         mon_refs = {}
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
-            mon_refs[f"chip{mon_chip}"] = adcrst
+            mon_refs[f"chip{mon_chip}"] = adcrst[7]
 
         print ("monitor temperature")
         mon_temps = {}
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
-            mon_temps[f"chip{mon_chip}"] = adcrst
+            mon_temps[f"chip{mon_chip}"] = adcrst[7]
 
-chk.femb_cd_rst()
-sps=1
-print ("monitor bandgap reference")
-nchips=range(8)
-mon_refs = {}
-for i in nchips:   # 8 chips per femb
-    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
-    mon_refs[f"chip{i}"] = adcrst[7]
-
-print ("monitor temperature")
-mon_temps = {}
-for i in nchips:
-    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
-    mon_temps[f"chip{i}"] = adcrst[7]
-
-
-        print ("monitor BL 200mV")
-        mon_200bls = {}
+        print ("monitor BL 200mV sdf=1")
+        mon_200bls_sdf1 = {}
         for mon_chip in range(chips):
             for mon_chipchn in range(16):
                 adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=0, snc=1, mon_chip=mon_chip, mon_chipchn=mon_chipchn, sps=sps)
-                mon_200bls["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst
+                mon_200bls_sdf1["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst[7]
 
-        print ("monitor BL 900mV")
-        mon_900bls = {}
+        print ("monitor BL 200mV sdf=0")
+        mon_200bls_sdf0 = {}
+        for mon_chip in range(chips):
+            for mon_chipchn in range(16):
+                adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=0, snc=1, sdf=0, mon_chip=mon_chip, mon_chipchn=mon_chipchn, sps=sps)
+                mon_200bls_sdf0["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst[7]
+
+        print ("monitor BL 900mV sdf=1")
+        mon_900bls_sdf1 = {}
         for mon_chip in range(chips):
             for mon_chipchn in range(16):
                 adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=0, snc=0, mon_chip=mon_chip, mon_chipchn=mon_chipchn, sps=sps)
-                mon_900bls["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst
+                mon_900bls_sdf1["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst[7]
+
+        print ("monitor BL 900mV sdf=0")
+        mon_900bls_sdf0 = {}
+        for mon_chip in range(chips):
+            for mon_chipchn in range(16):
+                adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=0, snc=0, sdf=0, mon_chip=mon_chip, mon_chipchn=mon_chipchn, sps=sps)
+                mon_900bls_sdf0["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst[7]
         
         fp = datadir + "LArASIC_mon.bin"
         with open(fp, 'wb') as fn:
-            pickle.dump( [mon_refs, mon_temps, mon_200bls, mon_900bls, self.logs], fn)
+            pickle.dump( [mon_refs, mon_temps, mon_200bls_sdf1, mon_200bls_sdf0, mon_900bls_sdf1, mon_900bls_sdf0, self.logs], fn)
 
     def femb_MON_2(self, sps=5):
 
@@ -491,23 +489,35 @@ for i in nchips:
         chips = 8
         print ("monitor LArASIC DAC sgp=1")
         mon_fedacs_sgp1 = {}
-        for vdac in range(64):
-            print("DAC ",vdac)
-            for mon_chip in range(chips):
-                adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=True, vdac=vdac, sps=sps )
-                mon_fedacs_sgp1["VDAC%02dCHIP%d_SGP1"%(vdac, mon_chip)] = adcrst
-        
-        print ("monitor LArASIC DAC sgp=0")
+        vdacs=range(64)
+        for mon_chip in range(chips):
+            adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=True, vdacs=vdacs, sps=sps )
+            mon_fedacs_sgp1["VDAC%02dCHIP%d_SGP1"%(vdac, mon_chip)] = adcrst
+
+        print ("monitor LArASIC DAC 14 mV/fC")
         mon_fedacs_14mVfC = {}
-        for vdac in range(0,64,4):
-            print("DAC ",vdac)
-            for mon_chip in range(chips):
-                adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=0, vdac=vdac, sps=sps)
-                mon_fedacs_14mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+        vdacs=range(64)
+        for mon_chip in range(chips):
+            adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=0, vdacs=vdacs, sps=sps)
+            mon_fedacs_14mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+
+        print ("monitor LArASIC DAC 7.8 mV/fC")
+        mon_fedacs_7_8mVfC = {}
+        vdacs=range(0,64,8)
+        for mon_chip in range(chips):
+            adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=1, vdacs=vdacs, sps=sps)
+            mon_fedacs_7_8mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+                
+        print ("monitor LArASIC DAC 25 mV/fC")
+        mon_fedacs_25mVfC = {}
+        vdacs=range(0,64,8)
+        for mon_chip in range(chips):
+            adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=vdacs, sps=sps)
+            mon_fedacs_25mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
                 
         fp = datadir + "LArASIC_mon_DAC.bin"
         with open(fp, 'wb') as fn:
-            pickle.dump( [mon_fedacs_sgp1, mon_fedacs_14mVfC, self.logs], fn)
+            pickle.dump( [mon_fedacs_sgp1, mon_fedacs_14mVfC, mon_fedacs_7_8mVfC, mon_fedacs_25mVfC, self.logs], fn)
 
     def femb_MON_3(self, sps=5):
 
@@ -520,34 +530,33 @@ for i in nchips:
 
         self.chk.femb_cd_rst()
 
-        adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                       [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                       [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+                       [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                       [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                      ]
 
 
         print ("monitor LArASIC-ColdADC reference (default)")
-        mon_adc_default = self.chk.wib_adc_mon(femb_ids=self.fembs, adcs_paras=adcs_paras, sps=sps)
-                
+        mon_adc_default = self.chk.wib_adc_mon(femb_ids=self.fembs, sps=sps)
+
 
         print ("monitor LArASIC-ColdADC reference")
-        vset=[0x0,0x20,0x40,0x60,0x80,0xa0,0xc0,0xe0,0xff]
+        vset = range(0,256,16)
         mon_adc=[]
         for i in range(len(vset)): 
-            tmp_adcs_paras = adcs_paras
             for j in range(8):
-                tmp_adcs_paras[j][4]=vset[i]
-                tmp_adcs_paras[j][5]=vset[i]
-                tmp_adcs_paras[j][6]=vset[i]
-                tmp_adcs_paras[j][7]=vset[i]
+                self.chk.adcs_paras[j][4]=vset[i]
+                self.chk.adcs_paras[j][5]=vset[i]
+                self.chk.adcs_paras[j][6]=vset[i]
+                self.chk.adcs_paras[j][7]=vset[i]
 
-            mondata = self.chk.wib_adc_mon(femb_ids=self.fembs, adcs_paras=tmp_adcs_paras, sps=sps)
+            mondata = self.chk.wib_adc_mon(femb_ids=self.fembs, sps=sps)
             mon_adc.append([vset[i], mondata])
                 
         fp = datadir + "LArASIC_ColdADC_mon.bin"
