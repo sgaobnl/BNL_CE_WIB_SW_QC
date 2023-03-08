@@ -492,28 +492,28 @@ class QC_Runs:
         vdacs=range(64)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=True, vdacs=vdacs, sps=sps )
-            mon_fedacs_sgp1["VDAC%02dCHIP%d_SGP1"%(vdac, mon_chip)] = adcrst
+            mon_fedacs_sgp1["CHIP%d_SGP1"%(mon_chip)] = [adcrst, vdacs]
 
         print ("monitor LArASIC DAC 14 mV/fC")
         mon_fedacs_14mVfC = {}
         vdacs=range(64)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=0, vdacs=vdacs, sps=sps)
-            mon_fedacs_14mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+            mon_fedacs_14mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
 
         print ("monitor LArASIC DAC 7.8 mV/fC")
         mon_fedacs_7_8mVfC = {}
         vdacs=range(0,64,8)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=1, vdacs=vdacs, sps=sps)
-            mon_fedacs_7_8mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+            mon_fedacs_7_8mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
                 
         print ("monitor LArASIC DAC 25 mV/fC")
         mon_fedacs_25mVfC = {}
         vdacs=range(0,64,8)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=vdacs, sps=sps)
-            mon_fedacs_25mVfC["VDAC%02dCHIP%d"%(vdac, mon_chip)] = adcrst
+            mon_fedacs_25mVfC["CHIP%d"%( mon_chip)] = [adcrst, vdacs]
                 
         fp = datadir + "LArASIC_mon_DAC.bin"
         with open(fp, 'wb') as fn:

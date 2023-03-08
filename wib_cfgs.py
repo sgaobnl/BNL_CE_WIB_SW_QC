@@ -909,7 +909,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     adcs = self.wib_mon_adcs()
                     adcss.append(adcs)
                 mon_dict[f"chip{mon_chip}"] = [mon_chip, mons[mon_i], self.adcs_paras[mon_chip], adcss]
-                print (mon_dict[f"chip{mon_chip}"])
+             #   print (mon_dict[f"chip{mon_chip}"])
             mon_items.append(mon_dict)
         self.wib_mon_switches()
         return mon_items
