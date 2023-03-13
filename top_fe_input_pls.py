@@ -32,6 +32,9 @@ chk = WIB_CFGS()
 chk.wib_fw()
 time.sleep(1)
 
+for fe in range(8):
+    chk.dat_set_dac(1.0, fe, -1, -1)
+
 #MUX (SN74LV405AD)
 #select_names_fe = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
 chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, 4<<2)    
@@ -42,6 +45,21 @@ chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)
 chk.cdpoke(0, 0xC, 0, chk.DAT_FE_IN_TST_SEL_LSB, 0x00)    
 chk.cdpoke(0, 0xC, 0, chk.DAT_FE_IN_TST_SEL_MSB, 0x00)    
 chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_SOCKET_EN, 0xff)    
+
+#program in period & width 
+period =0x2e4 
+width = 0x50 
+delay = 0x00
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_PERIOD_LSB, period&0xFF);
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_PERIOD_MSB, (period&0xFF00)>>8)	
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_WIDTH_LSB, width&0xFF);
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_WIDTH_MSB, (width&0xFF00)>>8)
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_DELAY, 0x0); #delay not relevant if you're not using ASIC_DAC_CNTL
+
+chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_EN, 0x4);
+
+input ()
+
 
 ####################FEMBs Configuration################################
 #step 1
