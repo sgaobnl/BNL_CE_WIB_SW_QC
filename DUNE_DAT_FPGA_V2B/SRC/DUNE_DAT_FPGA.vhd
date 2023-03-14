@@ -835,14 +835,14 @@ ADC_MonADC_data  	<= ADC_MonADC_data_arr(0) when SOCKET_RDOUT_SEL = b"000" else
 							(others => '0');
 							
 							
-FE_DAC_TP_data_arr(0) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"000" else (others => '0');
-FE_DAC_TP_data_arr(1) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"001" else (others => '0');
-FE_DAC_TP_data_arr(2) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"010" else (others => '0');
-FE_DAC_TP_data_arr(3) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"011" else (others => '0');
-FE_DAC_TP_data_arr(4) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"100" else (others => '0');
-FE_DAC_TP_data_arr(5) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"101" else (others => '0');
-FE_DAC_TP_data_arr(6) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"110" else (others => '0');
-FE_DAC_TP_data_arr(7) <= FE_DAC_TP_data when SOCKET_RDOUT_SEL = b"111" else (others => '0');
+FE_DAC_TP_data_arr(0) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"000" else (others => '0');
+FE_DAC_TP_data_arr(1) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"001" else (others => '0');
+FE_DAC_TP_data_arr(2) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"010" else (others => '0');
+FE_DAC_TP_data_arr(3) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"011" else (others => '0');
+FE_DAC_TP_data_arr(4) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"100" else (others => '0');
+FE_DAC_TP_data_arr(5) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"101" else (others => '0');
+FE_DAC_TP_data_arr(6) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"110" else (others => '0');
+FE_DAC_TP_data_arr(7) <= FE_DAC_TP_data ;--when SOCKET_RDOUT_SEL = b"111" else (others => '0');
 							
 
 ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else 
@@ -1077,6 +1077,8 @@ gen_FE_MonADC : for i in 7 downto 1 generate
 	);		
 end generate gen_FE_MonADC;
 
+
+--All 8 DACs are configurated at the same time with the same value actually. 
 FE1_DAC_TP_inst : entity work.DAC8411 --AD5683R
 	PORT MAP
 	(
@@ -1095,7 +1097,7 @@ gen_FE_DAC_TP : for i in 7 downto 1 generate
 		(
 			 clk         	=> CLK_25MHz,         
 			 reset			=> reset,	
-			 start			=> FE_DAC_TP_set(i),
+			 start			=> FE_DAC_TP_set(0),
 			 DATA				=> FE_DAC_TP_data_arr(i),
 			 SCLK				=> open,
 			 DIN				=> FE_DAC_TP_DIN(i),
@@ -1166,7 +1168,7 @@ TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE
 		TP_FREQ				=> TP_PERIOD,	 
 		DAC_CNTL				=> DAC_CNTL(11 DOWNTO 0), --not used
 		ASIC_DAC_CNTL		=> ASIC_DAC_CNTL,
-		Test_pulse			=> open
+		Test_pulse			=> Test_pulse
 	);
 
 DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
