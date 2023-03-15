@@ -6,16 +6,70 @@ import QC_constants
 from scipy.optimize import curve_fit
 import pandas as pd
 
-def Gauss(x, H, A, x0, sigma):
-    return H + A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+def ResFunc(x, par0, par1, par2, par3):
 
-def Gauss_fit(x, y):
-    mean = sum(x * y) / sum(y)
-    sigma = np.sqrt(sum(y * (x - mean) ** 2) / sum(y))
-    popt, pcov = curve_fit(Gauss, x, y, p0=[min(y), max(y), mean, sigma])
-    yp = Gauss(x,popt[0],popt[1],popt[2],popt[3])
-    chi2 = sum((y - yp)**2/yp)
-    return popt,chi2
+    xx = x-par2
+
+    A1 = 4.31054*par0
+    A2 = 2.6202*par0
+    A3 = 0.464924*par0
+    A4 = 0.762456*par0
+    A5 = 0.327684*par0
+
+    E1 = np.exp(-2.94809*xx/par1)
+    E2 = np.exp(-2.82833*xx/par1)
+    E3 = np.exp(-2.40318*xx/par1)
+
+    lambda1 = 1.19361*xx/par1
+    lambda2 = 2.38722*xx/par1
+    lambda3 = 2.5928*xx/par1
+    lambda4 = 5.18561*xx/par1
+
+    return par3+(A1*E1-A2*E2*(np.cos(lambda1)+np.cos(lambda1)*np.cos(lambda2)+np.sin(lambda1)*np.sin(lambda2))+A3*E3*(np.cos(lambda3)+np.cos(lambda3)*np.cos(lambda4)+np.sin(lambda3)*np.sin(lambda4))+A4*E2*(np.sin(lambda1)-np.cos(lambda2)*np.sin(lambda1)+np.cos(lambda1)*np.sin(lambda2))-A5*E3*(np.sin(lambda3)-np.cos(lambda4)*np.sin(lambda3)+np.cos(lambda3)*np.sin(lambda4)))*np.heaviside(xx,1)
+
+def FitFunc(pldata, shapetime, makeplot=False):  # pldata is the 500 samples
+    
+    pmax = np.amax(pldata)
+    maxpos = np.argmax(pldata)
+
+    if shapetime==0.5:
+       nbf = 2
+       naf = 4
+
+    if shapetime==1:
+       nbf = 3
+       naf = 6
+
+    if shapetime==2:
+       nbf = 5
+       naf = 8
+
+    if shapetime==3:
+       nbf = 7
+       naf = 10
+
+    pbl = pldata[maxpos-nbf]
+    a_xx = np.array(range(nbf+naf))*0.5
+    popt, pcov = curve_fit(ResFunc, a_xx, pldata[maxpos-nbf:maxpos+naf],maxfev= 10000,p0=[pmax,shapetime,0,pbl])
+    nbf_1=10
+    naf_1=10
+    a_xx = np.array(range(nbf_1+naf_1))*0.5
+    popt_1, pcov_1 = curve_fit(ResFunc, a_xx, pldata[maxpos-nbf_1:maxpos+naf_1],maxfev= 10000,p0=[popt[0],popt[1],popt[2]+(nbf_1-nbf)*0.5,popt[3]])
+
+    if makeplot:
+       fig,ax = plt.subplots()
+       ax.scatter(a_xx, pldata[maxpos-nbf_1:maxpos+naf_1], c='r')
+       xx = np.linspace(0,nbf_1+naf_1,100)*0.5
+       ax.plot(xx, ResFunc(xx,popt_1[0],popt_1[1],popt_1[2],popt_1[3]))
+       ax.set_xlabel('us')
+       ax.set_ylabel('ADC')
+       ax.text(0.6,0.8,'A0=%.2f'%popt_1[0],fontsize = 15,transform=ax.transAxes)
+       ax.text(0.6,0.7,'tp=%.2f'%popt_1[1],fontsize = 15,transform=ax.transAxes)
+       ax.text(0.6,0.6,'t0=%.2f'%popt_1[2],fontsize = 15,transform=ax.transAxes)
+       ax.text(0.6,0.5,'bl=%.2f'%popt_1[3],fontsize = 15,transform=ax.transAxes)
+       plt.show()
+
+    return popt_1 
 
 class ana_tools:
     def __init__(self):
@@ -73,13 +127,13 @@ class ana_tools:
                 if 0 in fembs or 1 in fembs:
                    t0 = wib_data[0][j]["TMTS"]
                 else:
-                   t0 = [0]*128
+                   t0 = 0
     
                 if 2 in fembs or 3 in fembs:
                    t1 = wib_data[1][j]["TMTS"]
                 else:
-                   t1 = [0]*128
-    
+                   t1 = 0
+   
                 aa=a0+a1+a2+a3
                 chns.append(aa)
                 tmst0.append(t0)
@@ -199,14 +253,14 @@ class ana_tools:
         return nfail
 
 
-    def GetPeaks(self, data, tmst, nfemb, fp, fname):
+    def GetPeaks(self, data, tmst, nfemb, fp, fname, funcfit=False, shapetime=2):
     
         nevent = len(data)
     
         ppk_val=[]
         npk_val=[]
         bl_val=[]
-        fig,ax = plt.subplots(figsize=(6,4))
+        fig,ax = plt.subplots(1,2,figsize=(12,4))
        
         for ich in range(128):
             global_ch = nfemb*128+ich
@@ -251,41 +305,39 @@ class ana_tools:
                continue
  
             apulse = allpls/npulse
-            ax.plot(range(500),apulse)
 
             pmax = np.amax(apulse)
-            maxpos = np.argmax(apulse) 
-            ppkt,pchi2 = Gauss_fit(np.array(range(40)), apulse[maxpos-20:maxpos+20])
-            ppk = ppkt[1] + ppkt[0]
+            maxpos = np.argmax(apulse)
+            ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
+            if funcfit:
+               popt = FitFunc(apulse, shapetime, makeplot=False)
+               a_xx = np.array(range(20))*0.5
+               a_yy = ResFunc(a_xx, popt[0],popt[1],popt[2],popt[3])
+               pmax = np.amax(a_yy)
       
-#            plt.scatter(range(40), apulse[maxpos-20:maxpos+20])
-#            xx = np.linspace(0,40,100)
-#            plt.plot(xx, Gauss(xx,ppkt[0],ppkt[1],ppkt[2],ppkt[3]))
-#            plt.show()
-
             if maxpos>100:
                bbl = np.mean(apulse[:maxpos-50])           
             else:
                bbl = np.mean(apulse[400:])           
           
             pmin = np.amin(apulse)
-            minpos = np.argmin(apulse) 
-            npkt,nchi2 = Gauss_fit(np.array(range(40)), apulse[minpos-20:minpos+20])
-            npk = npkt[1] + npkt[0]
 
-#            plt.scatter(range(40), apulse[minpos-20:minpos+20])
-#            xx = np.linspace(0,40,1)
-#            plt.plot(xx, Gauss(xx,npkt[0],npkt[1],npkt[2],npkt[3]))
-#            plt.show()
-
-            ppk_val.append(ppk)
-            npk_val.append(npk)
+            ppk_val.append(pmax)
+            npk_val.append(pmin)
             bl_val.append(bbl)
         
-        ax.set_title(fname)
-        ax.set_xlabel("ticks")
-        ax.set_ylabel("ADC")
-        fp_fig = fp+"avg_pulse_{}.png".format(fname)
+        ax[0].set_title(fname)
+        ax[0].set_xlabel("ticks")
+        ax[0].set_ylabel("ADC")
+
+        ax[1].plot(range(128), ppk_val, marker='.',label='pos')
+        ax[1].plot(range(128), npk_val, marker='.',label='neg')
+        ax[1].plot(range(128), bl_val, marker='.',label='ped')
+        ax[1].set_title(fname)
+        ax[1].set_xlabel("chan")
+        ax[1].set_ylabel("ADC")
+        ax[1].legend()
+        fp_fig = fp+"pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
     

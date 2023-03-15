@@ -290,9 +290,9 @@ class QC_Runs:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
             return 
 
-        sncs = self.sncs = ["900mVBL", "200mVBL"]
-        sgs = self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
-        sts = self.sts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
+        sncs = self.sncs 
+        sgs = self.sgs 
+        sts = self.sts
  
         dac = 0x10
  

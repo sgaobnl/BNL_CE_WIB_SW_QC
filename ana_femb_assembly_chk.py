@@ -101,22 +101,10 @@ tmst = np.array(tmst)
 
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
-    ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
+    ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname, funcfit=False)
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
-
-    fig,ax = plt.subplots(figsize=(6,4))
-    ax.plot(range(128), ppk, marker='.',label='pos')
-    ax.plot(range(128), npk, marker='.',label='neg')
-    ax.plot(range(128), bl, marker='.',label='ped')
-    ax.set_title(fname)
-    ax.set_xlabel("chan")
-    ax.set_ylabel("ADC")
-    plt.legend()
-    fp_fig = fp+"pulse_{}.png".format(fname)
-    plt.savefig(fp_fig)
-    plt.close(fig)
 
 fpulse = fdata+"Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.bin"
 fname = "DIFF_900mVBL_14_0mVfC_2_0us_0x10"
@@ -135,19 +123,6 @@ for ifemb in fembs:
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
-
-    fig,ax = plt.subplots(figsize=(6,4))
-    ax.plot(range(128), ppk, marker='.',label='pos')
-    ax.plot(range(128), npk, marker='.',label='neg')
-    ax.plot(range(128), bl, marker='.',label='ped')
-    ax.set_title(fname)
-    ax.set_xlabel("chan")
-    ax.set_ylabel("ADC")
-    plt.legend()
-    fp_fig = fp+"pulse_{}.png".format(fname)
-    plt.savefig(fp_fig)
-    plt.close(fig)
-
 
 fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
 with open(fmon, 'rb') as fn:
@@ -215,17 +190,11 @@ for ifemb in fembs:
 
     pdf.add_page()
 
-    single_se_pulse_image = plotdir+"avg_pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(single_se_pulse_image,5,10,100,70)
-
     pulse_se_image = plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_se_image,105,10,100,70)
-
-    single_diff_pulse_image = plotdir+"avg_pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(single_diff_pulse_image,5,80,100,70)
+    pdf.image(pulse_se_image,0,10,220,70)
 
     pulse_diff_image = plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_diff_image,105,80,100,70)
+    pdf.image(pulse_diff_image,0,80,220,70)
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile, "F")

@@ -27,18 +27,24 @@ class QC_reports:
           logs["datadir"]=self.datadir
           self.logs=logs
 
-          self.fembs={}
+          self.fembsID={}
           if fembs:
+              self.fembs = fembs
               for ifemb in fembs:
-                  self.fembs[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}']
+                  self.fembsID[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}']
           else:
-              self.fembs=logs['femb id']
+              self.fembsID=logs['femb id']
+              self.fembs=[]
+              for key,value in logs['femb id'].items():
+                  self.fembs.append(int(key[-1]))
+
           self.savedir={}
           print("Will analyze the following fembs: ", self.fembs)
 
           ##### create results dir for each FEMB #####
-          for key,value in self.fembs.items():
-              one_savedir = savedir+"FEMB{}_{}_{}".format(value, logs["env"], logs["toytpc"])
+          for ifemb in self.fembs:
+              fembid = self.fembsID[f'femb{ifemb}']
+              one_savedir = savedir+"FEMB{}_{}_{}".format(fembid, logs["env"], logs["toytpc"])
 
               n=1
               while (os.path.exists(one_savedir)):
@@ -56,16 +62,16 @@ class QC_reports:
                   print ("Error to create folder %s"%one_savedir)
                   sys.exit()
 
-              self.savedir[key]=one_savedir+"/"
+              self.savedir[ifemb]=one_savedir+"/"
 
-              fp = self.savedir[key] + "logs_env.bin"
+              fp = self.savedir[ifemb] + "logs_env.bin"
               with open(fp, 'wb') as fn:
                    pickle.dump(self.logs, fn)
 
       def CreateDIR(self, fdir):
 
-          for key,value in self.fembs.items():
-              fp = self.savedir[key] + fdir + "/"
+          for ifemb in self.fembs:
+              fp = self.savedir[ifemb] + fdir + "/"
               if not os.path.exists(fp):
                  try:
                      os.makedirs(fp)
@@ -105,36 +111,36 @@ class QC_reports:
                   im_name = im.split("/")[-1][4:-13]
               pdf.set_font('Times', 'B', 14)
               if nn<3:
-                 pdf.text(55, 45+45*nn, im_name)  
-                 pdf.image(im,0,47+nn*45,200, 40)
+                 pdf.text(55, 45+50*nn, im_name)  
+                 pdf.image(im,0,47+nn*50,200, 40)
               else:
                  if nn%3==0:
                     pdf.add_page()
-                 pdf.text(55, 10+45*(nn-3), im_name)  
-                 pdf.image(im,0,12+(nn-3)*45,200, 40)
+                 pdf.text(55, 10+50*(nn-3), im_name)  
+                 pdf.image(im,0,12+(nn-3)*50,200, 40)
               nn=nn+1
           
           pdf.alias_nb_pages()
           pdf.add_page()
           
-          chk_images = sorted(glob.glob(fdir+"*_pulse_response.png"), key=os.path.getmtime)
+          chk_images = sorted(glob.glob(fdir+"pulse_*.png"), key=os.path.getmtime)
           nn=0
           for im in chk_images:
               if '\\' in im:
-                  im_name = im.split("\\")[-1][4:-19]
+                  im_name = im.split("\\")[-1][6:-4]
               else:
-                  im_name = im.split("/")[-1][4:-19]
+                  im_name = im.split("/")[-1][6:-4]
 
               pdf.set_font('Times', 'B', 14)
               if nn<3:
                  pdf.text(55, 10+nn*80, im_name)  
-                 pdf.image(im,0,12+nn*80,200,80)
+                 pdf.image(im,0,12+nn*80,220,70)
               else:
                  if nn%3==0:
                     pdf.alias_nb_pages()
                     pdf.add_page()
                  pdf.text(55, 10+(nn-3)*80, im_name)  
-                 pdf.image(im,0,12+(nn-3)*80,200,80)
+                 pdf.image(im,0,12+(nn-3)*80,220,70)
               nn=nn+1
           
           outfile = fdir+'report.pdf'
@@ -154,31 +160,32 @@ class QC_reports:
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              pldata = qc.data_decode(rawdata)
+              pldata,tmst = qc.data_decode(rawdata, self.fembs)
               pldata = np.array(pldata)
+              tmst = np.array(tmst)
 
               if '\\' in afile:
                   fname = afile.split("\\")[-1][:-4]
               else:
                   fname = afile.split("/")[-1][:-4]
-              for key,value in self.fembs.items():
-                  fp = self.savedir[key] + "PWR_Meas/" + fname + "_pwr_meas"
-                  qc.PrintPWR(pwr_meas[key], fp)
+              for ifemb in self.fembs:
+                  fp_pwr = self.savedir[ifemb] + "PWR_Meas/" + fname + "_pwr_meas"
+                  qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
-                  ana = qc.data_ana(pldata,int(key[-1]))
-                  fp_data = self.savedir[key] + "PWR_Meas/" + fname + "_pulse_response"
-                  qc.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
- 
-          for key,value in self.fembs.items():
-              fdir = self.savedir[key] + "PWR_Meas/"
-              self.GEN_PWR_PDF(fdir, int(value))
+                  fp = self.savedir[ifemb] + "PWR_Meas/"
+                  qc.GetPeaks(pldata, tmst, ifemb, fp, fname)
+
+          for ifemb in self.fembs:
+              fdir = self.savedir[ifemb] + "PWR_Meas/"
+              fembid = int(self.fembsID[f'femb{ifemb}'])
+              self.GEN_PWR_PDF(fdir, fembid)
 
       def PWR_cycle_report(self):
 
           self.CreateDIR("PWR_Cycle")
           datadir = self.datadir+"PWR_Cycle/"
 
-          qc=QC_tools()
+          qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
           for afile in files:
               with open(afile, 'rb') as fn:
@@ -187,25 +194,26 @@ class QC_reports:
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              pldata = qc.data_decode(rawdata)
+              pldata,tmst = qc.data_decode(rawdata, self.fembs)
               pldata = np.array(pldata)
+              tmst = np.array(tmst)
 
               if '\\' in afile:
                   fname = afile.split("\\")[-1][:-4]
               else:
                   fname = afile.split("/")[-1][:-4]
 
-              for key,value in self.fembs.items():
-                  fp = self.savedir[key] + "PWR_Cycle/" + fname + "_pwr_meas"
-                  qc.PrintPWR(pwr_meas[key], fp)
+              for ifemb in self.fembs:
+                  fp = self.savedir[ifemb] + "PWR_Cycle/" + fname + "_pwr_meas"
+                  qc.PrintPWR(pwr_meas, ifemb, fp)
 
-                  ana = qc.data_ana(pldata,int(key[-1]))
-                  fp_data = self.savedir[key] + "PWR_Cycle/" + fname + "_pulse_response"
-                  qc.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
- 
-          for key,value in self.fembs.items():
-              fdir = self.savedir[key] + "PWR_Cycle/"
-              self.GEN_PWR_PDF(fdir, int(value))
+                  fp = self.savedir[ifemb] + "PWR_Cycle/"
+                  qc.GetPeaks(pldata, tmst, ifemb, fp, fname)
+
+          for ifemb in self.fembs:
+              fdir = self.savedir[ifemb] + "PWR_Cycle/"
+              fembid = int(self.fembsID[f'femb{ifemb}'])
+              self.GEN_PWR_PDF(fdir, fembid)
 
       def CHKPULSE(self, fdir):
 
