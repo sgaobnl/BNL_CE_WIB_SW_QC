@@ -156,6 +156,7 @@ class QC_reports:
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
+              print("analyze file: %s"%afile)
 
               rawdata = raw[0]
               pwr_meas = raw[1]
@@ -190,6 +191,7 @@ class QC_reports:
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
+              print("analyze file: %s"%afile)
 
               rawdata = raw[0]
               pwr_meas = raw[1]
@@ -220,77 +222,27 @@ class QC_reports:
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
 
-          qc=QC_tools()
+          qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
+              print("analyze file: %s"%afile)
 
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              pldata = qc.data_decode(rawdata)
+              pldata,tmst = qc.data_decode(rawdata, self.fembs)
               pldata = np.array(pldata)
+              tmst = np.array(tmst)
 
               if '\\' in afile:
                   fname = afile.split("\\")[-1][:-4]
               else:
                   fname = afile.split("/")[-1][:-4]
-              for key,value in self.fembs.items():
-                  ana = qc.data_ana(pldata,int(key[-1]))
-                  fp_data = self.savedir[key] + fdir+"/" + fname + "_pulse_response"
-                  qc.FEMB_CHK_PLOT(ana[0], ana[1], ana[2], ana[3], ana[4], ana[5], fp_data)
-         
-      def FE_MON_report(self):
-
-          self.CreateDIR("MON_FE")
-          datadir = self.datadir+"MON_FE/"
-
-          fp = datadir+"LArASIC_mon.bin"
-          with open(fp, 'rb') as fn:
-               raw = pickle.load(fn)
-
-          mon_BDG=raw[0]
-          mon_TEMP=raw[1]
-          mon_200bls=raw[2]
-          mon_900bls=raw[3]
-
-          qc=QC_tools()
-          qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap")
-          qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature")
-          qc.PlotMonChan(self.fembs, mon_200bls, self.savedir, "MON_FE", "200mVBL")
-          qc.PlotMonChan(self.fembs, mon_900bls, self.savedir, "MON_FE", "900mVBL")
-
-      def FE_DAC_MON_report(self):
-
-          self.CreateDIR("MON_FE")
-          datadir = self.datadir+"MON_FE/"
-
-          fp = datadir+"LArASIC_mon_DAC.bin"
-          with open(fp, 'rb') as fn:
-               raw = pickle.load(fn)
-
-          mon_sgp1=raw[0]
-          mon_sgp0=raw[1]
-
-          qc=QC_tools()
-          qc.PlotMonDAC(self.fembs, mon_sgp1, self.savedir, "MON_FE", "LArASIC_DAC_sgp1", range(64), "VDAC{:02d}CHIP{}_SGP1")
-          qc.PlotMonDAC(self.fembs, mon_sgp0, self.savedir, "MON_FE", "LArASIC_DAC_14mVfC", range(0,64,4), "VDAC{:02d}CHIP{}")
-
-      def ColdADC_DAC_MON_report(self):
-
-          self.CreateDIR("MON_ADC")
-          datadir = self.datadir+"MON_ADC/"
-
-          fp = datadir+"LArASIC_ColdADC_mon.bin"
-          with open(fp, 'rb') as fn:
-               raw = pickle.load(fn)
-
-          mon_default=raw[0]
-          mon_dac=raw[1]
-
-          qc=QC_tools()
-          qc.PlotADCMon(self.fembs, mon_dac, self.savedir, "MON_ADC")
+              for ifemb in self.fembs:
+                  fp = self.savedir[ifemb] + fdir+"/" 
+                  qc.GetPeaks(pldata, tmst, ifemb, fp, fname)
 
       def RMS_report(self):
 
@@ -301,6 +253,7 @@ class QC_reports:
           for afile in datafiles:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
+              print("analyze file: %s"%afile)
 
               rawdata=raw[0]
               if '\\' in afile:
@@ -308,14 +261,76 @@ class QC_reports:
               else:
                   fname = afile.split("/")[-1][7:-9]
 
-              qc=QC_tools()
-              pldata = qc.data_decode(rawdata)
+              qc=ana_tools()
+              pldata,tmst = qc.data_decode(rawdata, self.fembs)
               pldata = np.array(pldata)
+              tmst = np.array(tmst)
 
-              for ifemb,femb_id in self.fembs.items():
-                  nfemb=int(ifemb[-1])
+              for ifemb in self.fembs:
                   fp = self.savedir[ifemb]+"RMS/"
-                  qc.GetRMS(pldata, nfemb, fp, fname)
+                  qc.GetRMS(pldata, ifemb, fp, fname)
+         
+      def FE_MON_report(self):
+
+          self.CreateDIR("MON_FE")
+          datadir = self.datadir+"MON_FE/"
+
+          fp = datadir+"LArASIC_mon.bin"
+          with open(fp, 'rb') as fn:
+               raw = pickle.load(fn)
+          print("analyze file: %s"%fp)
+
+          mon_BDG=raw[0]
+          mon_TEMP=raw[1]
+          mon_200bls_sdf1=raw[2]
+          mon_200bls_sdf0=raw[3]
+          mon_900bls_sdf1=raw[4]
+          mon_900bls_sdf0=raw[5]
+
+          qc=ana_tools()
+          qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap")
+          qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature")
+          qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1")
+          qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0")
+          qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1")
+          qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0")
+
+      def FE_DAC_MON_report(self):
+
+          self.CreateDIR("MON_FE")
+          datadir = self.datadir+"MON_FE/"
+
+          fp = datadir+"LArASIC_mon_DAC.bin"
+          with open(fp, 'rb') as fn:
+               raw = pickle.load(fn)
+          print("analyze file: %s"%fp)
+
+          mon_sgp1=raw[0]
+          mon_14mVfC=raw[1]
+          mon_7_8mVfC=raw[2]
+          mon_25mVfC=raw[3]
+
+          qc=ana_tools()
+          qc.PlotMonDAC(self.fembs, mon_sgp1, self.savedir, "MON_FE", "LArASIC_DAC_sgp1")
+          qc.PlotMonDAC(self.fembs, mon_14mVfC, self.savedir, "MON_FE", "LArASIC_DAC_14mVfC")
+          qc.PlotMonDAC(self.fembs, mon_7_8mVfC, self.savedir, "MON_FE", "LArASIC_DAC_7_8mVfC")
+          qc.PlotMonDAC(self.fembs, mon_25mVfC, self.savedir, "MON_FE", "LArASIC_DAC_25mVfC")
+
+      def ColdADC_DAC_MON_report(self):
+
+          self.CreateDIR("MON_ADC")
+          datadir = self.datadir+"MON_ADC/"
+
+          fp = datadir+"LArASIC_ColdADC_mon.bin"
+          with open(fp, 'rb') as fn:
+               raw = pickle.load(fn)
+          print("analyze file: %s"%fp)
+
+          mon_default=raw[0]
+          mon_dac=raw[1]
+
+          qc=ana_tools()
+          qc.PlotADCMon(self.fembs, mon_dac, self.savedir, "MON_ADC")
 
       def GenCALIPDF(self, snc, sgs, sts, sgp):
 
@@ -355,7 +370,7 @@ class QC_reports:
 
           self.CreateDIR("CALI")
 
-          qc=QC_tools()
+          qc=ana_tools()
          
           dac_list = range(0,64,4) 
           datadir = self.datadir+"CALI1/"

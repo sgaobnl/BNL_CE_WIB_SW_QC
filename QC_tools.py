@@ -273,16 +273,18 @@ class ana_tools:
                 if itr==0:
                    peak1_pos = np.argmax(evtdata[0:500]) 
                    peak_val = evtdata[peak1_pos]
+
                    if peak1_pos<100:
                       tmp_bl = np.mean(evtdata[peak1_pos+200:500])
                    else:
                       tmp_bl = np.mean(evtdata[0:50])
                    if abs(peak_val/tmp_bl-1)<0.1:
-                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan"%(nfemb,ich))
+                      print(fname)
+                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
                       hasError=True
                       break
 
-                   if peak1_pos>400:
+                   if peak1_pos>400 or peak1_pos<50:
                       t0 = np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
                       t0 = t0-200
                       allpls = allpls + evtdata[t0:t0+500]
@@ -444,4 +446,120 @@ class ana_tools:
                fig1.savefig(newfp)
                plt.close(fig1)
 
+    def PlotMon(self, fembs, mon_dic, savedir, fdir, fname):
 
+        for nfemb in fembs:
+            mon_list=[]
+
+            for key,mon_data in mon_dic.items():
+                chip_list=[]
+                sps = len(mon_data)
+
+                for j in range(sps):
+                    a_mon = mon_data[j][nfemb]
+                    chip_list.append(a_mon)
+
+                if sps>1:
+                   chip_list = np.array(chip_list)
+                   mon_mean = np.mean(chip_list)
+                else:
+                   mon_mean = chip_list[0]
+
+                mon_list.append(mon_mean*self.fadc)
+
+            fig,ax = plt.subplots(figsize=(6,4))
+            xx=range(len(mon_dic))
+            ax.plot(xx, mon_list, marker='.')
+            ax.set_ylabel(fname)
+            fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+            fig.savefig(fp)
+            plt.close(fig)
+
+    def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fname):
+
+        for nfemb in fembs:
+
+            fig,ax = plt.subplots(figsize=(10,8))
+
+            for key,mon_list in mon_dic.items(): 
+                data_list=[]
+                dac_list = mon_list[1]
+                mon_data = mon_list[0]
+                sps = len(mon_data[0])
+
+                for i in range(len(dac_list)):
+                    sps_list=[]
+                    for j in range(sps):
+                        a_mon = mon_data[i][4][j][nfemb]
+                        sps_list.append(a_mon)
+
+                    if sps>1:
+                       sps_list = np.array(sps_list)
+                       mon_mean = np.mean(sps_list)
+                    else:
+                       mon_mean = sps_list[0]
+
+                    data_list.append(mon_mean*self.fadc)
+
+                ax.plot(dac_list, data_list, marker='.',label=key)
+                ax.set_ylabel(fname)
+                ax.legend()
+                fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+                fig.savefig(fp)
+                plt.close(fig)
+
+    def PlotADCMon(self, fembs, mon_list, savedir, fdir):
+
+        mon_items = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
+        mon_items_n=[1,2,3,4]
+        nvset = len(mon_list)
+
+        for nfemb in fembs:
+
+            for imon in mon_items_n:
+                vset_list=[]
+                fig,ax = plt.subplots(figsize=(10,8))
+                data_dic={}
+                for i in range(nvset): 
+                    vset_list.append(mon_list[i][0])
+                    mon_data = mon_list[i][1]
+                    chip_dic = mon_data[imon]
+
+                    for key,chip_data in chip_dic.items():
+                        sps = len(chip_data[3])
+                        sps_list=[]
+                        for j in range(sps):
+                            a_mon = chip_data[3][j][nfemb]
+                            sps_list.append(a_mon)
+
+                        if sps>1:
+                           sps_list = np.array(sps_list)
+                           mon_mean = np.mean(sps_list)
+                        else:
+                           mon_mean = sps_list[0]
+
+                        if key not in data_dic:
+                           data_dic[key]=[]
+
+                        data_dic[key].append(mon_mean*self.fadc)
+
+                for key,values in data_dic.items():
+                    ax.plot(vset_list, data_dic[key], marker='.',label=key)
+                    ax.set_ylabel(mon_items[imon])
+                    ax.legend()
+                    fp = savedir[nfemb] + fdir + "/mon_{}.png".format(mon_items[imon])
+                    fig.savefig(fp)
+                    plt.close(fig)
+
+    def CheckLinearty(x_np, y_np):
+
+        delx = x_np[1]-x_np[0]
+        y1 = y_np[:-1]
+        y2 = y_np[1:]
+
+        slp = (y2-y1)/delx
+        
+    
+        
+
+        

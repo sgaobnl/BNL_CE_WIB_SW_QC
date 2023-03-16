@@ -307,6 +307,7 @@ class QC_Runs:
                     self.chk.femb_cd_rst()
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],sts[sti],dac)
                     self.take_data(snci, sg0, sg1, st0, st1, dac, fp) 
+                    time.sleep(0.5)
 
     def femb_rms(self):
 
