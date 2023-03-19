@@ -551,15 +551,193 @@ class ana_tools:
                     fig.savefig(fp)
                     plt.close(fig)
 
-    def CheckLinearty(x_np, y_np):
+    def CheckLinearty(x_np, y_np, fdir, fname, x_lo, x_hi):
 
         delx = x_np[1]-x_np[0]
         y1 = y_np[:-1]
         y2 = y_np[1:]
 
-        slp = (y2-y1)/delx
-        
-    
-        
+        slp1 = (y2-y1)/delx
+        slp2 = (slp1[1:]-slp1[:-1])/delx
 
+        fig1,ax1 = plt.subplots(1,2)
+        ax1[0].plot(x_np[:-1],slp1,label='dy/dx')
+        ax1[0].set_ylabel("slope1")
+        ax1[0].legend()
+        ax1[0].set_title("first order deviation") 
+
+        ax1[1].plot(x_np[:-1],slp2,label='d^2y/dx^2')
+        ax1[1].set_ylabel("slope2")
+        ax1[1].legend()
+        ax1[1].set_title("first order deviation") 
+
+        plt.savefig(fdir+'chk_linear_{}.png'.format(fname))
+        plt.close(fig1)
+
+        non_linear_x=[]
+
+        for i in range(len(slp2)):
+            if abs(slp2[i])>0.01:
+               non_linear_x.append(i)
+
+        if not non_linear_x:
+           max_dac = x_np[-1]
+           ln_slp,ln_intercept = np.polyfit(x_np,y_np,1)           
+
+           y_max = y_np[-1]
+           y_min = y_np[0]
+           INL=0
+           for i in range(index):
+               y_r = y_np[i]
+               y_p = x_np[i]*ln_slp + ln_intercept
+               inl = abs(y_r-y_p)/(y_max-y_min)
+               if inl>INL:
+                  INL=inl
+        else:
+           max_i = 0
+           for xx in range(non_linear_x):
+               if non_linear_x[xx] in range(x_lo, x_hi):
+                  ln_slp=0
+                  INL=0
+                  max_dac=0
+               if non_linear_x[xx]>x_hi:
+                  max_i = xx
+                  break
+
+           if max_i>0:
+              ln_slp,ln_intercept = np.polyfit(x_np[:max_i],y_np[:max_i],1)                       
+
+              max_dac = x_np[max_i-1]
+              y_max = y_np[max_i-1]
+              y_min = y_np[0]
+              INL=0
+              for i in range(max_i):
+                  y_r = y_np[i]
+                  y_p = x_np[i]*ln_slp + ln_intercept
+                  inl = abs(y_r-y_p)/(y_max-y_min)
+                  if inl>INL:
+                     INL=inl           
+                
+        return ln_slp,INL,max_dac
         
+    def GetGain(self, fembs, datadir, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+
+        dac_v = {}  # mV/bit
+        dac_v['4_7mVfC']=18.66
+        dac_v['7_8mVfC']=14.33
+        dac_v['14_0mVfC']=8.08
+        dac_v['25_0mVfC']=4.61
+
+        CC=1.85*pow(10,-13)
+        e=1.602*pow(10,-19)
+
+        if "sgp1" in namepat:
+            dac_du = dac_v['4_7mVfC']
+        else:
+            dac_du = dac_v[sgs]
+
+        pk_list = [[],[],[],[]]
+        for dac in dac_list:
+            fdata = datadir+namepat.format(snc,sgs,sts,dac)
+            with open(afile, 'rb') as fn:
+                 raw = pickle.load(fn)
+
+            rawdata = raw[0]
+            pwr_meas = raw[1]
+
+            pldata,tmst = self.data_decode(rawdata, fembs)
+            pldata = np.array(pldata)
+            tmst = np.array(tmst)
+
+            for ifemb in fembs:
+                fp = savedir[ifemb]+fdir
+                fname = namepat.format(snc,sgs,sts,dac)
+                if dac==0:
+                   ped,rms = self.GetRMS(pldata, ifemb, fp, fname):
+                   pk_list[ifemb].append(ped) 
+                else:
+                   ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname)
+                   pk_list[ifemb].append(ppk) 
+
+        for ifemb in fembs:
+            tmp_list = pk_list[ifemb]
+            new_pk_list = list(zip(*tmp_list))
+
+            dac_np = np.array(dac_list)
+            pk_np = np.array(new_pk_list)
+            fp = savedir[ifemb]+fdir
+            fname = "{}_{}_{}".format(snc,sgs,sts)
+             
+            gain_list = []
+            inl_list = []
+            max_dac_list = []
+            fig,ax = plt.subplots(2,2)
+            for ch in range(128):
+                gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],fp,fname,updac,lodac)
+                gain_list.append(gain)
+                inl_list.append(inl)
+                max_dac_list.append(max_dac)
+                if gain==0:
+                   print("femb%d ch%d gain is zero"%(ifemb,gain))           
+                ax[0,0].plot(dac_np,pk_np[ch])
+
+            ax[0,0].set_ylabel("peak value")
+            ax[0,0].set_xlabel("DAC")
+            ax[0,0].set_title("Peak vs. DAC") 
+
+            ax[0,1].plot(range(128),gain_list)
+            ax[0,1].set_xlabel("chan")
+            ax[0,1].set_ylabel("gain")
+            ax[0,1].set_title("gain") 
+
+            ax[1,0].plot(range(128),inl_list)
+            ax[1,0].set_xlabel("chan")
+            ax[1,0].set_ylabel("INL")
+            ax[1,0].set_title("INL") 
+
+            ax[1,1].plot(range(128),max_dac_list)
+            ax[1,1].set_xlabel("chan")
+            ax[1,1].set_ylabel("linear_range")
+            ax[1,1].set_title("linear range") 
+
+            plt.savefig(fdir+'gain_{}.png'.format(fname))
+            plt.close(fig)
+               
+            fp_bin = fp+"Gain_{}.bin".format(fname)
+            with open(fp_bin, 'wb') as fn:
+                 pickle.dump( gain_list, fn)
+                
+    def GetENC(self, fembs, snc, sgs, sts, sgp, savedir, fdir):
+
+        for ifemb in fembs:
+            if sgp==0:
+               fname ="{}_{}_{}".format(snc, sgs, sts)
+            if sgp==1:
+               fname ="{}_{}_{}_sgp1".format(snc, sgs, sts)
+
+            frms = savedir[ifemb] + fdir + "RMS_{}.bin".format(fname)
+            fgain = savedir[ifemb] + fdir + "Gain_{}.bin".format(fname)
+
+            with open(frms, 'rb') as fn:
+                 rms_list = pickle.load(fn)
+            rms_list=np.array(rms_list[1])
+
+            with open(fgain, 'rb') as fn:
+                 gain_list = pickle.load(fn)
+            gain_list=np.array(gain_list)
+
+            enc_list = rms_list*gain_list
+
+            fig,ax = plt.subplots(figsize=(6,4))
+            xx=range(128)
+            ax.plot(xx, enc_list, marker='.')
+            ax.set_xlabel("chan")
+            ax.set_ylabel("ENC")
+            ax.set_title(fname)
+            fp = savedir[ifemb]+fdir+"enc_{}.png".format(fname)
+            plt.savefig(fp)
+            plt.close(fig)
+
+            fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
+            with open(fp_bin, 'wb') as fn:
+                 pickle.dump( enc_list, fn) 
