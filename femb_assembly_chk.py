@@ -132,10 +132,10 @@ for ifemb in fembs:
     if hasERROR:
        print("FEMB ID {} faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
        outfile.write("FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f\n"%bias_i)
-       outfile.write("LArASIC current: %f\n"%fe_i)
-       outfile.write("COLDATA current: %f\n"%cd_i)
-       outfile.write("ColdADC current: %f\n"%adc_i)
+       outfile.write("BIAS current: %f (default range: <0.05A)\n"%bias_i)
+       outfile.write("LArASIC current: %f (default range: (0.3A, 0.6A)) \n"%fe_i)
+       outfile.write("COLDATA current: %f (default range: (0.1A, 0.3A))\n"%cd_i)
+       outfile.write("ColdADC current: %f (default range: (1.2A, 1.8A))\n"%adc_i)
        fembs.remove(ifemb)
        fembNo.pop('femb%d'%ifemb)
        chk.femb_powering_single(ifemb, 'off')
@@ -245,10 +245,10 @@ for ifemb in fembs:
     if hasERROR:
        print("FEMB ID {} faild current check 2. But test will continue".format(fembNo['femb%d'%ifemb]))
        outfile.write("FEMB ID {} faild current #2 check\n".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f\n"%bias_i)
-       outfile.write("LArASIC current: %f\n"%fe_i)
-       outfile.write("COLDATA current: %f\n"%cd_i)
-       outfile.write("ColdADC current: %f\n"%adc_i)
+       outfile.write("BIAS current: %f (default range: (-0.02A, 0.05A))\n"%bias_i)
+       outfile.write("LArASIC current: %f (default range: (0.4A, 0.5A))\n"%fe_i)
+       outfile.write("COLDATA current: %f (default range: (0.2A, 0.3A))\n"%cd_i)
+       outfile.write("ColdADC current: %f (default range: (1.5A, 1.7A))\n"%adc_i)
 
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
