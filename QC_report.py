@@ -360,9 +360,7 @@ class QC_reports:
               outfile = self.savedir[ifemb]+fdir+'report_{}.pdf'.format(fname)
               pdf.output(outfile, "F")
 
-      def CALI_report(self):
-
-
+      def CALI_report_1(self):
           qc=ana_tools()
     
           self.CreateDIR("CALI1")
@@ -391,6 +389,11 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1/")
 
+      def CALI_report_2(self):
+
+          qc=ana_tools()
+          dac_list = range(0,64,4) 
+
           self.CreateDIR("CALI2")
           datadir = self.datadir+"CALI2/"
           print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
@@ -398,15 +401,23 @@ class QC_reports:
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2/")
 
+      def CALI_report_3(self):
+
+          qc=ana_tools()
+          dac_list = range(0,32) 
+
           self.CreateDIR("CALI3")
           datadir = self.datadir+"CALI3/"
-          dac_list = range(0,64) 
           print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+          qc.GetGain(self.fembs, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
           self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3/")
 
-          dac_list = range(0,56) 
+      def CALI_report_4(self):
+
+          qc=ana_tools()
+          dac_list = range(0,32) 
+
           self.CreateDIR("CALI4")
           datadir = self.datadir+"CALI4/"
           print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
@@ -447,7 +458,16 @@ if __name__=='__main__':
           rp.RMS_report()
    
        if tm==6:
-          rp.CALI_report()
+          rp.CALI_report_1()
+   
+       if tm==7:
+          rp.CALI_report_2()
+   
+       if tm==8:
+          rp.CALI_report_3()
+   
+       if tm==9:
+          rp.CALI_report_4()
    
        if tm==10:
           rp.FE_MON_report()

@@ -395,7 +395,7 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
-        for dac in range(0,64):
+        for dac in range(0,32):
             self.chk.femb_cd_rst()
             fp = datadir + "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 
@@ -415,7 +415,7 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
-        for dac in range(0,64):
+        for dac in range(0,32):
             self.chk.femb_cd_rst()
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 

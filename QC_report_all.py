@@ -36,7 +36,16 @@ for tm in tasks:
        rp.RMS_report()
 
     if tm==6:
-       rp.CALI_report()
+       rp.CALI_report_1()
+
+    if tm==7:
+       rp.CALI_report_2()
+
+    if tm==8:
+       rp.CALI_report_3()
+
+    if tm==9:
+       rp.CALI_report_4()
 
     if tm==10:
        rp.FE_MON_report()

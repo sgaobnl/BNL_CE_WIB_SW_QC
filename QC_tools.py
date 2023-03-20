@@ -278,7 +278,7 @@ class ana_tools:
                       tmp_bl = np.mean(evtdata[peak1_pos+200:500])
                    else:
                       tmp_bl = np.mean(evtdata[0:50])
-                   if abs(peak_val/tmp_bl-1)<0.1:
+                   if abs(peak_val/tmp_bl-1)<0.04:
                       print(fname)
                       print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
                       hasError=True
@@ -310,7 +310,10 @@ class ana_tools:
 
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
-            ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
+            if maxpos>=30:
+               ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
+            else:
+               ax[0].plot(range(120),apulse[0:120])
             if funcfit:
                popt = FitFunc(apulse, shapetime, makeplot=False)
                a_xx = np.array(range(20))*0.5
@@ -725,11 +728,13 @@ class ana_tools:
             for ch in range(128):
                 #gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],fp,fname,lodac,updac)
                 gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],updac,lodac)
+                if gain==0:
+                   print("femb%d ch%d gain is zero"%(ifemb,ch))           
+                else:
+                   gain = 1/gain*dac_du/1000 *CC/e
                 gain_list.append(gain)
                 inl_list.append(inl)
                 max_dac_list.append(max_dac)
-                if gain==0:
-                   print("femb%d ch%d gain is zero"%(ifemb,ch))           
                 ax[0,0].plot(dac_np,pk_np[ch])
 
             ax[0,0].set_ylabel("peak value")
