@@ -183,6 +183,9 @@ class QC_reports:
 
       def PWR_cycle_report(self):
 
+          if 'RT' in self.logs['env']:
+              return
+
           self.CreateDIR("PWR_Cycle")
           datadir = self.datadir+"PWR_Cycle/"
 

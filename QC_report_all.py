@@ -5,7 +5,7 @@ import time
 
 ag = argparse.ArgumentParser()
 ag.add_argument("folder", help="data folder", type=str)
-ag.add_argument("task", help="a list of tasks to be analyzed", type=int, choices=range(1,13), nargs='+')
+ag.add_argument("-t", "--tasks",help="a list of tasks to be analyzed", type=int, choices=range(1,13), nargs='+',default=range(1,13))
 ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int, choices=range(0,4), nargs='+')
 args = ag.parse_args()
 
