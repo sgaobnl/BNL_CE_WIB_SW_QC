@@ -22,7 +22,7 @@ with open(fp, 'rb') as fn:
 
 rawdata = raw[0]
 pwr_meas = raw[1]
-runi = 0
+runi = int(sys.argv[3])
 
 buf0 = rawdata[runi][0][0]
 buf1 = rawdata[runi][0][1]
@@ -99,13 +99,20 @@ if True:
                 #if chn == 0:
                 #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
                 #else:
-                plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
+                #plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label=chip )
+                if chn == 0:
+                    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label=chip )
+                else:
+                    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip )
                 pp = np.max(wibs[fembi][i])
-                pm = np.mean(wibs[fembi][i])
-                if pp-pm < 2000:
+                pm = np.min(wibs[fembi][i])
+                if pm > 15000:
                     print ("FEMB%d CHIP%d CHN%d"%(fembi, chip, chn))
+
+                #if pp-pm < 2000:
+                #    print ("FEMB%d CHIP%d CHN%d"%(fembi, chip, chn))
         plt.title(f"Waveform of FEMB{fembi}")
-        #plt.legend()
+        plt.legend()
         plt.show()
         #plt.savefig(fdir + f"{fembi}_wf.jpg")
         plt.close()
