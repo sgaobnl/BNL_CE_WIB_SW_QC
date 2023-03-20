@@ -90,5 +90,22 @@ e.g.
 ```
 python3 ana_femb_assembly_chk.py femb0_femb1_femb2_femb3_RT_0pF
 ```
+#### step 2: run QC
+```
+python3 QC_top.py <femb list> -s <nsamples> -t <task list> 
+```
+e.g.
+```
+python3 QC_top.py 0 1 2 3 -s 5
+```
+The default task list is to run all the QC items. Data is saved at QC_data/. Please copy the data to PC and run the following command at the PC:
+```
+python3 QC_report_all.py <folder name> -n <femb list> -t <task list>
+```
+e.g.
+```
+python3 QC_report_all.py femb0_femb1_femb2_femb3_RT_0pF
+```
+Specific tasks and fembs can be specified uisng ``-t`` and ``-n`` flags.
 
 
