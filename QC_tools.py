@@ -301,9 +301,14 @@ class ana_tools:
                     npulse = npulse+1
 
             if hasError:
-               ppk_val.append(0)
+               ppk_val.append(peak_val)
                npk_val.append(0)
-               bl_val.append(0)
+               bl_val.append(tmp_bl)
+               apulse = data[0][global_ch] 
+               if peak1_pos>=30:
+                  ax[0].plot(range(120),apulse[peak1_pos-30:peak1_pos+90])
+               else:
+                  ax[0].plot(range(120),apulse[0:120])
                continue
  
             apulse = allpls/npulse
@@ -314,6 +319,8 @@ class ana_tools:
                ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
             else:
                ax[0].plot(range(120),apulse[0:120])
+
+
             if funcfit:
                popt = FitFunc(apulse, shapetime, makeplot=False)
                a_xx = np.array(range(20))*0.5

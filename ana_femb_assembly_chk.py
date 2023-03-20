@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
-    reportdir = "reports/"
+    reportdir = "reports/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:

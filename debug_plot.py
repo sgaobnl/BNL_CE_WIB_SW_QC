@@ -4,9 +4,9 @@ import numpy as np
 from QC_tools import ana_tools
 
 
-fp = "QC_data/femb1_femb2_femb3_femb4_LN_0pF/CALI4/CALI4_SE_900mVBL_14_0mVfC_2_0us_0x01_sgp1.bin"
-nfemb=1
-chan=0
+fp = "tmp_data/femb0011_femb0057_femb0036_femb0046_RT_150pF/Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin"
+nfemb=2
+chan=89
 fembs=[nfemb]
 
 qc = ana_tools()
