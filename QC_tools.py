@@ -640,7 +640,10 @@ class ana_tools:
                dac_init.append(dac_list[i])
                pk_init.append(pk_list[i])
 
-        slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
+        try:
+           slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
+        except:
+           return 0,0,0
 
         y_min = pk_list[0]
         y_max = pk_list[-1]
