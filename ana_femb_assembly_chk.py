@@ -53,10 +53,12 @@ if len(sys.argv) > 2:
     exit()
 
 datadir = sys.argv[1]
-fdata = "tmp_data/"+datadir+"/"
+fdata = "TMP/"+datadir+"/"
+print("fdata")
 
 ###### load logs and create report folder ######
 flog = fdata+"logs_env.bin"
+print(flog)
 with open(flog, 'rb') as fn:
     evlog = pickle.load(fn)
 
