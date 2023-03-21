@@ -192,34 +192,23 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
 
-            if 0 in fembs: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB0 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB0 is off")
-            time.sleep(1)
-            if 1 in fembs: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB1 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB1 is off")
-            time.sleep(1)
-            if 2 in fembs: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB2 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB2 is off")
-            time.sleep(1)
-            if 3 in fembs: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB3 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB3 is off")
-            
+            for femb_id in fembs:
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB%d is on"%femb_id)
+                time.sleep(1)
+            fembs_off = []
+            for i in range(4):
+                if i not in fembs:
+                    fembs_off.append(i)
+
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
+                print ("FEMB%d is off"%femb_off_id)
+            if len(femb_off_id) > 0 :
+                time.sleep(2)
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+           
             #enable WIB data link
             self.wib_femb_link_en(fembs)
 
@@ -244,17 +233,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             time.sleep(0.1)
 
         else:
-            self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB0 is off")
+            for femb_off_id in range(4):
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
+                print ("FEMB%d is off"%femb_off_id)
+            time.sleep(4)
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB1 is off")
-            time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB2 is off")
-            time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB3 is off")
             self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
@@ -266,6 +251,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.all_femb_bias_ctrl(enable=1 )
 
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            time.sleep(1)
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
@@ -722,18 +708,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         refi= 0
         while True:
             #note032123: to be optimized 
-            link_mask=self.peek(0xA00C0008) 
-            if femb_id == 0:
-                link_mask = link_mask&0xfffffff0
-            if femb_id == 1:
-                link_mask = link_mask&0xffffff0f
-            if femb_id == 2:
-                link_mask = link_mask&0xfffff0ff
-            if femb_id == 3:
-                link_mask = link_mask&0xffff0fff
-            self.poke(0xA00C0008, link_mask)
-            link_mask = self.peek(0xA00C0008 )
-            time.sleep(0.01)
+            #link_mask=self.peek(0xA00C0008) 
+            #if femb_id == 0:
+            #    link_mask = link_mask&0xfffffff0
+            #if femb_id == 1:
+            #    link_mask = link_mask&0xffffff0f
+            #if femb_id == 2:
+            #    link_mask = link_mask&0xfffff0ff
+            #if femb_id == 3:
+            #    link_mask = link_mask&0xffff0fff
+            #self.poke(0xA00C0008, link_mask)
+            #link_mask = self.peek(0xA00C0008 )
+            #time.sleep(0.01)
 
             if self.cd_flg:
                 self.femb_cd_cfg(femb_id)
