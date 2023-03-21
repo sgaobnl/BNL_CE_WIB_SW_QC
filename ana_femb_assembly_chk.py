@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
-    reportdir = "reports/"+datadir+"/"
+    reportdir = "D:/lke_1826_1E/Chkout/reports/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -53,7 +53,7 @@ if len(sys.argv) > 2:
     exit()
 
 datadir = sys.argv[1]
-fdata = "TMP/"+datadir+"/"
+fdata = "D:/lke_1826_1E/Chkout/tmp_data/"+datadir+"/"
 print("fdata")
 
 ###### load logs and create report folder ######

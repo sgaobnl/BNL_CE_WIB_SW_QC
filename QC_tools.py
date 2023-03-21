@@ -285,8 +285,10 @@ class ana_tools:
                       break
 
                    if peak1_pos>400 or peak1_pos<50:
-                      t0 = np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
+                      t0 = peak1_pos+50+np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
                       t0 = t0-200
+                      if t0<0:
+                          t0=0
                       allpls = allpls + evtdata[t0:t0+500]
                       t0 = tmst[0][nfemb//2][t0]
                    else:
@@ -305,20 +307,25 @@ class ana_tools:
                npk_val.append(0)
                bl_val.append(tmp_bl)
                apulse = data[0][global_ch] 
-               if peak1_pos>=30:
+               if peak1_pos>=30 and peak1_pos<len(apulse)-90:
                   ax[0].plot(range(120),apulse[peak1_pos-30:peak1_pos+90])
-               else:
+               if peak1_pos<30:
                   ax[0].plot(range(120),apulse[0:120])
+               if peak1_pos>=len(apulse)-90:
+                   ax[0].plot(range(120),apulse[len(apulse)-120:])
                continue
  
             apulse = allpls/npulse
 
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
-            if maxpos>=30:
+
+            if maxpos>=30 and maxpos<len(apulse)-90:
                ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
-            else:
+            if maxpos<30:
                ax[0].plot(range(120),apulse[0:120])
+            if maxpos>=len(apulse)-90:
+                ax[0].plot(range(120),apulse[len(apulse)-120:])
 
 
             if funcfit:
@@ -697,7 +704,7 @@ class ana_tools:
 
         pk_list = [[],[],[],[]]
         for dac in dac_list:
-            fdata = datadir+namepat.format(snc,sgs,sts,dac)
+            fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
             with open(fdata, 'rb') as fn:
                  raw = pickle.load(fn)
 

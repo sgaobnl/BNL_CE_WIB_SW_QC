@@ -10,7 +10,7 @@ ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int
 args = ag.parse_args()
 
 fdir = args.folder
-tasks = args.task
+tasks = args.tasks
 fembs = args.fembs
 
 rp = QC_reports(fdir, fembs)
