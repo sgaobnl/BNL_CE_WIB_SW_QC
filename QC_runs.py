@@ -109,7 +109,7 @@ class QC_Runs:
 
         return pwr_sts
 
-    def take_data(self, snc, sg0, sg1, st0, st1, dac, fp, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0, autocali=0):
+    def take_data(self, snc, sg0, sg1, st0, st1, dac, fp, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0, autocali=0, pwr_flg=True):
          
         cfg_paras_rec = []
 
@@ -124,14 +124,17 @@ class QC_Runs:
                             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
         if sdd==1:
+           self.chk.adc_flg == True 
            for i in range(8):
                self.chk.adcs_paras[i][2]=1   # enable differential 
 
         if autocali==1:
+           self.chk.adc_flg == True 
            for i in range(8):
                self.chk.adcs_paras[i][8]=1   # enable adc calibration
 
         for femb_id in self.fembs:
+           self.chk.fe_flg == True 
             if dac>0:
                self.chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd, sdf=sdf, slk0=slk0, slk1=slk1, sgp=sgp)
                adac_pls_en = 1
@@ -142,9 +145,13 @@ class QC_Runs:
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
 
-        self.chk.data_align(self.fembs)
-        time.sleep(0.5)
-        pwr_meas = self.chk.get_sensors()
+        if self.chk.cd_flg == True:
+            self.chk.data_align(self.fembs)
+            time.sleep(0.1)
+        if pwr_flg=True:
+            pwr_meas = self.chk.get_sensors()
+        else:
+            pwr_meas = None
         rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
 
         with open(fp, 'wb') as fn:
@@ -172,12 +179,12 @@ class QC_Runs:
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
 
         ####### SE with LArASIC buffer on #######
-        self.chk.femb_cd_rst()
+        #self.chk.femb_cd_rst()
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x20)
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sdf=1) 
 
         ####### DIFF #######
-        self.chk.femb_cd_rst()
+        #self.chk.femb_cd_rst()
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x20)
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sdd=1) 
         
@@ -267,17 +274,17 @@ class QC_Runs:
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0) 
 
         ####### 100 pA #######
-        self.chk.femb_cd_rst()
+        #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "100pA")
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0) 
 
         ####### 5 nA #######
-        self.chk.femb_cd_rst()
+        #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "5nA")
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1) 
 
         ####### 1 nA #######
-        self.chk.femb_cd_rst()
+        #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "1nA")
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1) 
 
@@ -296,6 +303,7 @@ class QC_Runs:
  
         dac = 0x10
  
+        self.chk.femb_cd_rst()
         for snci in range(2):
             for sgi in  range(4):
                 sg0 = sgi%2
@@ -304,10 +312,9 @@ class QC_Runs:
                     st0 = sti%2
                     st1 = sti//2 
  
-                    self.chk.femb_cd_rst()
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],sts[sti],dac)
                     self.take_data(snci, sg0, sg1, st0, st1, dac, fp) 
-                    time.sleep(0.5)
+                    #time.sleep(0.5)
 
     def femb_rms(self):
 
@@ -324,6 +331,7 @@ class QC_Runs:
  
         dac = 0
  
+        self.chk.femb_cd_rst()
         for snci in range(2):
             for sgi in  range(4):
                 sg0 = sgi%2
@@ -332,7 +340,6 @@ class QC_Runs:
                     st0 = sti%2
                     st1 = sti//2 
  
-                    self.chk.femb_cd_rst()
                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],sts[sti],dac)
                     self.take_data(snci, sg0, sg1, st0, st1, dac, fp, autocali=1) 
 
@@ -350,13 +357,13 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
+        self.chk.femb_cd_rst()
         for sgi in  range(4):
             sg0 = sgi%2
             sg1 = sgi//2 
             
-            time.sleep(5)
+#            time.sleep(5)
             for dac in range(0,64,4):
-                self.chk.femb_cd_rst()
                 fp = datadir + "CALI1_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL",sgs[sgi],"2_0us",dac)
                 self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
 
@@ -375,8 +382,8 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
+        self.chk.femb_cd_rst()
         for dac in range(0,64,4):
-            self.chk.femb_cd_rst()
             fp = datadir + "CALI2_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
 
@@ -395,8 +402,8 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
+        self.chk.femb_cd_rst()
         for dac in range(0,32):
-            self.chk.femb_cd_rst()
             fp = datadir + "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 
 
@@ -415,8 +422,8 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
  
+        self.chk.femb_cd_rst()
         for dac in range(0,32):
-            self.chk.femb_cd_rst()
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 
         
