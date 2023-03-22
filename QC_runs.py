@@ -8,7 +8,7 @@ import os
 import time, datetime, random, statistics
 
 class QC_Runs:
-    def __init__(self, fembs, sample_N):
+    def __init__(self, fembs, sample_N=1):
         self.fembs = fembs
         self.sample_N = sample_N
         self.fembNo={}
@@ -101,8 +101,9 @@ class QC_Runs:
            fe_v = pwr_data['FEMB%d_DC2DC0_V'%i]
            cd_v = pwr_data['FEMB%d_DC2DC1_V'%i]
            adc_v = pwr_data['FEMB%d_DC2DC2_V'%i]
+           print (bias_v, fe_v, cd_v, adc_v) 
   
-           if (bias_v < 0.5) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
+           if (bias_v < 1.0) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
                print ("FEMB {} is turned off".format(i))        
            else:
                pwr_sts = False
@@ -134,7 +135,7 @@ class QC_Runs:
                self.chk.adcs_paras[i][8]=1   # enable adc calibration
 
         for femb_id in self.fembs:
-           self.chk.fe_flg == True 
+            self.chk.fe_flg == True 
             if dac>0:
                self.chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd, sdf=sdf, slk0=slk0, slk1=slk1, sgp=sgp)
                adac_pls_en = 1
@@ -145,10 +146,11 @@ class QC_Runs:
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
 
-        if self.chk.cd_flg == True:
+        if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)
+            self.chk.align_flg = False
             time.sleep(0.1)
-        if pwr_flg=True:
+        if pwr_flg==True:
             pwr_meas = self.chk.get_sensors()
         else:
             pwr_meas = None
@@ -176,6 +178,7 @@ class QC_Runs:
         ####### SE #######
         self.chk.femb_cd_rst()
         fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x20)
+        self.sample_N = 1
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
 
         ####### SE with LArASIC buffer on #######
@@ -210,6 +213,7 @@ class QC_Runs:
         
         ####### SE 3 cycles #######
         self.chk.femb_cd_rst()
+        self.sample_N = 1
         for i in range(3):
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",0x20)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
@@ -219,7 +223,7 @@ class QC_Runs:
             pwr_status = self.check_pwr_off(pwr_info)
 
             nn=0
-            while nn<20 or pwr_status==False:
+            while nn<5 or pwr_status==False:
                   time.sleep(1)
                   nn=nn+1
                   pwr_info = self.chk.get_sensors()
@@ -238,7 +242,7 @@ class QC_Runs:
         pwr_status = self.check_pwr_off(pwr_info)
 
         nn=0
-        while nn<20 or pwr_status==False:
+        while nn<5 or pwr_status==False:
               time.sleep(1)
               nn=nn+1
               pwr_info = self.chk.get_sensors()
@@ -270,6 +274,7 @@ class QC_Runs:
          
         ####### 500 pA #######
         self.chk.femb_cd_rst()
+        self.sample_N = 1
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "500pA")
         self.take_data(snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0) 
 
@@ -304,6 +309,7 @@ class QC_Runs:
         dac = 0x10
  
         self.chk.femb_cd_rst()
+        self.sample_N = 1
         for snci in range(2):
             for sgi in  range(4):
                 sg0 = sgi%2
@@ -332,6 +338,7 @@ class QC_Runs:
         dac = 0
  
         self.chk.femb_cd_rst()
+        self.sample_N = 10
         for snci in range(2):
             for sgi in  range(4):
                 sg0 = sgi%2
@@ -358,6 +365,7 @@ class QC_Runs:
         st1 = 1 # 2 us
  
         self.chk.femb_cd_rst()
+        self.sample_N = 5
         for sgi in  range(4):
             sg0 = sgi%2
             sg1 = sgi//2 
@@ -383,6 +391,7 @@ class QC_Runs:
         st1 = 1 # 2 us
  
         self.chk.femb_cd_rst()
+        self.sample_N = 5
         for dac in range(0,64,4):
             fp = datadir + "CALI2_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp) 
@@ -403,6 +412,7 @@ class QC_Runs:
         st1 = 1 # 2 us
  
         self.chk.femb_cd_rst()
+        self.sample_N = 5
         for dac in range(0,32):
             fp = datadir + "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 
@@ -423,6 +433,7 @@ class QC_Runs:
         st1 = 1 # 2 us
  
         self.chk.femb_cd_rst()
+        self.sample_N = 5
         for dac in range(0,32):
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(snc, sg0, sg1, st0, st1, dac, fp, sgp=1) 
