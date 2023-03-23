@@ -223,7 +223,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         else:
             for femb_off_id in range(4):
-                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=1, vcd_en=0, vadc_en=0, bias_en=0 )
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=1, bias_en=0 )
                 print ("FEMB%d is off"%femb_off_id)
             time.sleep(4)
             for femb_off_id in range(4):
@@ -674,7 +674,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             time.sleep(0.005)
             for femb_id in fembs:
                 self.femb_cd_fc_act(femb_id, act_cmd="save_status")
-            time.sleep(0.001)
+            time.sleep(0.002)
 
             for femb_id in fembs:
                 sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
@@ -719,7 +719,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_fc_act(femb_id, act_cmd="prm_larasics")
             time.sleep(0.005)
             self.femb_cd_fc_act(femb_id, act_cmd="save_status")
-            time.sleep(0.001)
+            time.sleep(0.002)
 
             sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
             sts_cd2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
