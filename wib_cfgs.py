@@ -19,8 +19,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
         self.adcs_paras = self.adcs_paras_init
-        self.adac_cali_quo = False
+        self.adac_cali_quo = [False,False,False,False]
         self.longcable = False #>7m
+        self.cd_flg=True
+        self.adc_flg=True
+        self.fe_flg=True
+        self.align_flg=True
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -76,6 +80,25 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         print ("WIB FEMB LINK = %x"%link_mask)
  
 
+    def wib_fake_ts_en(self):
+        print ("Enable fake timing system")
+        rdreg = self.peek(0xA00c000C)
+        #disable fake time stamp
+        self.poke(0xA00c000C, (rdreg&0xFFFFFFF1))
+        #set the init time stamp
+        #self.poke(0xA00c0018, 0x00000000)
+        #self.poke(0xA00c001C, 0x00000000)
+        now = datetime.now()
+        init_ts = int(datetime.timestamp(now) * 1e9)
+        init_ts = time.time_ns()
+        init_ts = init_ts//16 #WIB system clock is 62.5MHz
+
+        self.poke(0xA00C0018, init_ts&0xffffffff)
+        self.poke(0xA00C001c, (init_ts>>32)&0xffffffff)
+
+        #enable fake time stamp
+        self.poke(0xA00c000C, (rdreg|0x02))
+
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
         #See WIB_firmware.docx table 4.9.1 ts_clk_sel
         # 0[ts_clk_sel=False]  = CDR recovered clock(default)
@@ -90,24 +113,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
             print ("PLL clock synchronized with CDR or running independently if CDR clock is missing")
             print ("PLL clock should only be used on test stand when timing master is not available.")
-            print ("Enable fake timing system")
-            rdreg = self.peek(0xA00c000C)
-            #disable fake time stamp
-            self.poke(0xA00c000C, (rdreg&0xFFFFFFF1))
-            #set the init time stamp
-            #self.poke(0xA00c0018, 0x00000000)
-            #self.poke(0xA00c001C, 0x00000000)
-            now = datetime.now()
-            init_ts = int(datetime.timestamp(now) * 1e9)
-            init_ts = time.time_ns()
-            init_ts = init_ts//16 #WIB system clock is 62.5MHz
-
-            self.poke(0xA00C0018, init_ts&0xffffffff)
-            self.poke(0xA00C001c, (init_ts>>32)&0xffffffff)
-
-            #enable fake time stamp
-            self.poke(0xA00c000C, (rdreg|0x02))
-
+            self.wib_fake_ts_en()
         else:
             #timing point reset
             addr = 0xA00c0000
@@ -132,14 +138,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
             rdreg = self.peek(0xA00c000C)
             #disable fake time stamp
-            #print (hex(rdreg), hex(rdreg&0xFFFFFFF1))
             self.poke(0xA00c000C, (rdreg&0xFFFFFFF1))
-            #time.sleep(0.1)
             rdreg = self.peek(0xA00c000C)
             #set the init time stamp
             #align_en = 1, cmd_stamp_sync_en = 1
-            #self.poke(wib, 0xA00c000C, (rdreg|0x0C))
-            #time.sleep(0.1)
             #send SYNC_FAST command when cmd_stamp_syn match the DTS time stamp
             self.poke(0xA00c000C, (cmd_stamp_sync<<16) + ((rdreg&0x8000FFFF)|0x0C) )
             time.sleep(0.1)
@@ -174,6 +176,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         return self.peek(0xA00C0004)
 
+    def wib_timing_wrap(self ):
+        with open("./timing.cfg", "r") as fp:
+            rd = fp.readline()
+            rds = rd.split(",")
+            ts_clk_sel=int(rds[0])
+            fp1_ptc0_sel = int(rds[1])
+            cmd_stamp_sync = int(rds[2])
+        self.wib_timing(ts_clk_sel=ts_clk_sel, fp1_ptc0_sel=fp1_ptc0_sel, cmd_stamp_sync= cmd_stamp_sync)
 
     def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
         #self.femb_power_set(0, 0, vfe, vcd, vadc)
@@ -189,84 +199,36 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1 )
 
-            if 0 in fembs: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB0 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB0 is off")
-            time.sleep(1)
-            if 1 in fembs: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB1 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB1 is off")
-            time.sleep(1)
-            if 2 in fembs: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB2 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB2 is off")
-            time.sleep(1)
-            if 3 in fembs: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-                print ("FEMB3 is on")
-            else: 
-                self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                print ("FEMB3 is off")
-            
-            #enable WIB data link
-            link_mask=self.peek(0xA00C0008) 
-            self.poke(0xA00C0008, link_mask&0xffff0000)
-            time.sleep(0.1)
-            link_mask=self.peek(0xA00C0008) 
-            link_mask=link_mask|0xffff 
-            time.sleep(0.1)
-            if 0 in fembs: 
-                link_mask = link_mask&0xfffffff0
-            if 1 in fembs: 
-                link_mask = link_mask&0xffffff0f
-            if 2 in fembs: 
-                link_mask = link_mask&0xfffff0ff
-            if 3 in fembs: 
-                link_mask = link_mask&0xffff0fff
-            self.poke(0xA00C0008, link_mask)
-            link_mask = self.peek(0xA00C0008)
- 
-            #reset COLDATA RX to clear buffers
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            self.poke(0xA00C0004, rdreg|0x00003000)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            time.sleep(0.1)
+            for femb_id in fembs:
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+                print ("FEMB%d is on"%femb_id)
+                time.sleep(1)
+            fembs_off = []
+            for i in range(4):
+                if i not in fembs:
+                    fembs_off.append(i)
 
-            #reset FELIX TX and loopback RX
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            self.poke(0xA00C0038, rdreg|0x00000040)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
+                print ("FEMB%d is off"%femb_off_id)
+            if len(fembs_off) > 0 :
+                time.sleep(2)
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+           
+            #enable WIB data link
+            self.wib_femb_link_en(fembs)
             time.sleep(0.1)
+            self.wib_timing_wrap()
 
         else:
-            self.femb_power_en_ctrl(femb_id=0, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB0 is off")
+            for femb_off_id in range(4):
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=1, bias_en=0 )
+                print ("FEMB%d is off"%femb_off_id)
+            time.sleep(4)
+            for femb_off_id in range(4):
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=1, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB1 is off")
-            time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=2, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB2 is off")
-            time.sleep(1)
-            self.femb_power_en_ctrl(femb_id=3, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            print ("FEMB3 is off")
             self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):
@@ -278,45 +240,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.all_femb_bias_ctrl(enable=1 )
 
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
+            time.sleep(1)
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
-            link_mask=self.peek(0xA00C0008) 
-            self.poke(0xA00C0008, link_mask&0xffff0000)
-            time.sleep(0.1)
-            link_mask=self.peek(0xA00C0008) 
-            link_mask=link_mask|0xffff 
-            time.sleep(0.1)
-            if femb_id==0: 
-                link_mask = link_mask&0xfffffff0
-            if femb_id==1: 
-                link_mask = link_mask&0xffffff0f
-            if femb_id==2: 
-                link_mask = link_mask&0xfffff0ff
-            if femb_id==3: 
-                link_mask = link_mask&0xffff0fff
-            self.poke(0xA00C0008, link_mask)
-            link_mask = self.peek(0xA00C0008)
- 
-            #reset COLDATA RX to clear buffers
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            self.poke(0xA00C0004, rdreg|0x00003000)
-            self.poke(0xA00C0004, rdreg&0xffffcfff)
-            rdreg = self.peek(0xA00C0004)
-            #print ("coldata_rx_reset = 0x%08x"%rdreg)
-            time.sleep(0.1)
+            self.wib_femb_link_en(fembs)
 
-            #reset FELIX TX and loopback RX
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            self.poke(0xA00C0038, rdreg|0x00000040)
-            self.poke(0xA00C0038, rdreg&0xffffffdf)
-            rdreg = self.peek(0xA00C0038)
-            #print ("felix_rx_reset = 0x%08x"%rdreg)
-            time.sleep(0.1)
 
         if act=='off':
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
@@ -362,8 +291,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         print ("Sending Fast command reset")
         self.adcs_paras = self.adcs_paras_init
         self.fastcmd(cmd= 'reset')
-        self.adac_cali_quo = False
+        self.adac_cali_quo = [False,False,False,False]
         time.sleep(0.05)
+        self.cd_flg=True
+        self.adc_flg=True
+        self.fe_flg=True
+        self.align_flg = True 
+
     #note: later all registers should be read and stored (to do)
 
     def femb_cd_sync(self):
@@ -501,6 +435,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #Frame14
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
+        self.cd_flg=False
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=cd1_0x27)
@@ -542,6 +477,20 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def data_align(self, fembs=[0, 1, 2,3]):
         AAA = True
         while AAA:
+            #note032123: to be optimized 
+            link_mask=self.peek(0xA00C0008) 
+            if 0 in fembs:
+                link_mask = link_mask&0xfffffff0
+            if 1 in fembs:
+                link_mask = link_mask&0xffffff0f
+            if 2 in fembs:
+                link_mask = link_mask&0xfffff0ff
+            if 3 in fembs:
+                link_mask = link_mask&0xffff0fff
+            self.poke(0xA00C0008, link_mask)
+            link_mask = self.peek(0xA00C0008 )
+            time.sleep(0.01)
+
             self.femb_cd_sync() #sync should be sent before edge
             time.sleep(0.01)
             self.femb_cd_edge()
@@ -601,7 +550,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if dts_time_delay >= 0x7f:
                     #self.femb_powering(fembs =[])
                     print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
-                    self.wib_timing( ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync =0)
+                    #self.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+                    self.wib_timing_wrap()
                     time.sleep(0.1)
                     #exit()
 
@@ -691,14 +641,67 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=0xAB)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=0x34)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0x12)
+        self.adc_flg=False
+
+    def fembs_fe_cfg(self, fembs):
+        #reset LARASIC chips
+        for femb_id in fembs:
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        time.sleep(0.001)
+        for femb_id in fembs:
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+        time.sleep(0.001)
+        for femb_id in fembs:
+            #program LARASIC chips
+            for chip in range(8):
+                for reg_id in range(16+2):
+                    if (chip < 4):
+                        rdreg = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=(chip%4+1), reg_addr=(0x91-reg_id))
+                        if rdreg != self.regs_int8[chip][reg_id]:
+                            self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
+                    else:
+                        rdreg = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=(chip%4+1), reg_addr=(0x91-reg_id))
+                        if rdreg != self.regs_int8[chip][reg_id]:
+                            self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=(chip%4+1), reg_addr=(0x91-reg_id), wrdata=self.regs_int8[chip][reg_id])
+        i = 0
+        prg_flg = True
+        while prg_flg:
+            for femb_id in fembs:
+                self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
+            time.sleep(0.001)
+            for femb_id in fembs:
+                self.femb_cd_fc_act(femb_id, act_cmd="prm_larasics")
+            time.sleep(0.005)
+            for femb_id in fembs:
+                self.femb_cd_fc_act(femb_id, act_cmd="save_status")
+            time.sleep(0.002)
+
+            for femb_id in fembs:
+                sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+                sts_cd2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
+
+                if (sts_cd1&0xff == 0xff) and (sts_cd2&0xff == 0xff):
+                    prg_flg = False
+                else:
+                    prg_flg = True
+                    print ("FEMB{}, LArASIC readback status is {}, {} diffrent from 0xFF".format(femb_id, sts_cd1, sts_cd2))
+                    if i > 10:
+                        #self.femb_powering(fembs =[])
+                        #print ("Turn all FEMBs off, exit anyway")
+                        print ("exit anyway")
+                        exit()
+                    else:
+                        time.sleep(0.01)
+            i = i + 1
+        self.fe_flg=False
 
     def femb_fe_cfg(self, femb_id):
         #reset LARASIC chips
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-        time.sleep(0.01)
+        time.sleep(0.001)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
         #program LARASIC chips
-        time.sleep(0.01)
+        time.sleep(0.001)
         for chip in range(8):
             for reg_id in range(16+2):
                 if (chip < 4):
@@ -714,9 +717,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
             time.sleep(0.001)
             self.femb_cd_fc_act(femb_id, act_cmd="prm_larasics")
-            time.sleep(0.05)
-            self.femb_cd_fc_act(femb_id, act_cmd="save_status")
             time.sleep(0.005)
+            self.femb_cd_fc_act(femb_id, act_cmd="save_status")
+            time.sleep(0.002)
 
             sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
             sts_cd2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
@@ -731,8 +734,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     print ("exit anyway")
                     exit()
                 else:
-                    time.sleep(0.1)
+                    time.sleep(0.01)
             i = i + 1
+        self.fe_flg=False
 
     def femb_adac_cali(self, femb_id, phase0x07=[0,0,0,0,0,0,0,0]):
         for chip in range(8):
@@ -740,33 +744,35 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x7, wrdata=phase0x07[chip])
             self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x8, wrdata=0x38        )
             self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x9, wrdata=0x80        )
-
-        self.adac_cali_quo = not self.adac_cali_quo
         self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
-        return self.adac_cali_quo
+        self.adac_cali_quo[femb_id] = not self.adac_cali_quo[femb_id] 
 
     def femb_cfg(self, femb_id, adac_pls_en = False):
         refi= 0
         while True:
-            link_mask=self.peek(0xA00C0008) 
-            if femb_id == 0:
-                link_mask = link_mask&0xfffffff0
-            if femb_id == 1:
-                link_mask = link_mask&0xffffff0f
-            if femb_id == 2:
-                link_mask = link_mask&0xfffff0ff
-            if femb_id == 3:
-                link_mask = link_mask&0xffff0fff
-            self.poke(0xA00C0008, link_mask)
-            link_mask = self.peek(0xA00C0008 )
-            time.sleep(0.01)
+            #note032123: to be optimized 
+            #link_mask=self.peek(0xA00C0008) 
+            #if femb_id == 0:
+            #    link_mask = link_mask&0xfffffff0
+            #if femb_id == 1:
+            #    link_mask = link_mask&0xffffff0f
+            #if femb_id == 2:
+            #    link_mask = link_mask&0xfffff0ff
+            #if femb_id == 3:
+            #    link_mask = link_mask&0xffff0fff
+            #self.poke(0xA00C0008, link_mask)
+            #link_mask = self.peek(0xA00C0008 )
+            #time.sleep(0.01)
 
-            self.femb_cd_cfg(femb_id)
-            self.femb_adc_cfg(femb_id)
-            self.femb_fe_cfg(femb_id)
-            if adac_pls_en:
+            if self.cd_flg:
+                self.femb_cd_cfg(femb_id)
+            if self.adc_flg:
+                self.femb_adc_cfg(femb_id)
+            if self.fe_flg:
+                self.femb_fe_cfg(femb_id)
+            if adac_pls_en and (not (self.adac_cali_quo[femb_id])) :
                 self.femb_adac_cali(femb_id)
-
+            time.sleep(0.005)
 
             #self.femb_cd_sync()
             if self.i2cerror:
@@ -800,6 +806,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             stb1=0
             chn=mon_chipchn
 
+        t0 = time.time_ns()
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
         self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
@@ -809,20 +816,53 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_fe_cfg(femb_id)
         self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
+    def fembs_fe_mon(self, fembs=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1 ):
+        if (rst_fe != 0):
+            self.set_fe_reset()
+
+        if (mon_type==2): #monitor bandgap 
+            stb0=1
+            stb1=1
+            chn=0
+        elif (mon_type==1): #monitor temperature
+            stb0=1
+            stb1=0
+            chn=0
+        else: #monitor analog
+            stb0=0
+            stb1=0
+            chn=mon_chipchn
+
+        t0 = time.time_ns()
+        self.set_fe_reset()
+        #ONlY one channel of a FEMB can set smn to 1 at a time
+        self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
+        self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
+        self.set_fe_sync()
+
+        self.fembs_fe_cfg(fembs)
+        for femb_id in fembs:
+            self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+
     def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
+        #t0 = time.time_ns() 
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
         
         #step 2
-        for femb_id in femb_ids:
-            self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
+        #for femb_id in femb_ids:
+        #    self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
+        #t0 = time.time_ns() 
+        self.fembs_fe_mon(femb_ids, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
+        #print (time.time_ns() - t0)
+        #exit()
         #step4
         if self.longcable:
             time.sleep(0.5)
         else:
-            time.sleep(0.1)
+            time.sleep(0.05)
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
@@ -836,6 +876,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             mon_str = "Channel"
         mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss]
         self.wib_mon_switches()
+        #print (time.time_ns() - t0)
+        #exit()
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
@@ -852,15 +894,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
 
+            self.fembs_fe_cfg(femb_ids)
             for femb_id in femb_ids:
-                self.femb_fe_cfg(femb_id)
+           #     self.femb_fe_cfg(femb_id)
                 self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
             #step4
 
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.1)
+                time.sleep(0.05)
                 pass
             adcss = []
             self.wib_mon_adcs() #get rid of previous result
@@ -902,13 +945,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 for femb_id in femb_ids:
                     self.femb_adc_cfg(femb_id)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
-                    print (f"FEMB{femb_id} is configurated")
+                    #print (f"FEMB{femb_id} is configurated")
                 adcss = []
                 #time.sleep(1)
                 if self.longcable:
                     time.sleep(0.5)
                 else:
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                 self.wib_mon_adcs() #get rid of previous result
                 for i in range(sps):
                     adcs = self.wib_mon_adcs()
@@ -937,7 +980,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.1)
+                time.sleep(0.05)
 
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):
