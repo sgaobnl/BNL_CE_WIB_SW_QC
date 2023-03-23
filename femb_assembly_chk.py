@@ -230,16 +230,16 @@ for ifemb in fembs:
        print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i)) 
        hasERROR = True
 
-    if fe_i>0.5 or fe_i<0.4:
-       print("ERROR: FEMB{} LArASIC current {} out of range (0.4A,0.5A)".format(ifemb,fe_i)) 
+    if fe_i>0.55 or fe_i<0.35:
+       print("ERROR: FEMB{} LArASIC current {} out of range (0.35A,0.55A)".format(ifemb,fe_i)) 
        hasERROR = True
 
-    if cd_i>0.3 or cd_i<0.2:
-       print("ERROR: FEMB{} COLDATA current {} out of range (0.2A,0.3A)".format(ifemb,cd_i)) 
+    if cd_i>0.35 or cd_i<0.15:
+       print("ERROR: FEMB{} COLDATA current {} out of range (0.15A,0.35A)".format(ifemb,cd_i)) 
        hasERROR = True
 
-    if adc_i>1.7 or adc_i<1.5:
-       print("ERROR: FEMB{} ColdADC current {} out of range (1.5A,1.7A)".format(ifemb,adc_i)) 
+    if adc_i>1.85 or adc_i<1.35:
+       print("ERROR: FEMB{} ColdADC current {} out of range (1.35A,1.35A)".format(ifemb,adc_i)) 
        hasERROR = True
 
     if hasERROR:

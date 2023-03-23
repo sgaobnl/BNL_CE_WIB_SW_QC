@@ -540,65 +540,70 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x20, wrdata=0)
         
     def data_align(self, fembs=[0, 1, 2,3]):
-        self.femb_cd_sync() #sync should be sent before edge
-        time.sleep(0.01)
-        self.femb_cd_edge()
-        time.sleep(0.1)
+        AAA = True
+        while AAA:
+            self.femb_cd_sync() #sync should be sent before edge
+            time.sleep(0.01)
+            self.femb_cd_edge()
+            time.sleep(0.1)
 
-        rdaddr = 0xA00C0010
-        rdreg = self.peek(rdaddr)
-        wrvalue = 0x10 #cmd_code_edge = 0x10
-        wrreg = (rdreg & 0xffff00ff) + ((wrvalue&0xff)<<8)
-        self.poke(rdaddr, wrreg) 
-        
-        rdaddr = 0xA00C000C
-        rdreg = self.peek(rdaddr)
-        wrvalue = 0x7fec #cmd_stamp_sync = 0x7fec
-        wrreg = (rdreg & 0x0000ffff) + ((wrvalue&0xffff)<<16)
-        self.poke(rdaddr, wrreg) 
-        
-        rdaddr = 0xA00C000C
-        rdreg = self.peek(rdaddr)
-        wrvalue = 0x1 #cmd_stamp_sync_en = 1
-        wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
-        self.poke(rdaddr, wrreg) 
-            
-        for dts_time_delay in  range(0x48, 0x80,1):
-            rdaddr = 0xA00C000C
+            rdaddr = 0xA00C0010
             rdreg = self.peek(rdaddr)
-            wrvalue = dts_time_delay #0x58 #dts_time_delay = 1
+            wrvalue = 0x10 #cmd_code_edge = 0x10
             wrreg = (rdreg & 0xffff00ff) + ((wrvalue&0xff)<<8)
             self.poke(rdaddr, wrreg) 
+            
             rdaddr = 0xA00C000C
             rdreg = self.peek(rdaddr)
-            wrvalue = 0x1 #align_en = 1
-            wrreg = (rdreg & 0xfffffff7) + ((wrvalue&0x1)<<3)
+            wrvalue = 0x7fec #cmd_stamp_sync = 0x7fec
+            wrreg = (rdreg & 0x0000ffff) + ((wrvalue&0xffff)<<16)
             self.poke(rdaddr, wrreg) 
-            time.sleep(0.2)
-            if 0 in fembs:
-                link0to3 = self.peek(0xA00C00A8)
-            else:
-                link0to3 = 0x0
-            if 1 in fembs:
-                link4to7 = self.peek(0xA00C00AC)
-            else:
-                link4to7 = 0x0
-            if 2 in fembs:
-                link8tob = self.peek(0xA00C00B0)
-            else:
-                link8tob = 0x0
-            if 3 in fembs:
-                linkctof = self.peek(0xA00C00B4)
-            else:
-                linkctof = 0x0
+            
+            rdaddr = 0xA00C000C
+            rdreg = self.peek(rdaddr)
+            wrvalue = 0x1 #cmd_stamp_sync_en = 1
+            wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
+            self.poke(rdaddr, wrreg) 
+                
+            for dts_time_delay in  range(0x48, 0x80,1):
+                rdaddr = 0xA00C000C
+                rdreg = self.peek(rdaddr)
+                wrvalue = dts_time_delay #0x58 #dts_time_delay = 1
+                wrreg = (rdreg & 0xffff00ff) + ((wrvalue&0xff)<<8)
+                self.poke(rdaddr, wrreg) 
+                rdaddr = 0xA00C000C
+                rdreg = self.peek(rdaddr)
+                wrvalue = 0x1 #align_en = 1
+                wrreg = (rdreg & 0xfffffff7) + ((wrvalue&0x1)<<3)
+                self.poke(rdaddr, wrreg) 
+                time.sleep(0.2)
+                if 0 in fembs:
+                    link0to3 = self.peek(0xA00C00A8)
+                else:
+                    link0to3 = 0x0
+                if 1 in fembs:
+                    link4to7 = self.peek(0xA00C00AC)
+                else:
+                    link4to7 = 0x0
+                if 2 in fembs:
+                    link8tob = self.peek(0xA00C00B0)
+                else:
+                    link8tob = 0x0
+                if 3 in fembs:
+                    linkctof = self.peek(0xA00C00B4)
+                else:
+                    linkctof = 0x0
 
-            if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0):
-                print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
-                break
-            if dts_time_delay >= 0x7f:
-                #self.femb_powering(fembs =[])
-                print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
-                exit()
+                if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0):
+                    print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
+                    AAA = False
+                    break
+                if dts_time_delay >= 0x7f:
+                    #self.femb_powering(fembs =[])
+                    print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
+                    self.wib_timing( ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync =0)
+                    time.sleep(0.1)
+                    #exit()
 
     def femb_adc_chkreg(self, femb_id):
 
