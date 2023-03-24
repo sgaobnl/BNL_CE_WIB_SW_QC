@@ -244,6 +244,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
+            fembs=[femb_id]
             self.wib_femb_link_en(fembs)
 
 
