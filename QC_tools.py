@@ -519,11 +519,11 @@ class ana_tools:
                     data_list.append(mon_mean*self.fadc)
 
                 ax.plot(dac_list, data_list, marker='.',label=key)
-                ax.set_ylabel(fname)
-                ax.legend()
-                fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
-                fig.savefig(fp)
-                plt.close(fig)
+            ax.set_ylabel(fname)
+            ax.legend()
+            fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+            plt.savefig(fp)
+            plt.close(fig)
 
     def PlotADCMon(self, fembs, mon_list, savedir, fdir):
 
@@ -562,11 +562,11 @@ class ana_tools:
 
                 for key,values in data_dic.items():
                     ax.plot(vset_list, data_dic[key], marker='.',label=key)
-                    ax.set_ylabel(mon_items[imon])
-                    ax.legend()
-                    fp = savedir[nfemb] + fdir + "/mon_{}.png".format(mon_items[imon])
-                    fig.savefig(fp)
-                    plt.close(fig)
+                ax.set_ylabel(mon_items[imon])
+                ax.legend()
+                fp = savedir[nfemb] + fdir + "/mon_{}.png".format(mon_items[imon])
+                plt.savefig(fp)
+                plt.close(fig)
 
 #    def CheckLinearty(self,x_np, y_np, fdir, fname, x_lo, x_hi):
 #

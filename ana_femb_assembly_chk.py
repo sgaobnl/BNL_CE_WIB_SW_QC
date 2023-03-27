@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
-    reportdir = "D:/IO-1826-kyj/NEW_SCRIPT/Chkout/CK_Send/reports/"+datadir+"/"
+    reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -53,12 +53,11 @@ if len(sys.argv) > 2:
     exit()
 
 datadir = sys.argv[1]
-fdata = "D:/IO-1826-kyj/NEW_SCRIPT/Chkout/CK_Send/tmp_data/"+datadir+"/"
-print("fdata")
+fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC/CHK/data/"+datadir+"/"
+print(fdata)
 
 ###### load logs and create report folder ######
 flog = fdata+"logs_env.bin"
-print(flog)
 with open(flog, 'rb') as fn:
     evlog = pickle.load(fn)
 

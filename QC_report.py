@@ -17,8 +17,8 @@ class QC_reports:
 #          savedir = "/home/hanjie/Desktop/protoDUNE/cold_electronics/FEMB_QC/new_qc_data/results/"
 #          self.datadir = "/home/hanjie/Desktop/protoDUNE/cold_electronics/FEMB_QC/new_qc_data/data/"+fdir+"/"
 
-          savedir = "D:/IO-1826-kyj/NEW_SCRIPT/QC/QC_reports/"+fdir+"/"
-          self.datadir = "D:/IO-1826-kyj/NEW_SCRIPT/QC/QC_data/"+fdir+"/"
+          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
+          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
 
           fp = self.datadir+"logs_env.bin"
           with open(fp, 'rb') as fn:
