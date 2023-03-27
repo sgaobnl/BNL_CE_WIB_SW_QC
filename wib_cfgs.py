@@ -21,9 +21,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adcs_paras = self.adcs_paras_init
         self.adac_cali_quo = [False,False,False,False]
         self.longcable = False #>7m
-        self.cd_flg=True
-        self.adc_flg=True
-        self.fe_flg=True
+        self.cd_flg=[True, True, True, True]
+        self.adc_flg=[True, True, True, True]
+        self.fe_flg=[True, True, True, True]
         self.align_flg=True
 
     def wib_rst_tp(self):
@@ -244,6 +244,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
+            fembs=[femb_id]
             self.wib_femb_link_en(fembs)
 
 
@@ -293,9 +294,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.fastcmd(cmd= 'reset')
         self.adac_cali_quo = [False,False,False,False]
         time.sleep(0.05)
-        self.cd_flg=True
-        self.adc_flg=True
-        self.fe_flg=True
+        self.cd_flg=[True, True, True, True]
+        self.adc_flg=[True, True, True, True]
+        self.fe_flg=[True, True, True, True]
         self.align_flg = True 
 
     #note: later all registers should be read and stored (to do)
@@ -435,7 +436,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #Frame14
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
-        self.cd_flg=False
+        self.cd_flg[femb_id]=False
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=cd1_0x27)
@@ -641,7 +642,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=0xAB)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=0x34)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0x12)
-        self.adc_flg=False
+        self.adc_flg[femb_id]=False
 
     def fembs_fe_cfg(self, fembs):
         #reset LARASIC chips
@@ -693,9 +694,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     else:
                         time.sleep(0.01)
             i = i + 1
-        self.fe_flg=False
+        self.fe_flg[femb_id]=False
 
     def femb_fe_cfg(self, femb_id):
+        if self.adac_cali_quo[femb_id]:
+            self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
+            self.adac_cali_quo[femb_id]=False
+ 
         #reset LARASIC chips
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
         time.sleep(0.001)
@@ -736,7 +741,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 else:
                     time.sleep(0.01)
             i = i + 1
-        self.fe_flg=False
+        self.fe_flg[femb_id]=False
 
     def femb_adac_cali(self, femb_id, phase0x07=[0,0,0,0,0,0,0,0]):
         for chip in range(8):
@@ -764,11 +769,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #link_mask = self.peek(0xA00C0008 )
             #time.sleep(0.01)
 
-            if self.cd_flg:
+            if self.cd_flg[femb_id]:
                 self.femb_cd_cfg(femb_id)
-            if self.adc_flg:
+            if self.adc_flg[femb_id]:
                 self.femb_adc_cfg(femb_id)
-            if self.fe_flg:
+            if self.fe_flg[femb_id]:
                 self.femb_fe_cfg(femb_id)
             if adac_pls_en and (not (self.adac_cali_quo[femb_id])) :
                 self.femb_adac_cali(femb_id)

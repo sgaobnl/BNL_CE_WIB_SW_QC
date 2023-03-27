@@ -49,7 +49,7 @@ class QC_Runs:
 
         ####### Create data saving directory #######
 
-        save_dir = "QC_data/"
+        save_dir = "/mnt/towibs/tmp/FEMB_QC_data/QC/"
         for key,femb_no in self.fembNo.items():
             save_dir = save_dir + "femb{}_".format(femb_no)
 
@@ -124,18 +124,18 @@ class QC_Runs:
                             [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
-        if sdd==1:
-           self.chk.adc_flg == True 
-           for i in range(8):
-               self.chk.adcs_paras[i][2]=1   # enable differential 
-
-        if autocali==1:
-           self.chk.adc_flg == True 
-           for i in range(8):
-               self.chk.adcs_paras[i][8]=1   # enable adc calibration
-
         for femb_id in self.fembs:
-            self.chk.fe_flg == True 
+            if sdd==1:
+                self.chk.adc_flg[femb_id] = True 
+                for i in range(8):
+                    self.chk.adcs_paras[i][2]=1   # enable differential 
+
+            if autocali==1:
+                self.chk.adc_flg[femb_id] = True 
+                for i in range(8):
+                    self.chk.adcs_paras[i][8]=1   # enable adc calibration
+
+            self.chk.fe_flg[femb_id] = True 
             if sts == 1 : 
                 if swdac==1: #internal ASIC-DAC is enabled
                     self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)

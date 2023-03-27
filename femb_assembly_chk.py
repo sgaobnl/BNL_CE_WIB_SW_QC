@@ -8,7 +8,7 @@ import time, datetime, random, statistics
 
 def CreateFolders(fembNo, env, toytpc):
 
-    datadir = "tmp_data/"
+    datadir = "/mnt/towibs/tmp/FEMB_QC_data/CHK/"
     for key,femb_no in fembNo.items():
         datadir = datadir + "femb{}_".format(femb_no)
 
