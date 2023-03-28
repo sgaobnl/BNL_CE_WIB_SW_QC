@@ -476,8 +476,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x20, wrdata=0)
         
     def data_align(self, fembs=[0, 1, 2,3]):
-        AAA = True
-        while AAA:
+        align_sts = True
+        while align_sts:
             #note032123: to be optimized 
             link_mask=self.peek(0xA00C0008) 
             if 0 in fembs:
@@ -546,7 +546,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
                 if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0):
                     print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
-                    AAA = False
+                    rdaddr = 0xA00C000C
+                    rdreg = self.peek(rdaddr)
+                    wrvalue = 0x0 #cmd_stamp_sync_en = 1 disable SYNC
+                    wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
+                    self.poke(rdaddr, wrreg) 
+                    self.poke(rdaddr, wrreg) 
+                    align_sts = False
                     break
                 if dts_time_delay >= 0x7f:
                     #self.femb_powering(fembs =[])
@@ -555,6 +561,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.wib_timing_wrap()
                     time.sleep(0.1)
                     #exit()
+
 
     def femb_adc_chkreg(self, femb_id):
 
