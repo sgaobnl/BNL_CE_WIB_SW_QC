@@ -173,7 +173,7 @@ for ifemb in fembs:
     pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, 1)
     pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
 
-    pwr_image = fp_pwr+".png"
+    pwr_image = plotdir+"pwr_meas.png"
     pdf.image(pwr_image,0,40,200,40)
 
     if makeplot:
