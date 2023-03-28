@@ -556,6 +556,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     time.sleep(0.1)
                     #exit()
 
+            rdaddr = 0xA00C000C
+            rdreg = self.peek(rdaddr)
+            wrvalue = 0x0 #cmd_stamp_sync_en = 1 disable SYNC
+            wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
+            self.poke(rdaddr, wrreg) 
+            self.poke(rdaddr, wrreg) 
+
     def femb_adc_chkreg(self, femb_id):
 
         print("Check femb%d COLDADC default registers' value"%femb_id)
