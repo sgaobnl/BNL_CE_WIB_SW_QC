@@ -669,7 +669,10 @@ class ana_tools:
         if index==0:
             return 0,0,0
 
-        slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
+        try:
+            slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
+        except:
+            return 0,0,0
 
         y_max = pk_list[index-1]
         y_min = pk_list[0]

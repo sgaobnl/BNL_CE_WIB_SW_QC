@@ -53,7 +53,7 @@ if len(sys.argv) > 2:
     exit()
 
 datadir = sys.argv[1]
-fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC/CHK/data/"+datadir+"/"
+fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
 print(fdata)
 
 ###### load logs and create report folder ######
