@@ -85,8 +85,8 @@ if True:
     plt.plot(x, np.array(cdts_l0)-cdts_l0[0], label ="Coldata Timestamp")
 #    plt.plot(x, np.array(cdts_l1)-cdts_l1[0], label ="Coldata Timestamp")
     plt.legend()
-    #plt.show()
-    plt.savefig(fdir + "timestamp.jpg")
+    plt.show()
+#    plt.savefig(fdir + "timestamp.jpg")
     plt.close()
         
     #for fembi in range(4):

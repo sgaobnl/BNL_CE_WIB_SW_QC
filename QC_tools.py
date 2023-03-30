@@ -96,9 +96,22 @@ class ana_tools:
             wib_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
     
             if (0 in fembs) or (1 in fembs):
-               nsamples = len(wib_data[0])
+                nsamples0 = len(wib_data[0])
             else:
-               nsamples = len(wib_data[1])
+                nsamples0 = -1
+            if (0 in fembs) or (1 in fembs):
+                nsamples1 = len(wib_data[1])
+            else:
+                nsamples1 = -1
+            if (nsamples0 > 0) and (nsamples1 > 0):
+                if nsamples0 > nsamples1:
+                    nsamples = nsamples1
+                else:
+                    nsamples = nsamples0
+            elif nsamples0 > 0 :
+                nsamples = nsamples0
+            elif nsamples1 > 0 :
+                nsamples = nsamples1
     
             chns=[]
             tmst0=[]
