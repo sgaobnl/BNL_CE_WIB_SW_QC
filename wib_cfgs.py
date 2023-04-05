@@ -221,6 +221,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             time.sleep(0.1)
             self.wib_timing_wrap()
 
+            self.femb_cd_rst()
+
         else:
             for femb_off_id in range(4):
                 self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=1, bias_en=0 )
@@ -244,11 +246,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
-            fembs=[femb_id]
-            self.wib_femb_link_en(fembs)
+            #fembs=[femb_id]
+            #self.wib_femb_link_en(fembs)
+            #time.sleep(0.1)
+            #self.wib_timing_wrap()
 
+            #self.femb_cd_rst()
 
         if act=='off':
+            self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=1, bias_en=0 )
+            time.sleep(2)
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB%d is off"%femb_id)
             time.sleep(1)

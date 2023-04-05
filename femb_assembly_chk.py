@@ -140,8 +140,20 @@ for ifemb in fembs:
        fembNo.pop('femb%d'%ifemb)
        chk.femb_powering_single(ifemb, 'off')
        
+chk.femb_powering(fembs)
+
 ################# check the default COLDATA and COLDADC register ##################
 print("Check FEMB registers")
+chk.femb_cd_rst()
+time.sleep(0.1)
+for ifemb in fembs:
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+    time.sleep(0.01)
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+    time.sleep(0.01)
+    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+time.sleep(0.1)
+
 for ifemb in fembs:
     errflag = chk.femb_cd_chkreg(ifemb)
     if errflag:
@@ -161,7 +173,7 @@ for ifemb in fembs:
 ################ reset COLDATA, COLDADC and LArASIC ##############
 print("Reset FEMBs")
 chk.femb_cd_rst()
-time.sleep(0.01)
+time.sleep(0.1)
 for ifemb in fembs:
     chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
     time.sleep(0.01)
@@ -169,6 +181,7 @@ for ifemb in fembs:
     time.sleep(0.01)
     chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
 
+time.sleep(0.1)
 ################ check the default COLDATA and COLDADC register ###########
 print("Check FEMB registers")
 for ifemb in fembs:
