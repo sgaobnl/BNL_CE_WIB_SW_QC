@@ -2,7 +2,6 @@ from spymemory_decode import wib_spy_dec_syn
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-import QC_constants
 from scipy.optimize import curve_fit
 import pandas as pd
 
@@ -99,7 +98,7 @@ class ana_tools:
                 nsamples0 = len(wib_data[0])
             else:
                 nsamples0 = -1
-            if (0 in fembs) or (1 in fembs):
+            if (2 in fembs) or (3 in fembs):
                 nsamples1 = len(wib_data[1])
             else:
                 nsamples1 = -1
@@ -205,66 +204,6 @@ class ana_tools:
              pickle.dump( [ped, rms], fn)
     
         return ped,rms
-
-    def ChkRMS(self, env, fp, fname, snc, sgs, sts):
-      
-        infile = fp+"RMS_{}.bin".format(fname)
-        with open(infile, 'rb') as fn:
-            raw = pickle.load(fn)  
-
-        ped = raw[0]
-        rms = raw[1]
-       
-        if env=='LN': 
-           if snc==0:
-              ped_std = 0.01 
-           else:
-              ped_std = 0.07
-           ped_lo = QC_constants.PED_LN_mean[snc][sgs][sts]*(1-ped_std)
-           ped_hi = QC_constants.PED_LN_mean[snc][sgs][sts]*(1+ped_std)
-
-           rms_lo = QC_constants.RMS_LN_mean[snc][sgs][sts]*(1-0.06)
-           rms_hi = QC_constants.RMS_LN_mean[snc][sgs][sts]*(1+0.06)
-
-        if env=='RT': 
-           if snc==0:
-              ped_std = 0.01 
-           else:
-              ped_std = 0.07
-           ped_lo = QC_constants.PED_RT_mean[snc][sgs][sts]*(1-ped_std)
-           ped_hi = QC_constants.PED_RT_mean[snc][sgs][sts]*(1+ped_std)
-                                                                    
-           rms_lo = QC_constants.RMS_RT_mean[snc][sgs][sts]*(1-0.06)
-           rms_hi = QC_constants.RMS_RT_mean[snc][sgs][sts]*(1+0.06)
-
-        outfile = open(fp+"issued_channels_ped_rms.txt", "a")
-        outfile.write("%s %s %s %s\n"%(env, QC_constants.SNC[snc], QC_constants.SGS[sgs], QC_constants.STS[sts]))
-        outfile.write("\n")
-
-        nfail=0
-        for ch in range(128):
-            failed=False
-            if ped[ch]<ped_lo:
-               outfile.write("ch%d low pedestal %f\n"%(ch,ped[ch]))
-               failed=True
-            if ped[ch]>ped_hi:
-               outfile.write("ch%d high pedestal %f\n"%(ch,ped[ch]))
-               failed=True
-
-            if rms[ch]<rms_lo:
-               outfile.write("ch%d low rms %f\n"%(ch,rms[ch]))
-               failed=True
-            if rms[ch]>rms_hi:
-               outfile.write("ch%d high rms %f\n"%(ch,rms[ch]))
-               failed=True
-
-            if failed:
-               nfail = nfail+1 
-
-        outfile.write("\n")
-
-        return nfail
-
 
     def GetPeaks(self, data, tmst, nfemb, fp, fname, funcfit=False, shapetime=2):
     
@@ -651,7 +590,7 @@ class ana_tools:
 #                
 #        return ln_slp,INL,max_dac
 #        
-    def CheckLinearty(self, dac_list, pk_list, updac, lodac):
+    def CheckLinearty(self, dac_list, pk_list, updac, lodac, chan, fp):
 
         dac_init=[]
         pk_init=[]
@@ -663,6 +602,15 @@ class ana_tools:
         try:
            slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
         except:
+           fig1,ax1 = plt.subplots()
+           ax1.plot(dac_init,pk_init, marker='.')
+           ax1.set_xlabel("DAC")
+           ax1.set_ylabel("Peak Value") 
+           ax1.set_title("chan%d fail first gain fit"%chan)
+           plt.savefig(fp+'fail_first_fit_ch%d.png'%chan)
+           plt.close(fig1)
+         
+           print("fail at first gain fit")
            return 0,0,0
 
         y_min = pk_list[0]
@@ -680,11 +628,41 @@ class ana_tools:
                break
 
         if index==0:
+            fig2,ax2 = plt.subplots(1,2, figsize=(12,6))
+            ax2[0].plot(dac_list,pk_list, marker='.')
+            ax2[0].set_xlabel("DAC")
+            ax2[0].set_ylabel("Peak Value") 
+            ax2[0].set_title("chan%d fail linear range searching"%chan)
+
+            tmp_inl=[]
+            tmp_dac=[]
+            for i in range(updac):
+                y_r = pk_list[i]
+                y_p = dac_list[i]*slope_i + intercept_i
+                inl_1 = abs(y_r-y_p)/(y_max-y_min)
+                tmp_inl.append(inl_1)
+                tmp_dac.append(i)
+
+            ax2[1].plot(tmp_dac,tmp_inl, marker='.')
+            ax2[1].set_xlabel("DAC")
+            ax2[1].set_ylabel("Peak Value") 
+            ax2[1].set_title("chan%d inl"%chan)
+            plt.savefig(fp+'fail_inl_ch%d.png'%chan)
+            plt.close(fig2)
+            print("fail at first linear range searching: inl=%f for dac=0 is bigger than 0.03"%inl)
             return 0,0,0
 
         try:
             slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
         except:
+            fig3,ax3 = plt.subplots()
+            ax3.plot(dac_list[:index],pk_list[:index],marker='.')
+            ax3.set_xlabel("DAC")
+            ax3.set_ylabel("Peak Value") 
+            ax3.set_title("chan%d fail second gain fit"%chan)
+            plt.savefig(fp+'fail_second_fit_ch%d.png'%chan)
+            plt.close(fig3)
+            print("fail at second gain fit")
             return 0,0,0
 
         y_max = pk_list[index-1]
@@ -760,7 +738,7 @@ class ana_tools:
             fig,ax = plt.subplots(2,2,figsize=(12,10))
             for ch in range(128):
                 #gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],fp,fname,lodac,updac)
-                gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],updac,lodac)
+                gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],updac,lodac,ch,fp)
                 if gain==0:
                    print("femb%d ch%d gain is zero"%(ifemb,ch))           
                 else:

@@ -14,11 +14,11 @@ class QC_reports:
 
       def __init__(self, fdir, fembs=[]):
 
-#          savedir = "QC_reports/"
-#          self.datadir = "QC_data/"+fdir+"/"
+          savedir = "QC_reports/"
+          self.datadir = "QC_data/"+fdir+"/"
 
-          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
-          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
+#          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
+#          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
 
           fp = self.datadir+"logs_env.bin"
           with open(fp, 'rb') as fn:

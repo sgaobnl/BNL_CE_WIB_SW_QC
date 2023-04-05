@@ -239,16 +239,16 @@ for ifemb in fembs:
        hasERROR = True
 
     if adc_i>1.85 or adc_i<1.35:
-       print("ERROR: FEMB{} ColdADC current {} out of range (1.35A,1.35A)".format(ifemb,adc_i)) 
+       print("ERROR: FEMB{} ColdADC current {} out of range (1.35A,1.85A)".format(ifemb,adc_i)) 
        hasERROR = True
 
     if hasERROR:
        print("FEMB ID {} faild current check 2. But test will continue".format(fembNo['femb%d'%ifemb]))
        outfile.write("FEMB ID {} faild current #2 check\n".format(fembNo['femb%d'%ifemb]))
        outfile.write("BIAS current: %f (default range: (-0.02A, 0.05A))\n"%bias_i)
-       outfile.write("LArASIC current: %f (default range: (0.4A, 0.5A))\n"%fe_i)
-       outfile.write("COLDATA current: %f (default range: (0.2A, 0.3A))\n"%cd_i)
-       outfile.write("ColdADC current: %f (default range: (1.5A, 1.7A))\n"%adc_i)
+       outfile.write("LArASIC current: %f (default range: (0.35A, 0.55A))\n"%fe_i)
+       outfile.write("COLDATA current: %f (default range: (0.15A, 0.35A))\n"%cd_i)
+       outfile.write("ColdADC current: %f (default range: (1.35A, 1.85A))\n"%adc_i)
 
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)

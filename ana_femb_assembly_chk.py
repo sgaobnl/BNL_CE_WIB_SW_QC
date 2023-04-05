@@ -6,13 +6,15 @@ import copy
 import os
 import time, datetime, random, statistics
 from QC_tools import ana_tools
+import QC_check
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
-    reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
+    #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
+    reportdir = "reports/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -53,7 +55,8 @@ if len(sys.argv) > 2:
     exit()
 
 datadir = sys.argv[1]
-fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
+#fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
+fdata = "tmp_data/"+datadir+"/"
 print(fdata)
 
 ###### load logs and create report folder ######
@@ -138,13 +141,21 @@ with open(fpwr, 'rb') as fn:
     rawpwr = pickle.load(fn)
 
 pwr_meas=rawpwr[0]
+pwrflag=np.zeros(4)
 for ifemb in fembs:
     fp_pwr = PLOTDIR[ifemb]+"pwr_meas"
     qc_tools.PrintPWR(pwr_meas, ifemb, fp_pwr)
+    pwrflag[ifemb]=QC_check.CHKPWR(pwr_meas,ifemb)
 
 nchips=range(8)
 makeplot=True
 qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplot)
+
+montflag = np.zeros(4)
+monbgpflag = np.zeros(4)
+for ifemb in fembs:
+    montflag[ifemb] = QC_check.CHKFET(mon_temps,ifemb,nchips,env)
+    monbgpflag[ifemb] = QC_check.CHKFEBGP(mon_refs,ifemb,nchips)
 
 ###### Generate Report ######
 
@@ -158,45 +169,59 @@ for ifemb in fembs:
     pdf.set_font('Times', 'B', 20)
     pdf.cell(85)
     pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%ifemb])), 0, 1, 'C')
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%ifemb])), 0, new_x="LMARGIN", new_y="NEXT", align='C')
     pdf.ln(2)
 
     pdf.set_font('Times', '', 12)
-    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, 0)
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, new_x="RIGHT", new_y="TOP")
     pdf.cell(80)
-    pdf.cell(30, 5, 'Date: {}'.format(date), 0, 1)
+    pdf.cell(30, 5, 'Date: {}'.format(date), 0, new_x="LMARGIN", new_y="NEXT")
 
-
-    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, 0)
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, new_x="RIGHT", new_y="TOP")
     pdf.cell(80)
-    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, 1)
-    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, 1)
-    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, 1)
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(10)
+
+    chk_result = ( ("Test", "Result"),
+                   ("Power Measurement", "Pass" if pwrflag[ifemb]==0 else "Fail"),
+                   ("Temperature", "Pass" if montflag[ifemb]==0 else "Fail"),
+                   ("Bandgap", "Pass" if monbgpflag[ifemb]==0 else "Fail")
+                 )
+
+    with pdf.table() as table:
+        for data_row in chk_result:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+
+    pdf.add_page()
 
     pwr_image = plotdir+"pwr_meas.png"
     pdf.image(pwr_image,0,40,200,40)
 
-    if makeplot:
-       mon_image = plotdir+"mon_meas_plot.png"
-       pdf.image(mon_image,10,85,180,72)
-    else:
-       mon_image = plotdir+"mon_meas.png"
-       pdf.image(mon_image,0,77,200,95)
+    mon_image = plotdir+"mon_meas_plot.png"
+    pdf.image(mon_image,10,85,180,72)
 
-    rms_image = plotdir+"rms_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(rms_image,5,158,100,70)
-
-    ped200_image = plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(ped200_image,105,158,100,70)
+    mon_image = plotdir+"mon_meas.png"
+    pdf.image(mon_image,0,157,200,95)
 
     pdf.add_page()
 
+    rms_image = plotdir+"rms_SE_200mVBL_14_0mVfC_2_0us.png"
+    pdf.image(rms_image,5,10,100,70)
+
+    ped200_image = plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png"
+    pdf.image(ped200_image,105,10,100,70)
+
     pulse_se_image = plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_se_image,0,10,220,70)
+    pdf.image(pulse_se_image,0,80,220,70)
 
     pulse_diff_image = plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_diff_image,0,80,220,70)
+    pdf.image(pulse_diff_image,0,150,220,70)
 
     outfile = plotdir+'report.pdf'
-    pdf.output(outfile, "F")
+    pdf.output(outfile)
 
