@@ -636,7 +636,7 @@ class ana_tools:
 
             tmp_inl=[]
             tmp_dac=[]
-            for i in range(updac):
+            for i in range(len(dac_list)) :#range(updac):
                 y_r = pk_list[i]
                 y_p = dac_list[i]*slope_i + intercept_i
                 inl_1 = abs(y_r-y_p)/(y_max-y_min)
