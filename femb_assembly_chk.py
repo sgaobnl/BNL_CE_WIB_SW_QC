@@ -103,6 +103,7 @@ chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 print("Check FEMB currents")
 
+fembs_remove = []
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
     pwr_meas1 = chk.get_sensors()
@@ -135,10 +136,14 @@ for ifemb in fembs:
        outfile.write("BIAS current: %f (default range: <0.05A)\n"%bias_i)
        outfile.write("LArASIC current: %f (default range: (0.3A, 0.6A)) \n"%fe_i)
        outfile.write("COLDATA current: %f (default range: (0.1A, 0.3A))\n"%cd_i)
-       outfile.write("ColdADC current: %f (default range: (1.2A, 1.8A))\n"%adc_i)
-       fembs.remove(ifemb)
+       outfile.write("ColdADC current: %f (default range: (1.2A, 1.9A))\n"%adc_i)
+       #fembs.remove(ifemb)
+       fembs_remove.append(ifemb)
        fembNo.pop('femb%d'%ifemb)
        chk.femb_powering_single(ifemb, 'off')
+ 
+for femb_id in fembs_remove:
+    fembs.remove(femb_id)
        
 chk.femb_powering(fembs)
 
