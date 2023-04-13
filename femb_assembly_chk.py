@@ -89,7 +89,7 @@ if save:
     datadir=CreateFolders(fembNo, env, toytpc)
     fp = datadir + "logs_env.bin"
     with open(fp, 'wb') as fn:
-         pickle.dump(logs, fn)
+        pickle.dump(logs, fn)
 
 outfile = open(datadir+"chk_logs.txt", "w")
 t1 = time.time()
