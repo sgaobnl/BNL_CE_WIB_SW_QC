@@ -622,7 +622,9 @@ class ana_tools:
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_i + intercept_i
             inl = abs(y_r-y_p)/(y_max-y_min)
-            if inl>0.03:
+            if inl>0.01:
+               if dac_list[i]<5:
+                  continue
                linear_dac_max = dac_list[i-1]
                index=i
                break
