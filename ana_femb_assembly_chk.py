@@ -103,12 +103,31 @@ pldata,tmst = qc_tools.data_decode(sedata, fembs)
 pldata = np.array(pldata)
 tmst = np.array(tmst)
 
+plflag_se=np.zeros(4)
+plcheck_SE=[[]]*4
+
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname, funcfit=False)
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
+
+    tmp = QC_check.CHKPulse(ppk)
+    if tmp[0]==False:
+       plflag_se[ifemb]=4
+    plcheck_SE[ifemb].append(tmp)
+
+    tmp = QC_check.CHKPulse(npk)
+    if tmp[0]==False:
+       plflag_se[ifemb]=4
+    plcheck_SE[ifemb].append(tmp)
+
+    tmp = QC_check.CHKPulse(bl)
+    if tmp[0]==False:
+       plflag_se[ifemb]=4
+    plcheck_SE[ifemb].append(tmp)
+    
 
 fpulse = fdata+"Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.bin"
 fname = "DIFF_900mVBL_14_0mVfC_2_0us_0x10"
@@ -121,12 +140,30 @@ pldata,tmst = qc_tools.data_decode(diffdata, fembs)
 pldata = np.array(pldata)
 tmst = np.array(tmst)
 
+plflag_diff=np.zeros(4)
+plcheck_DIFF=[[]]*4
+
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
+
+    tmp = QC_check.CHKPulse(ppk)
+    if tmp[0]==False:
+       plflag_diff[ifemb]=5
+    plcheck_DIFF[ifemb].append(tmp)
+
+    tmp = QC_check.CHKPulse(npk)
+    if tmp[0]==False:
+       plflag_diff[ifemb]=5
+    plcheck_DIFF[ifemb].append(tmp)
+
+    tmp = QC_check.CHKPulse(bl)
+    if tmp[0]==False:
+       plflag_diff[ifemb]=5
+    plcheck_DIFF[ifemb].append(tmp)
 
 fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
 with open(fmon, 'rb') as fn:
@@ -188,7 +225,9 @@ for ifemb in fembs:
     chk_result = ( ("Test", "Result"),
                    ("Power Measurement", "Pass" if pwrflag[ifemb]==0 else "Fail"),
                    ("Temperature", "Pass" if montflag[ifemb]==0 else "Fail"),
-                   ("Bandgap", "Pass" if monbgpflag[ifemb]==0 else "Fail")
+                   ("Bandgap", "Pass" if monbgpflag[ifemb]==0 else "Fail"),
+                   ("SE Pulse Shapes", "Pass" if plflag_se[ifemb]==0 else "Fail"),
+                   ("DIFF Pulse Shapes", "Pass" if plflag_diff[ifemb]==0 else "Fail")
                  )
 
     with pdf.table() as table:
@@ -196,6 +235,31 @@ for ifemb in fembs:
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
+
+    if plflag_se[ifemb]>0:
+       pdf.ln(10)
+       for jj in plcheck_SE[ifemb]:
+           if jj[0]==True:
+              continue
+
+           if len(jj[1])>0:
+              pdf.cell(30, 5, 'SE: Bad channels: {}'.format(jj[1]), 0, new_x="LMARGIN", new_y="NEXT")
+ 
+           if len(jj[2])>0:
+              pdf.cell(30, 5, 'SE: Bad chips: {}'.format(jj[2]), 0, new_x="LMARGIN", new_y="NEXT")
+
+    if plflag_diff[ifemb]>0:
+       pdf.ln(10)
+       for jj in plcheck_DIFF[ifemb]:
+           if jj[0]==True:
+              continue
+
+           if len(jj[1])>0:
+              pdf.cell(30, 5, 'DIFF: Bad channels: {}'.format(jj[1]), 0, new_x="LMARGIN", new_y="NEXT")
+ 
+           if len(jj[2])>0:
+              pdf.cell(30, 5, 'DIFF: Bad chips: {}'.format(jj[2]), 0, new_x="LMARGIN", new_y="NEXT")
+
 
     pdf.add_page()
 

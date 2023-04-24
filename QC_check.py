@@ -1,3 +1,4 @@
+import numpy as np
 def CHKPWR(data, nfemb):
 
     BAD = False  
@@ -83,7 +84,61 @@ def CHKFEBGP(data, nfemb, nchips):
     else:
        return 0
 
+def CHKPulse(data):  # assume the input is a list
+    data_np = np.array(data)
 
+    mean_list = []
+    std_list = []
+    flag = True
+    bad_chan=[]
+    bad_chip=[]
+
+    for i in range(8):  # 8 chips
+        chip_data = data_np[i*16:(i+1)*16]
+
+        tmp_max = np.max(chip_data) 
+        tmp_max_pos = np.argmax(chip_data) 
+        tmp_min = np.min(chip_data) 
+        tmp_min_pos = np.argmin(chip_data) 
+
+        tmp_data = np.delete(chip_data, [tmp_max_pos,tmp_min_pos])
+  
+        tmp_mean = np.mean(tmp_data) 
+        tmp_std = np.std(tmp_data) 
+
+        if (tmp_max-tmp_mean)>tmp_mean*0.05:
+           flag = False
+           bad_chan.append(i*16+tmp_max_pos)
+   
+        if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
+           flag = False
+           bad_chan.append(i*16+tmp_min_pos)
+    
+        if flag:
+           tmp_mean = np.mean(chip_data)
+
+        mean_list.append(tmp_mean)
+
+    mean_np = np.array(mean_list)
+      
+    tmp_max = np.max(mean_np) 
+    tmp_max_pos = np.argmax(mean_np) 
+    tmp_min = np.min(mean_np) 
+    tmp_min_pos = np.argmin(mean_np) 
+
+    tmp_data = np.delete(mean_np, [tmp_max_pos,tmp_min_pos])
+    tmp_mean = np.mean(tmp_data) 
+
+    if (tmp_max-tmp_mean)>tmp_mean*0.05:
+       flag = False
+       bad_chip.append(tmp_max_pos)
+   
+    if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
+       flag = False
+       bad_chip.append(tmp_min_pos)
+
+    return flag,bad_chan,bad_chip
+       
 
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):
 #
