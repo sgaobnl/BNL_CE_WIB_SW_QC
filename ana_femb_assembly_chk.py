@@ -71,6 +71,16 @@ note = evlog['note']
 fembNo = evlog['femb id']
 date = evlog['date']
 
+chkflag={"RMS":[],"BL":[],"Pulse_SE":{},"Pulse_DIFF":{},"PWR":[],"MON_T":[],"MON_BGP":[],"MON_ADC":{}}
+chkflag["Pulse_SE"]={"PPK":[],"NPK":[],"BL":[]}
+chkflag["Pulse_DIFF"]={"PPK":[],"NPK":[],"BL":[]}
+chkflag["MON_ADC"]={"VCMI":[],"VCMO":[],"VREFP":[],"VREFN":[],"VSSA":[]}
+
+badlist={"RMS":[],"BL":[],"Pulse_SE":{},"Pulse_DIFF":{},"PWR":[],"MON_T":[],"MON_BGP":[],"MON_ADC":{}}
+badlist["Pulse_SE"]={"PPK":[],"NPK":[],"BL":[]}
+badlist["Pulse_DIFF"]={"PPK":[],"NPK":[],"BL":[]}
+badlist["MON_ADC"]={"VCMI":[],"VCMO":[],"VREFP":[],"VREFN":[],"VSSA":[]}
+
 ###### analyze RMS Raw Data ######
 
 frms = fdata+"Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
@@ -90,7 +100,13 @@ pldata = np.array(pldata)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
-#    qc_tools.ChkRMS(env, fp, "SE_200mVBL_14_0mVfC_2_0us", 1, 0, 3)
+    tmp = QC_check.CHKPulse(ped)
+    chkflag["BL"].append(tmp[0])
+    badlist["BL"].append(tmp[1])
+
+    tmp = QC_check.CHKPulse(rms)
+    chkflag["RMS"].append(tmp[0])
+    badlist["RMS"].append(tmp[1])
 
 fpulse = fdata+"Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin"
 fname = "SE_900mVBL_14_0mVfC_2_0us_0x10"
@@ -103,9 +119,6 @@ pldata,tmst = qc_tools.data_decode(sedata, fembs)
 pldata = np.array(pldata)
 tmst = np.array(tmst)
 
-plflag_se=np.zeros(4)
-plcheck_SE=[[]]*4
-
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname, funcfit=False)
@@ -114,20 +127,16 @@ for ifemb in fembs:
          pickle.dump([ppk,npk,bl], fn)
 
     tmp = QC_check.CHKPulse(ppk)
-    if tmp[0]==False:
-       plflag_se[ifemb]=4
-    plcheck_SE[ifemb].append(tmp)
+    chkflag["Pulse_SE"]["PPK"].append(tmp[0])
+    badlist["Pulse_SE"]["PPK"].append(tmp[1])
 
     tmp = QC_check.CHKPulse(npk)
-    if tmp[0]==False:
-       plflag_se[ifemb]=4
-    plcheck_SE[ifemb].append(tmp)
+    chkflag["Pulse_SE"]["NPK"].append(tmp[0])
+    badlist["Pulse_SE"]["NPK"].append(tmp[1])
 
     tmp = QC_check.CHKPulse(bl)
-    if tmp[0]==False:
-       plflag_se[ifemb]=4
-    plcheck_SE[ifemb].append(tmp)
-    
+    chkflag["Pulse_SE"]["BL"].append(tmp[0])
+    badlist["Pulse_SE"]["BL"].append(tmp[1])
 
 fpulse = fdata+"Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.bin"
 fname = "DIFF_900mVBL_14_0mVfC_2_0us_0x10"
@@ -140,9 +149,6 @@ pldata,tmst = qc_tools.data_decode(diffdata, fembs)
 pldata = np.array(pldata)
 tmst = np.array(tmst)
 
-plflag_diff=np.zeros(4)
-plcheck_DIFF=[[]]*4
-
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
@@ -151,19 +157,16 @@ for ifemb in fembs:
          pickle.dump([ppk,npk,bl], fn)
 
     tmp = QC_check.CHKPulse(ppk)
-    if tmp[0]==False:
-       plflag_diff[ifemb]=5
-    plcheck_DIFF[ifemb].append(tmp)
+    chkflag["Pulse_DIFF"]["PPK"].append(tmp[0])
+    badlist["Pulse_DIFF"]["PPK"].append(tmp[1])
 
     tmp = QC_check.CHKPulse(npk)
-    if tmp[0]==False:
-       plflag_diff[ifemb]=5
-    plcheck_DIFF[ifemb].append(tmp)
+    chkflag["Pulse_DIFF"]["NPK"].append(tmp[0])
+    badlist["Pulse_DIFF"]["NPK"].append(tmp[1])
 
     tmp = QC_check.CHKPulse(bl)
-    if tmp[0]==False:
-       plflag_diff[ifemb]=5
-    plcheck_DIFF[ifemb].append(tmp)
+    chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
+    badlist["Pulse_DIFF"]["BL"].append(tmp[1])
 
 fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
 with open(fmon, 'rb') as fn:
@@ -178,21 +181,45 @@ with open(fpwr, 'rb') as fn:
     rawpwr = pickle.load(fn)
 
 pwr_meas=rawpwr[0]
-pwrflag=np.zeros(4)
 for ifemb in fembs:
     fp_pwr = PLOTDIR[ifemb]+"pwr_meas"
     qc_tools.PrintPWR(pwr_meas, ifemb, fp_pwr)
-    pwrflag[ifemb]=QC_check.CHKPWR(pwr_meas,ifemb)
+    tmp=QC_check.CHKPWR(pwr_meas,ifemb)
+    chkflag["PWR"].append(tmp[0])
+    badlist["PWR"].append(tmp[1])
 
 nchips=range(8)
 makeplot=True
 qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplot)
 
-montflag = np.zeros(4)
-monbgpflag = np.zeros(4)
 for ifemb in fembs:
-    montflag[ifemb] = QC_check.CHKFET(mon_temps,ifemb,nchips,env)
-    monbgpflag[ifemb] = QC_check.CHKFEBGP(mon_refs,ifemb,nchips)
+    tmp = QC_check.CHKFET(mon_temps,ifemb,nchips,env)
+    chkflag["MON_T"].append(tmp[0])
+    badlist["MON_T"].append(tmp[1])
+
+    tmp = QC_check.CHKFEBGP(mon_refs,ifemb,nchips)
+    chkflag["MON_BGP"].append(tmp[0])
+    badlist["MON_BGP"].append(tmp[1])
+
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMI",900,950)
+    chkflag["MON_ADC"]["VCMI"].append(tmp[0])
+    badlist["MON_ADC"]["VCMI"].append(tmp[1])
+
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMO",1200,1250)
+    chkflag["MON_ADC"]["VCMO"].append(tmp[0])
+    badlist["MON_ADC"]["VCMO"].append(tmp[1])
+
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFP",1900,1950)
+    chkflag["MON_ADC"]["VREFP"].append(tmp[0])
+    badlist["MON_ADC"]["VREFP"].append(tmp[1])
+
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFN",460,510)
+    chkflag["MON_ADC"]["VREFN"].append(tmp[0])
+    badlist["MON_ADC"]["VREFN"].append(tmp[1])
+
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VSSA",0,70)
+    chkflag["MON_ADC"]["VSSA"].append(tmp[0])
+    badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
 ###### Generate Report ######
 
@@ -222,45 +249,89 @@ for ifemb in fembs:
 
     pdf.ln(10)
 
-    chk_result = ( ("Test", "Result"),
-                   ("Power Measurement", "Pass" if pwrflag[ifemb]==0 else "Fail"),
-                   ("Temperature", "Pass" if montflag[ifemb]==0 else "Fail"),
-                   ("Bandgap", "Pass" if monbgpflag[ifemb]==0 else "Fail"),
-                   ("SE Pulse Shapes", "Pass" if plflag_se[ifemb]==0 else "Fail"),
-                   ("DIFF Pulse Shapes", "Pass" if plflag_diff[ifemb]==0 else "Fail")
-                 )
+    chk_result = []
+    err_messg = []
+    chk_result.append(("Measurement","Result"))
 
+    if chkflag["PWR"][ifemb]==False:
+       chk_result.append(("Power Measurement","Pass"))
+    else:
+       chk_result.append(("Power Measurement","Fail"))
+       err_messg.append(("Power Measurement: ",badlist["PWR"][ifemb]))
+       
+    if chkflag["MON_T"][ifemb]==False:
+       chk_result.append(("Temperature","Pass"))
+    else:
+       chk_result.append(("Temperature","Fail"))
+       err_messg.append(("Temperature issued chips: ",badlist["MON_T"][ifemb]))
+       
+    if chkflag["MON_BGP"][ifemb]==False:
+       chk_result.append(("BGP","Pass"))
+    else:
+       chk_result.append(("BGP","Fail"))
+       err_messg.append(("BGP issued chips: ",badlist["MON_BGP"][ifemb]))
+
+    if chkflag["RMS"][ifemb]==False:
+       chk_result.append(("RMS","Pass"))
+    else:
+       chk_result.append(("RMS","Fail"))
+       err_messg.append(("RMS issued channels: ",badlist["RMS"][ifemb][0]))
+       if badlist["RMS"][ifemb][1]:
+          err_messg.append(("RMS issued chips: ",badlist["RMS"][ifemb][1]))
+       
+    if chkflag["BL"][ifemb]==False:
+       chk_result.append(("200mV Baseline","Pass"))
+    else:
+       chk_result.append(("200mV Baseline","Fail"))
+       err_messg.append(("200mV BL issued channels: ",badlist["BL"][ifemb][0]))
+       if badlist["BL"][ifemb][1]:
+          err_messg.append(("200mV BL issued chips: ",badlist["BL"][ifemb][1]))
+      
+    tmp_key = ["Pulse_SE","Pulse_DIFF"]
+    for ikey in tmp_key:
+        if chkflag[ikey]["PPK"][ifemb]==False and chkflag[ikey]["NPK"][ifemb]==False and chkflag[ikey]["BL"][ifemb]==False:
+           chk_result.append((ikey,"Pass"))
+        else:
+           chk_result.append((ikey,"Fail"))
+           if chkflag[ikey]["PPK"][ifemb]==True:
+              err_messg.append(("%s positive peak issued channels: "%ikey,badlist[ikey]["PPK"][ifemb][0]))
+              if badlist[ikey]["PPK"][ifemb][1]:
+                 err_messg.append(("%s positive peak issued chips: "%ikey,badlist[ikey]["PPK"][ifemb][1]))
+           
+           if chkflag[ikey]["NPK"][ifemb]==True:
+              err_messg.append(("%s negative peak issued channels: "%ikey,badlist[ikey]["NPK"][ifemb][0]))
+              if badlist[ikey]["NPK"][ifemb][1]:
+                 err_messg.append(("%s negative peak issued chips: "%ikey,badlist[ikey]["NPK"][ifemb][1]))
+           
+           if chkflag[ikey]["BL"][ifemb]==True:
+              err_messg.append(("%s baseline issued channels: "%ikey,badlist[ikey]["BL"][ifemb][0]))
+              if badlist[ikey]["BL"][ifemb][1]:
+                 err_messg.append(("%s baseline issued chips: "%ikey,badlist[ikey]["BL"][ifemb][1]))
+   
+    len1 = len(chk_result)
+    tmpkey =["VCMI","VCMO","VREFP","VREFN","VSSA"]
+    for ikey in tmpkey:
+        if chkflag["MON_ADC"][ikey][ifemb]==True:
+           len2 = len(chk_result)
+           if len2==len1:
+              chk_result.append(("ADC Monitoring","Fail"))
+           err_messg.append(("ADC MON %s issued chips: "%ikey,badlist["MON_ADC"][ikey][ifemb]))
+
+    len2 = len(chk_result)
+    if len2==len1:
+       chk_result.append(("ADC Monitoring","Pass"))
+           
     with pdf.table() as table:
         for data_row in chk_result:
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
 
-    if plflag_se[ifemb]>0:
+    if err_messg:
        pdf.ln(10)
-       for jj in plcheck_SE[ifemb]:
-           if jj[0]==True:
-              continue
-
-           if len(jj[1])>0:
-              pdf.cell(30, 5, 'SE: Bad channels: {}'.format(jj[1]), 0, new_x="LMARGIN", new_y="NEXT")
+       for istr in err_messg:
+           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0, new_x="LMARGIN", new_y="NEXT")
  
-           if len(jj[2])>0:
-              pdf.cell(30, 5, 'SE: Bad chips: {}'.format(jj[2]), 0, new_x="LMARGIN", new_y="NEXT")
-
-    if plflag_diff[ifemb]>0:
-       pdf.ln(10)
-       for jj in plcheck_DIFF[ifemb]:
-           if jj[0]==True:
-              continue
-
-           if len(jj[1])>0:
-              pdf.cell(30, 5, 'DIFF: Bad channels: {}'.format(jj[1]), 0, new_x="LMARGIN", new_y="NEXT")
- 
-           if len(jj[2])>0:
-              pdf.cell(30, 5, 'DIFF: Bad chips: {}'.format(jj[2]), 0, new_x="LMARGIN", new_y="NEXT")
-
-
     pdf.add_page()
 
     pwr_image = plotdir+"pwr_meas.png"

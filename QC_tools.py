@@ -311,7 +311,10 @@ class ana_tools:
         fp_fig = fp+"pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
-    
+   
+        fp_bin = fp+"Pulse_{}.bin".format(fname)
+        with open(fp_bin, 'wb') as fn:
+             pickle.dump([ppk_val,npk_val,bl_val], fn) 
         return ppk_val,npk_val,bl_val    
 
     def PrintPWR(self, pwr_data, nfemb, fp):

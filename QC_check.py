@@ -2,6 +2,7 @@ import numpy as np
 def CHKPWR(data, nfemb):
 
     BAD = False  
+    bad_list=[]
   
     bias_v = data['FEMB%d_BIAS_V'%nfemb]
     bias_i = data['FEMB%d_BIAS_I'%nfemb]
@@ -17,33 +18,39 @@ def CHKPWR(data, nfemb):
 
     if bias_v>5 or bias_v<4.95:
        BAD = True 
+       bad_list.append("bias voltage")
     if abs(bias_i)>0.05:
-       BAD = True 
+       BAD = True
+       bad_list.append("bias current")
 
     if fe_v>3 or fe_v<2.9:
        BAD = True 
+       bad_list.append("LArASIC voltage")
     if fe_i>0.55 or fe_i<0.35:
        BAD = True 
+       bad_list.append("LArASIC current")
 
     if cd_v>3 or cd_v<2.95:
        BAD = True 
+       bad_list.append("COLDATA voltage")
     if cd_i>0.35 or cd_i<0.15:
        BAD = True 
+       bad_list.append("COLDATA current")
 
     if adc_v>3.5 or adc_v<3.38:
        BAD = True 
+       bad_list.append("ColdADC voltage")
     if adc_i>1.85 or adc_i<1.35:
        BAD = True 
+       bad_list.append("ColdADC current")
 
-    if BAD:
-       return 1
-    else:
-       return 0
+    return BAD,bad_list
 
 
 def CHKFET(data, nfemb, nchips, env):
 
     fadc = 1/(2**14)*2048 # mV
+    badlist=[]
 
     if env=='RT':
        lo = 850
@@ -59,11 +66,9 @@ def CHKFET(data, nfemb, nchips, env):
         fe_t = data[f'chip{i}'][0][nfemb]*fadc
         if fe_t<lo or fe_t>hi:
            BAD = True 
+           badlist.append(i)
  
-    if BAD:
-       return 2
-    else:
-       return 0
+    return BAD,badlist
 
 def CHKFEBGP(data, nfemb, nchips):
 
@@ -73,23 +78,39 @@ def CHKFEBGP(data, nfemb, nchips):
     hi = 1300
 
     BAD = False
+    badlist=[]
 
     for i in nchips: # 8 chips per board
         fe_bgp = data[f'chip{i}'][0][nfemb]*fadc
         if fe_bgp<lo or fe_bgp>hi:
            BAD = True 
+           badlist.append(i)
  
-    if BAD:
-       return 3
-    else:
-       return 0
+    return BAD,badlist
+
+def CHKADC(data, nfemb, nchips, key, lo, hi):
+
+    fadc = 1/(2**14)*2048 # mV
+
+    BAD = False
+    badlist=[]
+
+    for i in nchips: # 8 chips per board
+        vcmi = data[f'chip{i}'][key][1][0][nfemb]*fadc
+
+        if vcmi<lo or vcmi>hi:
+           BAD = True 
+           badlist.append(i)
+ 
+    return BAD,badlist
+
 
 def CHKPulse(data):  # assume the input is a list
     data_np = np.array(data)
 
     mean_list = []
     std_list = []
-    flag = True
+    flag = False
     bad_chan=[]
     bad_chip=[]
 
@@ -107,11 +128,11 @@ def CHKPulse(data):  # assume the input is a list
         tmp_std = np.std(tmp_data) 
 
         if (tmp_max-tmp_mean)>tmp_mean*0.05:
-           flag = False
+           flag = True
            bad_chan.append(i*16+tmp_max_pos)
    
         if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
-           flag = False
+           flag = True
            bad_chan.append(i*16+tmp_min_pos)
     
         if flag:
@@ -130,14 +151,14 @@ def CHKPulse(data):  # assume the input is a list
     tmp_mean = np.mean(tmp_data) 
 
     if (tmp_max-tmp_mean)>tmp_mean*0.05:
-       flag = False
+       flag = True
        bad_chip.append(tmp_max_pos)
    
     if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
-       flag = False
+       flag = True
        bad_chip.append(tmp_min_pos)
 
-    return flag,bad_chan,bad_chip
+    return flag,[bad_chan,bad_chip]
        
 
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):
