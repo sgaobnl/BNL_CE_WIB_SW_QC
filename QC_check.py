@@ -135,7 +135,7 @@ def CHKPulse(data):  # assume the input is a list
            flag = True
            bad_chan.append(i*16+tmp_min_pos)
     
-        if flag:
+        if flag==False:
            tmp_mean = np.mean(chip_data)
 
         mean_list.append(tmp_mean)

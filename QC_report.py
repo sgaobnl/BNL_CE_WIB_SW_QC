@@ -7,6 +7,7 @@ import sys
 import time
 import glob
 from QC_tools import ana_tools
+import QC_check
 from fpdf import FPDF
 import argparse
 
@@ -496,6 +497,306 @@ class QC_reports:
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
+
+      def CHK_Peaks(self,data,fname):
+
+          err_mssg=[]
+          chkflag="Pass"
+
+          tmp = QC_check.CHKPulse(data[0])  # positive peak
+          if tmp[0]==True:
+             chkflag="Fail"
+             err_mssg.append("{} positive peak chans: {}".format(fname,tmp[1][0]))
+             if tmp[1][1]:
+                err_mssg.append("{} positive peak chips: {}".format(fname,tmp[1][1]))
+
+          tmp = QC_check.CHKPulse(data[1])  # negative peak
+          if tmp[0]==True:
+             chkflag="Fail"
+             err_mssg.append("{} negative peak chans: {}".format(fname,tmp[1][0]))
+             if tmp[1][1]:
+                err_mssg.append("{} negative peak chips: {}".format(fname,tmp[1][1]))
+
+          tmp = QC_check.CHKPulse(data[2])  # BL peak
+          if tmp[0]==True:
+             chkflag="Fail"
+             err_mssg.append("{} baseline chans: {}".format(fname,tmp[1][0]))
+             if tmp[1][1]:
+                err_mssg.append("{} baseline chips: {}".format(fname,tmp[1][1]))
+
+          return chkflag,err_mssg
+
+      def CHK_pwr(self,data,fdir,fname,ifemb):
+
+          err_mssg=[]
+          chkflag="Pass"
+
+          tmp=QC_check.CHKPWR(data,ifemb)
+          if tmp[0]==True:
+             chkflag="Fail"
+             err_mssg.append("{} issues: {}".format(fname,tmp[1]))
+
+          f_pwr = self.savedir[ifemb]+"{}/Pulse_{}_200mVBL_14_0mVfC_2_0us.bin".format(fdir,fname)
+          with open(f_pwr, 'rb') as fn:
+               pwr_meas_pl = pickle.load(fn)
+
+          tmp=self.CHK_Peaks(pwr_meas_pl,fname)
+          if tmp[0]=="Fail": 
+             chkflag="Fail"
+             err_mssg = err_mssg + tmp[1]
+
+          return chkflag,err_mssg
+
+      def CHK_genreport(self,chkflag,err_mssg,nfemb):
+
+          fembid = int(self.fembsID[f'femb{nfemb}'])
+
+          pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
+          pdf.alias_nb_pages()
+          pdf.add_page()
+          pdf.set_auto_page_break(False,0)
+          pdf.set_font('Times', 'B', 20)
+          pdf.cell(85)
+          pdf.l_margin = pdf.l_margin*2
+          pdf.cell(30, 5, 'FEMB#{:04d} QC Report'.format(fembid), 0, new_x="LMARGIN", new_y="NEXT", align='C')
+          pdf.ln(2)
+
+          pdf.set_font('Times', '', 12)
+          pdf.cell(30, 5, 'Tester: {}'.format(self.logs['tester']), 0, new_x="RIGHT", new_y="TOP")
+          pdf.cell(80)
+          pdf.cell(30, 5, 'Date: {}'.format(self.logs['date']), 0, new_x="LMARGIN", new_y="NEXT")
+
+          pdf.cell(30, 5, 'Temperature: {}'.format(self.logs['env']), 0, new_x="RIGHT", new_y="TOP")
+          pdf.cell(80)
+          pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(self.logs['toytpc']), 0, new_x="LMARGIN", new_y="NEXT")
+          pdf.cell(30, 5, 'Note: {}'.format(self.logs['note']), 0, new_x="LMARGIN", new_y="NEXT")
+
+          pdf.ln(10)
+
+          if self.logs['env']=='LN':
+             chk_result=( ("Measurement","Result"),
+                          ("Power consumption",chkflag["PWR_Meas"]),
+                          ("Power cycles",chkflag["PWR_Cycle"]),
+                          ("Leakage current",chkflag["LK_curr"]),
+                          ("Pulse check",chkflag["CHK"]),
+                          ("RMS check",chkflag["RMS"])
+                        )
+          else:
+             chk_result=( ("Measurement","Result"),
+                          ("Power consumption",chkflag["PWR_Meas"]),
+                          ("Leakage current",chkflag["LK_curr"]),
+                          ("Pulse check",chkflag["CHK"]),
+                          ("RMS check",chkflag["RMS"])
+                        )
+
+          
+          with pdf.table() as table:
+              for data_row in chk_result:
+                  row = table.row()
+                  for datum in data_row:
+                      row.cell(datum)
+
+          pdf.add_page()
+          nn=0
+          if err_mssg["PWR_Meas"]:
+             pdf.ln(1)
+             pdf.set_font('Times', 'B', 11)
+             pdf.cell(80, 5, "Power consumption issues:", 0, new_x="LMARGIN", new_y="NEXT")
+             pdf.set_font('Times', '', 10)
+             nn = nn+1
+             for istr in err_mssg["PWR_Meas"]:
+                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                 nn = nn+1
+
+          if nn>50:
+             pdf.add_page()
+             nn=0
+
+          if err_mssg["PWR_Cycle"]:
+             pdf.ln(1)
+             pdf.set_font('Times', 'B', 11)
+             pdf.cell(80, 5, "Power cycles issues:", 0, new_x="LMARGIN", new_y="NEXT")
+             pdf.set_font('Times', '', 10)
+             nn = nn+1
+             for istr in err_mssg["PWR_Cycle"]:
+                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                 nn = nn+1
+
+          if nn>50:
+             pdf.add_page()
+             nn=0
+
+          if err_mssg["LK_curr"]:
+             pdf.ln(1)
+             pdf.set_font('Times', 'B', 11)
+             pdf.cell(80, 5, "Leakage current issues:", 0, new_x="LMARGIN", new_y="NEXT")
+             pdf.set_font('Times', '', 10)
+             nn = nn+1
+             for istr in err_mssg["LK_curr"]:
+                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                 nn = nn+1
+
+          if nn>50:
+             pdf.add_page()
+             nn=0
+
+          if err_mssg["CHK"]:
+             pdf.ln(1)
+             pdf.set_font('Times', 'B', 11)
+             pdf.cell(80, 5, "CHK pulse issues:", 0, new_x="LMARGIN", new_y="NEXT")
+             pdf.set_font('Times', '', 10)
+             nn = nn+1
+             for istr in err_mssg["CHK"]:
+                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                 nn = nn+1
+                 if nn>50:
+                    pdf.add_page()
+                    nn=0
+
+          if err_mssg["RMS"]:
+             pdf.ln(1)
+             pdf.set_font('Times', 'B', 11)
+             pdf.cell(80, 5, "RMS issues:", 0, new_x="LMARGIN", new_y="NEXT")
+             pdf.set_font('Times', '', 10)
+             nn = nn+1
+             for istr in err_mssg["RMS"]:
+                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                 nn = nn+1
+                 if nn>50:
+                    pdf.add_page()
+                    nn=0
+
+          outfile = self.savedir[nfemb]+'report.pdf'
+          pdf.output(outfile)
+      
+
+      def CHK_report(self):
+
+          datadir = self.datadir+"PWR_Meas/"
+          f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
+          with open(f_pwr, 'rb') as fn:
+               pwr_meas_se = pickle.load(fn)[1]
+
+          f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+          with open(f_pwr, 'rb') as fn:
+               pwr_meas_diff = pickle.load(fn)[1]
+
+          f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+          with open(f_pwr, 'rb') as fn:
+               pwr_meas_sesdf = pickle.load(fn)[1]
+
+          if 'LN' in self.logs['env']:
+             datadir = self.datadir+"PWR_Cycle/"
+             pwr_cycle_se=[]
+             for ii in range(3):
+                 f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(ii)
+                 with open(f_pwr, 'rb') as fn:
+                      pwr_cycle_se.append( pickle.load(fn)[1] )
+   
+             f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+             with open(f_pwr, 'rb') as fn:
+                  pwr_cycle_diff = pickle.load(fn)[1]
+   
+             f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+             with open(f_pwr, 'rb') as fn:
+                  pwr_cycle_sesdf = pickle.load(fn)[1]
+   
+          for ifemb in self.fembs:
+              chkflag={"PWR_Meas":"Pass","PWR_Cycle":"Pass","LK_curr":"Pass","CHK":"Pass","RMS":"Pass","CALI1":"Pass"}
+              err_mssg={"PWR_Meas":[],"PWR_Cycle":[],"LK_curr":[],"CHK":[],"RMS":[],"CALI1":[]}
+
+              # check power consumptions          
+              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE",ifemb)
+              if tmp[0]=="Fail":
+                 chkflag["PWR_Meas"]="Fail"
+                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+
+              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_DIFF",ifemb)
+              if tmp[0]=="Fail":
+                 chkflag["PWR_Meas"]="Fail"
+                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+
+              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE_SDF",ifemb)
+              if tmp[0]=="Fail":
+                 chkflag["PWR_Meas"]="Fail"
+                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+
+              # check power cycles
+              if 'LN' in self.logs['env']:
+                 for ii in range(3): 
+                     tmp = self.CHK_pwr(pwr_cycle_se[ii],"PWR_Cycle","PWR_cycle{}_SE".format(ii),ifemb)
+                     if tmp[0]=="Fail":
+                        chkflag["PWR_Cycle"]="Fail"
+                        err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+
+                 tmp = self.CHK_pwr(pwr_cycle_diff,"PWR_Cycle","PWR_DIFF",ifemb)
+                 if tmp[0]=="Fail":
+                    chkflag["PWR_Cycle"]="Fail"
+                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+
+                 tmp = self.CHK_pwr(pwr_cycle_sesdf,"PWR_Cycle","PWR_SE_SDF",ifemb)
+                 if tmp[0]=="Fail":
+                    chkflag["PWR_Cycle"]="Fail"
+                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+
+              # check leakage current
+              datadir = self.savedir[ifemb]+"Leakage_Current/"
+              fname = ["1nA","5nA","100pA","500pA"]
+              for ii in range(4): 
+                  fpl = datadir+"Pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_{}.bin".format(fname[ii])
+                  with open(fpl, 'rb') as fn:
+                       pldata = pickle.load(fn)
+                  tmp = self.CHK_Peaks(pldata,fname[ii])
+
+                  if tmp[0]=="Fail":
+                     chkflag["LK_curr"]="Fail"
+                     err_mssg["LK_curr"] = err_mssg["LK_curr"] + tmp[1] 
+
+              # CHK
+              datadir = self.savedir[ifemb]+"CHK/"
+              blname = ["200mVBL","900mVBL"]
+              gainname = ["4_7mVfC","7_8mVfC","14_0mVfC","25_0mVfC"]
+              stname = ["0_5us","1_0us","2_0us","3_0us"]
+              for ii in range(2):
+                  for jj in range(4):
+                      for kk in range(4): 
+                          fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
+                          fpl = datadir+"Pulse_CHK_SE_{}_0x10.bin".format(fname)
+                          with open(fpl, 'rb') as fn:
+                               pldata = pickle.load(fn)
+                          tmp = self.CHK_Peaks(pldata,fname)
+
+                          if tmp[0]=="Fail":
+                             chkflag["CHK"]="Fail"
+                             err_mssg["CHK"] = err_mssg["CHK"] + tmp[1] 
+
+              # RMS
+              datadir = self.savedir[ifemb]+"RMS/"
+              for ii in range(2):
+                  for jj in range(4):
+                      for kk in range(4): 
+                          fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
+                          frms = datadir+"RMS_{}.bin".format(fname)
+                          with open(frms, 'rb') as fn:
+                               rmsdata = pickle.load(fn)
+
+                          tmp = QC_check.CHKPulse(rmsdata[1])  # rms
+                          if tmp[0]==True:
+                             chkflag["RMS"]="Fail"
+                             err_mssg["RMS"].append("RMS {} chans: {}".format(fname,tmp[1][0]))
+                             if tmp[1][1]:
+                                err_mssg["RMS"].append("RMS {} chips: {}".format(fname,tmp[1][1]))
+
+                          tmp = QC_check.CHKPulse(rmsdata[0])  # ped
+                          if tmp[0]==True:
+                             chkflag["RMS"]="Fail"
+                             err_mssg["RMS"].append("BL {} chans: {}".format(fname,tmp[1][0]))
+                             if tmp[1][1]:
+                                err_mssg["RMS"].append("BL {} chips: {}".format(fname,tmp[1][1]))
+
+
+          
+              self.CHK_genreport(chkflag,err_mssg,ifemb)
 
 if __name__=='__main__':
 
