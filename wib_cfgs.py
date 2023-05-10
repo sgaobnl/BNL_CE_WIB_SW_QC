@@ -632,6 +632,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 print ("add i2c phase 50 steps")
                 self.wib_i2c_adj(n=50)
                 print ("Reconfigure FEMB due to i2c error!")
+                return True
+
                 if refi > 25:
                     #self.femb_powering(fembs =[])
                     print ("I2C failed! exit anyway, please check connection!")

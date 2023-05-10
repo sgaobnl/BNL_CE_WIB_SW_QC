@@ -37,6 +37,17 @@ time.sleep(1)
 #reset all FEMBs on WIB
 chk.wib_femb_link_en(fembs)
 
+#MUX (SN74LV405AD)
+select_names_fe = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
+mux_cs=2
+mux_name = select_names_fe[mux_cs]
+chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
+chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
+chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
+
+chk.dat_set_pulse(0xff, 0x2e4, 0x50, 1.0)
+input()
+
 while True:
     chk.femb_cd_rst()
     
@@ -58,8 +69,8 @@ while True:
                           ]
     
     #LArASIC register configuration
-        chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
-        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        chk.set_fe_board(sts=0, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=0, sdd=0,dac=0x00 )
+        adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )

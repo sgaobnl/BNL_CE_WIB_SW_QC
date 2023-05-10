@@ -30,9 +30,11 @@ print (fembs)
 
 chk = WIB_CFGS()
 
-for snc in [0,1]:
-    for st0 in [0,1]:
-        for st1 in [0,1]:
+for snc in [1,0]:
+    for dac in range(64):
+    #for st0 in [0,1]:
+    #    for st1 in [0,1]:
+        for sts in [1]:
             ####################WIB init################################
             #check if WIB is in position
             chk.wib_fw()
@@ -59,8 +61,8 @@ for snc in [0,1]:
                                   ]
             
             #LArASIC register configuration
-                chk.set_fe_board(sts=0, snc=snc,sg0=0, sg1=0, st0=st0, st1=st1, swdac=0, sdd=0,dac=0x00 )
-                adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
+                chk.set_fe_board(sts=1, snc=snc,sg0=0, sg1=0, st0=1, st1=1, swdac=1, sdd=0,dac=dac )
+                adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
                 cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
             #step 3
                 chk.femb_cfg(femb_id, adac_pls_en )
@@ -77,7 +79,7 @@ for snc in [0,1]:
             if save:
                 fdir = "./tmp_data/"
                 ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-                fp = fdir + "Raw_snc%d_st0%d_st1%d_"%(snc,st0,st1) + ts  + ".bin"
+                fp = fdir + "Raw_gain_snc%d_dac0%d_"%(snc,dac) + ts  + ".bin"
                 with open(fp, 'wb') as fn:
                     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
