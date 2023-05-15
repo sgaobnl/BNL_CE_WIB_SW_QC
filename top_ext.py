@@ -41,9 +41,9 @@ chk.wib_femb_link_en(fembs)
 select_names_fe = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
 mux_cs=2
 mux_name = select_names_fe[mux_cs]
+chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
 chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
 chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
-chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
 
 chk.dat_set_pulse(0xff, 0x2e4, 0x50, 1.0)
 input()

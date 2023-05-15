@@ -629,8 +629,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.i2cerror:
                 self.i2cerror = False
                 refi += 1
-                print ("add i2c phase 50 steps")
-                self.wib_i2c_adj(n=50)
+                if refi%5 == 0:
+                    print ("add i2c phase 50 steps")
+                    self.wib_i2c_adj(n=50)
                 print ("Reconfigure FEMB due to i2c error!")
                 return True
 

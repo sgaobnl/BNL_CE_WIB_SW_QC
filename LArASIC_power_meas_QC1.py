@@ -93,7 +93,7 @@ for i in range(6):
 for d in rawData:
     kl = list(d.keys())
     for onekey in kl:
-        print (onekey, d[onekey])
+        print (onekey, fes_pwr_info[onekey])
 
 
 outputFile = "./tmp_data/rawData.bin"
