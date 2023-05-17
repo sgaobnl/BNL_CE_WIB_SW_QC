@@ -47,7 +47,6 @@ class FE_ASIC_REG_MAPPING:
 ####sec_board sets registers of a whole board 
     def set_fe_board(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, smn=0, sdf=0, 
                        slk0 = 0, stb1 = 0, stb = 0, s16=1, slk1=0, sdc=0, sdd=0, sgp=0, swdac=0, dac=0):
-        self.set_fe_reset()
         for chip in range(8):
             self.set_fechip( chip, sts, snc, sg0, sg1, st0, st1, smn, sdf, slk0, stb1, stb, s16, slk1, sdc, sdd, sgp, swdac, dac)
 #        self.set_fe_sync()

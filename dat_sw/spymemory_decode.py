@@ -204,11 +204,11 @@ def wib_spy_dec_syn(buf0, buf1, trigmode="SW", buf_end_addr=0x0,  trigger_rec_ti
     buf1_flg = False
   
     if (0 in fembs) or (1 in fembs):
-       #print ("Decoding BUF0")
+       print ("Decoding BUF0")
        frames0 = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
        buf0_flg = True
     if (2 in fembs) or (3 in fembs):
-       #print ("Decoding BUF1")
+       print ("Decoding BUF1")
        frames1 = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
        buf1_flg = True
      
