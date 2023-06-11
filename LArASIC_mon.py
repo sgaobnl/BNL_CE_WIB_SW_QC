@@ -88,7 +88,7 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
                       ]
     chk.femb_cfg(femb_id=0)
 
-    mux_cs=5
+    mux_cs=1
     mux_name = select_names_fe[mux_cs]
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
