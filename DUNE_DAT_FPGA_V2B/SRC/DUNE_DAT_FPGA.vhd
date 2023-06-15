@@ -516,7 +516,25 @@ SIGNAL	reg68_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg69_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg70_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg71_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg72_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg73_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg74_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg75_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg76_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg77_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg78_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg79_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg80_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg81_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg82_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg83_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg84_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg85_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg86_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg87_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 
+SIGNAL	reg_adc				: STD_LOGIC_VECTOR(63 downto 0);
+SIGNAL	reg_fe 				: STD_LOGIC_VECTOR(63 downto 0);
 
 SIGNAL	I2C_SDA_c2w		:  STD_LOGIC;
 SIGNAL	I2C_SDA_W2C		:  STD_LOGIC;
@@ -976,107 +994,244 @@ gen_FE_INA: for i in 0 to 7 generate
 end generate gen_FE_INA;
 
 
-CD1_MonADC_inst : entity work.COTS_AD7274
+--CD1_MonADC_inst : entity work.COTS_AD7274
+--  PORT MAP
+--  (
+--    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--    reset     => reset,                    -- reset, active high reset
+--    start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--
+--	 busy      => CD1_MonADC_busy,
+--	 ADC_OUT   => CD1_MonADC_data,   -- data output 12 bit.
+--	 
+--	 CSn       => CD1_MonADC_CS,                    	 -- 2.5V pin
+--	 SCLK      => CD1_MonADC_SCK,                    	 -- 2.5V pin
+--	 SDATA     => CD1_MonADC_SDO	                  	 -- 2.5V pin	
+--	);
+	
+CD1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
   (
     clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
     reset     => reset,                    -- reset, active high reset
     start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-	 busy      => CD1_MonADC_busy,
-	 ADC_OUT   => CD1_MonADC_data,   -- data output 12 bit.
 	 
-	 CSn       => CD1_MonADC_CS,                    	 -- 2.5V pin
-	 SCLK      => CD1_MonADC_SCK,                    	 -- 2.5V pin
-	 SDATA     => CD1_MonADC_SDO	                  	 -- 2.5V pin	
+	 D_SHT		=> reg64_p(1 downto 0),
+	 PH_SEL		=> reg64_p(3 downto 2),
+	 ADC_CS_POS	=> reg64_p(5 downto 4),
+
+	 ADC_SDO  => CD1_MonADC_SDO,	                  	 -- 2.5V pin  			
+	 ADC_SCK	 => CD1_MonADC_SCK,                    	 -- 2.5V pin				
+	 ADC_CS	 => CD1_MonADC_CS,                    	 -- 2.5V pin			
+	 DATA_OUT => CD1_MonADC_data,
+	 busy     => CD1_MonADC_busy,		
+	 rdy		 => open	
 	);
 	
-CD2_MonADC_inst : entity work.COTS_AD7274
+	
+	
+--CD2_MonADC_inst : entity work.COTS_AD7274
+--  PORT MAP
+--  (
+--    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--    reset     => reset,                    -- reset, active high reset
+--    start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--	 busy      => CD2_MonADC_busy,
+--	 ADC_OUT   => CD2_MonADC_data,   -- data output 12 bit.
+--	 
+--	 CSn       => CD2_MonADC_CS,                    	 -- 2.5V pin
+--	 SCLK      => CD2_MonADC_SCK,                    	 -- 2.5V pin
+--	 SDATA     => CD2_MonADC_SDO	                  	 -- 2.5V pin	
+--	);	
+	
+CD2_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
   (
     clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
     reset     => reset,                    -- reset, active high reset
     start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-	 busy      => CD2_MonADC_busy,
-	 ADC_OUT   => CD2_MonADC_data,   -- data output 12 bit.
 	 
-	 CSn       => CD2_MonADC_CS,                    	 -- 2.5V pin
-	 SCLK      => CD2_MonADC_SCK,                    	 -- 2.5V pin
-	 SDATA     => CD2_MonADC_SDO	                  	 -- 2.5V pin	
-	);	
+	 D_SHT		=> reg65_p(1 downto 0),
+	 PH_SEL		=> reg65_p(3 downto 2),
+	 ADC_CS_POS	=> reg65_p(5 downto 4),
+
+
+	 ADC_SDO  => CD2_MonADC_SDO,	                  	 -- 2.5V pin  			
+	 ADC_SCK	 => CD2_MonADC_SCK,                    	 -- 2.5V pin				
+	 ADC_CS	 => CD2_MonADC_CS,                    	 -- 2.5V pin			
+	 DATA_OUT => CD2_MonADC_data,
+	 busy     => CD2_MonADC_busy,		
+	 rdy		 => open	
+	);
 	
-ADC1_MonADC_inst : entity work.COTS_AD7274
+	
+--ADC1_MonADC_inst : entity work.COTS_AD7274
+--  PORT MAP
+--  (
+--	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--	 reset     => reset,                    -- reset, active high reset
+--	 start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--
+--	 busy      => ADC_MonADC_busy_arr(0),
+--	 ADC_OUT   => ADC_MonADC_data_arr(0),   -- data output 12 bit.
+--	 
+--	 CSn       => ADC_MonADC_CS,                    	 -- 2.5V pin
+--	 SCLK      => ADC_MonADC_SCK,                    	 -- 2.5V pin
+--	 SDATA     => ADC_MonADC_SDO(0)	                  	 -- 2.5V pin	
+--	);		
+
+reg_adc(7 downto 0)   <= reg72_p;
+reg_adc(15 downto 8)  <= reg73_p;
+reg_adc(23 downto 16) <= reg74_p;
+reg_adc(31 downto 24) <= reg75_p;
+reg_adc(39 downto 32) <= reg76_p;
+reg_adc(47 downto 40) <= reg77_p;
+reg_adc(55 downto 48) <= reg78_p;
+reg_adc(63 downto 56) <= reg79_p;
+
+ADC1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
   (
-	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
-	 reset     => reset,                    -- reset, active high reset
-	 start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-	 busy      => ADC_MonADC_busy_arr(0),
-	 ADC_OUT   => ADC_MonADC_data_arr(0),   -- data output 12 bit.
+    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+    reset     => reset,                    -- reset, active high reset
+    start     => cots_adc_start,                    -- enable signal for i2c bus.
 	 
-	 CSn       => ADC_MonADC_CS,                    	 -- 2.5V pin
-	 SCLK      => ADC_MonADC_SCK,                    	 -- 2.5V pin
-	 SDATA     => ADC_MonADC_SDO(0)	                  	 -- 2.5V pin	
-	);		
+	 D_SHT		=> reg_adc(1 downto 0),
+	 PH_SEL		=> reg_adc(3 downto 2),
+	 ADC_CS_POS	=> reg_adc(5 downto 4),
+
+	 ADC_SDO  => ADC_MonADC_SDO(0),	                  	 -- 2.5V pin  			
+	 ADC_SCK	 => ADC_MonADC_SCK,                    	 -- 2.5V pin				
+	 ADC_CS	 => ADC_MonADC_CS,                    	 -- 2.5V pin			
+	 DATA_OUT => ADC_MonADC_data_arr(0),
+	 busy     => ADC_MonADC_busy_arr(0),		
+	 rdy		 => open	
+	);
+	
+--gen_ADC_MonADC: for i in 7 downto 1 generate
+--	ADC_MonADC_inst : entity work.COTS_AD7274
+--	  PORT MAP
+--	  (
+--		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--		 reset     => reset,                    -- reset, active high reset
+--		 start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--
+--		 busy      => ADC_MonADC_busy_arr(i),
+--		 ADC_OUT   => ADC_MonADC_data_arr(i),   -- data output 12 bit.
+--		 
+--		 CSn       => open,                    	 -- 2.5V pin
+--		 SCLK      => open,                    	 -- 2.5V pin
+--		 SDATA     => ADC_MonADC_SDO(i)	                  	 -- 2.5V pin	
+--		);	
+--end generate gen_ADC_MonADC;
+
+
 
 gen_ADC_MonADC: for i in 7 downto 1 generate
-	ADC_MonADC_inst : entity work.COTS_AD7274
+	ADC_MonADC_inst : entity work.ADC_AD7274
 	  PORT MAP
 	  (
 		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
 		 reset     => reset,                    -- reset, active high reset
 		 start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-		 busy      => ADC_MonADC_busy_arr(i),
-		 ADC_OUT   => ADC_MonADC_data_arr(i),   -- data output 12 bit.
 		 
-		 CSn       => open,                    	 -- 2.5V pin
-		 SCLK      => open,                    	 -- 2.5V pin
-		 SDATA     => ADC_MonADC_SDO(i)	                  	 -- 2.5V pin	
-		);	
+		 D_SHT		=> reg_adc(8*i+1 downto 8*i),
+		 PH_SEL		=> reg_adc(8*i+3 downto 8*i+2),
+		 ADC_CS_POS	=> reg_adc(8*i+5 downto 8*i+4),
+	
+		 ADC_SDO  => ADC_MonADC_SDO(i),	                  	 -- 2.5V pin  			
+		 ADC_SCK	 => open,                    	 -- 2.5V pin				
+		 ADC_CS	 => open,                    	 -- 2.5V pin				
+		 DATA_OUT => ADC_MonADC_data_arr(i),
+		 busy     => ADC_MonADC_busy_arr(i),		
+		 rdy		 => open	
+		);
 end generate gen_ADC_MonADC;
 
+--FE1_MonADC_inst : entity work.COTS_AD7274
+--  PORT MAP
+--  (
+--	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--	 reset     => reset,                    -- reset, active high reset
+--	 start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--
+--	 busy      => FE_MonADC_busy_arr(0),
+--	 ADC_OUT   => FE_MonADC_data_arr(0),   -- data output 12 bit.
+--	 
+--	 CSn       => FE_MonADC_CS,                    	 -- 2.5V pin
+--	 SCLK      => FE_MonADC_SCK,                    	 -- 2.5V pin
+--	 SDATA     => FE_MonADC_SDO(0)	                  	 -- 2.5V pin	
+--	);		
+reg_fe(7 downto 0)   <= reg80_p;
+reg_fe(15 downto 8)  <= reg81_p;
+reg_fe(23 downto 16) <= reg82_p;
+reg_fe(31 downto 24) <= reg83_p;
+reg_fe(39 downto 32) <= reg84_p;
+reg_fe(47 downto 40) <= reg85_p;
+reg_fe(55 downto 48) <= reg86_p;
+reg_fe(63 downto 56) <= reg87_p;
 
-FE1_MonADC_inst : entity work.COTS_AD7274
+FE1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
   (
-	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
-	 reset     => reset,                    -- reset, active high reset
-	 start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-	 busy      => FE_MonADC_busy_arr(0),
-	 ADC_OUT   => FE_MonADC_data_arr(0),   -- data output 12 bit.
+    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+    reset     => reset,                    -- reset, active high reset
+    start     => cots_adc_start,                    -- enable signal for i2c bus.
 	 
-	 CSn       => FE_MonADC_CS,                    	 -- 2.5V pin
-	 SCLK      => FE_MonADC_SCK,                    	 -- 2.5V pin
-	 SDATA     => FE_MonADC_SDO(0)	                  	 -- 2.5V pin	
-	);		
+	 D_SHT		=> reg_fe(1 downto 0),
+	 PH_SEL		=> reg_fe(3 downto 2),
+	 ADC_CS_POS	=> reg_fe(5 downto 4),
 
+	 ADC_SDO  => FE_MonADC_SDO(0),	                  	 -- 2.5V pin  			
+	 ADC_SCK	 => FE_MonADC_SCK,                    	 -- 2.5V pin				
+	 ADC_CS	 => FE_MonADC_CS,                    	 -- 2.5V pin			
+	 DATA_OUT => FE_MonADC_data_arr(0),
+	 busy     => FE_MonADC_busy_arr(0),		
+	 rdy		 => open	
+	);
+	
+--gen_FE_MonADC : for i in 7 downto 1 generate
+--	FE_MonADC_inst : entity work.COTS_AD7274
+--	  PORT MAP
+--	  (
+--		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
+--		 reset     => reset,                    -- reset, active high reset
+--		 start     => cots_adc_start,                    -- enable signal for i2c bus.
+--
+--
+--		 busy      => FE_MonADC_busy_arr(i),
+--		 ADC_OUT   => FE_MonADC_data_arr(i),   -- data output 12 bit.
+--		 
+--		 CSn       => open,                    	 -- 2.5V pin
+--		 SCLK      => open,                    	 -- 2.5V pin
+--		 SDATA     => FE_MonADC_SDO(i)	                  	 -- 2.5V pin	
+--	);		
+--end generate gen_FE_MonADC;
 gen_FE_MonADC : for i in 7 downto 1 generate
-	FE_MonADC_inst : entity work.COTS_AD7274
+	FE_MonADC_inst : entity work.ADC_AD7274
 	  PORT MAP
 	  (
 		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
 		 reset     => reset,                    -- reset, active high reset
 		 start     => cots_adc_start,                    -- enable signal for i2c bus.
-
-
-		 busy      => FE_MonADC_busy_arr(i),
-		 ADC_OUT   => FE_MonADC_data_arr(i),   -- data output 12 bit.
 		 
-		 CSn       => open,                    	 -- 2.5V pin
-		 SCLK      => open,                    	 -- 2.5V pin
-		 SDATA     => FE_MonADC_SDO(i)	                  	 -- 2.5V pin	
-	);		
+		 D_SHT		=> reg_fe(8*i+1 downto 8*i),
+		 PH_SEL		=> reg_fe(8*i+3 downto 8*i+2),
+		 ADC_CS_POS	=> reg_fe(8*i+5 downto 8*i+4),
+	
+		 ADC_SDO  => FE_MonADC_SDO(i),	                  	 -- 2.5V pin  			
+		 ADC_SCK	 => open,                    	 -- 2.5V pin				
+		 ADC_CS	 => open,                    	 -- 2.5V pin			
+		 DATA_OUT => FE_MonADC_data_arr(i),
+		 busy     => FE_MonADC_busy_arr(i),		
+		 rdy		 => open	
+		);
 end generate gen_FE_MonADC;
-
 
 --All 8 DACs are configurated at the same time with the same value actually. 
 FE1_DAC_TP_inst : entity work.DAC8411 --AD5683R
@@ -1260,6 +1415,22 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg69_i 	=> reg69_p,	
 		reg70_i 	=> reg70_p,	
 		reg71_i 	=> reg71_p,
+		reg72_i 	=> reg72_p,
+		reg73_i 	=> reg73_p,
+		reg74_i 	=> reg74_p,
+		reg75_i 	=> reg75_p,	
+		reg76_i 	=> reg76_p,
+		reg77_i 	=> reg77_p,
+		reg78_i 	=> reg78_p,
+		reg79_i 	=> reg79_p,	
+		reg80_i 	=> reg80_p,	
+		reg81_i 	=> reg81_p,
+		reg82_i 	=> reg82_p,
+		reg83_i 	=> reg83_p,
+		reg84_i 	=> reg84_p,
+		reg85_i 	=> reg85_p,	
+		reg86_i 	=> reg86_p,
+		reg87_i 	=> reg87_p,
 
 		
 		reg0_o 	=> reg0_p,
@@ -1333,8 +1504,23 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg68_o 	=> reg68_p,
 		reg69_o 	=> reg69_p,
 		reg70_o 	=> reg70_p,
-		reg71_o 	=> reg71_p
-
+		reg71_o 	=> reg71_p,
+		reg72_o 	=> reg72_p,
+		reg73_o 	=> reg73_p,
+		reg74_o 	=> reg74_p,
+		reg75_o 	=> reg75_p,	
+		reg76_o 	=> reg76_p,
+		reg77_o 	=> reg77_p,
+		reg78_o 	=> reg78_p,
+		reg79_o 	=> reg79_p,	
+		reg80_o 	=> reg80_p,	
+		reg81_o 	=> reg81_p,
+		reg82_o 	=> reg82_p,
+		reg83_o 	=> reg83_p,
+		reg84_o 	=> reg84_p,
+		reg85_o 	=> reg85_p,	
+		reg86_o 	=> reg86_p,
+		reg87_o 	=> reg87_p
 		
 	);
 

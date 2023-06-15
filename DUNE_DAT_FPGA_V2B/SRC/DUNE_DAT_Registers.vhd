@@ -112,6 +112,22 @@ ENTITY DUNE_DAT_Registers IS
 		reg69_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 		reg70_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 		reg71_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg72_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg73_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg74_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg75_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg76_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg77_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg78_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg79_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg80_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg81_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg82_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg83_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg84_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg85_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg86_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
+		reg87_i		: IN  STD_LOGIC_VECTOR(7 downto 0);
 
 		
 		reg0_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
@@ -185,7 +201,23 @@ ENTITY DUNE_DAT_Registers IS
 		reg68_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
 		reg69_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
 		reg70_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
-		reg71_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)	
+		reg71_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg72_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
+		reg73_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg74_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg75_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg76_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg77_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg78_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
+		reg79_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg80_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg81_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);
+		reg82_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);		
+		reg83_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg84_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg85_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg86_o		: OUT  STD_LOGIC_VECTOR(7 downto 0);	
+		reg87_o		: OUT  STD_LOGIC_VECTOR(7 downto 0)	
 
 		
 	);
@@ -305,6 +337,23 @@ VERSION(15 downto 12)	<=  x"0";
 								 reg69_i	when (WIB_RD_address = x"45")	else
 								 reg70_i	when (WIB_RD_address = x"46")	else
 								 reg71_i	when (WIB_RD_address = x"47")	else
+								 reg72_i	when (WIB_RD_address = x"48")	else
+								 reg73_i	when (WIB_RD_address = x"49")	else
+								 reg74_i	when (WIB_RD_address = x"4A")	else
+								 reg75_i	when (WIB_RD_address = x"4B")	else
+								 reg76_i	when (WIB_RD_address = x"4C")	else
+								 reg77_i	when (WIB_RD_address = x"4D")	else
+								 reg78_i	when (WIB_RD_address = x"4E")	else
+								 reg79_i	when (WIB_RD_address = x"4F")	else		
+								 reg80_i	when (WIB_RD_address = x"50")	else
+								 reg81_i	when (WIB_RD_address = x"51")	else
+								 reg82_i	when (WIB_RD_address = x"52")	else
+								 reg83_i	when (WIB_RD_address = x"53")	else
+								 reg84_i	when (WIB_RD_address = x"54")	else
+								 reg85_i	when (WIB_RD_address = x"55")	else
+								 reg86_i	when (WIB_RD_address = x"56")	else
+								 reg87_i	when (WIB_RD_address = x"57")	else
+
 								 BOARD_ID						when (WIB_RD_address = x"f3")	else
 								 VERSION_ID						when (WIB_RD_address = x"f4")	else
 								 VERSION(7 downto 0)			when (WIB_RD_address = x"f5") else	
@@ -386,14 +435,30 @@ VERSION(15 downto 12)	<=  x"0";
 			reg61_o		<= X"00";
 			reg62_o		<= X"00";		
 			reg63_o		<= X"00";
-			reg64_o		<= X"00";	
-			reg65_o		<= X"00";
+			reg64_o		<= X"02";	
+			reg65_o		<= X"02";
 			reg66_o		<= X"00";	
 			reg67_o		<= X"00";	
 			reg68_o		<= X"00";		
 			reg69_o		<= X"00";
 			reg70_o		<= X"00";
 			reg71_o		<= X"00";
+			reg72_o		<= X"02";		
+			reg73_o		<= X"02";
+			reg74_o		<= X"02";	
+			reg75_o		<= X"02";
+			reg76_o		<= X"02";	
+			reg77_o		<= X"02";	
+			reg78_o		<= X"02";		
+			reg79_o		<= X"02";
+			reg80_o		<= X"02";
+			reg81_o		<= X"02";
+			reg82_o		<= X"02";		
+			reg83_o		<= X"02";
+			reg84_o		<= X"02";	
+			reg85_o		<= X"02";
+			reg86_o		<= X"02";	
+			reg87_o		<= X"02";	
 
 		elsif (clk'event  AND  clk = '1') then				
 
@@ -475,6 +540,23 @@ VERSION(15 downto 12)	<=  x"0";
 					when x"45" => 	reg69_o  <= WIB_data;	
 					when x"46" => 	reg70_o  <= WIB_data;
 					when x"47" => 	reg71_o  <= WIB_data;
+	     			when x"48" => 	reg72_o  <= WIB_data;	
+					when x"49" => 	reg73_o  <= WIB_data;	
+					when x"4A" => 	reg74_o  <= WIB_data;	
+					when x"4B" => 	reg75_o  <= WIB_data;		
+					when x"4C" => 	reg76_o  <= WIB_data;	
+					when x"4D" => 	reg77_o  <= WIB_data;	
+					when x"4E" => 	reg78_o  <= WIB_data;	
+					when x"4F" => 	reg79_o  <= WIB_data;	
+					when x"50" => 	reg80_o  <= WIB_data;
+					when x"51" => 	reg81_o  <= WIB_data;
+					when x"52" => 	reg82_o  <= WIB_data;	
+					when x"53" => 	reg83_o  <= WIB_data;	
+					when x"54" => 	reg84_o  <= WIB_data;	
+					when x"55" => 	reg85_o  <= WIB_data;		
+					when x"56" => 	reg86_o  <= WIB_data;	
+					when x"57" => 	reg87_o  <= WIB_data;	
+
 
 					when x"FE" =>	SCRATCH_PAD	<= WIB_data;					
 					WHEN OTHERS =>  
