@@ -7,6 +7,7 @@ import copy
 import time, datetime, random, statistics    
     
 chk = WIB_CFGS()
+chk.femb_cd_rst()
  
 
 print("FE Monitoring")
@@ -28,7 +29,8 @@ select_names_fe = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_Am
 
 def dat_monadcs(avg=1):
     #t0 = time.time_ns()
-    chk.dat_monadc_trig() #get the previous result    
+    #chk.dat_monadc_trig() #get the previous result    
+    #chk.dat_monadc_trig() #get the previous result    
     avg_datas = [[],[],[],[],[],[],[],[]]
     for avgi in range(avg):
         chk.dat_monadc_trig()    
@@ -39,6 +41,8 @@ def dat_monadcs(avg=1):
                 if check is 9:
                     print("Timed out while waiting for AD7274 controller to finish")
             data = chk.dat_monadc_getdata(fe=fe)
+            #print (hex(data), data)
+            #input()
             avg_datas[fe].append(data)
     datas = []
     datas_std = []
@@ -58,12 +62,17 @@ def dat_fe_vbgrs():
     print ("measure VBGR through VBGR pin")
     mux_cs = 4
     mux_name = select_names_fe[mux_cs]
-    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, 4<<4)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0x00)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_TEST_PULSE_SOCKET_EN, 0x00)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_IN_TST_SEL_LSB, 0x00)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_IN_TST_SEL_MSB, 0x00)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
     datas = dat_monadcs()[0]
     print (datas)
     for fe in range(8):
         print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
+    exit()
 
 
 
@@ -86,20 +95,19 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
                         [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                         [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                       ]
-    chk.femb_cfg(femb_id=0)
-
     mux_cs=1
     mux_name = select_names_fe[mux_cs]
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_INS, 0xff)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
-    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
+    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
 
     if mon_type == 1:
         chk.set_fe_reset()
         print ("measure Temperatue through Monitoring pin")
         chn = 0
-        stb0=0
-        stb1=1
+        stb0=1
+        stb1=0
  
         for fe in range(8):
             chk.set_fechn_reg(chip=fe&0x07, chn=chn, smn=1, sdf=1) 
@@ -128,62 +136,94 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
             print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
     if mon_type == 3:
+ 
         chk.set_fe_reset()
         print ("measure LArASIC DAC through Monitoring pin")
         chk.set_fe_board(sg0=sg0, sg1=sg1)
         chn = 0
-        for dac in range(64):
-            #for fe in range(8):
-            for fe in [0]:
+        sgp=1
+ 
+        for dac in range(0,64, 8):
+            for fe in range(8):
+            #for fe in [1]:
                 chk.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
             chk.set_fe_sync()
-            chk.femb_fe_cfg(femb_id=0)
+            chk.femb_cfg(femb_id=0)
+            time.sleep(1)
+            #chk.femb_fe_cfg(femb_id=0)
             
             datas = dat_monadcs()[0]
-            #for fe in range(8):
-            for fe in [0]:
+            for fe in range(8):
+            #for fe in [0]:
                 print(dac, "FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
     if mon_type == 0:
-        print ("measure LArASIC 200mV BL through Monitoring pin")
         chn = 0
         stb0=0
         stb1=0
  
-        for chn in range(16):
+        for chn in [1]:
+        #for chn in range(16):
             chk.set_fe_reset()
-            #for fe in range(8):
-            for fe in [0]:
+            fechip = 0
+            #for fe in [fechip]:
+            for fe in range(8):
                 chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=0, smn=1,st0=1, st1=1, sdf=1) 
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
 
             datas = dat_monadcs()[0]
-            #for fe in range(8):
-            for fe in [0]:
+            for fe in range(8):
+            #for fe in [fechip]:
                 print("900mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
+    if mon_type == 4:
+        chn = 0
+        stb0=0
+        stb1=0
  
         print ("measure LArASIC 900mV BL through Monitoring pin")
-        for chn in range(16):
+        for chn in [1]:
+        #for chn in range(16):
             chk.set_fe_reset()
-            #for fe in range(8):
-            for fe in [0]:
+            for fe in range(8):
+            #for fe in [fechip]:
                 chk.set_fechn_reg(chip=fe&0x07, chn=chn, snc=1, smn=1,st0=1, st1=1, sdf=1) 
             chk.set_fe_sync()
             chk.femb_fe_cfg(femb_id=0)
+            time.sleep(2)
 
             datas = dat_monadcs()[0]
-            #for fe in range(8):
-            for fe in [0]:
+            for fe in range(8):
+            #for fe in [fechip]:
+                print("200mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
+
+    if mon_type == 5:
+        chn = 0
+        stb0=0
+        stb1=0
+ 
+        print ("measure LArASIC 900mV BL through Monitoring pin")
+        for chn in [1]:
+        #for chn in range(16):
+            datas = dat_monadcs()[0]
+            for fe in range(8):
+            #for fe in [fechip]:
                 print("200mV, FE %d CHN %d "%(fe, chn) + " MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
 
 
 
+#while True:
 dat_fe_vbgrs()
+#    time.sleep(1)
 
-dat_fe_mons(mon_type=1)
-dat_fe_mons(mon_type=2)
-dat_fe_mons(mon_type=0)
-dat_fe_mons(mon_type=3)
+while True:
+    x = int (input("number:"))
+    dat_fe_mons(mon_type=x)
+#dat_fe_mons(mon_type=1)
+#dat_fe_mons(mon_type=5)
+#dat_fe_mons(mon_type=1)
+#dat_fe_mons(mon_type=2)
+#dat_fe_mons(mon_type=2)
+#dat_fe_mons(mon_type=3)
