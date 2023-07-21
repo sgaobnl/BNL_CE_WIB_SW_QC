@@ -74,6 +74,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C0008, link_mask)
         link_mask = self.peek(0xA00C0008)
         print ("WIB FEMB LINK = %x"%link_mask)
+        return link_mask
  
 
     def wib_timing(self, ts_clk_sel=False, fp1_ptc0_sel=0, cmd_stamp_sync = 0x7fff):
