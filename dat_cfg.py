@@ -296,16 +296,5 @@ class DAT_CFGS(WIB_CFGS):
                 initchk_flg = False 
                 print (ch, chmax, chped, chmin)
         if initchk_flg:
-            print ("Pass the interconnection checkout, QC starts now!")
+            print ("Pass the interconnection checkout, QC may start now!")
                 
-dat =  DAT_CFGS()
-dat.wib_pwr_on_dat()
-fes_pwr_info = dat.fe_pwr_meas()
-adcs_pwr_info = dat.adc_pwr_meas()
-cds_pwr_info = dat.cd_pwr_meas()
-dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
-dat.dat_asic_chk()
-
-#        print ("Data save in %s"%outputFile)
-#        with open(outputFile, 'wb') as f:
-#            pickle.dump([pwr_meas, fes_pwr_info], f)
