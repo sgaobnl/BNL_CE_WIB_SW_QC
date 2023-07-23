@@ -223,14 +223,9 @@ for ifemb in fembs:
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
 ###### Generate Report ######
-print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-print(len(fembs))
 count = 0
 for ifemb in fembs:
-
     plotdir = PLOTDIR[ifemb]
-    print("BBBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    print(ifemb)
     pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
     pdf.alias_nb_pages()
     pdf.add_page()
