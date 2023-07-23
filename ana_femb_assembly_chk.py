@@ -9,12 +9,12 @@ from QC_tools import ana_tools
 import QC_check
 from fpdf import FPDF
 import matplotlib.pyplot as plt
-
+import Path as newpath
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    reportdir = "reports/"+datadir+"/"
+    reportdir = newpath.report_dir_RTCK + datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -56,7 +56,8 @@ if len(sys.argv) > 2:
 
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
-fdata = "tmp_data/"+datadir+"/"
+#fdata = "tmp_data/"+datadir+"/"
+fdata = newpath.data_dir_RTCK + datadir+"/"
 print(fdata)
 
 ###### load logs and create report folder ######
@@ -100,11 +101,11 @@ pldata = np.array(pldata)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
-    tmp = QC_check.CHKPulse(ped)
+    tmp = QC_check.CHKPulse(ped, 0.25)
     chkflag["BL"].append(tmp[0])
     badlist["BL"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(rms)
+    tmp = QC_check.CHKPulse(rms, 0.15)
     chkflag["RMS"].append(tmp[0])
     badlist["RMS"].append(tmp[1])
 
@@ -126,15 +127,15 @@ for ifemb in fembs:
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
 
-    tmp = QC_check.CHKPulse(ppk)
+    tmp = QC_check.CHKPulse(ppk, 0.1)
     chkflag["Pulse_SE"]["PPK"].append(tmp[0])
     badlist["Pulse_SE"]["PPK"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(npk)
+    tmp = QC_check.CHKPulse(npk, 0.1)
     chkflag["Pulse_SE"]["NPK"].append(tmp[0])
     badlist["Pulse_SE"]["NPK"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(bl)
+    tmp = QC_check.CHKPulse(bl, 0.25)
     chkflag["Pulse_SE"]["BL"].append(tmp[0])
     badlist["Pulse_SE"]["BL"].append(tmp[1])
 
@@ -164,7 +165,7 @@ for ifemb in fembs:
     chkflag["Pulse_DIFF"]["NPK"].append(tmp[0])
     badlist["Pulse_DIFF"]["NPK"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(bl)
+    tmp = QC_check.CHKPulse(bl, 0.25)
     chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
     badlist["Pulse_DIFF"]["BL"].append(tmp[1])
 
@@ -197,35 +198,39 @@ for ifemb in fembs:
     chkflag["MON_T"].append(tmp[0])
     badlist["MON_T"].append(tmp[1])
 
-    tmp = QC_check.CHKFEBGP(mon_refs,ifemb,nchips)
+    tmp = QC_check.CHKFEBGP(mon_refs,ifemb,nchips,env)
     chkflag["MON_BGP"].append(tmp[0])
     badlist["MON_BGP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMI",900,950)
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMI",930,1030, 875, 975, env)
     chkflag["MON_ADC"]["VCMI"].append(tmp[0])
     badlist["MON_ADC"]["VCMI"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMO",1200,1250)
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMO",1225,1325, 1200, 1300, env)
     chkflag["MON_ADC"]["VCMO"].append(tmp[0])
     badlist["MON_ADC"]["VCMO"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFP",1900,1950)
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFP",1950,2050, 1925, 2025, env)
     chkflag["MON_ADC"]["VREFP"].append(tmp[0])
     badlist["MON_ADC"]["VREFP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFN",460,510)
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFN",500,600, 425, 525, env)
     chkflag["MON_ADC"]["VREFN"].append(tmp[0])
     badlist["MON_ADC"]["VREFN"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VSSA",0,70)
+    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VSSA",50,150, 0, 70, env)
     chkflag["MON_ADC"]["VSSA"].append(tmp[0])
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
 ###### Generate Report ######
-
+print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+print(len(fembs))
+count = 0
 for ifemb in fembs:
-    plotdir = PLOTDIR[ifemb]
 
+    plotdir = PLOTDIR[ifemb]
+    print("BBBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    print(ifemb)
     pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
     pdf.alias_nb_pages()
     pdf.add_page()
@@ -248,74 +253,79 @@ for ifemb in fembs:
     pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(10)
-
+    print("CCCCCCCCCCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     chk_result = []
     err_messg = []
     chk_result.append(("Measurement","Result"))
+    print(chkflag["PWR"])
+    print(chkflag["PWR"][count])
 
-    if chkflag["PWR"][ifemb]==False:
+    print("##########################")
+    if chkflag["PWR"][count]==False:
        chk_result.append(("Power Measurement","Pass"))
     else:
        chk_result.append(("Power Measurement","Fail"))
-       err_messg.append(("Power Measurement: ",badlist["PWR"][ifemb]))
+       err_messg.append(("Power Measurement: ",badlist["PWR"][count]))
        
-    if chkflag["MON_T"][ifemb]==False:
+    if chkflag["MON_T"][count]==False:
        chk_result.append(("Temperature","Pass"))
     else:
        chk_result.append(("Temperature","Fail"))
-       err_messg.append(("Temperature issued chips: ",badlist["MON_T"][ifemb]))
+       err_messg.append(("Temperature issued chips: ",badlist["MON_T"][count]))
        
-    if chkflag["MON_BGP"][ifemb]==False:
+    if chkflag["MON_BGP"][count]==False:
        chk_result.append(("BGP","Pass"))
     else:
        chk_result.append(("BGP","Fail"))
-       err_messg.append(("BGP issued chips: ",badlist["MON_BGP"][ifemb]))
+       err_messg.append(("BGP issued chips: ",badlist["MON_BGP"][count]))
 
-    if chkflag["RMS"][ifemb]==False:
+    if chkflag["RMS"][count]==False:
        chk_result.append(("RMS","Pass"))
     else:
        chk_result.append(("RMS","Fail"))
-       err_messg.append(("RMS issued channels: ",badlist["RMS"][ifemb][0]))
-       if badlist["RMS"][ifemb][1]:
-          err_messg.append(("RMS issued chips: ",badlist["RMS"][ifemb][1]))
+       err_messg.append(("RMS issued channels: ",badlist["RMS"][count][0]))
+       if badlist["RMS"][count][1]:
+          err_messg.append(("RMS issued chips: ",badlist["RMS"][count][1]))
        
-    if chkflag["BL"][ifemb]==False:
+    if chkflag["BL"][count]==False:
        chk_result.append(("200mV Baseline","Pass"))
     else:
        chk_result.append(("200mV Baseline","Fail"))
-       err_messg.append(("200mV BL issued channels: ",badlist["BL"][ifemb][0]))
-       if badlist["BL"][ifemb][1]:
-          err_messg.append(("200mV BL issued chips: ",badlist["BL"][ifemb][1]))
+       err_messg.append(("200mV BL issued channels: ",badlist["BL"][count][0]))
+       if badlist["BL"][count][1]:
+          err_messg.append(("200mV BL issued chips: ",badlist["BL"][count][1]))
       
     tmp_key = ["Pulse_SE","Pulse_DIFF"]
     for ikey in tmp_key:
-        if chkflag[ikey]["PPK"][ifemb]==False and chkflag[ikey]["NPK"][ifemb]==False and chkflag[ikey]["BL"][ifemb]==False:
+        if chkflag[ikey]["PPK"][count]==False and chkflag[ikey]["NPK"][count]==False and chkflag[ikey]["BL"][count]==False:
            chk_result.append((ikey,"Pass"))
         else:
            chk_result.append((ikey,"Fail"))
-           if chkflag[ikey]["PPK"][ifemb]==True:
-              err_messg.append(("%s positive peak issued channels: "%ikey,badlist[ikey]["PPK"][ifemb][0]))
-              if badlist[ikey]["PPK"][ifemb][1]:
-                 err_messg.append(("%s positive peak issued chips: "%ikey,badlist[ikey]["PPK"][ifemb][1]))
+           if chkflag[ikey]["PPK"][count]==True:
+              err_messg.append(("%s positive peak issued channels: "%ikey,badlist[ikey]["PPK"][count][0]))
+              if badlist[ikey]["PPK"][count][1]:
+                 err_messg.append(("%s positive peak issued chips: "%ikey,badlist[ikey]["PPK"][count][1]))
            
-           if chkflag[ikey]["NPK"][ifemb]==True:
-              err_messg.append(("%s negative peak issued channels: "%ikey,badlist[ikey]["NPK"][ifemb][0]))
-              if badlist[ikey]["NPK"][ifemb][1]:
-                 err_messg.append(("%s negative peak issued chips: "%ikey,badlist[ikey]["NPK"][ifemb][1]))
+           if chkflag[ikey]["NPK"][count]==True:
+              err_messg.append(("%s negative peak issued channels: "%ikey,badlist[ikey]["NPK"][count][0]))
+              if badlist[ikey]["NPK"][count][1]:
+                 err_messg.append(("%s negative peak issued chips: "%ikey,badlist[ikey]["NPK"][count][1]))
            
-           if chkflag[ikey]["BL"][ifemb]==True:
-              err_messg.append(("%s baseline issued channels: "%ikey,badlist[ikey]["BL"][ifemb][0]))
-              if badlist[ikey]["BL"][ifemb][1]:
-                 err_messg.append(("%s baseline issued chips: "%ikey,badlist[ikey]["BL"][ifemb][1]))
+           if chkflag[ikey]["BL"][count]==True:
+              err_messg.append(("%s baseline issued channels: "%ikey,badlist[ikey]["BL"][count][0]))
+              if badlist[ikey]["BL"][count][1]:
+                 err_messg.append(("%s baseline issued chips: "%ikey,badlist[ikey]["BL"][count][1]))
    
     len1 = len(chk_result)
     tmpkey =["VCMI","VCMO","VREFP","VREFN","VSSA"]
     for ikey in tmpkey:
-        if chkflag["MON_ADC"][ikey][ifemb]==True:
+        if chkflag["MON_ADC"][ikey][count]==True:
            len2 = len(chk_result)
            if len2==len1:
               chk_result.append(("ADC Monitoring","Fail"))
-           err_messg.append(("ADC MON %s issued chips: "%ikey,badlist["MON_ADC"][ikey][ifemb]))
+           err_messg.append(("ADC MON %s issued chips: "%ikey,badlist["MON_ADC"][ikey][count]))
+
+    count = count + 1
 
     len2 = len(chk_result)
     if len2==len1:

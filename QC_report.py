@@ -10,16 +10,20 @@ from QC_tools import ana_tools
 import QC_check
 from fpdf import FPDF
 import argparse
+import Path as newpath
 
 class QC_reports:
 
       def __init__(self, fdir, fembs=[]):
 
-          savedir = "QC_reports/"
-          self.datadir = "QC_data/"+fdir+"/"
+          #savedir = "QC_reports/"
+          #self.datadir = "QC_data/"+fdir+"/"
 
 #          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
 #          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
+
+          savedir = newpath.report_dir_RTQC + fdir + "/"
+          self.datadir = newpath.data_dir_RTQC + fdir + "/"
 
           fp = self.datadir+"logs_env.bin"
           with open(fp, 'rb') as fn:
