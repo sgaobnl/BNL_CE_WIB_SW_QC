@@ -1,3 +1,11 @@
+# Update WIB system time 
+If powershell on windows machine is used as terminal. 
+```
+ $cdate = get-date
+ $wibdate = "date -s '$cdate'"
+ssh root@192.168.121.1  $wibdate
+```
+
 # BNL_CE_WIB_SW_QC
  
 These scripts are developed for standalone WIB operation on WIB 
@@ -72,3 +80,40 @@ python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
 ```
 #### step 3: check the reports, saved at reports/
+
+## Run FEMB QC
+#### step 0 (optional: only run if encounter i2c errors and use PLL clock)
+```
+python3 wib_startup.py
+```
+#### step 1: quick checkout
+```
+python3 femb_assembly_chk.py 0 1 2 3 save 5
+```
+Data is saved at tmp_data/. Please copy the data to PC and run the following command at the PC:
+```
+python3 ana_femb_assembly_chk.py <folder name>
+```
+e.g.
+```
+python3 ana_femb_assembly_chk.py femb0_femb1_femb2_femb3_RT_0pF
+```
+#### step 2: run QC
+```
+python3 QC_top.py <femb list> -s <nsamples> -t <task list> 
+```
+e.g.
+```
+python3 QC_top.py 0 1 2 3 -s 5
+```
+The default task list is to run all the QC items. Data is saved at QC_data/. Please copy the data to PC and run the following command at the PC:
+```
+python3 QC_report_all.py <folder name> -n <femb list> -t <task list>
+```
+e.g.
+```
+python3 QC_report_all.py femb0_femb1_femb2_femb3_RT_0pF
+```
+Specific tasks and fembs can be specified uisng ``-t`` and ``-n`` flags.
+
+
