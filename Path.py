@@ -32,39 +32,40 @@ report_dir_SCHK = data_dir_SCHK + "00_Q6_reports/"
 
 ##===================================
 if os.path.exists(report_dir_GTCK):
-    print("report_dir_GTCK path\n")
+    #print("report_dir_GTCK path\n")
+    pass
 else:
     os.makedirs(report_dir_GTCK)
     print("create report_dir_GTCK path")
 
 if os.path.exists(data_dir_GTCK):
-    print("data_dir_GTCK path\n")
+    pass
 else:
     os.makedirs(data_dir_GTCK)
     print("create data_dir_GTCK path")
 
 ##===================================
 if os.path.exists(report_dir_RTCK):
-    print("report_dir_RTCK path\n")
+    pass
 else:
     os.makedirs(report_dir_RTCK)
     print("create report_dir_RTCK path")
     
 if os.path.exists(data_dir_RTCK):
-    print("data_dir_RTCK path\n")
+    pass
 else:
     os.makedirs(data_dir_RTCK)
     print("create data_dir_RTCK path")
 
 ##===================================
 if os.path.exists(report_dir_RTQC):
-    print("report_dir_RTQC path\n")
+    pass
 else:
     os.makedirs(report_dir_RTQC)
     print("create report_dir_RTQC path")
 
 if os.path.exists(data_dir_RTQC):
-    print("data_dir_RTQC path\n")
+    pass
 else:
     os.makedirs(data_dir_RTQC)
     print("create data_dir_RTQC path")
@@ -97,13 +98,13 @@ else:
 
 ##===================================
 if os.path.exists(report_dir_SCHK):
-    print("report_dir_SCHK path\n")
+    pass
 else:
     os.makedirs(report_dir_SCHK)
     print("create report_dir_SCHK path")
 
 if os.path.exists(data_dir_SCHK):
-    print("data_dir_SCHK path\n")
+    pass
 else:
     os.makedirs(data_dir_SCHK)
     print("create data_dir_SCHK path")

@@ -48,7 +48,7 @@ def CreateFolders(fembs, fembNo, env, toytpc):
     return PLOTDIR
 
 ###### Main ######
-
+start_time = time.time()
 if len(sys.argv) < 2:
     print('Please specify the folder to analyze')
     exit()
@@ -61,7 +61,7 @@ datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
 #fdata = "tmp_data/"+datadir+"/"
 fdata = newpath.data_dir_RTCK + datadir+"/"
-print(fdata)
+#print(fdata)
 
 ###### load logs and create report folder ######
 flog = fdata+"logs_env.bin"
@@ -363,4 +363,7 @@ for ifemb in fembs:
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile)
+    end_time = time.time()
+    elaspsed_time = end_time - start_time
+    print("Done...   Checkout time elapsed: {:.6f}".format(elaspsed_time))
 
