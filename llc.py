@@ -85,8 +85,8 @@ class LLC():
         self.wib.dat_monadc_getdata.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
         self.wib.dat_monadc_getdata.restype = ctypes.c_uint16
      
-        self.wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
-        self.wib.dat_set_dac.restype = None
+#        self.wib.dat_set_dac.argtypes = [ctypes.c_float, ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
+#        self.wib.dat_set_dac.restype = None
     
         self.wib.datpower_getvoltage.argtypes = [ctypes.c_uint8, ctypes.c_uint8, ctypes.c_uint8]
         self.wib.datpower_getvoltage.restype = ctypes.c_double

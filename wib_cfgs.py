@@ -78,6 +78,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C0008, link_mask)
         link_mask = self.peek(0xA00C0008)
         print ("WIB FEMB LINK = %x"%link_mask)
+        return link_mask
  
 
     def wib_fake_ts_en(self):
@@ -222,6 +223,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.wib_timing_wrap()
 
             self.femb_cd_rst()
+#            for femb_id in fembs:
+#                self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+#                self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+#                self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
 
         else:
             for femb_off_id in range(4):
@@ -765,6 +770,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x9, wrdata=0x80        )
         self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
         self.adac_cali_quo[femb_id] = not self.adac_cali_quo[femb_id] 
+
 
     def femb_cfg(self, femb_id, adac_pls_en = False):
         refi= 0

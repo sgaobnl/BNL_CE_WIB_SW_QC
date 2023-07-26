@@ -72,7 +72,6 @@ def dat_fe_vbgrs():
     print (datas)
     for fe in range(8):
         print("FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
-    exit()
 
 
 
@@ -98,7 +97,7 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
     mux_cs=1
     mux_name = select_names_fe[mux_cs]
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_CALI_CS, 0xff)    
-    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_INS, 0xff)    
+#    chk.cdpoke(0, 0xC, 0, chk.DAT_FE_INS, 0xff)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
     chk.cdpoke(0, 0xC, 0, chk.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
 
@@ -148,14 +147,15 @@ def dat_fe_mons(mon_type=0, sg0=0, sg1=1, sgp=0):
             #for fe in [1]:
                 chk.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
             chk.set_fe_sync()
-            chk.femb_cfg(femb_id=0)
+            #chk.femb_cfg(femb_id=0)
             time.sleep(1)
-            #chk.femb_fe_cfg(femb_id=0)
+            chk.femb_fe_cfg(femb_id=0)
             
             datas = dat_monadcs()[0]
             for fe in range(8):
             #for fe in [0]:
                 print(dac, "FE MonADC " + mux_name + " :",datas[fe]*AD_LSB,"V\t",hex(datas[fe]),"\t",format(datas[fe],'b').zfill(12))
+            input ()
 
 
     if mon_type == 0:

@@ -14,7 +14,7 @@ for snc in [0, 1]:
             if (sdd == 1) and (sdc==1):
                 continue
             else:
-                rawdata = dat.dat_fe_qc(snc=1, sdd=0, sdc=0) 
+                rawdata = dat.dat_fe_qc(snc=snc, sdd=sdd, sdc=sdc) 
                 pwr_meas = dat.fe_pwr_meas()
                 data.append([dat.fembs, snc, sdd, sdc, rawdata, pwr_meas])
 

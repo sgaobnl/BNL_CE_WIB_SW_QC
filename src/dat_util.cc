@@ -202,7 +202,7 @@ void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
 	uint8_t msb_reg, lsb_reg, set_reg;
 	uint8_t set_val = 0x1;
 	
-	if (fe <= 7) {
+	if ((fe <= 7) && (fe >= 0)) {
 		msb_reg = DAT_FE_DAC_TP_DATA_MSB;
 		lsb_reg = DAT_FE_DAC_TP_DATA_LSB;
 		set_reg = DAT_FE_DAC_TP_SET;
@@ -220,6 +220,7 @@ void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
 		set_reg = DAT_DAC_OTHER_SET;
 		set_val = set_val << 1;
 	} else if (fe_cal == 0) {
+        printf("ca1");
 		msb_reg = DAT_DAC_TP_DATA_MSB;
 		lsb_reg = DAT_DAC_TP_DATA_LSB;
 		set_reg = DAT_DAC_OTHER_SET;
