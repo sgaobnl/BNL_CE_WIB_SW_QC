@@ -5,14 +5,17 @@ Board_version_batch = "IO-06-2023-retest_" + "1826-1E-25-2-100pF" + "/"
 
 
 ##===================================
-report_dir_GTCK = Desk + Board_version_batch + "Q1_GTCK_reports/"
 data_dir_GTCK = Desk + Board_version_batch + "Q1_GTCK_tmp_data/"
+#report_dir_GTCK = Desk + Board_version_batch + "Q1_GTCK_reports/"
+report_dir_GTCK = data_dir_GTCK + "00_Q1_reports/"
 ##===================================
-report_dir_RTCK = Desk + Board_version_batch + "Q2_CK_performance_reports____I/"
-data_dir_RTCK = Desk + Board_version_batch + "Q2_CK_performance_tmp_data_I/"
+data_dir_RTCK = Desk + Board_version_batch + "Q2_CK_General_TEST/"
+report_dir_RTCK = data_dir_RTCK + "00_Q2_reports/"
+#report_dir_RTCK = Desk + Board_version_batch + "Q2_CK_performance_reports____I/"
 ##===================================
-report_dir_RTQC = Desk + Board_version_batch + "Q3_QC_performance_reports____I_I/"
-data_dir_RTQC = Desk + Board_version_batch + "Q3_QC_performance_tmp_data_I_I/"
+data_dir_RTQC = Desk + Board_version_batch + "Q3_QC_Performance_TEST/"
+report_dir_RTQC = data_dir_RTQC + "00_Q3_reports/"
+#report_dir_RTQC = Desk + Board_version_batch + "Q3_QC_performance_reports____I_I/"
 ##===================================
 #report_dir_LNCK = Desk + Board_version_batch + "Q4_LNCK_reports____I_I_I/"
 #data_dir_LNCK = Desk + Board_version_batch + "Q4_LNCK_tmp_data_I_I_I/"
@@ -20,8 +23,10 @@ data_dir_RTQC = Desk + Board_version_batch + "Q3_QC_performance_tmp_data_I_I/"
 #report_dir_LNQC = Desk + Board_version_batch + "Q5_LNQC_reports____I_I_I_I/"
 #data_dir_LNQC = Desk + Board_version_batch + "Q5_LNQC_tmp_data_I_I_I_I/"
 ##===================================
-report_dir_SCHK = Desk + Board_version_batch + "Q6_SCHK_reports____I_I_I_I_I/"
 data_dir_SCHK = Desk + Board_version_batch + "Q6_SCHK_tmp_data_I_I_I_I_I/"
+report_dir_SCHK = data_dir_SCHK + "00_Q6_reports/"
+#report_dir_SCHK = Desk + Board_version_batch + "Q6_SCHK_reports____I_I_I_I_I/"
+
 
 
 

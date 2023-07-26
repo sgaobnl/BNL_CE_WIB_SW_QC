@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pickle
 from scipy.optimize import curve_fit
 import pandas as pd
+import statistics
 
 def ResFunc(x, par0, par1, par2, par3):
 
@@ -163,6 +164,10 @@ class ana_tools:
     
         rms=[]
         ped=[]
+        rms_max = 0
+        rms_min = 1000
+        ped_max = 0
+        ped_min = 0
     
         for ich in range(128):
             global_ch = nfemb*128+ich
@@ -171,6 +176,7 @@ class ana_tools:
             npulse=0
             first = True
             allpls=np.empty(0)
+
             for itr in range(nevent):
                 evtdata = data[itr][global_ch]
                 allpls=np.append(allpls,evtdata)
@@ -180,12 +186,25 @@ class ana_tools:
 
             ped.append(ch_ped)
             rms.append(ch_rms)
+
+            if ch_rms > rms_max:
+                rms_max = ch_rms
+            if ch_rms < rms_min:
+                rms_min = ch_rms
+
+        rms_mode = np.median(rms)
+        ped_mode = np.median(ped)
     
         fig,ax = plt.subplots(figsize=(6,4))
         ax.plot(range(128), rms, marker='.')
         ax.set_title(fname)
         ax.set_xlabel("chan")
         ax.set_ylabel("rms")
+        x_sticks = range(0, 129, 16)
+        ax.set_xticks(x_sticks)
+        ax.grid(axis = 'x')
+        if (rms_max < (rms_mode + 5)) or (rms_min > (rms_mode - 5)):
+            ax.set_ylim(rms_mode - 5, rms_mode + 5)
         fp_fig = fp+"rms_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
@@ -195,6 +214,7 @@ class ana_tools:
         ax.set_title(fname)
         ax.set_xlabel("chan")
         ax.set_ylabel("ped")
+        ax.set_ylim(ped_mode - 400, ped_mode + 400)
         fp_fig = fp+"ped_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)

@@ -15,14 +15,14 @@ def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
     if env == "RT":
-        reportdir = newpath.report_dir_RTCK + datadir+"/"
+        reportdir = newpath.report_dir_RTCK + "/"
     else:
         reportdir = newpath.report_dir_LNCK + datadir + "/"
     PLOTDIR = {}
 
     for ifemb in fembs:
         femb_no = fembNo['femb%d'%ifemb]
-        plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc)
+        plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc) + datadir
 
         n=1
         while (os.path.exists(plotdir)):
@@ -251,14 +251,10 @@ for ifemb in fembs:
     pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(10)
-    print("CCCCCCCCCCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
     chk_result = []
     err_messg = []
     chk_result.append(("Measurement","Result"))
-    print(chkflag["PWR"])
-    print(chkflag["PWR"][count])
-
-    print("##########################")
     if chkflag["PWR"][count]==False:
        chk_result.append(("Power Measurement","Pass"))
     else:
