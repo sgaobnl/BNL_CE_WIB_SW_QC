@@ -9,10 +9,10 @@ import time, datetime, random, statistics
 def CreateFolders(fembNo, env, toytpc):
 
     datadir = "/mnt/towibs/tmp/FEMB_QC_data/CHK/"
+    datadir = "{}_{}".format(env, toytpc) + datadir
     for key,femb_no in fembNo.items():
-        datadir = datadir + "femb{}_".format(femb_no)
+        datadir = datadir + "_femb{}".format(femb_no)
 
-    datadir = datadir+"{}_{}".format(env,toytpc)
 
     n=1
     while (os.path.exists(datadir)):
