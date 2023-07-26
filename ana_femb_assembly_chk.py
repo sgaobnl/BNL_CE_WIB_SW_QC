@@ -14,7 +14,10 @@ import Path as newpath
 def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    reportdir = newpath.report_dir_RTCK + datadir+"/"
+    if env == "RT":
+        reportdir = newpath.report_dir_RTCK + datadir+"/"
+    else:
+        reportdir = newpath.report_dir_LNCK + datadir + "/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -101,7 +104,7 @@ pldata = np.array(pldata)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
-    tmp = QC_check.CHKPulse(ped, 0.25)
+    tmp = QC_check.CHKPulse(ped, 0.3)
     chkflag["BL"].append(tmp[0])
     badlist["BL"].append(tmp[1])
 
@@ -135,7 +138,7 @@ for ifemb in fembs:
     chkflag["Pulse_SE"]["NPK"].append(tmp[0])
     badlist["Pulse_SE"]["NPK"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(bl, 0.25)
+    tmp = QC_check.CHKPulse(bl, 0.3)
     chkflag["Pulse_SE"]["BL"].append(tmp[0])
     badlist["Pulse_SE"]["BL"].append(tmp[1])
 
@@ -165,7 +168,7 @@ for ifemb in fembs:
     chkflag["Pulse_DIFF"]["NPK"].append(tmp[0])
     badlist["Pulse_DIFF"]["NPK"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(bl, 0.25)
+    tmp = QC_check.CHKPulse(bl, 0.3)
     chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
     badlist["Pulse_DIFF"]["BL"].append(tmp[1])
 
