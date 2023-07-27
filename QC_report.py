@@ -11,6 +11,8 @@ import QC_check
 from fpdf import FPDF
 import argparse
 import Path as newpath
+import string
+import random
 
 class QC_reports:
 
@@ -47,12 +49,14 @@ class QC_reports:
 
           self.savedir={}
           print("Will analyze the following fembs: ", self.fembs)
-
+          # generate a TAG for each test
+          length_of_string = 5
+          TAG_code = (''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(length_of_string)))
           ##### create results dir for each FEMB #####
           for ifemb in self.fembs:
               fembid = self.fembsID[f'femb{ifemb}']
               #one_savedir = savedir+"FEMB{}_{}_{}".format(fembid, logs["env"], logs["toytpc"]) + fdir
-              one_savedir = savedir+"FEMB_{}_".format(fembid) + fdir
+              one_savedir = savedir+"{}_FEMB_{}_".format(logs["env"], fembid) + TAG_code
 
               n=1
               while (os.path.exists(one_savedir)):

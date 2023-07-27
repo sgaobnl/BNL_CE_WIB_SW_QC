@@ -10,6 +10,8 @@ import QC_check
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 import Path as newpath
+import string
+import random
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
@@ -19,11 +21,13 @@ def CreateFolders(fembs, fembNo, env, toytpc):
     else:
         reportdir = newpath.report_dir_LNCK + datadir + "/"
     PLOTDIR = {}
-
+    # generate a TAG for each test
+    length_of_string = 5
+    TAG_code = (''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(length_of_string)))
     for ifemb in fembs:
         femb_no = fembNo['femb%d'%ifemb]
         #plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc) + datadir
-        plotdir = reportdir + "FEMB_{}_".format(femb_no) + datadir
+        plotdir = reportdir + "{}_FEMB_{}_".format(env, femb_no) + TAG_code
 
         n=1
         while (os.path.exists(plotdir)):
