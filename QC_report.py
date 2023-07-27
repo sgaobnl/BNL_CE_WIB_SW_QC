@@ -22,7 +22,9 @@ class QC_reports:
 #          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
 #          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
 
-          savedir = newpath.report_dir_RTQC + fdir + "/"
+          #savedir = newpath.report_dir_RTQC + fdir + "/"
+          savedir = newpath.report_dir_RTQC
+          #self.datadir = newpath.data_dir_RTQC + fdir + "/"
           self.datadir = newpath.data_dir_RTQC + fdir + "/"
 
           fp = self.datadir+"logs_env.bin"
@@ -49,7 +51,8 @@ class QC_reports:
           ##### create results dir for each FEMB #####
           for ifemb in self.fembs:
               fembid = self.fembsID[f'femb{ifemb}']
-              one_savedir = savedir+"FEMB{}_{}_{}".format(fembid, logs["env"], logs["toytpc"])
+              #one_savedir = savedir+"FEMB{}_{}_{}".format(fembid, logs["env"], logs["toytpc"]) + fdir
+              one_savedir = savedir+"FEMB_{}_".format(fembid) + fdir
 
               n=1
               while (os.path.exists(one_savedir)):

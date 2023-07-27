@@ -50,10 +50,9 @@ class QC_Runs:
         ####### Create data saving directory #######
 
         save_dir = "/mnt/towibs/tmp/FEMB_QC_data/QC/"
+        save_dir = save_dir + "{}_{}".format(env, toytpc)
         for key,femb_no in self.fembNo.items():
-            save_dir = save_dir + "femb{}_".format(femb_no)
-
-        save_dir = save_dir+"{}_{}".format(env,toytpc)
+            save_dir = save_dir + "_femb{}".format(femb_no)
 
         n=1
         while (os.path.exists(save_dir)):

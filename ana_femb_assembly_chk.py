@@ -22,7 +22,8 @@ def CreateFolders(fembs, fembNo, env, toytpc):
 
     for ifemb in fembs:
         femb_no = fembNo['femb%d'%ifemb]
-        plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc) + datadir
+        #plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc) + datadir
+        plotdir = reportdir + "FEMB_{}_".format(femb_no) + datadir
 
         n=1
         while (os.path.exists(plotdir)):
@@ -104,7 +105,7 @@ pldata = np.array(pldata)
 for ifemb in fembs:
     fp = PLOTDIR[ifemb]
     ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
-    tmp = QC_check.CHKPulse(ped, 0.3)
+    tmp = QC_check.CHKPulse(ped, 0.4)
     chkflag["BL"].append(tmp[0])
     badlist["BL"].append(tmp[1])
 
@@ -363,7 +364,7 @@ for ifemb in fembs:
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile)
-    end_time = time.time()
-    elaspsed_time = end_time - start_time
-    print("Done...   Checkout time elapsed: {:.6f}".format(elaspsed_time))
+end_time = time.time()
+elaspsed_time = end_time - start_time
+print("Done...   Checkout time elapsed: {:.6f}".format(elaspsed_time))
 
