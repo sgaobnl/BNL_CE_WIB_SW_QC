@@ -50,13 +50,14 @@ class QC_reports:
           self.savedir={}
           print("Will analyze the following fembs: ", self.fembs)
           # generate a TAG for each test
-          length_of_string = 5
-          TAG_code = (''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(length_of_string)))
+          #length_of_string = 5
+          #TAG_code = (''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(length_of_string)))
+          TAG_code = time.strftime("%m%H%M", time.localtime())
           ##### create results dir for each FEMB #####
           for ifemb in self.fembs:
               fembid = self.fembsID[f'femb{ifemb}']
               #one_savedir = savedir+"FEMB{}_{}_{}".format(fembid, logs["env"], logs["toytpc"]) + fdir
-              one_savedir = savedir+"{}_FEMB_{}_".format(logs["env"], fembid) + TAG_code
+              one_savedir = savedir+"{}_{}_FEMB_{}_{}".format(logs["env"], TAG_code, fembid, logs["toytpc"])
 
               n=1
               while (os.path.exists(one_savedir)):

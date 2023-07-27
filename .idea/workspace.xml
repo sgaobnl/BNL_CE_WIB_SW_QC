@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -21,7 +24,6 @@
   <component name="ChangeListManager">
     <list default="true" id="febde5fc-dc7a-46c0-bf10-3ba91735c7e4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
     </list>
@@ -72,9 +74,9 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1690409492273">
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1690500878378">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup/3840.1058.1920.1020/0.0.2560.1400@0.0.2560.1400" timestamp="1690409492273" />
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup/3840.1058.1920.1020/0.0.2560.1400@0.0.2560.1400" timestamp="1690500878378" />
   </component>
 </project>
