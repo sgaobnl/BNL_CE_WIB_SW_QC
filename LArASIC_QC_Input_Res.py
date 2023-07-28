@@ -13,8 +13,12 @@ while True:
     val = float(input ("next"))
     dat.dat_set_dac(val=val, fe_cal=0)
     dat.cdpoke(0, 0xC, 0, dat.DAT_FE_CMN_SEL, 4)    
+#pulse_high_width = (1/62.5MHz) * (value(dat.DAT_TEST_PULSE_WIDTH_MSB) *0x100 + value(dat.DAT_TEST_PULSE_WIDTH_LSB))
+#DAT_TEST_PULSE_WIDTH use 62.5MHz
     dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_WIDTH_MSB, 0x10)  
     dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_WIDTH_LSB, 0x00)  
+#pulse_period/width = (1/62.5MHz)*32 * (value(dat.DAT_TEST_PULSE_PERIOD_MSB) *0x100 + value(dat.DAT_TEST_PULSE_PERIOD_LSB))
+#DAT_TEST_PULSE_PERIOD use 1.953125MHz synced to 62.5MHz
     dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_PERIOD_MSB, 0x20)  
     dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_PERIOD_LSB, 0x00)  
     dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_EN, 0x4)  

@@ -308,6 +308,8 @@ class LLC():
             if not ctypes.memmove(byte_ptr0, buf, DAQ_SPY_SIZE):
                 print('memmove failed')
                 exit()
+        else:
+            buf0_bytes = None
 
         if buf1:
             self.wib.bufread(buf, 1) #read buf1    
@@ -315,6 +317,8 @@ class LLC():
             if not ctypes.memmove(byte_ptr1, buf, DAQ_SPY_SIZE):
                 print('memmove failed')
                 exit()
+        else:
+            buf1_bytes = None
         return buf0_bytes, buf1_bytes
 
         

@@ -278,11 +278,12 @@ class DAT_CFGS(WIB_CFGS):
             input ("exit by clicking any button and Enter")
             #exit()
 
-    def dat_fe_qc(self, num_samples = 1, adac_pls_en = 0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdc=0, dac=0x00, slk0=0, slk1=0):
+    def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
+        self.set_fe_reset()
         cfg_paras_rec = []
         for femb_id in self.fembs:
-            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                                 [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                                 [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                                 [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
@@ -292,7 +293,14 @@ class DAT_CFGS(WIB_CFGS):
                                 [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                                 [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                               ]
-            self.set_fe_board(sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdc=sdc, dac=dac, slk0=slk0, slk1=slk1 )
+            if chn >=128: #configurate all channels
+                self.set_fe_board(sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
+            else:
+                ch = chn%16 #only enable one chanel per FE chip
+                for fe in range(8):
+                    self.set_fechn_reg(chip=fe&0x07, chn=ch, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdf=sdf)
+                    self.set_fechip_global(chip=fe&0x07, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
+                self.set_fe_sync()
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en) )
             self.femb_cfg(femb_id, adac_pls_en )
@@ -300,17 +308,27 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align(self.fembs)
             self.data_align_flg = True
         time.sleep(1)
+
+    def dat_fe_qc_acq(self, num_samples = 1):
         rawdata = self.spybuf_trig(fembs=self.fembs, num_samples=num_samples, trig_cmd=0) #returns list of size 1
-#        self.femb_cd_rst()
-#        for femb_id in self.fembs:
-#            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
-#            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-#            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
         return rawdata
+
+    def dat_fe_qc_rst(self, num_samples = 1):
+        self.femb_cd_rst()
+        for femb_id in self.fembs:
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+
+    def dat_fe_qc(self, num_samples=1, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
+        self.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
+        data =  self.dat_fe_qc_acq(num_samples)
+        self.dat_fe_qc_rst()
+        return data
 
 
     def dat_asic_chk(self):
-        rawdata = self.dat_fe_qc( num_samples = 1, adac_pls_en = 1, sts=1, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, sdd=1, sdc=0, dac=0x20, slk0=0, slk1=0)
+        rawdata = self.dat_fe_qc( num_samples = 1, adac_pls_en = 1, sts=1, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, sdd=1, sdf=0, dac=0x20, slk0=0, slk1=0)
         dec_data = wib_spy_dec_syn(buf0=rawdata[0][0][0], buf1=rawdata[0][0][0], trigmode='SW', buf_end_addr=rawdata[0][1], trigger_rec_ticks=rawdata[0][1], fembs=self.fembs)
         if self.dat_on_wibslot<=1:
             link = 0
@@ -401,7 +419,7 @@ class DAT_CFGS(WIB_CFGS):
     def dat_fe_mons(self, mon_type=0x1f ):
         #measure VBGR/Temperature through Monitoring pin
         femb_id = self.fembs[0]
-        self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+        self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                             [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                             [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                             [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
