@@ -280,7 +280,6 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
-        self.set_fe_reset()
         cfg_paras_rec = []
         for femb_id in self.fembs:
             self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
@@ -293,23 +292,38 @@ class DAT_CFGS(WIB_CFGS):
                                 [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                                 [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                               ]
+            self.set_fe_reset()
             if chn >=128: #configurate all channels
                 self.set_fe_board(sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
             else:
                 ch = chn%16 #only enable one chanel per FE chip
                 for fe in range(8):
                     self.set_fechn_reg(chip=fe&0x07, chn=ch, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdf=sdf)
-                    self.set_fechip_global(chip=fe&0x07, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
+                    self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
                 self.set_fe_sync()
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
+            print (self.regs_int8)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en) )
             self.femb_cfg(femb_id, adac_pls_en )
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = True
-        time.sleep(1)
+
+    def dat_fe_only_cfg(self, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
+        for femb_id in self.fembs:
+            self.set_fe_reset()
+            if chn >=128: #configurate all channels
+                self.set_fe_board(sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
+            else:
+                ch = chn%16 #only enable one chanel per FE chip
+                for fe in range(8):
+                    self.set_fechn_reg(chip=fe&0x07, chn=ch, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdf=sdf)
+                    self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
+                self.set_fe_sync()
+            self.femb_fe_cfg(femb_id=femb_id)
 
     def dat_fe_qc_acq(self, num_samples = 1):
+        time.sleep(1)
         rawdata = self.spybuf_trig(fembs=self.fembs, num_samples=num_samples, trig_cmd=0) #returns list of size 1
         return rawdata
 
