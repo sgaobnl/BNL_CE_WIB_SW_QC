@@ -1,32 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
-  <component name="BranchesTreeState">
-    <expand>
-      <path>
-        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-      </path>
-      <path>
-        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-      </path>
-      <path>
-        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
-      </path>
-    </expand>
-    <select />
-  </component>
   <component name="ChangeListManager">
-    <list default="true" id="febde5fc-dc7a-46c0-bf10-3ba91735c7e4" name="Default Changelist" comment="">
+    <list default="true" id="ba15ebed-638e-4c2f-97d8-01a0101ffb88" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_runs.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_runs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wib_cfgs.py" beforeDir="false" afterPath="$PROJECT_DIR$/wib_cfgs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -34,17 +12,10 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="2SiUwiK5HTwmhO7IBetKV2Gopju" />
+  <component name="ProjectId" id="2TLq7Ar0bbmH4ZDMbNwmDEfx5ZK" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -55,30 +26,18 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="febde5fc-dc7a-46c0-bf10-3ba91735c7e4" name="Default Changelist" comment="" />
-      <created>1689629135575</created>
+      <changelist id="ba15ebed-638e-4c2f-97d8-01a0101ffb88" name="Default Changelist" comment="" />
+      <created>1690832539952</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1689629135575</updated>
+      <updated>1690832539952</updated>
     </task>
     <servers />
   </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
   <component name="WindowStateProjectService">
-    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1690500878378">
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1690834509008">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup/3840.1058.1920.1020/0.0.2560.1400@0.0.2560.1400" timestamp="1690500878378" />
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup/3840.1058.1920.1020/0.0.2560.1400@0.0.2560.1400" timestamp="1690834509008" />
   </component>
 </project>

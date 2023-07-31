@@ -148,6 +148,11 @@ class QC_Runs:
 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
+            time.sleep(0.01)
+            self.chk.femb_cd_cfg(femb_id)
+            time.sleep(0.01)
+
+
 
         if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)

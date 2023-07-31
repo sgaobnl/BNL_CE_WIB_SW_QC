@@ -16,7 +16,7 @@ def CHKPWR(data, nfemb):
     adc_v = data['FEMB%d_DC2DC2_V'%nfemb]
     adc_i = data['FEMB%d_DC2DC2_I'%nfemb]
 
-    if bias_v>5 or bias_v<4.95:
+    if bias_v>5 or bias_v<4.4:
        BAD = True 
        bad_list.append("bias voltage")
     if abs(bias_i)>0.05:
@@ -53,12 +53,12 @@ def CHKFET(data, nfemb, nchips, env):
     badlist=[]
 
     if env=='RT':
-       lo = 850
-       hi = 950
+       lo = 875
+       hi = 975
 
     if env=='LN':
-       lo = 310
-       hi = 250
+       lo = 250
+       hi = 350
 
     BAD = False
 
@@ -70,12 +70,17 @@ def CHKFET(data, nfemb, nchips, env):
  
     return BAD,badlist
 
-def CHKFEBGP(data, nfemb, nchips):
+def CHKFEBGP(data, nfemb, nchips, env):
 
     fadc = 1/(2**14)*2048 # mV
 
-    lo = 1100
-    hi = 1300
+    if env=='RT':
+       lo = 1200
+       hi = 1300
+
+    if env=='LN':
+       lo = 1100
+       hi = 1200
 
     BAD = False
     badlist=[]
@@ -88,10 +93,16 @@ def CHKFEBGP(data, nfemb, nchips):
  
     return BAD,badlist
 
-def CHKADC(data, nfemb, nchips, key, lo, hi):
+def CHKADC(data, nfemb, nchips, key, RT_lo, RT_hi, LN_lo, LN_hi, env):
 
     fadc = 1/(2**14)*2048 # mV
+    if env=='RT':
+       lo = RT_lo
+       hi = RT_hi
 
+    if env=='LN':
+       lo = LN_lo
+       hi = LN_hi
     BAD = False
     badlist=[]
 
@@ -105,7 +116,7 @@ def CHKADC(data, nfemb, nchips, key, lo, hi):
     return BAD,badlist
 
 
-def CHKPulse(data):  # assume the input is a list
+def CHKPulse(data, rate = 0.05):  # assume the input is a list
     data_np = np.array(data)
 
     mean_list = []
@@ -127,11 +138,11 @@ def CHKPulse(data):  # assume the input is a list
         tmp_mean = np.mean(tmp_data) 
         tmp_std = np.std(tmp_data) 
 
-        if (tmp_max-tmp_mean)>tmp_mean*0.05:
+        if (tmp_max-tmp_mean)>tmp_mean*rate:
            flag = True
            bad_chan.append(i*16+tmp_max_pos)
    
-        if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
+        if abs(tmp_min-tmp_mean)>tmp_mean*rate:
            flag = True
            bad_chan.append(i*16+tmp_min_pos)
     
@@ -150,11 +161,11 @@ def CHKPulse(data):  # assume the input is a list
     tmp_data = np.delete(mean_np, [tmp_max_pos,tmp_min_pos])
     tmp_mean = np.mean(tmp_data) 
 
-    if (tmp_max-tmp_mean)>tmp_mean*0.05:
+    if (tmp_max-tmp_mean)>tmp_mean*rate:
        flag = True
        bad_chip.append(tmp_max_pos)
    
-    if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
+    if abs(tmp_min-tmp_mean)>tmp_mean*rate:
        flag = True
        bad_chip.append(tmp_min_pos)
 

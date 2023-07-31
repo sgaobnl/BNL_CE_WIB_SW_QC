@@ -372,7 +372,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wr(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0x00)
 
     def femb_cd_chkreg(self, femb_id):
-
+        # set PLL
+        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=5, reg_addr=0x41, wrdata=0x26)
+        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=5, reg_addr=0x41, wrdata=0x26)
+        time.sleep(0.01)
         print("Check femb%d COLDATA default registers' value"%femb_id)
         reg_pages=range(0,6)
         # page 0 registers
@@ -382,7 +385,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         # page 5 registers
         reg_addr5=range(0x40,0x55)
         # page 5 registers default value
-        reg_dval5=[0x03,0x20,0x02,0x02,0x00,0x00,0x01,0x00,0x03,0x07,0x00,0x02,0x00,0x00,0x01,0x00,0x00,0x0f,0x00,0x01,0x01]
+        reg_dval5=[0x03,0x26,0x02,0x02,0x00,0x00,0x01,0x00,0x03,0x07,0x00,0x02,0x00,0x00,0x01,0x00,0x00,0x0f,0x00,0x01,0x01]
         # page 5 registers value bits
         reg_nbit5=[0x07,0x3f,0x03,0x03,0x01,0x01,0x01,0x01,0x07,0x07,0x0f,0x0f,0x07,0x0f,0x01,0x01,0x07,0x0f,0x01,0x01,0x01]
         # page 1-4 registers
@@ -443,6 +446,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #Frame14
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
+#set PLL
+        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=5, reg_addr=0x41, wrdata=0x26)
+        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=5, reg_addr=0x41, wrdata=0x26)
+
         self.cd_flg[femb_id]=False
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
@@ -482,7 +489,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x20, wrdata=0)
         
-    def data_align(self, fembs=[0, 1, 2,3]):
+    def data_align(self, fembs=[0, 1, 2, 3]):
         align_sts = True
         while align_sts:
             #note032123: to be optimized 
@@ -522,7 +529,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             wrreg = (rdreg & 0xfffffffb) + ((wrvalue&0x1)<<2)
             self.poke(rdaddr, wrreg) 
                 
-            for dts_time_delay in  range(0x48, 0x80,1):
+            for dts_time_delay in  range(0x16, 0x80,1):
                 rdaddr = 0xA00C000C
                 rdreg = self.peek(rdaddr)
                 wrvalue = dts_time_delay #0x58 #dts_time_delay = 1
@@ -533,7 +540,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 wrvalue = 0x1 #align_en = 1
                 wrreg = (rdreg & 0xfffffff7) + ((wrvalue&0x1)<<3)
                 self.poke(rdaddr, wrreg) 
-                time.sleep(0.2)
+                time.sleep(0.1)
                 if 0 in fembs:
                     link0to3 = self.peek(0xA00C00A8)
                 else:
