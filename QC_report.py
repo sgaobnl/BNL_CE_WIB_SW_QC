@@ -50,9 +50,7 @@ class QC_reports:
           self.savedir={}
           print("Will analyze the following fembs: ", self.fembs)
           # generate a TAG for each test
-          #length_of_string = 5
-          #TAG_code = (''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(length_of_string)))
-          TAG_code = time.strftime("%m%H%M", time.localtime())
+          TAG_code = time.strftime("%m%d_%H%M", time.localtime())
           ##### create results dir for each FEMB #####
           for ifemb in self.fembs:
               fembid = self.fembsID[f'femb{ifemb}']

@@ -14,13 +14,11 @@ import Path as newpath
 def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    if env == "RT":
-        reportdir = newpath.report_dir_RTCK + "/"
-    else:
-        reportdir = newpath.report_dir_LNCK + datadir + "/"
+
+    reportdir = newpath.report_dir_RTCK + "/"
     PLOTDIR = {}
     # generate a TAG for each test, it seems take 2 second, little longer
-    TAG_code = time.strftime("%m%H%M", time.localtime())
+    TAG_code = time.strftime("%m%d_%H%M", time.localtime())
     for ifemb in fembs:
         femb_no = fembNo['femb%d'%ifemb]
         #plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc) + datadir

@@ -24,8 +24,10 @@
   <component name="ChangeListManager">
     <list default="true" id="febde5fc-dc7a-46c0-bf10-3ba91735c7e4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Path.py" beforeDir="false" afterPath="$PROJECT_DIR$/Path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wib_cfgs.py" beforeDir="false" afterPath="$PROJECT_DIR$/wib_cfgs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
