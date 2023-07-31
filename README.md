@@ -1,3 +1,11 @@
+# Update WIB system time 
+If powershell on windows machine is used as terminal. 
+```
+ $cdate = get-date
+ $wibdate = "date -s '$cdate'"
+ssh root@192.168.121.1  $wibdate
+```
+
 # BNL_CE_WIB_SW_QC
  
 These scripts are developed for standalone WIB operation on WIB 
