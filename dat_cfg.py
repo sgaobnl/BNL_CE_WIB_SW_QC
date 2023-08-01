@@ -309,6 +309,7 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align(self.fembs)
             self.data_align_flg = True
 
+
     def dat_fe_only_cfg(self, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         for femb_id in self.fembs:
             self.set_fe_reset()

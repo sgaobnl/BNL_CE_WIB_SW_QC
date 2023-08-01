@@ -54,11 +54,13 @@ for onekey in dkeys:
     datd = list(zip(*datd))
     
     pps = []
-    for fe in range(8):
-        for fe_chn in [0]:
+    for fe in [3]:
+        for fe_chn in [5]:
             fechndata = datd[fe*16+fe_chn]
+
+            import matplotlib.pyplot as plt
             x = np.arange(len(fechndata))
-            #plt.plot(x, fechndata)
+
             pfreq = 512*2
             pp = np.max(fechndata[0:pfreq])
             pps.append(pp)
@@ -70,29 +72,29 @@ for onekey in dkeys:
                 fechndata = fechndata[pp_pos-50:pp_pos-50+pfreq] 
 
 
-            ##pp = np.max(fechndata[500:1500])
-            ##pp_pos = np.where(fechndata[500:1500] == pp)[0][0]
+            ###pp = np.max(fechndata[500:1500])
+            ###pp_pos = np.where(fechndata[500:1500] == pp)[0][0]
             xspan = 1000
             x = np.arange(xspan)
-            ##plt.plot(x,fechndata[500+pp_pos-100:500+pp_pos+x-100])
-            ##plt.scatter(x,fechndata[500+pp_pos-100:500+pp_pos+xspan-100])
-#            plt.plot(x,fechndata[0:xspan], marker='.')
-            #ped = np.mean(fechndata[pp_pos-200:pp_pos-150])
-            #npmin = np.min(fechndata)
+            ###plt.plot(x,fechndata[500+pp_pos-100:500+pp_pos+x-100])
+            ###plt.scatter(x,fechndata[500+pp_pos-100:500+pp_pos+xspan-100])
+            #import matplotlib.pyplot as plt
+            plt.plot(x,fechndata[0:xspan], marker='.', label = onekey)
+            #plt.show()
+            #plt.close()
+
+            ##ped = np.mean(fechndata[pp_pos-200:pp_pos-150])
+            ##npmin = np.min(fechndata)
             #print (fe, fe_chn, pp, ped, npmin)
-            break
-    print (pps)
-    pps4.append(pps)
+    #print (pps)
+    #pps4.append(pps)
+plt.legend()
+plt.grid()
+plt.show()
+plt.close()
 
-#print (pps4)
-
-ratios = []
-for i in range(8):
-    ratios.append ((pps4[0][i]-pps4[1][i])/(pps4[2][i]-pps4[3][i]))
-print (ratios)
+#print (pps)
 #print (pps[1]-pps[0], pps[3]-pps[2])
-#plt.show()
-#plt.close()
 
 # ... (rest of your code)
             
