@@ -302,7 +302,6 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
                 self.set_fe_sync()
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
-            print (self.regs_int8)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en) )
             self.femb_cfg(femb_id, adac_pls_en )
         if self.data_align_flg != True:

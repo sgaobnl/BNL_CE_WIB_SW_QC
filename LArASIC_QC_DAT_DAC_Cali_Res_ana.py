@@ -11,6 +11,10 @@ fp = fdir + "QC_DAT_DAC_Cali_Res" + ".bin"
 with open(fp, 'rb') as fn:
     rawdata = pickle.load( fn)
 
+print (len(rawdata))
+print (len(rawdata[0]))
+print (len(rawdata[0][0]))
+print (len(rawdata[0][0][0]))
 
 fembs=[0]
 dec_data = wib_spy_dec_syn(buf0=rawdata[0][0][0], buf1=rawdata[0][0][0], trigmode='SW', buf_end_addr=rawdata[0][1], trigger_rec_ticks=rawdata[0][1], fembs=fembs)
