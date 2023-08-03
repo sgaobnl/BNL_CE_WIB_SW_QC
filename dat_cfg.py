@@ -2,6 +2,7 @@ from llc import LLC
 from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 from wib_cfgs import WIB_CFGS
 from spymemory_decode import wib_spy_dec_syn
+from spymemory_decode import wib_dec
 import time
 import sys
 import numpy as np
@@ -39,6 +40,7 @@ class DAT_CFGS(WIB_CFGS):
         self.data_align_flg = False
         print ("Wait 10 seconds ...")
         time.sleep(6)
+        self.DAT_fpga_reset()
         self.femb_cd_rst()
         for femb_id in self.fembs:
            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
@@ -180,6 +182,7 @@ class DAT_CFGS(WIB_CFGS):
         return cds_pwr_info
 
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
+        self.dat_fpga_reset()
         warn_flg = False
         kl = list(fes_pwr_info.keys())
         for onekey in kl:
@@ -279,6 +282,7 @@ class DAT_CFGS(WIB_CFGS):
             #exit()
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
+        self.dat_fpga_reset()
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
@@ -307,9 +311,11 @@ class DAT_CFGS(WIB_CFGS):
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = True
+        return cfg_paras_rec
 
 
     def dat_fe_only_cfg(self, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
+        cfg_paras_rec = []
         for femb_id in self.fembs:
             self.set_fe_reset()
             if chn >=128: #configurate all channels
@@ -321,6 +327,8 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
+            cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
+        return cfg_paras_rec
 
     def dat_fe_qc_acq(self, num_samples = 1):
         time.sleep(1)
@@ -335,44 +343,15 @@ class DAT_CFGS(WIB_CFGS):
             self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
 
     def dat_fe_qc(self, num_samples=1, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
-        self.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
+        cfg_info = self.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
         data =  self.dat_fe_qc_acq(num_samples)
         self.dat_fe_qc_rst()
-        return data
-
+        return data, cfg_info
 
     def dat_asic_chk(self):
         rawdata = self.dat_fe_qc( num_samples = 1, adac_pls_en = 1, sts=1, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, sdd=1, sdf=0, dac=0x20, slk0=0, slk1=0)
-        dec_data = wib_spy_dec_syn(buf0=rawdata[0][0][0], buf1=rawdata[0][0][0], trigmode='SW', buf_end_addr=rawdata[0][1], trigger_rec_ticks=rawdata[0][1], fembs=self.fembs)
-        if self.dat_on_wibslot<=1:
-            link = 0
-        else:
-            link = 1
-        flen = len(dec_data[link])
-        tmts = []
-        sfs0 = []
-        sfs1 = []
-        cdts_l0 = []
-        cdts_l1 = []
-        femb0 = []
-        femb1 = []
-        femb2 = []
-        femb3 = []
-        for i in range(flen):
-            tmts.append(dec_data[link][i]["TMTS"])  # timestampe(64bit) * 512ns  = real time in ns (UTS)
-            sfs0.append(dec_data[link][i]["FEMB_SF"])
-            cdts_l0.append(dec_data[link][i]["FEMB_CDTS"])
-        
-            if link == 0:
-                femb0.append(dec_data[0][i]["FEMB0_2"])
-                femb1.append(dec_data[0][i]["FEMB1_3"])
-            else:
-                femb2.append(dec_data[1][i]["FEMB0_2"])
-                femb3.append(dec_data[1][i]["FEMB1_3"])
-
-    
-        datd = [femb0, femb1, femb2, femb3][self.dat_on_wibslot]
-        datd = list(zip(*datd))
+        wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
         initchk_flg = True
         for ch in range(16*8):
             chmax = np.max(datd[ch][0:1500])
@@ -382,9 +361,57 @@ class DAT_CFGS(WIB_CFGS):
                 pass
             else:
                 initchk_flg = False 
-                print ("ERROR", ch, chmax, chped, chmin)
+                print ("Cali Input ERROR", ch, chmax, chped, chmin)
+                #should add chip infomation later
+        #check direct input respons
+        val = 1.50
+
+        self.dat_set_dac(val=val, fe_cal=0)
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
+        width = 0x180&0xfff # width = duty, it must be less than (perod-2)
+        period = 0x200&0xfff #period = ADC samples between uplses
+        if width <= period - 2:
+            width = period - 2
+        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_MSB, ((width*32)>>8)&0xff)
+        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_LSB, (width*32)&0xff)  
+        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_MSB, period>>8)  
+        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
+        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
+        self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0xff)   #direct input
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0xff)   #direct input
+        time.sleep(1)
+        rawdata = self.dat_fe_qc(snc=1,sts=0,swdac=0) #direct FE input
+        wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
+        for ch in range(16*8):
+            chmax = np.max(datd[ch][0:1500])
+            chped = np.mean(datd[ch][0:1500])
+            chmin = np.min(datd[ch][0:1500])
+            if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100):
+                pass
+            else:
+                initchk_flg = False 
+                print ("Direct Input ERROR", ch, chmax, chped, chmin)
+                #should add chip infomation later
+
         if initchk_flg:
             print ("Pass the interconnection checkout, QC may start now!")
+
+    def dat_fpga_reset(self):
+        while True:
+            time.sleep(0.1)
+            wrv = 0x03
+            self.cdpoke(0, 0xC, 0, self.DAT_FPGA_RST, 0x3)  
+            time.sleep(0.1)
+            rdv = self.cdpeek(0, 0xC, 0, self.DAT_FPGA_RST)  
+            if rdv == 0x00:
+                time.sleep(0.5)
+                break
+
 
     def dat_monadcs(self):
         avg_datas = [[],[],[],[],[],[],[],[]]

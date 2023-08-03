@@ -55,10 +55,13 @@ for onekey in dkeys:
     
     pps = []
     for fe in range(8):
-        for fe_chn in [0]:
+        for fe_chn in [5]:
             fechndata = datd[fe*16+fe_chn]
             x = np.arange(len(fechndata))
             #plt.plot(x, fechndata)
+            #plt.show()
+            #plt.close()
+            #exit()
             pfreq = 512*2
             pp = np.max(fechndata[0:pfreq])
             pps.append(pp)
