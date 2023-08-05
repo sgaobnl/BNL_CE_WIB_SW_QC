@@ -6,8 +6,8 @@ import copy
 import time, datetime, random, statistics    
 from spymemory_decode import wib_dec
 
-fdir = "./tmp_data/FE_00000000_00000001_00000002_00000003_00000004_00000005_00000006_00000007/"
-fp = fdir + "QC_PWR" + ".bin"
+fdir = "./tmp_data/"
+fp = fdir + "QC_Cap_Meas" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)
 
@@ -17,29 +17,13 @@ if "logs" in dkeys:
 
 for onekey in dkeys:
     cfgdata = data[onekey]
-    fembs = cfgdata[0]
-    snc = cfgdata[1]
-    sdd = cfgdata[2]
-    sdc = cfgdata[3]
-    rawdata = cfgdata[4]
-    pwr = cfgdata[5]
+    #fembs = cfgdata[0]
+    #rawdata = cfgdata[1]
+    fembs = cfgdata[1]
+    rawdata = cfgdata[0]
 
-    if snc == 1:
-        BL = "200mV"
-    else:
-        BL = "900mV"
-
-    if sdd == 1:
-        SEDC = "DIFF ON"
-    else:
-        SEDC = "DIFF OFF"
-
-    if sdc == 1:
-        SE = "SDC ON"
-    else:
-        SE = "SDC OFF"
-
-    wibdata = wib_dec(rawdata[0],fembs, spy_num=1)
+    #wibdata = wib_dec(rawdata[0],fembs, spy_num=1)
+    wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
     
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
@@ -48,6 +32,8 @@ for onekey in dkeys:
     for fe in range(8):
         for fe_chn in range(16):
             fechndata = datd[fe*16+fe_chn]
+            if np.max(fechndata) - np.mean(fechndata) > 8000:
+                print (fe*16+fe_chn,fe, fe_chn) 
             plt.plot(fechndata)
     plt.show()
     plt.close()

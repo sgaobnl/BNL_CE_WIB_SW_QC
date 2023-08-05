@@ -17,7 +17,7 @@ dkeys = list(QCdata.keys())
 fembs=[0]
 pps4 = []
 chndatad = {} 
-chncs = 0
+chncs = 3
 vals = []
 for onekey in dkeys:
     if "FECHN%02d"%chncs in onekey:

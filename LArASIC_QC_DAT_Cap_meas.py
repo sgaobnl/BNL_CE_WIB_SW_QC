@@ -44,7 +44,8 @@ width = 800
 cfg_info = dat.dat_fe_qc_cfg() #default setting 
 
 
-for chn in range(16):
+#for chn in range(16):
+for chn in [0]:
     print ("DAC DAT cali for FE CH%02d"%chn)
     val = 1.4
     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
