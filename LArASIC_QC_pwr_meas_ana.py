@@ -43,13 +43,13 @@ for onekey in dkeys:
     
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
 
+    import matplotlib.pyplot as plt
     for fe in range(8):
         for fe_chn in range(16):
             fechndata = datd[fe*16+fe_chn]
-            import matplotlib.pyplot as plt
             plt.plot(fechndata)
-            plt.show()
-            plt.close()
+    plt.show()
+    plt.close()
             #    pp = np.max(fechndata[500:1500])
             #    pp_pos = np.where(fechndata[500:1500] == pp)[0][0]
             #    x = np.arange(300)
@@ -59,8 +59,6 @@ for onekey in dkeys:
             #    print (fe, fe_chn, pp, ped, npmin)
             #    plt.show()
             #    plt.close()
-            break
-        break
 
 # ... (rest of your code)
  

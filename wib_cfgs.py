@@ -230,12 +230,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         else:
             for femb_off_id in range(4):
-                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=1, bias_en=0 )
-                print ("FEMB%d is off"%femb_off_id)
-            time.sleep(4)
-            for femb_off_id in range(4):
                 self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            time.sleep(1)
+                print ("FEMB%d is off"%femb_off_id)
+            time.sleep(3)
+           # for femb_off_id in range(4):
+           #     self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+           # time.sleep(1)
             self.all_femb_bias_ctrl(enable=0 )
 
 #    def get_sensors(self):

@@ -15,6 +15,7 @@ import time, datetime, random, statistics
 class DAT_CFGS(WIB_CFGS):
     def __init__(self):
         super().__init__()
+        self.cd_sel = 0
         self.dat_on_wibslot = 0
         self.fembs = [self.dat_on_wibslot]
         self.data_align_flg = False
@@ -40,7 +41,8 @@ class DAT_CFGS(WIB_CFGS):
         self.data_align_flg = False
         print ("Wait 10 seconds ...")
         time.sleep(6)
-        self.DAT_fpga_reset()
+        self.dat_fpga_reset()
+        self.cdpoke(0, 0xC, 0, self.DAT_CD_AMON_SEL, self.cd_sel)    
         self.femb_cd_rst()
         for femb_id in self.fembs:
            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
@@ -67,9 +69,9 @@ class DAT_CFGS(WIB_CFGS):
                 if "DC2DC2_V" in key:
                     if pwr_meas[key] < 3.5:
                         init_f = True
-                if "DC2DC3_V" in key:
-                    if pwr_meas[key] < 3.5:
-                        init_f = True
+#                if "DC3DC3_V" in key: #not use
+#                    if pwr_meas[key] < 3.5:
+#                        init_f = True
         
                 if "BIAS_I" in key:
                     if pwr_meas[key] > 0.1:
@@ -83,9 +85,9 @@ class DAT_CFGS(WIB_CFGS):
                 if "DC2DC2_I" in key:
                     if (pwr_meas[key] < 1) or (pwr_meas[key] > 2.3) :
                         init_f = True
-                if "DC2DC3_I" in key:
-                    if pwr_meas[key] > 1:
-                        init_f = True
+#                if "DC3DC3_I" in key: #not use
+#                    if pwr_meas[key] > 1:
+#                        init_f = True
                 if init_f:
                     print ("DAT power consumption @ (power on) is not right, please contact tech coordinator!")
                     print ("Turn DAT off, exit anyway!")
@@ -111,6 +113,61 @@ class DAT_CFGS(WIB_CFGS):
                 exit()
         return pwr_meas, link_mask
 
+    def dat_pwroff_chk(self):
+        self.femb_powering([])
+        while True:
+            init_f = False
+            pwr_meas = self.get_sensors()
+            time.sleep(0.1)
+            pwr_meas = self.get_sensors()
+            for key in pwr_meas:
+                if "FEMB%d"%self.dat_on_wibslot in key:
+                    if "BIAS_V" in key:
+                        if pwr_meas[key] > 2.0:
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC0_V" in key:
+                        if pwr_meas[key] > 0.5:
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC1_V" in key:
+                        if pwr_meas[key] > 0.5:
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC2_V" in key:
+                        if pwr_meas[key] > 0.5:
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+#                    if "DC3DC3_V" in key:
+#                        if pwr_meas[key] > 0.5:
+#                            init_f = True
+            
+                    if "BIAS_I" in key:
+                        if pwr_meas[key] > 0.05:
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC0_I" in key:
+                        if (pwr_meas[key] > 0.05) :
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC1_I" in key:
+                        if (pwr_meas[key] > 0.05) :
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+                    if "DC2DC2_I" in key:
+                        if (pwr_meas[key] > 0.05) :
+                            init_f = True
+                            print (key, ":", pwr_meas[key])
+#                    if "DC3DC3_I" in key:
+#                        if (pwr_meas[key] > 0.05) :
+#                            init_f = True
+            if init_f:
+                print ("Wait 2 seconds, not yet completely shut down...")
+                time.sleep(2)
+            if not init_f:
+                print ("DAT is off...")
+                break
+        
     def feadc_pwr_info(self,asic_list, dat_addrs, pwrrails):
         asics_pwr_info = {}
         for asic in range(8):
@@ -180,6 +237,7 @@ class DAT_CFGS(WIB_CFGS):
         pwrrails = ["CD_VDDA", "FE_VDDA", "CD_VDDCORE", "CD_VDDD", "CD_VDDIO"]
         cds_pwr_info = self.cd_pwr_info(asic_list=cd_list, dat_addrs=addrs, pwrrails=pwrrails)
         return cds_pwr_info
+
 
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
         self.dat_fpga_reset()
@@ -282,7 +340,6 @@ class DAT_CFGS(WIB_CFGS):
             #exit()
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
-        self.dat_fpga_reset()
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
@@ -306,11 +363,14 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
                 self.set_fe_sync()
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
-            cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en) )
+            cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
             self.femb_cfg(femb_id, adac_pls_en )
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = True
+        dly = 5
+        print ("Wait %d seconds for FEMB configruation is stable..."%dly)
+        time.sleep(dly)
         return cfg_paras_rec
 
 
@@ -328,10 +388,13 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
+        dly = 5
+        print ("Wait %d seconds for FEMB configruation is stable..."%dly)
+        time.sleep(dly)
         return cfg_paras_rec
 
     def dat_fe_qc_acq(self, num_samples = 1):
-        time.sleep(1)
+        #time.sleep(1)
         rawdata = self.spybuf_trig(fembs=self.fembs, num_samples=num_samples, trig_cmd=0) #returns list of size 1
         return rawdata
 
@@ -345,11 +408,67 @@ class DAT_CFGS(WIB_CFGS):
     def dat_fe_qc(self, num_samples=1, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         cfg_info = self.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
         data =  self.dat_fe_qc_acq(num_samples)
-        self.dat_fe_qc_rst()
+        #self.dat_fe_qc_rst()
         return data, cfg_info
 
+    def dat_cali_source(self, cali_mode, val=1.0, period=0x200, width=0x180, asicdac=0x10):
+        #cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 or larger: disable cali
+        if cali_mode <0 or cali_mode >3:
+            print ("Wrong value for cali_mode")
+            print ("cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 =disable cali")
+            print ("Exit anyway!")
+            exit()
+
+        self.dat_fpga_reset()
+        if cali_mode < 2:
+            self.dat_set_dac(val=val, fe_cal=0)
+            self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
+            width = width&0xfff # width = duty, it must be less than (perod-2)
+            period = period&0xfff #period = ADC samples between uplses
+            if width >= period - 2:
+                width = period - 2
+            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_MSB, ((width*32)>>8)&0xff)
+            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_LSB, (width*32)&0xff)  
+            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_MSB, period>>8)  
+            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
+            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
+            self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
+            self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
+            if cali_mode == 0:
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0xff)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0xff)   #direct input
+                adac_pls_en = 0
+                sts = 0
+                swdac = 0
+                dac = 0
+            if cali_mode == 1:
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xff)  #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)   #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0x00)   #DAT DAC
+                adac_pls_en = 0
+                sts = 1
+                swdac = 2
+                dac = 0
+
+        if cali_mode == 2:
+            adac_pls_en = 1
+            sts = 1
+            swdac = 1
+            dac = asicdac
+        if cali_mode == 3:
+            adac_pls_en = 0
+            sts = 0
+            swdac = 0
+            dac = 0
+        time.sleep(0.1)
+        return adac_pls_en, sts, swdac, dac
+
+
     def dat_asic_chk(self):
-        rawdata = self.dat_fe_qc( num_samples = 1, adac_pls_en = 1, sts=1, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, sdd=1, sdf=0, dac=0x20, slk0=0, slk1=0)
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, st0=1, st1=1, sdd=1, sdf=0, slk0=0, slk1=0)
         wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
         datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
         initchk_flg = True
@@ -363,28 +482,10 @@ class DAT_CFGS(WIB_CFGS):
                 initchk_flg = False 
                 print ("Cali Input ERROR", ch, chmax, chped, chmin)
                 #should add chip infomation later
-        #check direct input respons
-        val = 1.50
+                #exit()
 
-        self.dat_set_dac(val=val, fe_cal=0)
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
-        width = 0x180&0xfff # width = duty, it must be less than (perod-2)
-        period = 0x200&0xfff #period = ADC samples between uplses
-        if width <= period - 2:
-            width = period - 2
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_MSB, ((width*32)>>8)&0xff)
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_WIDTH_LSB, (width*32)&0xff)  
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_MSB, period>>8)  
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
-        self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0xff)   #direct input
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0xff)   #direct input
-        time.sleep(1)
-        rawdata = self.dat_fe_qc(snc=1,sts=0,swdac=0) #direct FE input
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.5, period=0x200, width=0x180, asicdac=0x10)
+        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
         wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
         datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
         for ch in range(16*8):
@@ -397,6 +498,7 @@ class DAT_CFGS(WIB_CFGS):
                 initchk_flg = False 
                 print ("Direct Input ERROR", ch, chmax, chped, chmin)
                 #should add chip infomation later
+                #exit()
 
         if initchk_flg:
             print ("Pass the interconnection checkout, QC may start now!")
@@ -411,7 +513,6 @@ class DAT_CFGS(WIB_CFGS):
             if rdv == 0x00:
                 time.sleep(0.5)
                 break
-
 
     def dat_monadcs(self):
         avg_datas = [[],[],[],[],[],[],[],[]]
@@ -595,4 +696,90 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
             self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xFF)    
         return mon_datas
+
+
+#    def asic_off_pwrchk(self):
+#        while True:
+#            fes_pwr_info =  self.fe_pwr_meas()
+#            adcs_pwr_info = self.adc_pwr_meas()
+#            cds_pwr_info =  self.cd_pwr_meas()
+#
+#            warn_flg = False
+#            kl = list(fes_pwr_info.keys())
+#            for onekey in kl:
+#                if "VDDA" in onekey:
+#                    if fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "VDDO" in onekey:
+#                    if (fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2 ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "VDDP" in onekey:
+#                    if (fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#
+#            kl = list(adcs_pwr_info.keys())
+#            for onekey in kl:
+#                if "VDDA2P5" in onekey:
+#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "VDDD2P5" in onekey:
+#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#
+#                if "VDDIO" in onekey:
+#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "VDDD1P2" in onekey:
+#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#
+#            kl = list(cds_pwr_info.keys())
+#            for onekey in kl:
+#                if "CD_VDDA" in onekey:
+#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "FE_VDDA" in onekey:
+#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#
+#                if "CD_VDDCORE" in onekey:
+#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "CD_VDDD" in onekey: 
+#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        warn_flg = True
+#                if "CD_VDDIO" in onekey:
+#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
+#                        pass
+#                    else:
+#                        print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
+#                        warn_flg = True
+#            if warn_flg:
+#                print ("Wait 2 second, not yet completely shut down...")
+#                time.sleep(2)
+#            else:
+#                print ("All DUTs power rails are off!")
+
 
