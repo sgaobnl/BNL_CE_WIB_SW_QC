@@ -368,7 +368,7 @@ class DAT_CFGS(WIB_CFGS):
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = True
-        dly = 5
+        dly = 3
         print ("Wait %d seconds for FEMB configruation is stable..."%dly)
         time.sleep(dly)
         return cfg_paras_rec
@@ -388,7 +388,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
-        dly = 5
+        dly = 3
         print ("Wait %d seconds for FEMB configruation is stable..."%dly)
         time.sleep(dly)
         return cfg_paras_rec
@@ -484,7 +484,7 @@ class DAT_CFGS(WIB_CFGS):
                 #should add chip infomation later
                 #exit()
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.5, period=0x200, width=0x180, asicdac=0x10)
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
         rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
         wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
         datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]

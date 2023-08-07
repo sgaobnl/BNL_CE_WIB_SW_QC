@@ -110,8 +110,8 @@ if 1 in tms:
 
 if 2 in tms:
     print ("FE check response measurement starts...")
-    data = {}
-    data['logs'] = logs
+    datad = {}
+    datad['logs'] = logs
 
     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
     cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
@@ -527,3 +527,4 @@ if 8 in tms:
     tt.append(time.time())
     print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
+print (tt)

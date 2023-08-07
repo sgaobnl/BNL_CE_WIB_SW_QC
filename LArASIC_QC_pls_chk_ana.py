@@ -7,7 +7,7 @@ import time, datetime, random, statistics
 from spymemory_decode import wib_dec
 
 fdir = "./tmp_data/"
-fp = fdir + "QC_Cap_Meas" + ".bin"
+fp = fdir + "QC_CHK" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)
 
@@ -16,16 +16,16 @@ if "logs" in dkeys:
     dkeys.remove("logs")
 
 for onekey in dkeys:
+    print (onekey)
     cfgdata = data[onekey]
-    #fembs = cfgdata[0]
-    #rawdata = cfgdata[1]
-    fembs = cfgdata[1]
-    rawdata = cfgdata[0]
+    fembs = cfgdata[0]
+    rawdata = cfgdata[1]
+    #fembs = cfgdata[1]
+    #rawdata = cfgdata[0]
 
-    #wibdata = wib_dec(rawdata[0],fembs, spy_num=1)
-    wibdata = wib_dec(rawdata,fembs, spy_num=1)
+    wibdata = wib_dec(rawdata[0],fembs, spy_num=1)
+    #wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
-    
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
 
     import matplotlib.pyplot as plt
@@ -33,6 +33,8 @@ for onekey in dkeys:
         for fe_chn in range(16):
             fechndata = datd[fe*16+fe_chn]
             if np.max(fechndata) - np.mean(fechndata) > 8000:
+                pass
+            else:
                 print (fe*16+fe_chn,fe, fe_chn) 
             plt.plot(fechndata)
     plt.show()
