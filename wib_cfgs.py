@@ -568,7 +568,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     break
                 if dts_time_delay >= 0x7f:
                     #self.femb_powering(fembs =[])
-                    print ("Error: data can't be aligned, please re-initilize the clock. Exit anyway")
+                    print ("\033[91m" + "Error: data can't be aligned, re-initilize the clock again." + "\033[0m")
                     #self.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
                     self.wib_timing_wrap()
                     time.sleep(0.1)
@@ -711,7 +711,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     prg_flg = False
                 else:
                     prg_flg = True
-                    print ("FEMB{}, LArASIC readback status is {}, {} diffrent from 0xFF".format(femb_id, sts_cd1, sts_cd2))
+                    print ("\033[91m" + "FEMB{}, LArASIC readback status is {}, {} diffrent from 0xFF".format(femb_id, sts_cd1, sts_cd2) + "\033[0m")
                     if i > 10:
                         #self.femb_powering(fembs =[])
                         #print ("Turn all FEMBs off, exit anyway")
@@ -765,7 +765,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if (sts_cd1&0xff == 0xff) and (sts_cd2&0xff == 0xff):
                 break
             else:
-                print ("LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2))
+                print ("\033[91m" + "LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2) + "\033[0m")
                 if i > 10:
                     #self.femb_powering(fembs =[])
                     #print ("Turn all FEMBs off, exit anyway")
@@ -829,7 +829,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     print ("Reconfigure FEMB due to i2c error!")
                 if refi > 25:
                     #self.femb_powering(fembs =[])
-                    print ("I2C failed! exit anyway, please check connection!")
+                    print ( "\033[91m" + "I2C failed! exit anyway, please check connection!" + "\033[0m")
                     exit()
             else:
                 print (f"FEMB{femb_id} is configurated")

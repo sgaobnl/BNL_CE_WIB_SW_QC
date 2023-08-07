@@ -51,7 +51,10 @@ while True:
     except ValueError:
         print ("ValueError: Wrong input, please input number 0 to 3")
 
-logs['DAT_on_WIB_slot']=dat.fembs
+logs['DAT_on_WIB_slot']=""
+for femb_id in dat.fembs:
+    logs['DAT_on_WIB_slot']+="FEMB%02d--"%femb_id
+logs['DAT_on_WIB_slot']+= "\n"
 
 fe_id = {}
 for fe in range(8):
@@ -70,19 +73,27 @@ tt.append(time.time())
 tms=[0,1,2,3,4,5,6,7,8,9,10]
 #tms=[0,1,2,3,5,6,7,8,9,10]
 #tms=[0, 2]
-tms=[ 2]
+#tms=[ 2]
+#tms=[5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
     print ("Init check after chips are installed")
-    dat.wib_pwr_on_dat()
+    datad = {}
+    datad['logs'] = logs
+
+    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+    datad["WIB_PWR"] = pwr_meas
+    datad["WIB_LINK"] = link_mask
     fes_pwr_info = dat.fe_pwr_meas()
+    datad["FE_PWRON"] = fes_pwr_info
     adcs_pwr_info = dat.adc_pwr_meas()
+    datad["ADC_PWRON"] = adcs_pwr_info
     cds_pwr_info = dat.cd_pwr_meas()
+    datad["CD_PWRON"] = cds_pwr_info
     dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
-    dat.dat_asic_chk()
+    chkdata = dat.dat_asic_chk()
+    datad.update(chkdata)
     print ("FE mapping to be done")
-    tt.append(time.time())
-    print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
 
     if not os.path.exists(fdir):
         try:
@@ -91,10 +102,17 @@ if 0 in tms:
             print ("Error to create folder %s"%save_dir)
             sys.exit()
 
+    fp = fdir + "QC_INIT_CHK" + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump(datad, fn)
+
+    tt.append(time.time())
+    print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
+
 if 1 in tms:
     print ("FE power consumption measurement starts...")
-    data = {}
-    data['logs'] = logs
+    datad = {}
+    datad['logs'] = logs
     for snc in [0, 1]:
         for sdd in [0, 1]:
             for sdf in [0, 1]:
@@ -104,11 +122,11 @@ if 1 in tms:
                     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
                     rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=snc, sdd=sdd, sdf=sdf ) 
                     pwr_meas = dat.fe_pwr_meas()
-                    data["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
+                    datad["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
     
     fp = fdir + "QC_PWR" + ".bin"
     with open(fp, 'wb') as fn:
-        pickle.dump(data, fn)
+        pickle.dump(datad, fn)
     tt.append(time.time())
     print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
