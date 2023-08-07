@@ -63,7 +63,8 @@ logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 tt = []
 tt.append(time.time())
 
-tms=[0,1,2,3,4,5,6,7,8,9,10]
+#tms=[0,1,2,3,4,5,6,7,8,9,10]
+tms=[0,1,2,3,5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
     print ("Init check after chips are installed")
