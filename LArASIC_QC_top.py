@@ -60,12 +60,17 @@ for fe in range(8):
     else:
         fe_id['FE{}'.format(fe)] =input("FE SN on socket {}: ".format(fe))
 logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+froot = "./tmp_data/"
+fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
+fdir = froot + fsubdir + "/"
+
 tt = []
 tt.append(time.time())
 
 tms=[0,1,2,3,4,5,6,7,8,9,10]
 #tms=[0,1,2,3,5,6,7,8,9,10]
-#tms=[0]
+#tms=[0, 2]
+tms=[ 2]
 ####### Init check information #######
 if 0 in tms:
     print ("Init check after chips are installed")
@@ -79,9 +84,6 @@ if 0 in tms:
     tt.append(time.time())
     print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
 
-    froot = "./tmp_data/"
-    fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
-    fdir = froot + fsubdir + "/"
     if not os.path.exists(fdir):
         try:
             os.makedirs(fdir)

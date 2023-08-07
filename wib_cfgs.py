@@ -664,6 +664,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adc_flg[femb_id]=False
 
     def fembs_fe_cfg(self, fembs):
+        fe_adac_ens = [False, False, False, False]
+        for femb_id in fembs:
+            if self.adac_cali_quo[femb_id]:
+                self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
+                self.adac_cali_quo[femb_id]=False
+                fe_adac_ens[femb_id] = True
+
         #reset LARASIC chips
         for femb_id in fembs:
             self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
@@ -714,11 +721,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                         time.sleep(0.01)
             i = i + 1
         self.fe_flg[femb_id]=False
+        for femb_id in fembs:
+            if fe_adac_ens[femb_id]:
+                self.femb_adac_cali(femb_id)
+                fe_adac_ens[femb_id] = False
+
 
     def femb_fe_cfg(self, femb_id):
+        fe_adac_en = False
         if self.adac_cali_quo[femb_id]:
             self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
             self.adac_cali_quo[femb_id]=False
+            fe_adac_en = True
  
         #reset LARASIC chips
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
@@ -761,6 +775,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     time.sleep(0.01)
             i = i + 1
         self.fe_flg[femb_id]=False
+        if fe_adac_en:
+            self.femb_adac_cali(femb_id)
+            fe_adac_en = False
 
     def femb_adac_cali(self, femb_id, phase0x07=[0,0,0,0,0,0,0,0]):
         for chip in range(8):

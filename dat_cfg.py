@@ -388,7 +388,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
-        dly = 3
+        dly =  3
         print ("Wait %d seconds for FEMB configruation is stable..."%dly)
         time.sleep(dly)
         return cfg_paras_rec
