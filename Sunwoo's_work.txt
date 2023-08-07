@@ -1,9 +1,0 @@
-LArASIC_test.py
-This script test power measurement test and pulse response test for each chip, each FEMB configuration.
-This makes 2 raw data files, rawDataCurrent.bin, rawDataPulse.bin, for the measurement and pulse response test respectively.
-The output files are generated under the directory ./tmp_data/
-
-
-MakeTable.py
-This script makes .pdf files from the outputs of LArASIC_test.py script.
-This makes 8 .pdf at ./output/ directory for each chip, which contains voltages tables, plots for measured current, and pulse response plot for each FEMB configuration.
