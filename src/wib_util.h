@@ -20,8 +20,16 @@ extern "C" {
 
 	//Memory base addresses of AXI interfaces
 	constexpr size_t CTRL_REGS              = 0xA00C0000;
-	constexpr size_t DAQ_SPY_0              = 0xA0100000;
-	constexpr size_t DAQ_SPY_1              = 0xA0200000;
+	//constexpr size_t DAQ_SPY_0              = 0xA0100000;
+	//constexpr size_t DAQ_SPY_1              = 0xA0200000;
+	constexpr size_t DAQ_SPY_FEMB0_CD0           = 0x440000000; ///new fw, these replace DAQ_SPY_0
+	constexpr size_t DAQ_SPY_FEMB0_CD1           = 0x440100000; ///and DAQ_SPY_1
+	constexpr size_t DAQ_SPY_FEMB1_CD0           = 0x440200000;
+	constexpr size_t DAQ_SPY_FEMB1_CD1           = 0x440300000;
+	constexpr size_t DAQ_SPY_FEMB2_CD0           = 0x440400000;
+	constexpr size_t DAQ_SPY_FEMB2_CD1           = 0x440500000;
+	constexpr size_t DAQ_SPY_FEMB3_CD0           = 0x440600000;
+	constexpr size_t DAQ_SPY_FEMB3_CD1           = 0x440700000;
 
 	//32bit register index in CTRL_REGS
 	constexpr size_t REG_TIMING             = 0x0000/4;
@@ -39,7 +47,8 @@ extern "C" {
 	constexpr size_t REG_ENDPOINT_STATUS    = 0x0090/4;
 
 	//Size of a DAQ spy buffer
-	constexpr size_t DAQ_SPY_SIZE           = 0x00100000;
+	//constexpr size_t DAQ_SPY_SIZE           = 0x00100000;
+	constexpr size_t DAQ_SPY_SIZE           	 = 0x40000; ///new fw, replaces old DAQ_SPY_SIZE
 
 	////////////FROM FEMB_3ASIC.H:
 

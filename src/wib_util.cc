@@ -121,11 +121,18 @@ void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_a
 //  printf("femb:%i coldata:%i chip:0x%02X page:0x%02X reg:0x%02X <- 0x%02X\n",femb_idx,coldata_idx,chip_addr,reg_page,reg_addr,data);	
 }		
 
-void bufread(char* dest, size_t buf_num) {
+//HERMES
+void bufread(char* dest, size_t buf_num) { ///FOR NEW FIRMWARE
 	size_t daq_spy_addr;
 	
-	if (buf_num==0) daq_spy_addr = DAQ_SPY_0;
-	else if (buf_num==1) daq_spy_addr = DAQ_SPY_1;
+	if (buf_num==0) daq_spy_addr = DAQ_SPY_FEMB0_CD0;
+	else if (buf_num==1) daq_spy_addr = DAQ_SPY_FEMB0_CD1;
+	else if (buf_num==2) daq_spy_addr = DAQ_SPY_FEMB1_CD0;
+	else if (buf_num==3) daq_spy_addr = DAQ_SPY_FEMB1_CD1;
+	else if (buf_num==4) daq_spy_addr = DAQ_SPY_FEMB2_CD0;
+	else if (buf_num==5) daq_spy_addr = DAQ_SPY_FEMB2_CD1;
+	else if (buf_num==6) daq_spy_addr = DAQ_SPY_FEMB3_CD0;
+	else if (buf_num==7) daq_spy_addr = DAQ_SPY_FEMB3_CD1;
 	else return;    
 	
 	//see WIB_upgrade::WIB_upgrade		
@@ -510,6 +517,5 @@ bool script_cmd(char* line) {
     }
     return false;	
 }
-
 
 } 
