@@ -74,6 +74,7 @@ tms=[0,1,2,3,4,5,6,7,8,9,10]
 #tms=[0,1,2,3,5,6,7,8,9,10]
 #tms=[0, 2]
 #tms=[ 2]
+tms=[ 3]
 #tms=[5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
@@ -549,4 +550,11 @@ if 8 in tms:
     tt.append(time.time())
     print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
-print (tt)
+if 9 in tms:
+    print ("Turn DAT off")
+    dat.femb_powering([])
+    tt.append(time.time())
+    print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print (tt)
+    print ("Done")
+

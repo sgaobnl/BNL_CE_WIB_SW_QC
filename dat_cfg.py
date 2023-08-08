@@ -577,13 +577,13 @@ class DAT_CFGS(WIB_CFGS):
                           ]
         mux_cs=5
         mux_name = self.mon_fe_cs[mux_cs]
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)    
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xFF)    
         self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS)   
         self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
         self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0x00)    
         self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)    
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
+        self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
 
         mon_datas = {} 
 

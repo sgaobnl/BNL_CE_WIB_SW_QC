@@ -13,33 +13,65 @@ def plt_log(plt,logsd):
     lkeys = list(logsd)
     for i in range(len(lkeys)):
         loginfo = "{} : {}".format(lkeys[i], data["logs"][lkeys[i]])
-        if i%2:
-            x = 0.5
-        else:
-            x = 0.1
-        y = 0.90-(i//2)*0.02
+        #if i%2:
+        #    x = 0.5
+        #else:
+        #    x = 0.1
+        #y = 0.90-(i//2)*0.02
+        x = 0.05 + 0.15*i
+        #y = 0.90-i*0.02
+        y = 0.93
         fig.text(x, y, loginfo, fontsize=8)
 
 def plt_fepwr(plt, pwr_meas):
     kpwrs = list(pwr_meas.keys())
-    for i in range(len(kpwrs)):
-        pwrinfo = "{} : V={:.3f}, I={:.3f}, P={:.3f}".format(kpwrs[i], pwr_meas[kpwrs[i]][0], pwr_meas[kpwrs[i]][1], pwr_meas[kpwrs[i]][2]) 
-        if i < (len(kpwrs)//2):
-            x = 0.05
-        else:
-            x = 0.55
+    ax5 = plt.subplot2grid((2, 3), (0, 0), colspan=1, rowspan=1)
+    ax6 = plt.subplot2grid((2, 3), (1, 0), colspan=1, rowspan=1)
 
-        if i < (len(kpwrs)//2):
-            y = 0.80-i*0.02
-        else:
-            y = 0.80-(i-(len(kpwrs)//2))*0.02
-        fig.text(x,y, pwrinfo, fontsize=8)
+    vddas = []
+    vddos = []
+    vddps = []
+    cddas = []
+    cddos = []
+    cddps = []
+
+    for i in range(len(kpwrs)):
+        if "VDDA" in kpwrs[i]:
+            vddas.append(pwr_meas[kpwrs[i]][0])
+            cddas.append(pwr_meas[kpwrs[i]][1])
+        if "VDDO" in kpwrs[i]:
+            vddos.append(pwr_meas[kpwrs[i]][0])
+            cddos.append(pwr_meas[kpwrs[i]][1])
+        if "VPPP" in kpwrs[i]:
+            vddps.append(pwr_meas[kpwrs[i]][0])
+            cddps.append(pwr_meas[kpwrs[i]][1])
+
+    fe=[0,1,2,3,4,5,6,7]
+    ax5.plot(fe, vddas, color='b', marker = 'o', label='VDDA')
+    ax5.plot(fe, vddps, color='r', marker = 'o', label='VDDP')
+    ax5.plot(fe, vddos, color='g', marker = 'o', label='VDDO')
+    ax5.set_title("Voltage Measurement", fontsize=8)
+    ax5.set_ylabel("Voltage / V", fontsize=8)
+    ax5.set_ylim((0,2))
+    ax5.set_xlabel("FE no", fontsize=8)
+    ax5.grid()
+
+    ax6.scatter(fe, cddas, color='b', marker = 'o', label='VDDA')
+    ax6.scatter(fe, cddps, color='r', marker = 'o', label='VDDP')
+    ax6.scatter(fe, cddos, color='g', marker = 'o', label='VDDO')
+    ax6.set_title("Current Measurement", fontsize=8)
+    ax6.set_ylabel("Current / mA", fontsize=8)
+    ax6.set_ylim((-10,50))
+    ax6.set_xlabel("FE no", fontsize=8)
+    ax6.grid()
+
+
 
 def plt_subplot(plt, fembs, rawdata):
-    ax1 = plt.subplot2grid((4, 2), (2, 0), colspan=1, rowspan=1)
-    ax2 = plt.subplot2grid((4, 2), (3, 0), colspan=1, rowspan=1)
-    ax3 = plt.subplot2grid((4, 2), (2, 1), colspan=1, rowspan=1)
-    ax4 = plt.subplot2grid((4, 2), (3, 1), colspan=1, rowspan=1)
+    ax1 = plt.subplot2grid((2, 3), (0, 1), colspan=1, rowspan=1)
+    ax2 = plt.subplot2grid((2, 3), (0, 2), colspan=1, rowspan=1)
+    ax3 = plt.subplot2grid((2, 3), (1, 1), colspan=1, rowspan=1)
+    ax4 = plt.subplot2grid((2, 3), (1, 2), colspan=1, rowspan=1)
 
     wibdata = wib_dec(rawdata,fembs, spy_num=1)
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
@@ -110,7 +142,7 @@ if False:
     for onekey in dkeys:
         print (onekey)
         import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(6,8))
+        fig = plt.figure(figsize=(9,6))
         plt.rcParams.update({'font.size': 8})
         cfgdata = data[onekey]
         fembs = cfgdata[0]
@@ -137,7 +169,7 @@ if False:
     for onekey in dkeys:
         print (onekey)
         import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(6,8))
+        fig = plt.figure(figsize=(9,6))
         plt.rcParams.update({'font.size': 8})
         cfgdata = data[onekey]
         fembs = cfgdata[0]
@@ -148,6 +180,43 @@ if False:
         plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
         plt.plot()
         plt.show()
+
+if True:
+    fp = fdir + "QC_MON" + ".bin"
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    AD_LSB = 2564/4096 
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+    print (dkeys)
+
+    vbts = ('VBGR', 'MON_VBGR', 'MON_Temper')
+    vbgrs   = np.array(data[vbts[0]][1])
+    print (vbgrs)
+    vmbgrs  = np.array(data[vbts[1]][1])
+    print (vmbgrs)
+    vmtemps = np.array(data[vbts[2]][1])
+    print (vmtemps)
+    vblsk = ('MON_200BL', 'MON_900BL')
+    vbls200   = np.array(data[vblsk[0]][1])*AD_LSB
+    vbls900   = np.array(data[vblsk[1]][1])*AD_LSB
+    print (vbls200)
+    print (vbls900)
+    exit()
+
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(9,6))
+    plt.rcParams.update({'font.size': 8})
+    ax1 = plt.subplot2grid((2, 3), (0, 0), colspan=1, rowspan=1)
+    ax2 = plt.subplot2grid((2, 3), (0, 1), colspan=1, rowspan=1)
+    ax3 = plt.subplot2grid((2, 3), (0, 2), colspan=1, rowspan=1)
+    ax4 = plt.subplot2grid((2, 3), (1, 0), colspan=1, rowspan=1)
+    ax5 = plt.subplot2grid((2, 3), (1, 1), colspan=1, rowspan=1)
+    ax6 = plt.subplot2grid((2, 3), (1, 2), colspan=1, rowspan=1)
+  
 
 #if True:
 #    fp = fdir + "QC_CALI_DIRECT" + ".bin"
