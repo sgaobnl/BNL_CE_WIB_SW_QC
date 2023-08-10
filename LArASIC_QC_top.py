@@ -72,9 +72,10 @@ tt.append(time.time())
 
 tms=[0,1,2,3,4,5,6,7,8,9,10]
 #tms=[0,1,2,3,5,6,7,8,9,10]
-#tms=[0, 2]
+tms=[0]
 #tms=[ 2]
-tms=[ 3]
+#tms=[ 3]
+#tms=[ 6]
 #tms=[5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
@@ -361,6 +362,8 @@ if 6 in tms:
         st1=1
         sg0=0
         sg1=0
+        sdd=0
+        sdf=0
         for snc in [0, 1]:
     #        for buf in [0,1,2]:
     #            sdd = buf//2
@@ -372,7 +375,7 @@ if 6 in tms:
             for dac in range(0, maxdac, maxdac//8):
                 fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
                 data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_ASICDAC%02d"%(dac)
+                cfgstr = "CALI_SNC%d_ASICDAC%02d"%(snc,dac)
                 print (cfgstr)
                 datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
     
@@ -382,7 +385,7 @@ if 6 in tms:
        
     Vref = 1.583
     if True:
-        print ("perform DAC-DAC calibration under 14mV/fC, 2us")
+        print ("perform DAT-DAC calibration under 14mV/fC, 2us")
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref, period=1000, width=800) 
         cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
         datad = {}
@@ -403,12 +406,11 @@ if 6 in tms:
                 fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
         
                 if snc == 0:
-                    mindac = Vref - (75/185) 
+                    minval = Vref - (50/185) 
                 else:
-                    mindac = Vref - (150/185) 
-        
-                for dac in range(16):
-                    val = Vref-(dac*75/185/10)
+                    minval = Vref - (100/185) 
+                vals = np.arange(Vref,minval,(minval-Vref)/10)
+                for val in vals:
                     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=1000, width=800) 
                     data = dat.dat_fe_qc_acq(num_samples=5)
                     cfgstr = "CALI_DATDAC_%dmV_SDD%d_SDF%d_SNC%d"%(int(val*1000), sdd, sdf, snc)
@@ -441,15 +443,14 @@ if 6 in tms:
             fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
     
             if snc == 0:
-                mindac = Vref - (75/1000) 
+                minval = Vref - (50/1000) 
             else:
-                mindac = Vref - (150/1000) 
-    
-            for dac in range(16):
-                val = Vref-(dac*5/1000)
+                minval = Vref - (100/1000) 
+            vals = np.arange(Vref,minval,(minval-Vref)/10)
+            for val in vals:
                 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=val, period=1000, width=800) 
                 data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_DIRECT_%dmV"%(int(val*1000))
+                cfgstr = "CALI_SNC%d_DIRECT_%dmV"%(snc, int(val*1000))
                 print (cfgstr)
                 datad[cfgstr] = [dat.fembs, data, val,cfg_info, fe_cfg_info]
     

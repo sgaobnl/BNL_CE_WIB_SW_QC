@@ -24,6 +24,8 @@ class DAT_CFGS(WIB_CFGS):
         self.mon_AD_REF = 2.564 #need to update accoring to board
         self.AD_LSB = 2564/4096 #mV/bit #need to update accoring to board
         self.monadc_avg = 1
+        self.fedly= 3
+        self.sddflg = 0 
 
     def wib_pwr_on_dat(self):
         print ("Initilization checkout")
@@ -365,12 +367,12 @@ class DAT_CFGS(WIB_CFGS):
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
             self.femb_cfg(femb_id, adac_pls_en )
+            self.sddflg=sdd
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = True
-        dly = 3
-        print ("Wait %d seconds for FEMB configruation is stable..."%dly)
-        time.sleep(dly)
+        print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
+        time.sleep(self.fedly)
         return cfg_paras_rec
 
 
@@ -387,10 +389,23 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=swdac, sdd=sdd, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1)
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
+            if self.sddflg != sdd :
+                self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+                                    [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                    [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                                  ]
+
+                self.femb_adc_cfg(femb_id=femb_id)
+                self.sddflg = sdd 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
-        dly =  3
-        print ("Wait %d seconds for FEMB configruation is stable..."%dly)
-        time.sleep(dly)
+        print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
+        time.sleep(self.fedly)
         return cfg_paras_rec
 
     def dat_fe_qc_acq(self, num_samples = 1):
@@ -467,44 +482,66 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_asic_chk(self):
-        datad = {}
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
-        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, st0=1, st1=1, sdd=1, sdf=0, slk0=0, slk1=0)
-        wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
-        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
-        initchk_flg = True
-        for ch in range(16*8):
-            chmax = np.max(datd[ch][0:1500])
-            chped = np.mean(datd[ch][0:1500])
-            chmin = np.min(datd[ch][0:1500])
-            if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100):
-                pass
-            else:
-                initchk_flg = False 
-                print ("\033[91m" + "Cali Input ERROR ch={}, chmax={}, chped={}, chmin={}".format(ch, chmax, chped, chmin)+ "\033[0m" ) 
-                #should add chip infomation later
-                #exit()
-        datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
+        for fedly in [3,5,7]:
+            self.fedly = fedly
+            datad = {}
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+            rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, st0=1, st1=1, sdd=1, sdf=0, slk0=0, slk1=0)
+            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+            datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
+            initchk_flg = True
+            for ch in range(16*8):
+                chmax = np.max(datd[ch][500:1500])
+                if ch == 0:
+                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
+                chmin = np.min(datd[ch][500:1500])
+                if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
+                    c1 = True
+                if ( (datd[ch][chmaxpos-2] - datd[ch][chmaxpos-10]) > 1000) and ( (datd[ch][chmaxpos+2] - datd[ch][chmaxpos+20]) > 1000) :
+                    c2 = True
+                if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
+                    pass
+                else:
+                    initchk_flg = False 
+                    print ("\033[91m" + "Cali Input ERROR ch={}, chmax={}, chped={}, chmin={}".format(ch, chmax, chped, chmin)+ "\033[0m" ) 
+                    #should add chip infomation later
+                    #exit()
+            datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
-        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
-        wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
-        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
-        for ch in range(16*8):
-            chmax = np.max(datd[ch][0:1500])
-            chped = np.mean(datd[ch][0:1500])
-            chmin = np.min(datd[ch][0:1500])
-            if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100):
-                pass
-            else:
-                initchk_flg = False 
-                print ("\033[91m" + "Direct Input ERROR ch={}, chmax={}, chped={}, chmin={}".format(ch, chmax, chped, chmin)+ "\033[0m")
-                #should add chip infomation later
-                #exit()
-        datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
+            rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
+            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+            datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
+            for ch in range(16*8):
+                chmax = np.max(datd[ch][500:1500])
+                if ch == 0:
+                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
+                chmin = np.min(datd[ch][500:1500])
+                if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
+                    c1 = True
+                if ( (datd[ch][chmaxpos-2] - datd[ch][chmaxpos-10]) > 1000) and ( (datd[ch][chmaxpos+2] - datd[ch][chmaxpos+20]) > 1000) :
+                    c2 = True
+                if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
+                    pass
+                else:
+                    initchk_flg = False 
+                    print ("\033[91m" + "Direct Input ERROR ch={}, chmax={}, chped={}, chmin={}".format(ch, chmax, chped, chmin)+ "\033[0m")
+                    #should add chip infomation later
+                    #exit()
+            datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
-        if initchk_flg:
-            print ("Pass the interconnection checkout, QC may start now!")
+            if initchk_flg:
+                print ("Pass the interconnection checkout, QC may start now!")
+                break
+            else:
+                if self.fedly == 7:
+                    print ("the interconnection checkout fails, exit anyway !")
+                    self.femb_powering([])
+                    self.data_align_flg = False
+                    exit()
+                    #pass
         return datad
 
     def dat_fpga_reset(self):
@@ -641,12 +678,13 @@ class DAT_CFGS(WIB_CFGS):
                 datas_dac.append([dac, datas])
             mon_datas["MON_DAC_SGP1"] = datas_dac
 
+            sgp=0
             for sg0 in [0,1]:
                 for sg1 in [0,1]:
                     datas_dac =[]
                     for dac in range(0,64, 1):
                         for fe in range(8):
-                            self.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
+                            self.set_fechip(chip=fe&0x07, swdac=3, sg0=sg0, sg1=sg1, dac=dac, sgp=sgp)
                         self.set_fe_sync()
                         self.femb_fe_cfg(femb_id=femb_id)
                         time.sleep(0.1)
