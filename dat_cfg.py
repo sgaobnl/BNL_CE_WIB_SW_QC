@@ -247,19 +247,19 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(fes_pwr_info.keys())
         for onekey in kl:
             if "VDDA" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.70) & (fes_pwr_info[onekey][0] < 1.85) & (fes_pwr_info[onekey][1] > 15  ) & (fes_pwr_info[onekey][0] < 25  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 15  ) & (fes_pwr_info[onekey][0] < 25  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
                     warn_flg = True
             if "VDDO" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.70) & (fes_pwr_info[onekey][0] < 1.85) & (fes_pwr_info[onekey][1] > -0.1  ) & (fes_pwr_info[onekey][0] < 3  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > -0.1  ) & (fes_pwr_info[onekey][0] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
                     warn_flg = True
             if "VDDP" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.70) & (fes_pwr_info[onekey][0] < 1.85) & (fes_pwr_info[onekey][1] > 28  ) & (fes_pwr_info[onekey][0] < 37  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 28  ) & (fes_pwr_info[onekey][0] < 37  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
@@ -677,7 +677,7 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
                 self.set_fe_sync()
                 self.femb_fe_cfg(femb_id=femb_id)
-                time.sleep(0.1)
+                time.sleep(0.5)
                 datas = self.dat_monadcs()[0]
                 datas_dac.append([dac, datas])
             mon_datas["MON_DAC_SGP1"] = datas_dac

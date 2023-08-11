@@ -9,7 +9,7 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 from spymemory_decode import avg_aligned_by_ts
 
-fdir = "./tmp_data/FE_00000000_00000001_00000002_00000003_00000004_00000005_00000006_00000007/"
+fdir = "D:/DAT_LArASIC_QC/FE_00000000_00000001_00000002_00000003_00000004_00000005_00000006_00000007/"
 
 def linear_fit(x, y):
     error_fit = False 
@@ -218,36 +218,7 @@ def dacana(data,dacdkey ):
         fes.append([dacdkey, fe,x,y,slope, constant, peakinl])
     return fes
 
-cs_no = False
-
-if cs_no:
-#if True:
-    fp = fdir + "QC_PWR" + ".bin"
-    with open(fp, 'rb') as fn:
-        data = pickle.load( fn)
-    
-    dkeys = list(data.keys())
-    
-    logsd = data["logs"]
-    dkeys.remove("logs")
-    
-    for onekey in dkeys:
-        print (onekey)
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(9,6))
-        plt.rcParams.update({'font.size': 8})
-        cfgdata = data[onekey]
-        fembs = cfgdata[0]
-        rawdata = cfgdata[1]
-        cfg_info = cfgdata[2]
-        pwr_meas = cfgdata[3]
-        plt_log(plt,logsd)
-        plt_fepwr(plt, pwr_meas)
-        plt_subplot(plt, fembs, rawdata)
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
-
+cs_no = False 
 #if cs_no:
 if True:
     fp = fdir + "QC_INIT_CHK" + ".bin"
@@ -275,7 +246,38 @@ if True:
             plt.plot()
             plt.show()
 
+
+#if cs_no:
+if True:
+    fp = fdir + "QC_PWR" + ".bin"
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+    
+    for onekey in dkeys:
+        print (onekey)
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(9,6))
+        plt.rcParams.update({'font.size': 8})
+        cfgdata = data[onekey]
+        fembs = cfgdata[0]
+        rawdata = cfgdata[1]
+        cfg_info = cfgdata[2]
+        pwr_meas = cfgdata[3]
+        plt_log(plt,logsd)
+        plt_fepwr(plt, pwr_meas)
+        plt_subplot(plt, fembs, rawdata)
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+
+
 if cs_no:
+#if True:
     fp = fdir + "QC_PWR_CYCLE" + ".bin"
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
@@ -330,6 +332,7 @@ if cs_no:
         plt.show()
 
 if cs_no:
+#if :
     fp = fdir + "QC_MON" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
