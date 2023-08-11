@@ -339,7 +339,9 @@ class DAT_CFGS(WIB_CFGS):
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
             input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
-            #exit()
+            self.femb_powering([])
+            self.data_align_flg = False
+            exit()
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
@@ -432,6 +434,8 @@ class DAT_CFGS(WIB_CFGS):
             print ("\033[91m" + "Wrong value for cali_mode"+ "\033[0m")
             print ("\033[91m" + "cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 =disable cali" + "\033[0m" )
             print ("\033[91m" + "Exit anyway!"+ "\033[0m")
+            self.femb_powering([])
+            self.data_align_flg = False
             exit()
 
         self.dat_fpga_reset()
@@ -482,7 +486,7 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_asic_chk(self):
-        for fedly in [3,5,7]:
+        for fedly in [3,5]:
             self.fedly = fedly
             datad = {}
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
@@ -533,11 +537,11 @@ class DAT_CFGS(WIB_CFGS):
             datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
             if initchk_flg:
-                print ("Pass the interconnection checkout, QC may start now!")
+                print ("\033[92m" + "Pass the interconnection checkout, QC may start now!"+ "\033[0m")
                 break
             else:
-                if self.fedly == 7:
-                    print ("the interconnection checkout fails, exit anyway !")
+                if self.fedly == 5:
+                    print ("\033[91m" + "the interconnection checkout fails, exit anyway !"+ "\033[0m")
                     self.femb_powering([])
                     self.data_align_flg = False
                     exit()
