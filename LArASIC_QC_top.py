@@ -23,7 +23,7 @@ dat =  DAT_CFGS()
 
 
 
-debug_mode =  True
+debug_mode = False 
 
 logs={}
 
@@ -166,7 +166,7 @@ tt.append(time.time())
 
 tms=[0,1,2,3,4,5,6,7,8,9,10]
 #tms=[0,1,2,3,5,6,7,8,9,10]
-tms=[0]
+#tms=[0]
 #tms=[ 2]
 #tms=[ 3]
 #tms=[ 6]
@@ -649,7 +649,6 @@ if 9 in tms:
     print ("Turn DAT off")
     dat.femb_powering([])
     tt.append(time.time())
-    print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
-    print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0])
+    print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
     print ("Done")
 
