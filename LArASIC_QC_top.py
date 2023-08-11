@@ -156,6 +156,17 @@ for fe in range(8):
             else:
                 print ("\033[93m FE Serial number is not in right format (XXX-XXXXX), please re-enter\033[0m") 
 
+while True:
+    if debug_mode:
+        ccflg = "y"
+    else:
+        ccflg=input("Do covers of shielding box close? (Y/N) :")
+    if ("Y" in ccflg) or ("y" in ccflg):
+        break
+    else:
+        print ("Please close the covers and continue...")
+        exit()
+
 
 froot = "./tmp_data/"
 fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
