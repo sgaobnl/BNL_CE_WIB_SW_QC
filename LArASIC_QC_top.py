@@ -6,81 +6,98 @@ import copy
 import time, datetime, random, statistics    
 import os
 from dat_cfg import DAT_CFGS
+from DAT_user_input import dat_user_input
                 
 dat =  DAT_CFGS()
 
 ####### Input test information #######
-debug_mode = True
+#Red = '\033[91m'
+#Green = '\033[92m'
+#Blue = '\033[94m'
+#Cyan = '\033[96m'
+#White = '\033[97m'
+#Yellow = '\033[93m'
+#Magenta = '\033[95m'
+#Grey = '\033[90m'
+#Black = '\033[90m'
+#Default = '\033[99m'
 
-logs={}
-if debug_mode:
-    tester="SGAO"
-else:
-    tester=input("please input your name:  ")
-logs['tester']=tester
+logs = {}
+logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+while True:
+    print ("WIB time: " + logs['date'])
+    wibtimechk=input("is time of WIB current ? (Y/N): ")
+    if ("Y" in wibtimechk) or ("y" in wibtimechk):
+        break
+    else:
+        print ("Please follow these steps to reset WIB time")
+        print ("(Windows PC only) open Powershell, type in: ")
+        print ("""\033[91m  $cdate = get-date  \033[0m""")
+        print ("""\033[91m  $wibdate = "date -s '$cdate'"  \033[0m""")
+        print ("""\033[91m  ssh root@192.168.121.1  $wibdate  \033[0m""")
+        print ("""\033[91m  password: fpga  \033[0m""")
+        print ("Restart this script...")
+        exit()
 
-if debug_mode:
-    env_cs = "RT"
-else:
-    env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
-
-if ("Y" in env_cs) or ("y" in env_cs):
-    env = "LN"
-else:
-    env = "RT"
-logs['env']=env
-
-if debug_mode:
-    note = "debug..."
-else:
-    note = input("A short note (<200 letters):")
-logs['note']=note
-
+debug_mode=False
 while True:
     if debug_mode:
-        datowib = "0"
+        datowib = "y"
     else:
-        datowib=input("DAT on WIB slot (0, 1, 2, 3) :")
-    try :
-        datno = int(datowib)
-        if datno>=0 and datno <=3:
-            dat.fembs = [datno]
-            break
-        else:
-            print ("Wrong input, please input number 0 to 3")
-    except ValueError:
-        print ("ValueError: Wrong input, please input number 0 to 3")
-
-logs['DAT_on_WIB_slot']=dat.fembs
-
-fe_id = {}
-for fe in range(8):
-    if debug_mode:
-        fe_id['FE{}'.format(fe)] = "%08d"%fe 
+        datowib=input("is DAT on WIB slot 0? (Y/N) :")
+    if ("Y" in datowib) or ("y" in datowib):
+        fembs = [0]
+        break
     else:
-        fe_id['FE{}'.format(fe)] =input("FE SN on socket {}: ".format(fe))
-logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+        print ("\033[91m Please contact tech coordinator...\033[0m")
+        print ("Exit anyway")
+        exit()
+
+logs['DAT_on_WIB_slot']=""
+for femb_id in fembs:
+    logs['DAT_on_WIB_slot']+="FEMB%02d--"%femb_id
+logs['DAT_on_WIB_slot']+= "\n"
+
+
+
+dat.fembs = fembs
+
 tt = []
 tt.append(time.time())
 
 #tms=[0,1,2,3,4,5,6,7,8,9,10]
-tms=[0,1,2,3,5,6,7,8,9,10]
+#tms=[0,1,2,3,5,6,7,8,9,10]
+tms=[0]
+#tms=[ 2]
+#tms=[ 3]
+#tms=[ 6]
+#tms=[5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
     print ("Init check after chips are installed")
-    dat.wib_pwr_on_dat()
-    fes_pwr_info = dat.fe_pwr_meas()
-    adcs_pwr_info = dat.adc_pwr_meas()
-    cds_pwr_info = dat.cd_pwr_meas()
-    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
-    dat.dat_asic_chk()
-    print ("FE mapping to be done")
-    tt.append(time.time())
-    print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
+    datad = {}
+    datad['logs'] = logs
 
-    froot = "./tmp_data/"
-    fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
-    fdir = froot + fsubdir + "/"
+    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+    datad["WIB_PWR"] = pwr_meas
+    datad["WIB_LINK"] = link_mask
+    fes_pwr_info = dat.fe_pwr_meas()
+    datad["FE_PWRON"] = fes_pwr_info
+    adcs_pwr_info = dat.adc_pwr_meas()
+    datad["ADC_PWRON"] = adcs_pwr_info
+    cds_pwr_info = dat.cd_pwr_meas()
+    datad["CD_PWRON"] = cds_pwr_info
+    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
+    chkdata = dat.dat_asic_chk()
+    datad.update(chkdata)
+    print ("FE mapping to be done")
+    print ("FE mapping to be done")
+    print ("FE mapping to be done")
+    print ("FE mapping to be done")
+    print ("FE mapping to be done")
+    logsd, fdir, tms= dat_user_input()
+    logs.update(logsd)
+
     if not os.path.exists(fdir):
         try:
             os.makedirs(fdir)
@@ -88,10 +105,17 @@ if 0 in tms:
             print ("Error to create folder %s"%save_dir)
             sys.exit()
 
+    fp = fdir + "QC_INIT_CHK" + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump(datad, fn)
+
+    tt.append(time.time())
+    print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
+
 if 1 in tms:
     print ("FE power consumption measurement starts...")
-    data = {}
-    data['logs'] = logs
+    datad = {}
+    datad['logs'] = logs
     for snc in [0, 1]:
         for sdd in [0, 1]:
             for sdf in [0, 1]:
@@ -101,11 +125,11 @@ if 1 in tms:
                     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
                     rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=snc, sdd=sdd, sdf=sdf ) 
                     pwr_meas = dat.fe_pwr_meas()
-                    data["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
+                    datad["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
     
     fp = fdir + "QC_PWR" + ".bin"
     with open(fp, 'wb') as fn:
-        pickle.dump(data, fn)
+        pickle.dump(datad, fn)
     tt.append(time.time())
     print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
@@ -339,6 +363,8 @@ if 6 in tms:
         st1=1
         sg0=0
         sg1=0
+        sdd=0
+        sdf=0
         for snc in [0, 1]:
     #        for buf in [0,1,2]:
     #            sdd = buf//2
@@ -350,7 +376,7 @@ if 6 in tms:
             for dac in range(0, maxdac, maxdac//8):
                 fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
                 data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_ASICDAC%02d"%(dac)
+                cfgstr = "CALI_SNC%d_ASICDAC%02d"%(snc,dac)
                 print (cfgstr)
                 datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
     
@@ -360,7 +386,7 @@ if 6 in tms:
        
     Vref = 1.583
     if True:
-        print ("perform DAC-DAC calibration under 14mV/fC, 2us")
+        print ("perform DAT-DAC calibration under 14mV/fC, 2us")
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref, period=1000, width=800) 
         cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
         datad = {}
@@ -381,12 +407,11 @@ if 6 in tms:
                 fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
         
                 if snc == 0:
-                    mindac = Vref - (75/185) 
+                    minval = Vref - (50/185) 
                 else:
-                    mindac = Vref - (150/185) 
-        
-                for dac in range(16):
-                    val = Vref-(dac*75/185/10)
+                    minval = Vref - (100/185) 
+                vals = np.arange(Vref,minval,(minval-Vref)/10)
+                for val in vals:
                     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=1000, width=800) 
                     data = dat.dat_fe_qc_acq(num_samples=5)
                     cfgstr = "CALI_DATDAC_%dmV_SDD%d_SDF%d_SNC%d"%(int(val*1000), sdd, sdf, snc)
@@ -419,15 +444,14 @@ if 6 in tms:
             fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
     
             if snc == 0:
-                mindac = Vref - (75/1000) 
+                minval = Vref - (50/1000) 
             else:
-                mindac = Vref - (150/1000) 
-    
-            for dac in range(16):
-                val = Vref-(dac*5/1000)
+                minval = Vref - (100/1000) 
+            vals = np.arange(Vref,minval,(minval-Vref)/10)
+            for val in vals:
                 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=val, period=1000, width=800) 
                 data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_DIRECT_%dmV"%(int(val*1000))
+                cfgstr = "CALI_SNC%d_DIRECT_%dmV"%(snc, int(val*1000))
                 print (cfgstr)
                 datad[cfgstr] = [dat.fembs, data, val,cfg_info, fe_cfg_info]
     
@@ -528,4 +552,10 @@ if 8 in tms:
     tt.append(time.time())
     print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
-print (tt)
+if 9 in tms:
+    print ("Turn DAT off")
+    dat.femb_powering([])
+    tt.append(time.time())
+    print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
+    print ("Done")
+
