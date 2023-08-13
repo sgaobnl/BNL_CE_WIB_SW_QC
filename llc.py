@@ -291,35 +291,56 @@ class LLC():
 #        self.cdpoke_chk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x20, wrdata=0)
 
 
+#    def spybuf(self, fembs= [0, 1,2,3]):
+#        buf0 = True if 0 in fembs or 1 in fembs else False
+#        buf1 = True if 2 in fembs or 3 in fembs else False 
+#
+#        DAQ_SPY_SIZE = 0x00100000
+#        buf = (ctypes.c_char*DAQ_SPY_SIZE)()
+#        #allocate memory in python
+#        buf0_bytes = bytearray(DAQ_SPY_SIZE)
+#        buf1_bytes = bytearray(DAQ_SPY_SIZE)
+#
+#        if buf0:
+#            self.wib.bufread(buf, 0) #read buf0
+#            byte_ptr0 = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(buf0_bytes)
+#            if not ctypes.memmove(byte_ptr0, buf, DAQ_SPY_SIZE):
+#                print('memmove failed')
+#                exit()
+#        else:
+#            buf0_bytes = None
+#
+#        if buf1:
+#            self.wib.bufread(buf, 1) #read buf1    
+#            byte_ptr1 = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(buf1_bytes)
+#            if not ctypes.memmove(byte_ptr1, buf, DAQ_SPY_SIZE):
+#                print('memmove failed')
+#                exit()
+#        else:
+#            buf1_bytes = None
+#        return buf0_bytes, buf1_bytes
+
     def spybuf(self, fembs= [0, 1,2,3]):
-        buf0 = True if 0 in fembs or 1 in fembs else False
-        buf1 = True if 2 in fembs or 3 in fembs else False 
-
-        DAQ_SPY_SIZE = 0x00100000
+        DAQ_SPY_SIZE = 0x40000 #256KB
         buf = (ctypes.c_char*DAQ_SPY_SIZE)()
-        #allocate memory in python
-        buf0_bytes = bytearray(DAQ_SPY_SIZE)
-        buf1_bytes = bytearray(DAQ_SPY_SIZE)
-
-        if buf0:
-            self.wib.bufread(buf, 0) #read buf0
-            byte_ptr0 = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(buf0_bytes)
-            if not ctypes.memmove(byte_ptr0, buf, DAQ_SPY_SIZE):
-                print('memmove failed')
-                exit()
-        else:
-            buf0_bytes = None
-
-        if buf1:
-            self.wib.bufread(buf, 1) #read buf1    
-            byte_ptr1 = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(buf1_bytes)
-            if not ctypes.memmove(byte_ptr1, buf, DAQ_SPY_SIZE):
-                print('memmove failed')
-                exit()
-        else:
-            buf1_bytes = None
-        return buf0_bytes, buf1_bytes
-
+        bufs_bytes = [bytearray(DAQ_SPY_SIZE) for coldata in range(8)]
+	    
+	    
+        for femb in range(4):
+            if femb in fembs:
+                self.wib.bufread(buf,femb*2) #read first COLDATA's buffer
+                byte_ptr = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(bufs_bytes[femb*2])            
+                if not ctypes.memmove(byte_ptr, buf, DAQ_SPY_SIZE):
+                    print('memmove failed')
+                    exit()
+	                
+                self.wib.bufread(buf,femb*2+1) #read first COLDATA's buffer
+                byte_ptr = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(bufs_bytes[femb*2+1])            
+                if not ctypes.memmove(byte_ptr, buf, DAQ_SPY_SIZE):
+                    print('memmove failed')
+                    exit()
+	
+        return bufs_bytes 
         
     def get_sensors(self):
         r357 = 0.001
