@@ -37,7 +37,7 @@ time.sleep(1)
 #reset all FEMBs on WIB
 chk.wib_femb_link_en(fembs)
 
-while True:
+if True:
     chk.femb_cd_rst()
     
     cfg_paras_rec = []
