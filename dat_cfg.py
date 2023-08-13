@@ -372,7 +372,8 @@ class DAT_CFGS(WIB_CFGS):
             self.sddflg=sdd
         if self.data_align_flg != True:
             self.data_align(self.fembs)
-            self.data_align_flg = True
+            #self.data_align_flg = True
+            self.data_align_flg = False
         print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
         time.sleep(self.fedly)
         return cfg_paras_rec
@@ -677,7 +678,7 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
                 self.set_fe_sync()
                 self.femb_fe_cfg(femb_id=femb_id)
-                time.sleep(0.5)
+                time.sleep(1)
                 datas = self.dat_monadcs()[0]
                 datas_dac.append([dac, datas])
             mon_datas["MON_DAC_SGP1"] = datas_dac
