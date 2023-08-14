@@ -95,7 +95,7 @@ if 0 in tms:
     print ("FE mapping to be done")
     print ("FE mapping to be done")
     print ("FE mapping to be done")
-    logsd, fdir, tms= dat_user_input()
+    logsd, fdir, tms= dat_user_input(debug_mode=False)
     logs.update(logsd)
 
     if not os.path.exists(fdir):
@@ -207,6 +207,10 @@ if 3 in tms:
     print ("FE monitoring measurement starts...")
     data = {}
     data['logs'] = logs
+
+    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
+    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
+    time.sleep(1)
 
     data.update( dat.dat_fe_vbgrs() )
     data.update( dat.dat_fe_mons(mon_type=0x01) )

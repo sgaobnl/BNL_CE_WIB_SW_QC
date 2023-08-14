@@ -21,8 +21,8 @@ import os
 #Default = '\033[99m'
 
 
-def dat_user_input():
-    debug_mode = False 
+def dat_user_input(debug_mode = False ):
+    
     
     logs={}
     
