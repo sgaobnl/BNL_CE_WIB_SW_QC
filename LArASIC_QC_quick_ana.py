@@ -7,9 +7,9 @@ import copy
 import time, datetime, random, statistics    
 from spymemory_decode import wib_dec
 import statsmodels.api as sm
-from spymemory_decode import avg_aligned_by_ts
+#from spymemory_decode import avg_aligned_by_ts
 
-fdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/FE_003000001_003000002_003000003_003000004_004000005_003000006_003000007_003000008/"
+fdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/"
 
 def linear_fit(x, y):
     error_fit = False 
@@ -218,7 +218,7 @@ def dacana(data,dacdkey ):
         fes.append([dacdkey, fe,x,y,slope, constant, peakinl])
     return fes
 
-cs_no =  True
+cs_no =  False
 if cs_no:
 #if True:
     fp = fdir + "QC_INIT_CHK" + ".bin"
@@ -331,8 +331,8 @@ if cs_no:
         plt.plot()
         plt.show()
 
-if cs_no:
-#if :
+#if cs_no:
+if True:
     fp = fdir + "QC_MON" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)

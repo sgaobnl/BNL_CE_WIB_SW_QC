@@ -144,7 +144,6 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
     if fembs == list(range(4)):
         #find minimum length frame and make everything that length
         min_len = len(min(frames, key=len))
-        
         for frame in frames:
             frame = frame[0:min_len]
     
@@ -190,27 +189,33 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
             trigmode="HW"
         
         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs)
-        flen = len(dec_data) 
-        for i in range(flen):
-            if 0 in fembs:
+        if 0 in fembs:
+            flen = len(dec_data[0]) 
+            for i in range(flen):
                 chdata_64ticks = [dec_data[0][i]["CD_data"][tick] + dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
                 femb0 = femb0 + chdata_64ticks        
                 tmts[0].append(dec_data[0][i]["TMTS"])
                 tmts[1].append(dec_data[1][i]["TMTS"])
 
-            if 1 in fembs:        
+        if 1 in fembs:        
+            flen = len(dec_data[2]) 
+            for i in range(flen):
                 chdata_64ticks = [dec_data[2][i]["CD_data"][tick] + dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
                 femb1 = femb1 + chdata_64ticks             
                 tmts[2].append(dec_data[2][i]["TMTS"])
                 tmts[3].append(dec_data[3][i]["TMTS"])
 
-            if 2 in fembs:       
+        if 2 in fembs:       
+            flen = len(dec_data[4]) 
+            for i in range(flen):
                 chdata_64ticks = [dec_data[4][i]["CD_data"][tick] + dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
                 femb2 = femb2 + chdata_64ticks             
                 tmts[4].append(dec_data[4][i]["TMTS"])
                 tmts[5].append(dec_data[5][i]["TMTS"])
 
-            if 3 in fembs:
+        if 3 in fembs:
+            flen = len(dec_data[6]) 
+            for i in range(flen):
                 chdata_64ticks = [dec_data[6][i]["CD_data"][tick] + dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
                 femb3 = femb3 + chdata_64ticks             
                 tmts[6].append(dec_data[6][i]["TMTS"])

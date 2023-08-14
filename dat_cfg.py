@@ -503,8 +503,12 @@ class DAT_CFGS(WIB_CFGS):
                 chmin = np.min(datd[ch][500:1500])
                 if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
                     c1 = True
+                else:
+                    c1 = False
                 if ( (datd[ch][chmaxpos-2] - datd[ch][chmaxpos-10]) > 1000) and ( (datd[ch][chmaxpos+2] - datd[ch][chmaxpos+20]) > 1000) :
                     c2 = True
+                else:
+                    c2 = False
                 if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
                     pass
                 else:
@@ -678,9 +682,10 @@ class DAT_CFGS(WIB_CFGS):
                     self.set_fechip_global(chip=fe&0x07, swdac=3, dac=dac, sgp=sgp)
                 self.set_fe_sync()
                 self.femb_fe_cfg(femb_id=femb_id)
-                time.sleep(1)
+                time.sleep(0.1)
                 datas = self.dat_monadcs()[0]
                 datas_dac.append([dac, datas])
+                print ([sgp, dac, datas])
             mon_datas["MON_DAC_SGP1"] = datas_dac
 
             sgp=0
@@ -695,6 +700,7 @@ class DAT_CFGS(WIB_CFGS):
                         time.sleep(0.1)
                         datas = self.dat_monadcs()[0]
                         datas_dac.append([dac, datas])
+                        print ([sg0, sg1, sgp, dac, datas])
                     mon_datas["MON_DAC_SG0_%d_SG1_%d"%(sg0, sg1)] = datas_dac
 
         #if mon_type == 0x08: 200mV BL

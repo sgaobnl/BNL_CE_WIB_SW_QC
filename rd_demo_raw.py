@@ -59,11 +59,11 @@ if True:
                     if True:
                         i = chip*16 + chn
                         #if chn == 0:
-                        #    plt.plot(x, wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
-                        #else:
-                        xmin = 0
-                        xmax = 1000
-                        plt.plot(wibs[fembi][i][xmin:xmax],color = 'C%d'%chip, label = "Chip%dCH%d"%(chip, chn))
+                        plt.plot(wibs[fembi][i],color = 'C%d'%chip, label = "Chip%dCH0"%chip )
+                        ##else:
+                        #xmin = 0
+                        #xmax = 1000
+                        #plt.plot(wibs[fembi][i][xmin:xmax],color = 'C%d'%chip, label = "Chip%dCH%d"%(chip, chn))
                         plt.ylim((0,16000))
                         plt.legend()
                 #plt.title(f"Waveform of FEMB{fembi}_CHN{chn}")
@@ -71,3 +71,4 @@ if True:
                 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
                 #plt.savefig(fdir + f"FEMB_{fembi}_wf_{chn}_ab.jpg")
                 plt.close()
+                exit()
