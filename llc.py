@@ -323,8 +323,7 @@ class LLC():
     def spybuf(self, fembs= [0, 1,2,3]):
         DAQ_SPY_SIZE = 0x40000 #256KB
         buf = (ctypes.c_char*DAQ_SPY_SIZE)()
-        bufs_bytes = [bytearray(DAQ_SPY_SIZE) for coldata in range(8)]
-	    
+        bufs_bytes = [bytearray(DAQ_SPY_SIZE) for coldata in range(4*2)]
 	    
         for femb in range(4):
             if femb in fembs:
@@ -339,6 +338,9 @@ class LLC():
                 if not ctypes.memmove(byte_ptr, buf, DAQ_SPY_SIZE):
                     print('memmove failed')
                     exit()
+            else: 
+                bufs_bytes[femb*2] = None
+                bufs_bytes[femb*2+1] = None
 	
         return bufs_bytes 
         

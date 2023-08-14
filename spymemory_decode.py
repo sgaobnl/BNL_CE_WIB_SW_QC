@@ -87,6 +87,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
         pass
         deoding_start_addr = 0x0
     else: #the following 5 lines to be updated
+        print ("hardware trigger decoding to be updated...")
         spy_addr_word = buf_end_addr>>2
         if spy_addr_word <= trigger_rec_ticks:
             deoding_start_addr = spy_addr_word + 0x40000 - trigger_rec_ticks #? to be updated
@@ -97,7 +98,6 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
     i = 0
     while i < num_words-PKT_LEN:       
         if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
-            #print(hex(words[i]))
             tmts = words[i]
             f_heads.append([i,tmts])
             i = i + PKT_LEN
@@ -133,7 +133,6 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3f000, fembs=range(4)): #synchronize samples in 8 spy buffers
     #^change default trigger_rec_ticks?
     frames = [[],[],[],[],[],[],[],[]] #frame buffers
-    #buf_flag = [False, False, False, False, False, False, False, False] #can be accomplished by checking if frames[n] is empty
     
     for femb in fembs:
         buf0 = bufs[femb*2]
@@ -142,9 +141,6 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
         frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
         frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
         
-        #buf_flag[femb*2] = True
-        #buf_flag[femb*2+1] = True
-    
     if fembs == list(range(4)):
         #find minimum length frame and make everything that length
         min_len = len(min(frames, key=len))
@@ -175,21 +171,17 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
     spy_num_all = len(data)
     if spy_num_all < spy_num:
         spy_num = spy_num_all
-    tmts = []
-    sfs0 = []
-    sfs1 = []
-    cdts_l0 = []
-    cdts_l1 = []
+
+    tmts = [[],[],[],[],[],[],[],[]]
     femb0 = []
     femb1 = []
     femb2 = []
     femb3 = []
 
-    for i in range(spy_num):
-        raw  = data[i]
-        buf0 = raw[0][0]
-        buf1 = raw[0][1]
-        buf0_end_addr = raw[1]
+    for sn in range(spy_num):
+        raw  = data[sn]
+        bufs = raw[0]
+        buf_end_addr = raw[1]
         spy_rec_ticks = raw[2]
         trig_cmd      = raw[3]
         if trig_cmd == 0:
@@ -197,21 +189,32 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
         else:
             trigmode="HW"
         
-        dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr=buf0_end_addr, trigger_rec_ticks=spy_rec_ticks, fembs=fembs)
-
-##########to be updated
-        flen = len(dec_data[link])
+        dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs)
+        flen = len(dec_data) 
         for i in range(flen):
-            tmts.append(dec_data[link][i]["TMTS"])  # timestampe(64bit) * 512ns  = real time in ns (UTS)
-            sfs0.append(dec_data[link][i]["FEMB_SF"])
-            cdts_l0.append(dec_data[link][i]["FEMB_CDTS"])
-        
-            if link == 0:
-                femb0.append(dec_data[0][i]["FEMB0_2"])
-                femb1.append(dec_data[0][i]["FEMB1_3"])
-            else:
-                femb2.append(dec_data[1][i]["FEMB0_2"])
-                femb3.append(dec_data[1][i]["FEMB1_3"])
+            if 0 in fembs:
+                chdata_64ticks = [dec_data[0][i]["CD_data"][tick] + dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
+                femb0 = femb0 + chdata_64ticks        
+                tmts[0].append(dec_data[0][i]["TMTS"])
+                tmts[1].append(dec_data[1][i]["TMTS"])
+
+            if 1 in fembs:        
+                chdata_64ticks = [dec_data[2][i]["CD_data"][tick] + dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
+                femb1 = femb1 + chdata_64ticks             
+                tmts[2].append(dec_data[2][i]["TMTS"])
+                tmts[3].append(dec_data[3][i]["TMTS"])
+
+            if 2 in fembs:       
+                chdata_64ticks = [dec_data[4][i]["CD_data"][tick] + dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
+                femb2 = femb2 + chdata_64ticks             
+                tmts[4].append(dec_data[4][i]["TMTS"])
+                tmts[5].append(dec_data[5][i]["TMTS"])
+
+            if 3 in fembs:
+                chdata_64ticks = [dec_data[6][i]["CD_data"][tick] + dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
+                femb3 = femb3 + chdata_64ticks             
+                tmts[6].append(dec_data[6][i]["TMTS"])
+                tmts[7].append(dec_data[7][i]["TMTS"])
 
     if 0 in fembs:
         femb0 = list(zip(*femb0))
@@ -234,54 +237,54 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
     return wibdata
 
 
-def avg_aligned_by_ts(wibdata, chn=0, period = 512): #data from one WIB  
-
-    femb0 = wibdata[0] 
-    femb1 = wibdata[1] 
-    femb2 = wibdata[2] 
-    femb3 = wibdata[3] 
-    tmts  = wibdata[4] 
-    tmts  = np.array(tmts) - tmts[0] 
-
-    tmts_sets = [tmts[0]]
-    tmts_sete = []
-    for i in range(len(tmts) - 10):
-        if tmts[i+1] - tmts[i] > 1: 
-            tmts_sets.append(tmts[i+1])
-            tmts_sete.append(tmts[i])
-    
-    tmts_sete.append(tmts[-1])
-
-
-    femb_id = chn//128
-    fembchn = chn%128
-
-    if femb_id == 0:
-        fembdata = femb0
-    elif femb_id == 1:
-        fembdata = femb1
-    elif femb_id == 2:
-        fembdata = femb2
-    else:
-        fembdata = femb3
-
-    cnti = 0
-    f_flg = True
-    for runi in range(len(tmts_sets)):
-        ni = tmts_sets[runi]%period
-        for x in range(tmts_sets[runi]+period-ni, tmts_sete[runi]-period, period):
-            post = np.where(tmts == x)[0][0]
-            if f_flg:
-                f_flg = False
-                tdata0 = np.array(fembdata[fembchn][post:post+period]) 
-                tdata = tdata0
-                cnti = 1
-            else:
-                tdata = tdata + np.array(fembdata[fembchn][post:post+period]) 
-                cnti += 1
-    tdata = tdata/cnti
-
-    return tdata,tdata0, chn, period, cnti
+#def avg_aligned_by_ts(wibdata, chn=0, period = 512): #data from one WIB  
+#
+#    femb0 = wibdata[0] 
+#    femb1 = wibdata[1] 
+#    femb2 = wibdata[2] 
+#    femb3 = wibdata[3] 
+#    tmts  = wibdata[4] 
+#    tmts  = np.array(tmts) - tmts[0] 
+#
+#    tmts_sets = [tmts[0]]
+#    tmts_sete = []
+#    for i in range(len(tmts) - 10):
+#        if tmts[i+1] - tmts[i] > 1: 
+#            tmts_sets.append(tmts[i+1])
+#            tmts_sete.append(tmts[i])
+#    
+#    tmts_sete.append(tmts[-1])
+#
+#
+#    femb_id = chn//128
+#    fembchn = chn%128
+#
+#    if femb_id == 0:
+#        fembdata = femb0
+#    elif femb_id == 1:
+#        fembdata = femb1
+#    elif femb_id == 2:
+#        fembdata = femb2
+#    else:
+#        fembdata = femb3
+#
+#    cnti = 0
+#    f_flg = True
+#    for runi in range(len(tmts_sets)):
+#        ni = tmts_sets[runi]%period
+#        for x in range(tmts_sets[runi]+period-ni, tmts_sete[runi]-period, period):
+#            post = np.where(tmts == x)[0][0]
+#            if f_flg:
+#                f_flg = False
+#                tdata0 = np.array(fembdata[fembchn][post:post+period]) 
+#                tdata = tdata0
+#                cnti = 1
+#            else:
+#                tdata = tdata + np.array(fembdata[fembchn][post:post+period]) 
+#                cnti += 1
+#    tdata = tdata/cnti
+#
+#    return tdata,tdata0, chn, period, cnti
 
 
         
