@@ -9,7 +9,9 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/FE_002000001_002000002_002000003_002000004_002000005_002000006_002000007_002000008/"
+fsubdir = "/FE_001000000_001000001_001000202_001000003_001000004_001000005_001000006_001000007"
+froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
+fdir = froot + fsubdir + "/"
 
 def linear_fit(x, y):
     error_fit = False 
@@ -218,7 +220,7 @@ def dacana(data,dacdkey ):
         fes.append([dacdkey, fe,x,y,slope, constant, peakinl])
     return fes
 
-cs_no =  False
+cs_no =  True
 if cs_no:
 #if True:
     fp = fdir + "QC_INIT_CHK" + ".bin"

@@ -29,7 +29,7 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
     
     if infile_mode:
         while True:
-            csvfile = input ("Is asic_info.csv updated? (Y/N) : " )
+            csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:
@@ -128,15 +128,15 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
         #    except ValueError:
         #        print ("ValueError: Wrong input, please input number 0 to 3")
     
-        while True:
-            datowib=input("is DAT on WIB slot 0? (Y/N) :")
-            if ("Y" in datowib) or ("y" in datowib):
-                fembs = [0]
-                break
-            else:
-                print ("\033[91m Please contact tech coordinator...\033[0m")
-                print ("Exit anyway")
-                exit()
+        #while True:
+        #    datowib=input("is DAT on WIB slot 0? (Y/N) :")
+        #    if ("Y" in datowib) or ("y" in datowib):
+        #        fembs = [0]
+        #        break
+        #    else:
+        #        print ("\033[91m Please contact tech coordinator...\033[0m")
+        #        print ("Exit anyway")
+        #        exit()
     
         logs['DAT_on_WIB_slot']=""
         for femb_id in fembs:
@@ -178,7 +178,7 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
                     print ("\033[93m FE Serial number is not in right format (XXX-XXXXX), please re-enter\033[0m") 
     
     while True:
-        ccflg=input("Do covers of shielding box close? (Y/N) :")
+        ccflg=input("\033[93m Do covers of shielding box close? (Y/N) : \033[0m")
         if ("Y" in ccflg) or ("y" in ccflg):
             break
         else:
@@ -192,6 +192,3 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
     #tms=[0,1,2,3,4,5,6,7,8,9,10]
 
     return logs,  fdir, tms
-
-
-dat_user_input(infile_mode = True )

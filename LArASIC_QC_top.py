@@ -22,11 +22,10 @@ dat =  DAT_CFGS()
 #Black = '\033[90m'
 #Default = '\033[99m'
 
-logs = {}
-logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+wib_time = datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S")
 while True:
-    print ("WIB time: " + logs['date'])
-    wibtimechk=input("is time of WIB current ? (Y/N): ")
+    print ("\033[92m WIB time: " + wib_time + " \033[0m")
+    wibtimechk=input("\033[95m Is time of WIB current ? (Y/N):  \033[0m")
     if ("Y" in wibtimechk) or ("y" in wibtimechk):
         break
     else:
@@ -39,12 +38,8 @@ while True:
         print ("Restart this script...")
         exit()
 
-debug_mode=False
 while True:
-    if debug_mode:
-        datowib = "y"
-    else:
-        datowib=input("is DAT on WIB slot 0? (Y/N) :")
+    datowib=input("\033[95m Is DAT on WIB slot 0? (Y/N) : \033[0m")
     if ("Y" in datowib) or ("y" in datowib):
         fembs = [0]
         break
@@ -53,30 +48,17 @@ while True:
         print ("Exit anyway")
         exit()
 
-logs['DAT_on_WIB_slot']=""
-for femb_id in fembs:
-    logs['DAT_on_WIB_slot']+="FEMB%02d--"%femb_id
-logs['DAT_on_WIB_slot']+= "\n"
-
-
-
 dat.fembs = fembs
 
 tt = []
 tt.append(time.time())
 
-#tms=[0,1,2,3,4,5,6,7,8,9,10]
-#tms=[0,1,2,3,5,6,7,8,9,10]
+logs = {}
 tms=[0]
-#tms=[ 2]
-#tms=[ 3]
-#tms=[ 6]
-#tms=[5,6,7,8,9,10]
 ####### Init check information #######
 if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
-    datad['logs'] = logs
 
     pwr_meas, link_mask = dat.wib_pwr_on_dat()
     datad["WIB_PWR"] = pwr_meas
@@ -97,6 +79,7 @@ if 0 in tms:
     print ("FE mapping to be done")
     logsd, fdir, tms= dat_user_input(infile_mode=True)
     logs.update(logsd)
+    datad['logs'] = logs
 
     if not os.path.exists(fdir):
         try:
@@ -250,16 +233,16 @@ if 4 in tms:
             adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=0, slk1=1) #900mV, 5000pA, SDD off, SDF off, ASIC-DAC
         if cseti == 4:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.0, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, DAT-DAC
         if cseti == 5:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.0, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=1, sdf=0 ) #200mV, 500pA, SDD on, SDF off, DAT-DAC
         if cseti == 6:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.0, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=1 ) #200mV, 500pA, SDD off, SDF on, DAT-DAC
         if cseti == 7:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.5, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.53, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, Direct-input
     
         fes_pwr_info = dat.fe_pwr_meas()
@@ -561,5 +544,6 @@ if 9 in tms:
     dat.femb_powering([])
     tt.append(time.time())
     print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
-    print ("Done")
+    print ("\033[92m  please move data in folder ({}) to the PC and perform the analysis script \033[0m".format(fdir))
+    print ("\033[92m  Well done \033[0m")
 
