@@ -95,7 +95,7 @@ if 0 in tms:
     print ("FE mapping to be done")
     print ("FE mapping to be done")
     print ("FE mapping to be done")
-    logsd, fdir, tms= dat_user_input(debug_mode=False)
+    logsd, fdir, tms= dat_user_input(infile_mode=True)
     logs.update(logsd)
 
     if not os.path.exists(fdir):

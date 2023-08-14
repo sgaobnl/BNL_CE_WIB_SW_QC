@@ -9,7 +9,7 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/"
+fdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/FE_002000001_002000002_002000003_002000004_002000005_002000006_002000007_002000008/"
 
 def linear_fit(x, y):
     error_fit = False 
@@ -331,8 +331,8 @@ if cs_no:
         plt.plot()
         plt.show()
 
-#if cs_no:
-if True:
+if cs_no:
+#if True:
     fp = fdir + "QC_MON" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -642,14 +642,19 @@ if cs_no:
                 vals.append(val)
         
                 wibdata = wib_dec(rawdata, fembs, spy_num=1)
-                chns = np.arange(fembs[0]*128 + fembchn, fembs[0]*128 + fembchn + 128, 16)
+                #chns = np.arange(fembs[0]*128 + fembchn, fembs[0]*128 + fembchn + 128, 16)
+                chns = np.arange( fembchn, fembchn + 128, 16)
                 pps = []
 
-                for chn in chns:
-                    avgdata = avg_aligned_by_ts(wibdata, chn, period)
-                    pps.append (np.max(avgdata[0]))
+                #for chn in chns:
+                #    avgdata = avg_aligned_by_ts(wibdata, chn, period)
+                #    pps.append (np.max(avgdata[0]))
+                for femb in fembs:
+                    for chn in chns:
+                        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
+                        pps.append (np.max(wibdata[femb][chn]))
+                #exit()
                 pps4.append(pps)
-        print (pps4)
         pps4s.append(pps4)
 
     ratios = []
@@ -661,7 +666,6 @@ if cs_no:
     del1 = vals[3]-vals[2]
     del2 = vals[1] - vals[0]
     caps = np.array(ratios)*del1/del2/0.185
-    print (caps)
 
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
