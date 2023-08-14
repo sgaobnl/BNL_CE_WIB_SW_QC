@@ -19,10 +19,6 @@ import argparse
 
 
 def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
-    ag = argparse.ArgumentParser()
-    ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0,1,2,3,4,5,6,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,6,7,8,9,10])
-    args = ag.parse_args()   
-    tms = args.task
 
     logs={}
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
@@ -191,4 +187,4 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
 
     #tms=[0,1,2,3,4,5,6,7,8,9,10]
 
-    return logs,  fdir, tms
+    return logs,  fdir

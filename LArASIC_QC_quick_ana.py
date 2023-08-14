@@ -13,6 +13,35 @@ fsubdir = "/FE_001000000_001000001_001000202_001000003_001000004_001000005_00100
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
+
+evl = input ("Analyze all test items? (Y/N) : \033[0m" )
+if ("Y" in evl) or ("y" in evl):
+    tms = [0, 1, 2,3,4,5,61, 62, 63,7,8]
+    pass
+else:
+    print ("\033[93m  QC task list   \033[0m")
+    print ("\033[96m 0: Initilization checkout  \033[0m")
+    print ("\033[96m 1: FE power consumption measurement  \033[0m")
+    print ("\033[96m 2: FE response measurement checkout  \033[0m")
+    print ("\033[96m 3: FE monitoring measurement  \033[0m")
+    print ("\033[96m 4: FE power cycling measurement  \033[0m")
+    print ("\033[96m 5: FE noise measurement  \033[0m")
+    print ("\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m")
+    print ("\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m")
+    print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
+    print ("\033[96m 7: FE delay run  \033[0m")
+    print ("\033[96m 8: FE cali-cap measurement \033[0m")
+
+    while True
+        testnostr = input ("Please input a number (0, 1, 2, 3, 4, 5, 61, 62, 63, 8) for one test item: " )
+        try:
+            testno = int(testnostr)
+            tms = [testno]
+            break
+        except ValueError:
+            print ("Wrong value, please re-enter...")
+
+
 def linear_fit(x, y):
     error_fit = False 
     try:
@@ -220,8 +249,7 @@ def dacana(data,dacdkey ):
         fes.append([dacdkey, fe,x,y,slope, constant, peakinl])
     return fes
 
-cs_no =  True
-if cs_no:
+if 0 in tms:
 #if True:
     fp = fdir + "QC_INIT_CHK" + ".bin"
     with open(fp, 'rb') as fn:
@@ -249,7 +277,7 @@ if cs_no:
             plt.show()
 
 
-if cs_no:
+if 1 in tms:
 #if True:
     fp = fdir + "QC_PWR" + ".bin"
     with open(fp, 'rb') as fn:
@@ -278,7 +306,8 @@ if cs_no:
         plt.show()
 
 
-if cs_no:
+if 4 in tms:
+#if True:
 #if True:
     fp = fdir + "QC_PWR_CYCLE" + ".bin"
     if os.path.isfile(fp):
@@ -307,7 +336,8 @@ if cs_no:
             plt.plot()
             plt.show()
    
-if cs_no:
+if 2 in tms:
+#if True:
 #if True:
     fp = fdir + "QC_CHKRES" + ".bin"
     with open(fp, 'rb') as fn:
@@ -333,7 +363,8 @@ if cs_no:
         plt.plot()
         plt.show()
 
-if cs_no:
+if 3 in tms:
+#if True:
 #if True:
     fp = fdir + "QC_MON" + ".bin"
     with open(fp, 'rb') as fn:
@@ -424,7 +455,8 @@ if cs_no:
     plt.show()
     plt.close()
 
-if cs_no:
+if 61 in tms:
+#if True:
 #if True:
     fp = fdir + "QC_CALI_ASICDAC" + ".bin"
     with open(fp, 'rb') as fn:
@@ -462,7 +494,8 @@ if cs_no:
         plt.show()
         plt.close()
 
-if cs_no:
+if 62 in tms:
+#if True:
     fp = fdir + "QC_CALI_DATDAC" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -502,7 +535,8 @@ if cs_no:
             plt.show()
             plt.close()
 
-if cs_no:
+if 63 in tms:
+#if True:
 #if True:
     fp = fdir + "QC_CALI_DIRECT" + ".bin"
     with open(fp, 'rb') as fn:
@@ -543,7 +577,9 @@ if cs_no:
         plt.show()
         plt.close()
 
-if cs_no:
+if 5 in tms:
+#if True:
+#if True:
     fp = fdir + "QC_RMS" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -613,8 +649,9 @@ if cs_no:
     plt.show()
     plt.close()
 
-if cs_no:
+if 8 in tms:
 #if True:
+if True:
     fp = fdir + "QC_Cap_Meas" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -668,6 +705,7 @@ if cs_no:
     del1 = vals[3]-vals[2]
     del2 = vals[1] - vals[0]
     caps = np.array(ratios)*del1/del2/0.185
+    print (caps)
 
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))

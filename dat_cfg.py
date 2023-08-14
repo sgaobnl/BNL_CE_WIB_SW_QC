@@ -115,7 +115,7 @@ class DAT_CFGS(WIB_CFGS):
                 exit()
         return pwr_meas, link_mask
 
-    def dat_pwroff_chk(self):
+    def dat_pwroff_chk(self, env='RT'):
         self.femb_powering([])
         while True:
             init_f = False
@@ -163,6 +163,8 @@ class DAT_CFGS(WIB_CFGS):
 #                    if "DC3DC3_I" in key:
 #                        if (pwr_meas[key] > 0.05) :
 #                            init_f = True
+                    if 'RT' in env or 'rt' in env:
+                        init_f = False
             if init_f:
                 print ("Wait 2 seconds, not yet completely shut down...")
                 time.sleep(2)

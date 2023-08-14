@@ -191,6 +191,8 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs)
         if 0 in fembs:
             flen = len(dec_data[0]) 
+            if flen>33:
+                flen=32
             for i in range(flen):
                 chdata_64ticks = [dec_data[0][i]["CD_data"][tick] + dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
                 femb0 = femb0 + chdata_64ticks        
@@ -199,6 +201,8 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
 
         if 1 in fembs:        
             flen = len(dec_data[2]) 
+            if flen>33:
+                flen=32
             for i in range(flen):
                 chdata_64ticks = [dec_data[2][i]["CD_data"][tick] + dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
                 femb1 = femb1 + chdata_64ticks             
@@ -207,6 +211,8 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
 
         if 2 in fembs:       
             flen = len(dec_data[4]) 
+            if flen>33:
+                flen=32
             for i in range(flen):
                 chdata_64ticks = [dec_data[4][i]["CD_data"][tick] + dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
                 femb2 = femb2 + chdata_64ticks             
@@ -215,6 +221,8 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
 
         if 3 in fembs:
             flen = len(dec_data[6]) 
+            if flen>33:
+                flen=32
             for i in range(flen):
                 chdata_64ticks = [dec_data[6][i]["CD_data"][tick] + dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
                 femb3 = femb3 + chdata_64ticks             

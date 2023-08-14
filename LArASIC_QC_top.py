@@ -7,6 +7,7 @@ import time, datetime, random, statistics
 import os
 from dat_cfg import DAT_CFGS
 from DAT_user_input import dat_user_input
+import argparse
                 
 dat =  DAT_CFGS()
 
@@ -21,6 +22,26 @@ dat =  DAT_CFGS()
 #Grey = '\033[90m'
 #Black = '\033[90m'
 #Default = '\033[99m'
+
+print ("\033[93m  QC task list   \033[0m")
+print ("\033[96m 0: Initilization checkout  \033[0m")
+print ("\033[96m 1: FE power consumption measurement  \033[0m")
+print ("\033[96m 2: FE response measurement checkout  \033[0m")
+print ("\033[96m 3: FE monitoring measurement  \033[0m")
+print ("\033[96m 4: FE power cycling measurement  \033[0m")
+print ("\033[96m 5: FE noise measurement  \033[0m")
+print ("\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m")
+print ("\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m")
+print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
+print ("\033[96m 7: FE delay run  \033[0m")
+print ("\033[96m 8: FE cali-cap measurement \033[0m")
+print ("\033[96m 9: Turn DAT on \033[0m")
+print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
+
+ag = argparse.ArgumentParser()
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0,1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
+args = ag.parse_args()   
+tms = args.task
 
 wib_time = datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S")
 while True:
@@ -54,8 +75,16 @@ tt = []
 tt.append(time.time())
 
 logs = {}
-tms=[0]
+logsd, fdir =  dat_user_input(infile_mode=True)
+logs.update(logsd)
+
+#tms=[0]
 ####### Init check information #######
+if 10 in tms:
+    print ("Turn DAT on and wait 10 seconds")
+    dat.femb_powering([0])
+    time.sleep(10)
+
 if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
@@ -77,8 +106,7 @@ if 0 in tms:
     print ("FE mapping to be done")
     print ("FE mapping to be done")
     print ("FE mapping to be done")
-    logsd, fdir, tms= dat_user_input(infile_mode=True)
-    logs.update(logsd)
+
     datad['logs'] = logs
 
     if not os.path.exists(fdir):
@@ -217,7 +245,7 @@ if 4 in tms:
     datad['logs'] = logs
     
     for ci in range(cycle_times):
-        dat.dat_pwroff_chk() #make sure DAT is off
+        dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
         dat.wib_pwr_on_dat() #turn DAT on
         cseti = ci%8
         if cseti == 0:
@@ -334,9 +362,7 @@ if 5 in tms:
     tt.append(time.time())
     print ("FE noise measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
-if 6 in tms:
-    print ("FE calibration measurement starts...")
-
+if 61 in tms:
     if True:
         print ("perform ASIC-DAC calibration under 14mV/fC, 2us")
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0)
@@ -370,7 +396,10 @@ if 6 in tms:
         fp = fdir + "QC_CALI_ASICDAC" + ".bin"
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)
-       
+    tt.append(time.time())
+    print ("FE calibration measurement (ASIC-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+      
+if 62 in tms:
     Vref = 1.583
     if True:
         print ("perform DAT-DAC calibration under 14mV/fC, 2us")
@@ -408,7 +437,10 @@ if 6 in tms:
                 fp = fdir + "QC_CALI_DATDAC" + ".bin"
                 with open(fp, 'wb') as fn:
                     pickle.dump(datad, fn)
-       
+    tt.append(time.time())
+    print ("FE calibration measurement (DAT-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+      
+if 63 in tms:
     if True:
         print ("perform DIRECT-input DAC calibration under 14mV/fC, 2us")
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=Vref, period=1000, width=800) 
@@ -446,7 +478,7 @@ if 6 in tms:
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("FE calibration measurement (Direct-Input) is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 7 in tms:
     print ("FE delay run starts...")
@@ -546,4 +578,5 @@ if 9 in tms:
     print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
     print ("\033[92m  please move data in folder ({}) to the PC and perform the analysis script \033[0m".format(fdir))
     print ("\033[92m  Well done \033[0m")
+
 
