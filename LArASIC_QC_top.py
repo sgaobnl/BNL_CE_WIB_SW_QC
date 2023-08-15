@@ -261,16 +261,16 @@ if 4 in tms:
             adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=0, slk1=1) #900mV, 5000pA, SDD off, SDF off, ASIC-DAC
         if cseti == 4:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, DAT-DAC
         if cseti == 5:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=1, sdf=0 ) #200mV, 500pA, SDD on, SDF off, DAT-DAC
         if cseti == 6:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.53, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=1 ) #200mV, 500pA, SDD off, SDF on, DAT-DAC
         if cseti == 7:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.53, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.54, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, Direct-input
     
         fes_pwr_info = dat.fe_pwr_meas()

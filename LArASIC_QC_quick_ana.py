@@ -9,12 +9,12 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fsubdir = "/FE_001000000_001000001_001000202_001000003_001000004_001000005_001000006_001000007"
+fsubdir = "/FE_011000001_011000002_011000203_011000004_011000005_011000006_011000007_011000008/"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
 
-evl = input ("Analyze all test items? (Y/N) : \033[0m" )
+evl = input ("Analyze all test items? (Y/N) : " )
 if ("Y" in evl) or ("y" in evl):
     tms = [0, 1, 2,3,4,5,61, 62, 63,7,8]
     pass
@@ -32,7 +32,7 @@ else:
     print ("\033[96m 7: FE delay run  \033[0m")
     print ("\033[96m 8: FE cali-cap measurement \033[0m")
 
-    while True
+    while True:
         testnostr = input ("Please input a number (0, 1, 2, 3, 4, 5, 61, 62, 63, 8) for one test item: " )
         try:
             testno = int(testnostr)
@@ -71,8 +71,8 @@ def linear_fit(x, y):
     return slope, constant, peakinl, error_gain
 
 
-def plt_log(plt,logsd):
-    fig.suptitle("Test Result", weight ="bold", fontsize = 12)
+def plt_log(plt,logsd, onekey):
+    fig.suptitle("Test Result of " + onekey, weight ="bold", fontsize = 12)
     lkeys = list(logsd)
     for i in range(len(lkeys)):
         loginfo = "{} : {}".format(lkeys[i], data["logs"][lkeys[i]])
@@ -85,6 +85,40 @@ def plt_log(plt,logsd):
         #y = 0.90-i*0.02
         y = 0.92
         fig.text(x, y, loginfo, fontsize=8)
+
+def ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
+    kpwrs = list(pwr_meas.keys())
+
+    vddas = []
+    vddos = []
+    vddps = []
+    cddas = []
+    cddos = []
+    cddps = []
+
+    for i in range(len(kpwrs)):
+        if "VDDA" in kpwrs[i]:
+            vddas.append(pwr_meas[kpwrs[i]][0])
+            cddas.append(pwr_meas[kpwrs[i]][1])
+        if "VDDO" in kpwrs[i]:
+            vddos.append(pwr_meas[kpwrs[i]][0])
+            cddos.append(pwr_meas[kpwrs[i]][1])
+        if "VPPP" in kpwrs[i]:
+            vddps.append(pwr_meas[kpwrs[i]][0])
+            cddps.append(pwr_meas[kpwrs[i]][1])
+    
+    show_flg=True
+    if all(item >= vin[0] for item in vddas) and all(item <= vin[1] for item in vddas) :
+        if all(item >= vin[0] for item in vddos) and all(item <= vin[1] for item in vddos) :
+            if all(item >= vin[0] for item in vddps) and all(item <= vin[1] for item in vddps) :
+                if all(item >= cdda[0] for item in cddas) and all(item <= cdda[1] for item in cddas) :
+                    if all(item >= cddp[0] for item in cddps) and all(item <= cddp[1] for item in cddps) :
+                        if all(item >= cddo[0] for item in cddos) and all(item <= cddo[1] for item in cddos) :
+                            show_flg = False
+    return show_flg
+
+
+
 
 def plt_fepwr(plt, pwr_meas):
     kpwrs = list(pwr_meas.keys())
@@ -118,6 +152,7 @@ def plt_fepwr(plt, pwr_meas):
     ax5.set_ylim((0,2))
     ax5.set_xlabel("FE no", fontsize=8)
     ax5.grid()
+    ax5.legend()
 
     ax6.scatter(fe, cddas, color='b', marker = 'o', label='VDDA')
     ax6.scatter(fe, cddps, color='r', marker = 'o', label='VDDP')
@@ -126,6 +161,7 @@ def plt_fepwr(plt, pwr_meas):
     ax6.set_ylabel("Current / mA", fontsize=8)
     ax6.set_ylim((-10,50))
     ax6.set_xlabel("FE no", fontsize=8)
+    ax6.legend()
     ax6.grid()
 
 
@@ -165,14 +201,27 @@ def data_ana(fembs, rawdata, rms_flg=False):
         wfs.append(chndata[ppos-50:ppos+150])
     return chns, rmss, peds, pkps, pkns, wfs
 
+def ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
+    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+    show_flg=True
+    amps = np.array(pkps) - np.array(peds)
+    if all(item > par[0] for item in amps) and all(item < par[1] for item in amps) :
+        if all(item > rmsr[0] for item in rmss) and all(item < rmsr[1] for item in rmss) :
+            if all(item > pedr[0] for item in peds) and all(item < pedr[1] for item in peds) :
+                show_flg = False
+    return show_flg
 
-def plt_subplot(plt, fembs, rawdata):
+
+def plt_subplot(plt, fembs, rawdata ):
     ax1 = plt.subplot2grid((2, 3), (0, 1), colspan=1, rowspan=1)
     ax2 = plt.subplot2grid((2, 3), (0, 2), colspan=1, rowspan=1)
     ax3 = plt.subplot2grid((2, 3), (1, 1), colspan=1, rowspan=1)
     ax4 = plt.subplot2grid((2, 3), (1, 2), colspan=1, rowspan=1)
 
     chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+
+
+
 #    wibdata = wib_dec(rawdata,fembs, spy_num=1)
 #    datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 #
@@ -232,6 +281,7 @@ def plt_subplot(plt, fembs, rawdata):
     ax1.grid()
     ax2.grid()
 
+
 def dacana(data,dacdkey ):
     dacs, dacv = zip(*data[dacdkey])
     fedacs = [[], [], [], [], [], [], [], []]
@@ -262,20 +312,30 @@ if 0 in tms:
     
     for onekey in dkeys:
         if ("DIRECT_PLS_CHK" in onekey) or ("ASICDAC_CALI_CHK" in onekey):
-            print (onekey)
-            import matplotlib.pyplot as plt
-            fig = plt.figure(figsize=(9,6))
-            plt.rcParams.update({'font.size': 8})
             cfgdata = data[onekey]
             fembs = cfgdata[0]
             rawdata = cfgdata[1]
             cfg_info = cfgdata[2]
-            plt_log(plt,logsd)
-            plt_subplot(plt, fembs, rawdata)
-            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-            plt.plot()
-            plt.show()
 
+            show_flg=True
+            if ("DIRECT_PLS_CHK" in onekey) :
+                show_flg = ana_res(fembs, rawdata, par=[9000,13000], rmsr=[5,25], pedr=[300,3000] )
+            if ("ASICDAC_CALI_CHK" in onekey):
+                show_flg = ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,3000] )
+
+            if show_flg:
+                print (onekey + "  : Fail")
+                import matplotlib.pyplot as plt
+                fig = plt.figure(figsize=(9,6))
+                plt.rcParams.update({'font.size': 8})
+                plt_log(plt,logsd, onekey)
+                plt_subplot(plt, fembs, rawdata)
+                plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+                plt.plot()
+                plt.show()
+                plt.close()
+            else:
+                print (onekey + "  : PASS")
 
 if 1 in tms:
 #if True:
@@ -289,56 +349,54 @@ if 1 in tms:
     dkeys.remove("logs")
     
     for onekey in dkeys:
-        print (onekey)
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(9,6))
-        plt.rcParams.update({'font.size': 8})
         cfgdata = data[onekey]
         fembs = cfgdata[0]
         rawdata = cfgdata[1]
         cfg_info = cfgdata[2]
         pwr_meas = cfgdata[3]
-        plt_log(plt,logsd)
-        plt_fepwr(plt, pwr_meas)
-        plt_subplot(plt, fembs, rawdata)
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
 
+        show_flg=True
+        if ("PWR_SDD0_SDF0_SNC0" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PWR_SDD0_SDF1_SNC0" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[35,50], cddp=[25,35], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PWR_SDD1_SDF0_SNC0" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.60,1.9], cdda=[40,50], cddp=[25,35], cddo=[5,15])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PWR_SDD0_SDF0_SNC1" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[500,2000] )
+        if ("PWR_SDD0_SDF1_SNC1" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[35,50], cddp=[25,35], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[500,2000] )
+        if ("PWR_SDD1_SDF0_SNC1" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.60,1.9], cdda=[40,50], cddp=[25,35], cddo=[5,15])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[300,2000] )
 
-if 4 in tms:
-#if True:
-#if True:
-    fp = fdir + "QC_PWR_CYCLE" + ".bin"
-    if os.path.isfile(fp):
-        with open(fp, 'rb') as fn:
-            data = pickle.load( fn)
-    
-        dkeys = list(data.keys())
-        
-        logsd = data["logs"]
-        dkeys.remove("logs")
-        
-        for onekey in dkeys:
-            print (onekey)
+        if show_flg:
+            print (onekey + "  : Fail")
             import matplotlib.pyplot as plt
             fig = plt.figure(figsize=(9,6))
             plt.rcParams.update({'font.size': 8})
-            cfgdata = data[onekey]
-            fembs = cfgdata[0]
-            rawdata = cfgdata[1]
-            cfg_info = cfgdata[2]
-            pwr_meas = cfgdata[3]
-            plt_log(plt,logsd)
+            plt_log(plt,logsd, onekey)
             plt_fepwr(plt, pwr_meas)
             plt_subplot(plt, fembs, rawdata)
             plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
             plt.plot()
             plt.show()
+        else:
+            print (onekey + "  : PASS")
+
    
 if 2 in tms:
-#if True:
-#if True:
     fp = fdir + "QC_CHKRES" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -349,19 +407,59 @@ if 2 in tms:
     dkeys.remove("logs")
     
     for onekey in dkeys:
-        print (onekey)
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(9,6))
-        plt.rcParams.update({'font.size': 8})
+        show_flg = True
         cfgdata = data[onekey]
         fembs = cfgdata[0]
         rawdata = cfgdata[1]
         cfg_info = cfgdata[2]
-        plt_log(plt,logsd)
-        plt_subplot(plt, fembs, rawdata)
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
+
+        if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[3,15], pedr=[8000,10000] )
+        if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[10,40], pedr=[8000,10000] )
+        if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG11" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[2500,5000], rmsr=[2,10], pedr=[8000,10000] )
+        if ("CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_OUTPUT_SDD0_SDF1_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_OUTPUT_SDD1_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC1_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[500,2000] )
+        if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[10000,12000] )
+        if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST10_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST10_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+
+        if show_flg:
+            print (onekey + "  : Fail")
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(9,6))
+            plt.rcParams.update({'font.size': 8})
+            plt_log(plt,logsd, onekey)
+            plt_subplot(plt, fembs, rawdata)
+            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+            plt.plot()
+            plt.show()
+        else:
+            print (onekey + "  : PASS")
 
 if 3 in tms:
 #if True:
@@ -454,6 +552,78 @@ if 3 in tms:
     plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
     plt.show()
     plt.close()
+
+if 4 in tms:
+#if True:
+#if True:
+    fp = fdir + "QC_PWR_CYCLE" + ".bin"
+    if os.path.isfile(fp):
+        with open(fp, 'rb') as fn:
+            data = pickle.load( fn)
+    
+        dkeys = list(data.keys())
+        
+        logsd = data["logs"]
+        dkeys.remove("logs")
+        
+    for onekey in dkeys:
+        cfgdata = data[onekey]
+        fembs = cfgdata[0]
+        rawdata = cfgdata[1]
+        cfg_info = cfgdata[2]
+        pwr_meas = cfgdata[3]
+
+        show_flg=True
+        if ("PwrCycle_0" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PwrCycle_1" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,30], cddp=[25,40], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PwrCycle_2" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.70,1.9], cdda=[15,30], cddp=[30,40], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+        if ("PwrCycle_3" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.70,1.9], cdda=[15,30], cddp=[30,40], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[10000,12000] )
+        if ("PwrCycle_4" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.70,1.9], cdda=[15,30], cddp=[30,40], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[10000,13000], rmsr=[5,30], pedr=[500,2000] )
+        if ("PwrCycle_5" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.65,1.9], cdda=[40,50], cddp=[20,35], cddo=[5,15])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[10000,13000], rmsr=[5,30], pedr=[500,2000] )
+        if ("PwrCycle_6" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.65,1.9], cdda=[40,50], cddp=[20,35], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[10000,13000], rmsr=[5,30], pedr=[500,2000] )
+        if ("PwrCycle_7" in onekey) :
+            show_flg = ana_fepwr(pwr_meas, vin=[1.7,1.9], cdda=[15,30], cddp=[30,40], cddo=[0,10])
+            if not show_flg:
+                show_flg = ana_res(fembs, rawdata, par=[10000,13000], rmsr=[5,30], pedr=[500,2000] )
+
+        if show_flg:
+            print (onekey)
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(9,6))
+            plt.rcParams.update({'font.size': 8})
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+            cfg_info = cfgdata[2]
+            pwr_meas = cfgdata[3]
+            plt_log(plt,logsd, onekey)
+            plt_fepwr(plt, pwr_meas)
+            plt_subplot(plt, fembs, rawdata)
+            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+            plt.plot()
+            plt.show()
+
 
 if 61 in tms:
 #if True:
@@ -651,7 +821,6 @@ if 5 in tms:
 
 if 8 in tms:
 #if True:
-if True:
     fp = fdir + "QC_Cap_Meas" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
