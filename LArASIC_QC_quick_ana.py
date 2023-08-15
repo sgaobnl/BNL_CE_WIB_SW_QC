@@ -9,8 +9,8 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fsubdir = "/FE_003007415_003007416_003007417_003007433_003007432_003007425_003007426_003007431/"
-froot = "D:/DAT_LArASIC_QC/"
+fsubdir = "FE_003007415_003007416_003007417_003007433_003007432_003007425_003007426_003007431"
+froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
 
@@ -717,7 +717,7 @@ if 63 in tms:
     logsd = data["logs"]
     dkeys.remove("logs")
 
-    for snc in [0, 1]:
+    for snc in [ 1]:
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(8,6))
         plt.rcParams.update({'font.size': 8})
