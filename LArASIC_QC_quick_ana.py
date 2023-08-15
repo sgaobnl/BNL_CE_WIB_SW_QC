@@ -9,8 +9,8 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fsubdir = "/FE_011000001_011000002_011000203_011000004_011000005_011000006_011000007_011000008/"
-froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
+fsubdir = "/FE_003007415_003007416_003007417_003007433_003007432_003007425_003007426_003007431/"
+froot = "D:/DAT_LArASIC_QC/"
 fdir = froot + fsubdir + "/"
 
 

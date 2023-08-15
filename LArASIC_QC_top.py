@@ -10,6 +10,7 @@ from DAT_user_input import dat_user_input
 import argparse
                 
 dat =  DAT_CFGS()
+Vref = 1.583
 
 ####### Input test information #######
 #Red = '\033[91m'
@@ -400,7 +401,6 @@ if 61 in tms:
     print ("FE calibration measurement (ASIC-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
       
 if 62 in tms:
-    Vref = 1.583
     if True:
         print ("perform DAT-DAC calibration under 14mV/fC, 2us")
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref, period=1000, width=800) 
