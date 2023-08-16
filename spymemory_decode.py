@@ -97,21 +97,20 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             else:
                 deoding_start_addr = spy_addr_word  - trigger_rec_ticks
 
-        f_heads = []
-        i = 0
-#        for x in range (0, 899*3+1, 899):
+#        for x in range (0, 899*20+1, 899):
 #            print ("KKKKKKKKKKKKKKKKKK")
 #            print (x//899)
 #            print (x, hex(words[x]))
 #            print (x+1, hex(words[x+1]), hex((words[x+1]) -(words[x+1-899]) ))
 #            print (x+2, hex(words[x+2]), hex((words[x+2]&0x7fff) -(words[x+2-899]&0x7fff)))
 #            print (x+3, hex(words[x+3]))
-
-
+#
+        f_heads = []
+        i = 0
         while i < num_words-PKT_LEN-oft:       
             #if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
-            #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
-            if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
+            if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
+            #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
                 i = i + PKT_LEN
@@ -127,6 +126,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             break
         else:
             print (oft, len(f_heads))
+        break
     w_sofs, tmsts = zip(*f_heads)
     num_frams = num_words // PKT_LEN
     ordered_frames = []

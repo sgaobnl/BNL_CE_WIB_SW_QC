@@ -374,7 +374,6 @@ class DAT_CFGS(WIB_CFGS):
             self.sddflg=sdd
         if self.data_align_flg != True:
             self.data_align(self.fembs)
-            #self.data_align_flg = True
             self.data_align_flg = False
         print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
         time.sleep(self.fedly)
