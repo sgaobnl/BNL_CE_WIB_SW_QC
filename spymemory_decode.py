@@ -141,28 +141,28 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
         frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
         frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
         
-    if fembs == list(range(4)):
-        #find minimum length frame and make everything that length
-        min_len = len(min(frames, key=len))
-        for frame in frames:
-            frame = frame[0:min_len]
-    
-    if all([frame for frame in frames]): #if no frames buffers are empty
-        #check if all spymemories are synced
-        tmts0_all = [frame[0]["TMTS"] for frame in frames]
-        while not all(tmts0 == tmts0_all[0] for tmts0 in tmts0_all): #if spymemory synced, pass
-            for frame in frames[1:]:
-                if frames[0][0]["TMTS"] > frame[0]["TMTS"]:
-                    oft = frames[0][0]["TMTS"] - frame[0]["TMTS"] // 0x800 #0x800 = difference between 3 adjacent DAQ frames
-                    if frames[0][0]["TMTS"] == frame[0]["TMTS"]:
-                        frames[0] = frames[0][0:0-oft]
-                        frame = frame[oft:]
-                elif frames[0][0]["TMTS"] < frame[0]["TMTS"]: 
-                    oft = abs(frames[0][0]["TMTS"] - frame[0]["TMTS"]) // 0x800
-                    print("spymemory sync", oft, hex(frames[0][0]["TMTS"]), hex(frame[0]["TMTS"]))
-                    if frames[0][oft]["TMTS"] == frame[0]["TMTS"]:
-                        frames[0] = frames[0][oft:]
-                        frame = frame[0:0-oft]
+#    if fembs == list(range(4)):
+#        #find minimum length frame and make everything that length
+#        min_len = len(min(frames, key=len))
+#        for frame in frames:
+#            frame = frame[0:min_len]
+#    
+#    if all([frame for frame in frames]): #if no frames buffers are empty
+#        #check if all spymemories are synced
+#        tmts0_all = [frame[0]["TMTS"] for frame in frames]
+#        while not all(tmts0 == tmts0_all[0] for tmts0 in tmts0_all): #if spymemory synced, pass
+#            for frame in frames[1:]:
+#                if frames[0][0]["TMTS"] > frame[0]["TMTS"]:
+#                    oft = frames[0][0]["TMTS"] - frame[0]["TMTS"] // 0x800 #0x800 = difference between 3 adjacent DAQ frames
+#                    if frames[0][0]["TMTS"] == frame[0]["TMTS"]:
+#                        frames[0] = frames[0][0:0-oft]
+#                        frame = frame[oft:]
+#                elif frames[0][0]["TMTS"] < frame[0]["TMTS"]: 
+#                    oft = abs(frames[0][0]["TMTS"] - frame[0]["TMTS"]) // 0x800
+#                    print("spymemory sync", oft, hex(frames[0][0]["TMTS"]), hex(frame[0]["TMTS"]))
+#                    if frames[0][oft]["TMTS"] == frame[0]["TMTS"]:
+#                        frames[0] = frames[0][oft:]
+#                        frame = frame[0:0-oft]
     return frames
    
 
@@ -170,14 +170,19 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
     spy_num_all = len(data)
     if spy_num_all < spy_num:
         spy_num = spy_num_all
-
-    tmts = [[],[],[],[],[],[],[],[]]
-    femb0 = []
-    femb1 = []
-    femb2 = []
-    femb3 = []
+    wibdata = []
 
     for sn in range(spy_num):
+        tmts = [[],[],[],[],[],[],[],[]]
+        femb00 = []
+        femb01 = []
+        femb10 = []
+        femb11 = []
+        femb20 = []
+        femb21 = []
+        femb30 = []
+        femb31 = []
+
         raw  = data[sn]
         bufs = raw[0]
         buf_end_addr = raw[1]
@@ -192,53 +197,105 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
         if 0 in fembs:
             flen = min(len(dec_data[0]), len(dec_data[1]))
             for i in range(flen):
-                chdata_64ticks = [dec_data[0][i]["CD_data"][tick] + dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
-                femb0 = femb0 + chdata_64ticks        
+                chdata_64ticks0 = [dec_data[0][i]["CD_data"][tick] for tick in range(64)]        
+                chdata_64ticks1 = [dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
+                femb00 = femb00 + chdata_64ticks0        
                 tmts[0].append(dec_data[0][i]["TMTS"])
+                femb01 = femb01 + chdata_64ticks1        
                 tmts[1].append(dec_data[1][i]["TMTS"])
 
         if 1 in fembs:        
             flen = min(len(dec_data[2]), len(dec_data[3]))
             for i in range(flen):
-                chdata_64ticks = [dec_data[2][i]["CD_data"][tick] + dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
-                femb1 = femb1 + chdata_64ticks             
+                chdata_64ticks0 = [dec_data[2][i]["CD_data"][tick] for tick in range(64)]        
+                chdata_64ticks1 = [dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
+                femb10 = femb10 + chdata_64ticks0        
                 tmts[2].append(dec_data[2][i]["TMTS"])
+                femb11 = femb11 + chdata_64ticks1        
                 tmts[3].append(dec_data[3][i]["TMTS"])
 
         if 2 in fembs:       
             flen = min(len(dec_data[4]), len(dec_data[5]))
             for i in range(flen):
-                chdata_64ticks = [dec_data[4][i]["CD_data"][tick] + dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
-                femb2 = femb2 + chdata_64ticks             
+                chdata_64ticks0 = [dec_data[4][i]["CD_data"][tick] for tick in range(64)]        
+                chdata_64ticks1 = [dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
+                femb20 = femb20 + chdata_64ticks0        
                 tmts[4].append(dec_data[4][i]["TMTS"])
+                femb21 = femb21 + chdata_64ticks1        
                 tmts[5].append(dec_data[5][i]["TMTS"])
 
         if 3 in fembs:
             flen = min(len(dec_data[6]), len(dec_data[7]))
             for i in range(flen):
-                chdata_64ticks = [dec_data[6][i]["CD_data"][tick] + dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
-                femb3 = femb3 + chdata_64ticks             
+                chdata_64ticks0 = [dec_data[6][i]["CD_data"][tick] for tick in range(64)]        
+                chdata_64ticks1 = [dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
+                femb30 = femb30 + chdata_64ticks0        
                 tmts[6].append(dec_data[6][i]["TMTS"])
+                femb31 = femb31 + chdata_64ticks1        
                 tmts[7].append(dec_data[7][i]["TMTS"])
 
-    if 0 in fembs:
-        femb0 = list(zip(*femb0))
-    else:
-        femb0 = None
-    if 1 in fembs:
-        femb1 = list(zip(*femb1))
-    else:
-        femb1 = None
-    if 2 in fembs:
-        femb2 = list(zip(*femb2))
-    else:
-        femb2 = None
-    if 3 in fembs:
-        femb3 = list(zip(*femb3))
-    else:
-        femb3 = None
 
-    wibdata = [femb0, femb1, femb2, femb3, tmts]
+        t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
+        if 0 in fembs:
+            t0s[0]=tmts[0][0]
+            t0s[1]=tmts[1][0]
+        if 1 in fembs:
+            t0s[2]=tmts[2][0]
+            t0s[3]=tmts[3][0]
+        if 2 in fembs:
+            t0s[4]=tmts[4][0]
+            t0s[5]=tmts[5][0]
+        if 3 in fembs:
+            t0s[6]=tmts[6][0]
+            t0s[7]=tmts[7][0]
+
+        t0max = np.max(t0s)
+        for i in range(8):
+            if t0s[i] != -1:
+                t0s[i] = (t0max - t0s[i])//32 
+
+        if 0 in fembs:
+            femb00 = list(zip(*femb00))
+            for i in range(len(femb00)):
+                femb00[i]=femb00[i][t0s[0]:]
+            femb01 = list(zip(*femb01))
+            for i in range(len(femb01)):
+                femb01[i]=femb01[i][t0s[1]:]
+            femb0 = femb00 + femb01
+        else:
+            femb0 = None
+        if 1 in fembs:
+            femb10 = list(zip(*femb10))
+            for i in range(len(femb10)):
+                femb10[i]=femb10[i][t0s[0]:]
+            femb11 = list(zip(*femb11))
+            for i in range(len(femb11)):
+                femb11[i]=femb11[i][t0s[1]:]
+            femb1 = femb10 + femb11
+        else:
+            femb1 = None
+        if 2 in fembs:
+            femb20 = list(zip(*femb20))
+            for i in range(len(femb20)):
+                femb20[i]=femb20[i][t0s[0]:]
+            femb21 = list(zip(*femb21))
+            for i in range(len(femb21)):
+                femb21[i]=femb21[i][t0s[1]:]
+            femb2 = femb20 + femb21
+        else:
+            femb2 = None
+        if 3 in fembs:
+            femb30 = list(zip(*femb30))
+            for i in range(len(femb30)):
+                femb30[i]=femb30[i][t0s[0]:]
+            femb31 = list(zip(*femb31))
+            for i in range(len(femb31)):
+                femb31[i]=femb31[i][t0s[1]:]
+            femb3 = femb30 + femb31
+        else:
+            femb3 = None
+
+        wibdata.append([femb0, femb1, femb2, femb3, t0max])
     return wibdata
 
 

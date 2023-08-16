@@ -167,7 +167,7 @@ def plt_fepwr(plt, pwr_meas):
 
 
 def data_ana(fembs, rawdata, rms_flg=False):
-    wibdata = wib_dec(rawdata,fembs, spy_num=1)
+    wibdata = wib_dec(rawdata,fembs, spy_num=1)[0]
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
     chns =[]
@@ -849,19 +849,24 @@ if 8 in tms:
                 cfg_info = cfgdata[7]
                 vals.append(val)
         
-                wibdata = wib_dec(rawdata, fembs, spy_num=1)
+                wibdata = wib_dec(rawdata, fembs, spy_num=1)[0]
                 #chns = np.arange(fembs[0]*128 + fembchn, fembs[0]*128 + fembchn + 128, 16)
                 chns = np.arange( fembchn, fembchn + 128, 16)
                 pps = []
 
-                #for chn in chns:
-                #    avgdata = avg_aligned_by_ts(wibdata, chn, period)
-                #    pps.append (np.max(avgdata[0]))
-                for femb in fembs:
-                    for chn in chns:
-                        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
-                        pps.append (np.max(wibdata[femb][chn]))
-                #exit()
+                #for femb in fembs:
+                #    import matplotlib.pyplot as plt
+                #    fig = plt.figure(figsize=(8,6))
+
+                #    for chn in chns:
+                #        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
+                #        pps.append (np.max(wibdata[femb][chn]))
+                #        plt.plot(wibdata[femb][chn], label="%d"%chn)
+                #    plt.legend()
+                #    plt.show()
+                #    plt.close()
+
+
                 pps4.append(pps)
         pps4s.append(pps4)
 

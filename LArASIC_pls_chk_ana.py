@@ -24,6 +24,7 @@ for onekey in dkeys:
     #rawdata = cfgdata[0]
 
     wibdata = wib_dec(rawdata[0],fembs, spy_num=1)
+    wibdata = wibdata[0]
     #wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
@@ -32,11 +33,15 @@ for onekey in dkeys:
     for fe in range(8):
         for fe_chn in range(16):
             fechndata = datd[fe*16+fe_chn]
-            if np.max(fechndata) - np.mean(fechndata) > 8000:
+            if np.max(fechndata) - np.mean(fechndata) > 6000:
                 pass
             else:
                 print (fe*16+fe_chn,fe, fe_chn) 
-            plt.plot(fechndata)
+            if fe*16+fe_chn < 64:
+                c = 'r'
+            else:
+                c = 'b'
+            plt.plot(fechndata, color=c)
     plt.show()
     plt.close()
             #    pp = np.max(fechndata[500:1500])

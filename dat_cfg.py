@@ -456,6 +456,7 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
             self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
+
             self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
             if cali_mode == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
@@ -494,7 +495,7 @@ class DAT_CFGS(WIB_CFGS):
             datad = {}
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, st0=1, st1=1, sdd=1, sdf=0, slk0=0, slk1=0)
-            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
             datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
             initchk_flg = True
             for ch in range(16*8):
@@ -522,7 +523,7 @@ class DAT_CFGS(WIB_CFGS):
 
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
-            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)
+            wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
             datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
             for ch in range(16*8):
                 chmax = np.max(datd[ch][500:1500])

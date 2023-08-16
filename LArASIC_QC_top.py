@@ -83,6 +83,8 @@ logs.update(logsd)
 ####### Init check information #######
 if 10 in tms:
     print ("Turn DAT on and wait 10 seconds")
+    #set FEMB voltages
+    dat.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
     dat.femb_powering([0])
     time.sleep(10)
 
