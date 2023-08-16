@@ -80,6 +80,21 @@ logsd, fdir =  dat_user_input(infile_mode=True)
 logs.update(logsd)
 
 #tms=[0]
+if 0 not in tms:
+    pwr_meas = dat.get_sensors()
+    for key in pwr_meas:
+        if "FEMB%d"%dat.dat_on_wibslot in key:
+            on_f = False
+            if ("BIAS_V" in key) and (pwr_meas[key] > 4.5):
+                    if ("DC2DC0_V" in key) and (pwr_meas[key] > 3.5):
+                            if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
+                                    if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
+                                            on_f = True
+            if not on_f:
+                tms = [10] + tms #turn DAT on
+                if 9 not in tms:
+                    tms = tms + [9] #turn DAT off after testing
+
 ####### Init check information #######
 if 10 in tms:
     print ("Turn DAT on and wait 10 seconds")

@@ -8,7 +8,7 @@ import struct
 
 get_bin = lambda x, n: format(x, 'b').zfill(n)
 
-def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
+def deframe(words, tsoft_flg=False): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     data_begin = 3 #word # in frame where data starts
     tick_word_length = 14
     
@@ -47,6 +47,7 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     frame_dict["Context_code"]  = (words[1]>>44)&0xff
     frame_dict["Version"]       = (words[1]>>52)&0xf
     frame_dict["Chn_ID"]        = (words[1]>>56)&0xff
+    frame_dict["TS_offset_flg"] = tsoft_flg 
     #see latest wib firmware doc for descriptions
 
     for tick in range(num_ticks):
@@ -78,55 +79,60 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     return frame_dict
     
 def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000): #change default trigger_rec_ticks?
-    num_words = int(len(buf) // 8) 
-    words = list(struct.unpack_from("<%dQ"%(num_words),buf)) #unpack [num_words] big-endian 64-bit unsigned integers
-    
-    PKT_LEN = 899 #in words
-    
-    if trigmode == "SW" :
-        pass
-        deoding_start_addr = 0x0
-    else: #the following 5 lines to be updated
-        print ("hardware trigger decoding to be updated...")
-        spy_addr_word = buf_end_addr>>2
-        if spy_addr_word <= trigger_rec_ticks:
-            deoding_start_addr = spy_addr_word + 0x40000 - trigger_rec_ticks #? to be updated
-        else:
-            deoding_start_addr = spy_addr_word  - trigger_rec_ticks
+    for oft in range(8):
+        num_words = int(len(buf[oft:]) // 8) 
+        words = list(struct.unpack_from("<%dQ"%(num_words),buf[oft:])) #unpack [num_words] big-endian 64-bit unsigned integers
+        
+        PKT_LEN = 899 #in words
+        tsoft_flg = False 
+        
+        if trigmode == "SW" :
+            pass
+            deoding_start_addr = 0x0
+        else: #the following 5 lines to be updated
+            print ("hardware trigger decoding to be updated...")
+            spy_addr_word = buf_end_addr>>2
+            if spy_addr_word <= trigger_rec_ticks:
+                deoding_start_addr = spy_addr_word + 0x40000 - trigger_rec_ticks #? to be updated
+            else:
+                deoding_start_addr = spy_addr_word  - trigger_rec_ticks
 
-    f_heads = []
-    i = 0
-    while i < num_words-PKT_LEN:       
-        if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
-            tmts = words[i]
-            f_heads.append([i,tmts])
-            i = i + PKT_LEN
+        f_heads = []
+        i = 0
+#        for x in range (0, 899*3+1, 899):
+#            print ("KKKKKKKKKKKKKKKKKK")
+#            print (x//899)
+#            print (x, hex(words[x]))
+#            print (x+1, hex(words[x+1]), hex((words[x+1]) -(words[x+1-899]) ))
+#            print (x+2, hex(words[x+2]), hex((words[x+2]&0x7fff) -(words[x+2-899]&0x7fff)))
+#            print (x+3, hex(words[x+3]))
+
+
+        while i < num_words-PKT_LEN-oft:       
+            #if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
+            #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
+            if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
+                tmts = words[i]
+                f_heads.append([i,tmts])
+                i = i + PKT_LEN
+            else:
+                i = i + 1   
+
+#            if not tsoft_flg:
+#                if  (abs(words[i+PKT_LEN] - words[i])%0x800 !=0):
+#                    print ("observe timestamp offset")
+#                    tsoft_flg = True
+
+        if len(f_heads) > 30:
+            break
         else:
-            i = i + 1   
-    
-    #print(f_heads)  
+            print (oft, len(f_heads))
     w_sofs, tmsts = zip(*f_heads)
-    tmts_min = np.min(tmsts)
-    minpos = np.where(tmsts == tmts_min)[0][0]
-    frame_mints = w_sofs[minpos]
-    words = words[frame_mints:] + words[0:frame_mints]
-    
     num_frams = num_words // PKT_LEN
     ordered_frames = []
-    words = words[0:num_frams*PKT_LEN] #remove any words from a cut-off fram
-    i = 0
-    while i < (num_frams-2)*PKT_LEN:
-        if abs(words[i+PKT_LEN] - words[i]) == 0x800:
-            # print(hex(words[i]))
-            frame_dict = deframe(words = words[i:i+PKT_LEN])
-            ordered_frames.append(frame_dict)
-            i = i + PKT_LEN
-        else:
-            i = i + 1    
-    # print("deframe final frame")
-    # print(hex(words[i]))
-    # frame_dict = deframe(words = words[i:i+PKT_LEN])
-    # ordered_frames.append(frame_dict)    
+    for i in range( len(w_sofs)):
+        frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN], tsoft_flg=tsoft_flg)
+        ordered_frames.append(frame_dict)
     
     return ordered_frames
     

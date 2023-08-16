@@ -9,7 +9,7 @@ from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 
-fsubdir = "FE_003007415_003007416_003007417_003007433_003007432_003007425_003007426_003007431"
+fsubdir = "FE_012000001_012000002_012000203_012000004_012000005_012000006_012000007_012000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -177,28 +177,38 @@ def data_ana(fembs, rawdata, rms_flg=False):
     pkns = []
     wfs = []
 
-    ppos=0
-    npos=0
+    ppos0=0
+    npos0=0
+    ppos64=0
+    npos64=0
     for achn in range(len(datd)):
         chndata = datd[achn]
         amax = np.max(chndata[300:-150])
         amin = np.min(chndata[300:-150])
         if achn==0:
-            ppos = np.where(chndata[300:]==amax)[0][0] + 300
-            npos = np.where(chndata[300:]==amin)[0][0] + 300
+            ppos0 = np.where(chndata[300:]==amax)[0][0] + 300
+            npos0 = np.where(chndata[300:]==amin)[0][0] + 300
+        if achn==64:
+            ppos64 = np.where(chndata[300:]==amax)[0][0] + 300
+            npos64 = np.where(chndata[300:]==amin)[0][0] + 300
 
         if rms_flg:
             arms = np.std(chndata)
             aped = int(np.mean(chndata))
         else:
-            arms = np.std(chndata[ppos-150:ppos-50])
-            aped = int(np.mean(chndata[ppos-150:ppos-50]))
+            if achn <64:
+                arms = np.std(chndata[ppos0-150:ppos0-50])
+                aped = int(np.mean(chndata[ppos0-150:ppos0-50]))
+                wfs.append(chndata[ppos0-50:ppos0+150])
+            else:
+                arms = np.std(chndata[ppos64-150:ppos64-50])
+                aped = int(np.mean(chndata[ppos64-150:ppos64-50]))
+                wfs.append(chndata[ppos64-50:ppos64+150])
         chns.append(achn)
         rmss.append(arms)
         peds.append(aped)
         pkps.append(amax)
         pkns.append(amin)
-        wfs.append(chndata[ppos-50:ppos+150])
     return chns, rmss, peds, pkps, pkns, wfs
 
 def ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
@@ -405,8 +415,10 @@ if 2 in tms:
     
     logsd = data["logs"]
     dkeys.remove("logs")
+    #dkeys = ["CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10"]
     
     for onekey in dkeys:
+        print (onekey)
         show_flg = True
         cfgdata = data[onekey]
         fembs = cfgdata[0]
@@ -854,13 +866,13 @@ if 8 in tms:
                 chns = np.arange( fembchn, fembchn + 128, 16)
                 pps = []
 
-                #for femb in fembs:
+                for femb in fembs:
                 #    import matplotlib.pyplot as plt
                 #    fig = plt.figure(figsize=(8,6))
 
-                #    for chn in chns:
-                #        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
-                #        pps.append (np.max(wibdata[femb][chn]))
+                    for chn in chns:
+                        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
+                        pps.append (np.max(wibdata[femb][chn]))
                 #        plt.plot(wibdata[femb][chn], label="%d"%chn)
                 #    plt.legend()
                 #    plt.show()
