@@ -23,6 +23,8 @@ class DAT_CFGS(WIB_CFGS):
 #            self.Vref = 1.589
         self.fembs = [self.dat_on_wibslot]
         self.data_align_flg = False
+        self.data_align_pwron_flg = False
+
         #MUX (SN74LV405AD)
         self.mon_fe_cs = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
         self.mon_AD_REF = 2.564 #need to update accoring to board
@@ -38,6 +40,7 @@ class DAT_CFGS(WIB_CFGS):
         self.femb_cd_rst()
         self.femb_powering([])
         self.data_align_flg = False
+        self.data_align_pwron_flg = True
         time.sleep(2)
         
         #set FEMB voltages
@@ -45,6 +48,7 @@ class DAT_CFGS(WIB_CFGS):
         #power on FEMBs
         self.femb_powering(self.fembs)
         self.data_align_flg = False
+        self.data_align_pwron_flg = True
         print ("Wait 10 seconds ...")
         time.sleep(6)
         self.dat_fpga_reset()
@@ -99,6 +103,7 @@ class DAT_CFGS(WIB_CFGS):
                     print ("\033[91m" + "Turn DAT off, exit anyway!"+ "\033[0m")
                     self.femb_powering([])
                     self.data_align_flg = False
+                    self.data_align_pwron_flg = True
                     time.sleep(1)
                     exit()
 
@@ -108,6 +113,7 @@ class DAT_CFGS(WIB_CFGS):
             if (0xf<<(femb_no*4))&link_mask == 0:
                 print ("HS links are good")
                 self.data_align_flg = False
+                self.data_align_pwron_flg = True
                 self.femb_cd_fc_act(femb_no, act_cmd="rst_adcs")
                 self.femb_cd_fc_act(femb_no, act_cmd="rst_larasics")
                 self.femb_cd_fc_act(femb_no, act_cmd="rst_larasic_spi")
@@ -117,13 +123,8 @@ class DAT_CFGS(WIB_CFGS):
                 print ("\033[91m" + "Turn DAT off, exit anyway!"+ "\033[0m")
                 self.femb_powering([])
                 self.data_align_flg = False
+                self.data_align_pwron_flg = True
                 exit()
-
-        print ("Apply data align operation after power on")
-        self.data_align(self.fembs)
-        time.sleep(0.1)
-        self.data_align(self.fembs)
-        time.sleep(0.1)
 
         return pwr_meas, link_mask
 
@@ -358,10 +359,6 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
-        print ("Apply data align operation after power on")
-        self.data_align(self.fembs)
-        time.sleep(0.1)
-
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
@@ -390,9 +387,14 @@ class DAT_CFGS(WIB_CFGS):
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
             self.femb_cfg(femb_id, adac_pls_en )
             self.sddflg=sdd
+        if self.data_align_pwron_flg == True:
+            self.data_align(self.fembs)
+            self.data_align_pwron_flg = False
+            time.sleep(0.1)
         if self.data_align_flg != True:
             self.data_align(self.fembs)
             self.data_align_flg = False
+
         print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
         time.sleep(self.fedly)
         return cfg_paras_rec
@@ -507,7 +509,7 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_asic_chk(self):
-        for fedly in [3,5]:
+        for fedly in [3,3,5]:
             self.fedly = fedly
             datad = {}
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)

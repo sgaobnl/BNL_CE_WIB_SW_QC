@@ -15,7 +15,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_012000001_012000002_012000203_012000004_012000005_012000006_012000007_012000008"
+fsubdir = "FE_005000001_005000002_005000203_005000004_005000005_005000006_005000007_005000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -47,34 +47,33 @@ else:
         except ValueError:
             print ("Wrong value, please re-enter...")
 
-#import statsmodels.api as sm
-#def linear_fit(x, y):
-#    error_fit = False 
-#    try:
-#        results = sm.OLS(y,sm.add_constant(x)).fit()
-#    except ValueError:
-#        error_fit = True 
-#    if ( error_fit == False ):
-#        error_gain = False 
-#        try:
-#            slope = results.params[1]
-#        except IndexError:
-#            slope = 0
-#            error_gain = True
-#        try:
-#            constant = results.params[0]
-#        except IndexError:
-#            constant = 0
-#    else:
-#        slope = 0
-#        constant = 0
-#        error_gain = True
-#
-#    y_fit = np.array(x)*slope + constant
-#    delta_y = abs(y - y_fit)
-#    inl = delta_y / (max(y)-min(y))
-#    peakinl = max(inl)
-#    return slope, constant, peakinl, error_gain
+def linear_fit(x, y):
+    error_fit = False 
+    try:
+        results = sm.OLS(y,sm.add_constant(x)).fit()
+    except ValueError:
+        error_fit = True 
+    if ( error_fit == False ):
+        error_gain = False 
+        try:
+            slope = results.params[1]
+        except IndexError:
+            slope = 0
+            error_gain = True
+        try:
+            constant = results.params[0]
+        except IndexError:
+            constant = 0
+    else:
+        slope = 0
+        constant = 0
+        error_gain = True
+
+    y_fit = np.array(x)*slope + constant
+    delta_y = abs(y - y_fit)
+    inl = delta_y / (max(y)-min(y))
+    peakinl = max(inl)
+    return slope, constant, peakinl, error_gain
 
 
 def plt_log(plt,logsd, onekey):
@@ -338,7 +337,7 @@ if 0 in tms:
 
             show_flg=True
             if ("DIRECT_PLS_CHK" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[9000,13000], rmsr=[5,25], pedr=[300,3000] )
+                show_flg = ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
             if ("ASICDAC_CALI_CHK" in onekey):
                 show_flg = ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,3000] )
 
@@ -442,7 +441,6 @@ if 2 in tms:
     #dkeys = ["CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10"]
     
     for onekey in dkeys:
-        print (onekey)
         show_flg = True
         cfgdata = data[onekey]
         fembs = cfgdata[0]
@@ -452,7 +450,7 @@ if 2 in tms:
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11" in onekey) :
-            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[3,15], pedr=[8000,10000] )
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[10,40], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG11" in onekey) :
@@ -510,6 +508,7 @@ if 3 in tms:
     fp = fdir + "QC_MON" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
 
+    import statsmodels.api as sm
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
     

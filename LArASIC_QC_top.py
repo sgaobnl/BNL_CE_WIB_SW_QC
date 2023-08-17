@@ -39,7 +39,7 @@ print ("\033[96m 9: Turn DAT on \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
 args = ag.parse_args()   
 tms = args.task
 

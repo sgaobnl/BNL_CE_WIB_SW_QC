@@ -25,6 +25,19 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
     
     if infile_mode:
         while True:
+
+            logs={}
+            logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+            index_f = "./asic_info.csv"
+
+            with open(index_f, 'r') as fp:
+                print (index_f)
+                for cl in fp:
+                    print (cl)
+                    tmp = cl.split(",")
+                    tmp = tmp[:-1]
+                    logs[tmp[0]] = tmp[1]
+
             if itemized_flg:
                 csvfile = 'Y'
             else:
@@ -33,15 +46,6 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
                 pass
             else:
                 continue
-
-            logs={}
-            logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-            index_f = "./asic_info.csv"
-            with open(index_f, 'r') as fp:
-                for cl in fp:
-                    tmp = cl.split(",")
-                    tmp = tmp[:-1]
-                    logs[tmp[0]] = tmp[1]
 
             fe_id = {}
             re_flg = False
@@ -84,6 +88,7 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
                     print ("\033[93m FE Serial number is not in right format (XXX-XXXXX), please correct\033[0m") 
                     re_flg = True
                     break
+
             if not re_flg:
                 break
             else:
