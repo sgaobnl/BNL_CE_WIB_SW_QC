@@ -18,14 +18,17 @@ import argparse
 #Default = '\033[99m'
 
 
-def dat_user_input(infile_mode = False, froot = "./tmp_data/" ):
+def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False ):
 
     logs={}
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
     
     if infile_mode:
         while True:
-            csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
+            if itemized_flg:
+                csvfile = 'Y'
+            else:
+                csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:

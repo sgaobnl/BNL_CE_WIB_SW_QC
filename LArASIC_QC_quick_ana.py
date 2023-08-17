@@ -8,6 +8,13 @@ import time, datetime, random, statistics
 from spymemory_decode import wib_dec
 import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
+import colorama
+from colorama import Fore, Back
+colorama.init(autoreset=True)
+
+# Automatically adds a Style.RESET_ALL after each print statement
+#print(Fore.RED + 'Red foreground text')
+#print(Back.RED + 'Red background text')
 
 fsubdir = "FE_012000001_012000002_012000203_012000004_012000005_012000006_012000007_012000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
@@ -311,7 +318,10 @@ def dacana(data,dacdkey ):
 
 if 0 in tms:
 #if True:
+    print ("-------------------------------------------------------------------------")
+    print ("0: Initilization checkout")
     fp = fdir + "QC_INIT_CHK" + ".bin"
+
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
     
@@ -335,6 +345,10 @@ if 0 in tms:
 
             if show_flg:
                 print (onekey + "  : Fail")
+                print ("command on WIB terminal to retake data for this test item is as bellow :")
+                print ("python3 LArASIC_QC_top.py -t 0")
+                print ("When it is done, replace {} on the local PC".format(fp) )
+
                 import matplotlib.pyplot as plt
                 fig = plt.figure(figsize=(9,6))
                 plt.rcParams.update({'font.size': 8})
@@ -346,9 +360,13 @@ if 0 in tms:
                 plt.close()
             else:
                 print (onekey + "  : PASS")
+    print ("#########################################################################")
 
 if 1 in tms:
 #if True:
+    print ("-------------------------------------------------------------------------")
+    print ("1: FE power consumption measurement")
+
     fp = fdir + "QC_PWR" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -393,6 +411,10 @@ if 1 in tms:
 
         if show_flg:
             print (onekey + "  : Fail")
+            print ("command on WIB terminal to retake data for this test item is as bellow :")
+            print ("python3 LArASIC_QC_top.py -t 1")
+            print ("When it is done, replace {} on the local PC".format(fp) )
+
             import matplotlib.pyplot as plt
             fig = plt.figure(figsize=(9,6))
             plt.rcParams.update({'font.size': 8})
@@ -404,9 +426,12 @@ if 1 in tms:
             plt.show()
         else:
             print (onekey + "  : PASS")
-
+    print ("#########################################################################")
    
 if 2 in tms:
+    print ("-------------------------------------------------------------------------")
+    print ("2: FE response measurement checkout")
+
     fp = fdir + "QC_CHKRES" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -462,6 +487,10 @@ if 2 in tms:
 
         if show_flg:
             print (onekey + "  : Fail")
+            print ("command on WIB terminal to retake data for this test item is as bellow :")
+            print ("python3 LArASIC_QC_top.py -t 2")
+            print ("When it is done, replace {} on the local PC".format(fp) )
+
             import matplotlib.pyplot as plt
             fig = plt.figure(figsize=(9,6))
             plt.rcParams.update({'font.size': 8})
@@ -472,11 +501,16 @@ if 2 in tms:
             plt.show()
         else:
             print (onekey + "  : PASS")
+    print ("#########################################################################")
 
 if 3 in tms:
-#if True:
-#if True:
+    print ("-------------------------------------------------------------------------")
+    print ("3: FE monitoring measurement ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 3")
     fp = fdir + "QC_MON" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
     
@@ -564,11 +598,15 @@ if 3 in tms:
     plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
     plt.show()
     plt.close()
+    print ("#########################################################################")
 
 if 4 in tms:
-#if True:
-#if True:
+    print ("-------------------------------------------------------------------------")
+    print ("4: FE power cycling measurement  ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 4")
     fp = fdir + "QC_PWR_CYCLE" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
             data = pickle.load( fn)
@@ -635,134 +673,15 @@ if 4 in tms:
             plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
             plt.plot()
             plt.show()
-
-
-if 61 in tms:
-#if True:
-#if True:
-    fp = fdir + "QC_CALI_ASICDAC" + ".bin"
-    with open(fp, 'rb') as fn:
-        data = pickle.load( fn)
-    
-    dkeys = list(data.keys())
-    
-    logsd = data["logs"]
-    dkeys.remove("logs")
-
-    for snc in [0, 1]:
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(8,6))
-        plt.rcParams.update({'font.size': 8})
-        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
-        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
-  
-        for onekey in dkeys:
-            if "SNC%d"%snc in onekey:
-                print (onekey)
-                cfgdata = data[onekey]
-                fembs = cfgdata[0]
-                rawdata = cfgdata[1]
-                cfg_info = cfgdata[2]
-                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
-                ax1.plot(pkps, marker='.', label=onekey)
-                ax2.plot(pkns, marker='.', label=onekey)
-        ax1.set_xlim((-10,200))
-        ax1.legend()
-        ax2.set_xlim((-10,200))
-        ax2.legend()
-
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
-        plt.close()
-
-if 62 in tms:
-#if True:
-    fp = fdir + "QC_CALI_DATDAC" + ".bin"
-    with open(fp, 'rb') as fn:
-        data = pickle.load( fn)
-    
-    dkeys = list(data.keys())
-    
-    logsd = data["logs"]
-    dkeys.remove("logs")
-
-    for snc in [ 1]:
-        for buf in [0,1,2]:
-            sdd = buf//2
-            sdf = buf%2
-            import matplotlib.pyplot as plt
-            fig = plt.figure(figsize=(8,6))
-            plt.rcParams.update({'font.size': 8})
-            ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
-            ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
-  
-            for onekey in dkeys:
-                if "SDD%d_SDF%d_SNC%d"%( sdd, sdf, snc) in onekey:
-                    print (onekey)
-                    cfgdata = data[onekey]
-                    fembs = cfgdata[0]
-                    rawdata = cfgdata[1]
-                    cfg_info = cfgdata[2]
-                    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
-                    ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)
-                    ax2.plot(np.array(pkns)-np.array(peds), marker='.', label=onekey)
-            ax1.set_xlim((-10,200))
-            ax1.legend()
-            ax2.set_xlim((-10,200))
-            ax2.legend()
-
-            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-            plt.plot()
-            plt.show()
-            plt.close()
-
-if 63 in tms:
-#if True:
-#if True:
-    fp = fdir + "QC_CALI_DIRECT" + ".bin"
-    with open(fp, 'rb') as fn:
-        data = pickle.load( fn)
-    
-    dkeys = list(data.keys())
-    
-    logsd = data["logs"]
-    dkeys.remove("logs")
-
-    for snc in [ 1]:
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(8,6))
-        plt.rcParams.update({'font.size': 8})
-        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
-        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
-  
-        for onekey in dkeys:
-            if "SNC%d"%snc in onekey:
-                print (onekey)
-                cfgdata = data[onekey]
-                fembs = cfgdata[0]
-                rawdata = cfgdata[1]
-                cfg_info = cfgdata[2]
-                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
-#                ax1.plot(pkps, marker='.', label=onekey)
-#                ax2.plot(pkns, marker='.', label=onekey)
-                ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)
-                ax2.plot(np.array(pkns)-np.array(peds), marker='.', label=onekey)
-
-        ax1.set_xlim((-10,200))
-        ax1.legend()
-        ax2.set_xlim((-10,200))
-        ax2.legend()
-
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
-        plt.close()
+    print ("#########################################################################")
 
 if 5 in tms:
-#if True:
-#if True:
+    print ("-------------------------------------------------------------------------")
+    print ("5: FE noise measurement ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 5")
     fp = fdir + "QC_RMS" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
     
@@ -830,10 +749,192 @@ if 5 in tms:
     plt.plot()
     plt.show()
     plt.close()
+    print ("#########################################################################")
+
+if 61 in tms:
+    print ("-------------------------------------------------------------------------")
+    print (" 61: FE calibration measurement (ASIC-DAC)")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 61")
+    fp = fdir + "QC_CALI_ASICDAC" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+
+    for snc in [0, 1]:
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(8,6))
+        plt.rcParams.update({'font.size': 8})
+        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+  
+        for onekey in dkeys:
+            if "SNC%d"%snc in onekey:
+                print (onekey)
+                cfgdata = data[onekey]
+                fembs = cfgdata[0]
+                rawdata = cfgdata[1]
+                cfg_info = cfgdata[2]
+                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+                ax1.plot(pkps, marker='.', label=onekey)
+                ax2.plot(pkns, marker='.', label=onekey)
+        ax1.set_xlim((-10,200))
+        ax1.legend()
+        ax2.set_xlim((-10,200))
+        ax2.legend()
+
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+        plt.close()
+    print ("#########################################################################")
+    
+if 62 in tms:
+    print ("-------------------------------------------------------------------------")
+    print ("62: FE calibration measurement (DAT-DAC) ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 62")
+    fp = fdir + "QC_CALI_DATDAC" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+
+    for snc in [ 1]:
+        for buf in [0,1,2]:
+            sdd = buf//2
+            sdf = buf%2
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(8,6))
+            plt.rcParams.update({'font.size': 8})
+            ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+            ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+  
+            for onekey in dkeys:
+                if "SDD%d_SDF%d_SNC%d"%( sdd, sdf, snc) in onekey:
+                    print (onekey)
+                    cfgdata = data[onekey]
+                    fembs = cfgdata[0]
+                    rawdata = cfgdata[1]
+                    cfg_info = cfgdata[2]
+                    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+                    ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)
+                    ax2.plot(np.array(pkns)-np.array(peds), marker='.', label=onekey)
+            ax1.set_xlim((-10,200))
+            ax1.legend()
+            ax2.set_xlim((-10,200))
+            ax2.legend()
+
+            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+            plt.plot()
+            plt.show()
+            plt.close()
+    print ("#########################################################################")
+
+if 63 in tms:
+    print ("-------------------------------------------------------------------------")
+    print (" 63: FE calibration measurement (Direct-Input) ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 63")
+    fp = fdir + "QC_CALI_DIRECT" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+
+    for snc in [ 1]:
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(8,6))
+        plt.rcParams.update({'font.size': 8})
+        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+  
+        for onekey in dkeys:
+            if "SNC%d"%snc in onekey:
+                print (onekey)
+                cfgdata = data[onekey]
+                fembs = cfgdata[0]
+                rawdata = cfgdata[1]
+                cfg_info = cfgdata[2]
+                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+#                ax1.plot(pkps, marker='.', label=onekey)
+#                ax2.plot(pkns, marker='.', label=onekey)
+                ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)
+                ax2.plot(np.array(pkns)-np.array(peds), marker='.', label=onekey)
+
+        ax1.set_xlim((-10,200))
+        ax1.legend()
+        ax2.set_xlim((-10,200))
+        ax2.legend()
+
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+        plt.close()
+    print ("#########################################################################")
+
+if 7 in tms:
+    print ("-------------------------------------------------------------------------")
+    print ("7: FE delay run ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 7")
+    fp = fdir + "QC_DLY_RUN" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+
+    with open(fp, 'rb') as fn:
+        data = pickle.load( fn)
+    
+    dkeys = list(data.keys())
+    
+    logsd = data["logs"]
+    dkeys.remove("logs")
+    
+    for onekey in dkeys:
+        show_flg = True
+        cfgdata = data[onekey]
+        fembs = cfgdata[0]
+        rawdata = cfgdata[1]
+        cfg_info = cfgdata[2]
+
+        show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,45], pedr=[8000,10000] )
+        if show_flg:
+            print (onekey + "  : Fail")
+            print ("command on WIB terminal to retake data for this test item is as bellow :")
+            print ("python3 LArASIC_QC_top.py -t 7")
+            print ("When it is done, replace {} on the local PC".format(fp) )
+
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(9,6))
+            plt.rcParams.update({'font.size': 8})
+            plt_log(plt,logsd, onekey)
+            plt_subplot(plt, fembs, rawdata)
+            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+            plt.plot()
+            plt.show()
+        else:
+            print (onekey + "  : PASS")
+    print ("#########################################################################")
 
 if 8 in tms:
-#if True:
+    print ("-------------------------------------------------------------------------")
+    print ("8: FE cali-cap measurement ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    print ("python3 LArASIC_QC_top.py -t 8")
     fp = fdir + "QC_Cap_Meas" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
     
@@ -905,6 +1006,7 @@ if 8 in tms:
     plt.plot()
     plt.show()
     plt.close()
+    print ("#########################################################################")
 
 
 

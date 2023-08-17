@@ -17,6 +17,10 @@ class DAT_CFGS(WIB_CFGS):
         super().__init__()
         self.cd_sel = 0
         self.dat_on_wibslot = 0
+#        if self.dat_on_wibslot  == 0:
+#            self.Vref = 1.583
+#        else:
+#            self.Vref = 1.589
         self.fembs = [self.dat_on_wibslot]
         self.data_align_flg = False
         #MUX (SN74LV405AD)

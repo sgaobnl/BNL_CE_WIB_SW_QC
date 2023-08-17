@@ -10,7 +10,6 @@ from DAT_user_input import dat_user_input
 import argparse
                 
 dat =  DAT_CFGS()
-Vref = 1.583
 
 ####### Input test information #######
 #Red = '\033[91m'
@@ -25,7 +24,7 @@ Vref = 1.583
 #Default = '\033[99m'
 
 print ("\033[93m  QC task list   \033[0m")
-print ("\033[96m 0: Initilization checkout  \033[0m")
+print ("\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m")
 print ("\033[96m 1: FE power consumption measurement  \033[0m")
 print ("\033[96m 2: FE response measurement checkout  \033[0m")
 print ("\033[96m 3: FE monitoring measurement  \033[0m")
@@ -40,43 +39,54 @@ print ("\033[96m 9: Turn DAT on \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0,1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
 args = ag.parse_args()   
 tms = args.task
 
 wib_time = datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S")
-while True:
-    print ("\033[92m WIB time: " + wib_time + " \033[0m")
-    wibtimechk=input("\033[95m Is time of WIB current ? (Y/N):  \033[0m")
-    if ("Y" in wibtimechk) or ("y" in wibtimechk):
-        break
-    else:
-        print ("Please follow these steps to reset WIB time")
-        print ("(Windows PC only) open Powershell, type in: ")
-        print ("""\033[91m  $cdate = get-date  \033[0m""")
-        print ("""\033[91m  $wibdate = "date -s '$cdate'"  \033[0m""")
-        print ("""\033[91m  ssh root@192.168.121.1  $wibdate  \033[0m""")
-        print ("""\033[91m  password: fpga  \033[0m""")
-        print ("Restart this script...")
-        exit()
-
-while True:
-    datowib=input("\033[95m Is DAT on WIB slot 0? (Y/N) : \033[0m")
-    if ("Y" in datowib) or ("y" in datowib):
-        fembs = [0]
-        break
-    else:
-        print ("\033[91m Please contact tech coordinator...\033[0m")
-        print ("Exit anyway")
-        exit()
-
-dat.fembs = fembs
 
 tt = []
 tt.append(time.time())
 
+if 0 in tms:
+    while True:
+        print ("\033[92m WIB time: " + wib_time + " \033[0m")
+        wibtimechk=input("\033[95m Is time of WIB current ? (Y/N):  \033[0m")
+        if ("Y" in wibtimechk) or ("y" in wibtimechk):
+            break
+        else:
+            print ("Please follow these steps to reset WIB time")
+            print ("(Windows PC only) open Powershell, type in: ")
+            print ("""\033[91m  $cdate = get-date  \033[0m""")
+            print ("""\033[91m  $wibdate = "date -s '$cdate'"  \033[0m""")
+            print ("""\033[91m  ssh root@192.168.121.1  $wibdate  \033[0m""")
+            print ("""\033[91m  password: fpga  \033[0m""")
+            print ("Restart this script...")
+            exit()
+    itemized_flg = False
+else:
+    itemx = input ("""\033[92m Test item# {}, Y/N? : \033[0m""".format(tms) )
+    if ("Y" in itemx) or ("y" in itemx):
+        pass
+    else:
+        print ("\033[91m Exit, please re-choose and restart...\033[0m")
+        exit()
+    itemized_flg = True
+
 logs = {}
-logsd, fdir =  dat_user_input(infile_mode=True)
+logsd, fdir =  dat_user_input(infile_mode=True,  froot = "./tmp_data/",  itemized_flg=itemized_flg)
+if itemized_flg:
+    if not os.path.exists(fdir):
+        print ("\033[91m Please perform a full test instead of the itemized tests, exit anyway\033[0m")
+        exit()
+
+dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
+fembs = [dat.DAT_on_WIBslot] 
+dat.fembs = fembs
+if dat.dat_on_wibslot  == 0:
+    Vref = 1.583
+if dat.dat_on_wibslot  == 1:
+    Vref = 1.589
 logs.update(logsd)
 
 #tms=[0]
@@ -503,7 +513,7 @@ if 7 in tms:
     datad['logs'] = logs
     period = 1000
     width = 800
-    val = 1.4
+    val = 1.45
     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
     cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
     
@@ -529,7 +539,6 @@ if 8 in tms:
     #3.0us
     st0=0
     st1=1
-    Vref = 1.583
     if True:
         #4.7mV/fC
         sg0=1
