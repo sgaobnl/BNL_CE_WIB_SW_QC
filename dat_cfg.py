@@ -101,6 +101,7 @@ class DAT_CFGS(WIB_CFGS):
                     self.data_align_flg = False
                     time.sleep(1)
                     exit()
+
         
         link_mask=self.wib_femb_link_en(self.fembs)
         for femb_no in self.fembs:
@@ -117,6 +118,13 @@ class DAT_CFGS(WIB_CFGS):
                 self.femb_powering([])
                 self.data_align_flg = False
                 exit()
+
+        print ("Apply data align operation after power on")
+        self.data_align(self.fembs)
+        time.sleep(0.1)
+        self.data_align(self.fembs)
+        time.sleep(0.1)
+
         return pwr_meas, link_mask
 
     def dat_pwroff_chk(self, env='RT'):
@@ -342,12 +350,18 @@ class DAT_CFGS(WIB_CFGS):
                 print ("Warning: VBGR of FE{} is out of range {}mV (typical 1.2V)".format(fe, vtmp))
                 warn_flg = True
 
+
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
             input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
             self.femb_powering([])
             self.data_align_flg = False
             exit()
+
+        print ("Apply data align operation after power on")
+        self.data_align(self.fembs)
+        time.sleep(0.1)
+
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()

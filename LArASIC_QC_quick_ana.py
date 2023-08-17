@@ -4,9 +4,8 @@ import sys
 import numpy as np
 import pickle
 import copy
-import time, datetime, random, statistics    
+import time, datetime
 from spymemory_decode import wib_dec
-import statsmodels.api as sm
 #from spymemory_decode import avg_aligned_by_ts
 import colorama
 from colorama import Fore, Back
@@ -48,34 +47,34 @@ else:
         except ValueError:
             print ("Wrong value, please re-enter...")
 
-
-def linear_fit(x, y):
-    error_fit = False 
-    try:
-        results = sm.OLS(y,sm.add_constant(x)).fit()
-    except ValueError:
-        error_fit = True 
-    if ( error_fit == False ):
-        error_gain = False 
-        try:
-            slope = results.params[1]
-        except IndexError:
-            slope = 0
-            error_gain = True
-        try:
-            constant = results.params[0]
-        except IndexError:
-            constant = 0
-    else:
-        slope = 0
-        constant = 0
-        error_gain = True
-
-    y_fit = np.array(x)*slope + constant
-    delta_y = abs(y - y_fit)
-    inl = delta_y / (max(y)-min(y))
-    peakinl = max(inl)
-    return slope, constant, peakinl, error_gain
+#import statsmodels.api as sm
+#def linear_fit(x, y):
+#    error_fit = False 
+#    try:
+#        results = sm.OLS(y,sm.add_constant(x)).fit()
+#    except ValueError:
+#        error_fit = True 
+#    if ( error_fit == False ):
+#        error_gain = False 
+#        try:
+#            slope = results.params[1]
+#        except IndexError:
+#            slope = 0
+#            error_gain = True
+#        try:
+#            constant = results.params[0]
+#        except IndexError:
+#            constant = 0
+#    else:
+#        slope = 0
+#        constant = 0
+#        error_gain = True
+#
+#    y_fit = np.array(x)*slope + constant
+#    delta_y = abs(y - y_fit)
+#    inl = delta_y / (max(y)-min(y))
+#    peakinl = max(inl)
+#    return slope, constant, peakinl, error_gain
 
 
 def plt_log(plt,logsd, onekey):

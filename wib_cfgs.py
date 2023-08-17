@@ -556,7 +556,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 else:
                     linkctof = 0x0
 
-                if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0) and (dts_time_delay >=0x48):
+                if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0) and (dts_time_delay > 0x48):
                     print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                     rdaddr = 0xA00C000C
                     rdreg = self.peek(rdaddr)

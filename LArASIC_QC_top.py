@@ -90,7 +90,7 @@ if dat.dat_on_wibslot  == 1:
 logs.update(logsd)
 
 #tms=[0]
-if 0 not in tms:
+if 0 not in tms :
     pwr_meas = dat.get_sensors()
     for key in pwr_meas:
         if "FEMB%d"%dat.dat_on_wibslot in key:
@@ -100,7 +100,7 @@ if 0 not in tms:
                             if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
                                     if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
                                             on_f = True
-            if not on_f:
+            if (not on_f) and (tms[0] != 9):
                 tms = [10] + tms #turn DAT on
                 if 9 not in tms:
                     tms = tms + [9] #turn DAT off after testing
