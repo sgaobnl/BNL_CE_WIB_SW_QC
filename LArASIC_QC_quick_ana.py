@@ -15,8 +15,8 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_008000001_008000002_008000203_008000004_008000005_008000006_008000007_008000008"
-froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
+fsubdir = "FE_003002169_003002154_003002155_003002156_003002161_003002162_003002163_003002164"
+froot = "D:/DAT_LArASIC_QC/"
 fdir = froot + fsubdir + "/"
 
 
@@ -453,7 +453,7 @@ if 2 in tms:
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11" in onekey) :
-            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+            show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[3,30], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[10,40], pedr=[8000,10000] )
         if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG11" in onekey) :
