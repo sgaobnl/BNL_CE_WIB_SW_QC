@@ -557,7 +557,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 else:
                     linkctof = 0x0
 
-                if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0) and (dts_time_delay > 0x48):
+                if ((link0to3 & 0xe0e0e0e0) == 0) and ((link4to7 & 0xe0e0e0e0) == 0)and ((link8tob & 0xe0e0e0e0) == 0) and ((linkctof & 0xe0e0e0e0) == 0) and (dts_time_delay >= 0x48):
                     print ("Data is aligned when dts_time_delay = 0x%x"%dts_time_delay )
                     rdaddr = 0xA00C000C
                     rdreg = self.peek(rdaddr)
@@ -1037,69 +1037,90 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.wib_mon_switches()
         return mon_dict
 
+    def spybuf_idle(self, fembs): 
+        for tmp in range(5):
+            self.poke(0xA00C0024, 0x3fff) #spy rec time
+            rdreg = self.peek(0xA00C0004)
+            wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+            self.poke(0xA00C0004, wrreg) #reset spy buffer
+            wrreg = (rdreg&0xffffffbf)|0x00 #NEW FW
+            self.poke(0xA00C0004, wrreg) #release spy buffer
+            time.sleep(0.001) #NEW FW
+            rdreg = self.peek(0xA00C0004)
+            wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+            self.poke(0xA00C0004, wrreg) #reset spy buffer
+            self.spybuf(fembs)
 
     def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
-	#spy_rec_ticks subject to change
-	#(spy_rec_ticks register now only 15 bits instead of 18)
-        if trig_cmd == 0x00:
-            print (f"Data collection for FEMB {fembs} with software trigger")
-        else:
-            print (f"Data collection for FEMB {fembs} with trigger operations") 
-	
-        data = []    
-        for i in range(num_samples):
-            if trig_cmd == 0x00: #SW
-                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-                rdreg = self.peek(0xA00C0004)
-                wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-                self.poke(0xA00C0004, wrreg) #reset spy buffer
-                wrreg = (rdreg&0xffffffbf)|0x00 #NEW FW
-                self.poke(0xA00C0004, wrreg) #release spy buffer
-                time.sleep(0.001) #NEW FW
-                rdreg = self.peek(0xA00C0004)
-                wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-                self.poke(0xA00C0004, wrreg) #reset spy buffer
-                rdreg = self.peek(0xA00C0080)
-                rawdata = self.spybuf(fembs)
-                data.append((rawdata, 0, 0x3ffff, 0x00))    
-            else: #HW
-                print ("DTS trigger mode only supports 4 FEMBs attached")
-                rdreg = self.peek(0xA00C0004)   
-                wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-                self.poke(0xA00C0004, wrreg)
-                wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-                self.poke(0xA00C0004, wrreg) #release spy buffer
-	            
-                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-                rdreg = self.peek(0xA00C0014)
-                wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
-                self.poke(0xA00C0014, wrreg) #program cmd_code_trigger     
-	
-                while True:
-                    spy_full_flgs = False
-                    rdreg = self.peek(0xA00C0080)
-                    if rdreg&0x1fb == 0x1fb:
-                        print ("Recived %d of %d triggers"%((i+1), num_samples))
-                        spy_full_flgs = True
-                        spy_addr_regs = [0xA00C0094, 0xA00C0098, 0xA00C00CC, 0xA00C00D0]
-                        buf_end_addrs = []                   
-                        for femb in range(4):
-                            buf_end_addrs.append(self.peek(spy_addr_regs[femb*2]))
-                            buf_end_addrs.append(self.peek(spy_addr_regs[femb*2+1]))                         
-                        if abs(max(buf_end_addrs) - min(buf_end_addrs)) < 32:
-                            rawdata = self.spybuf(fembs)
-                            data0 = (rawdata, buf_end_addrs[0], spy_rec_ticks, trig_cmd)
-                            data.append(data0)
-                        else:
-                            print("Two buffers out of sync")
-                            pass
-                    else:
+        self.spybuf_idle(fembs) 
+        while True:
+	    #spy_rec_ticks subject to change
+	    #(spy_rec_ticks register now only 15 bits instead of 18)
+            if trig_cmd == 0x00:
+                print (f"Data collection for FEMB {fembs} with software trigger")
+            else:
+                print (f"Data collection for FEMB {fembs} with trigger operations") 
+	    
+            data = []    
+            for i in range(num_samples):
+                if trig_cmd == 0x00: #SW
+                    self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
+                    rdreg = self.peek(0xA00C0004)
+                    wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+                    self.poke(0xA00C0004, wrreg) #reset spy buffer
+                    wrreg = (rdreg&0xffffffbf)|0x00 #NEW FW
+                    self.poke(0xA00C0004, wrreg) #release spy buffer
+                    time.sleep(0.001) #NEW FW
+                    rdreg = self.peek(0xA00C0004)
+                    wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+                    self.poke(0xA00C0004, wrreg) #reset spy buffer
+                    rawdata = self.spybuf(fembs)
+                    data.append((rawdata, 0, 0x3ffff, 0x00))    
+                else: #HW
+                    print ("DTS trigger mode only supports 4 FEMBs attached")
+                    rdreg = self.peek(0xA00C0004)   
+                    wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+                    self.poke(0xA00C0004, wrreg)
+                    wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+                    self.poke(0xA00C0004, wrreg) #release spy buffer
+	                
+                    self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
+                    rdreg = self.peek(0xA00C0014)
+                    wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
+                    self.poke(0xA00C0014, wrreg) #program cmd_code_trigger     
+	    
+                    while True:
                         spy_full_flgs = False
-                    if spy_full_flgs:
-                        break
-                    else:
-                        print ("No external trigger received, Wait a second ")
-                        time.sleep(1)                
+                        rdreg = self.peek(0xA00C0080)
+                        if rdreg&0x1fb == 0x1fb:
+                            print ("Recived %d of %d triggers"%((i+1), num_samples))
+                            spy_full_flgs = True
+                            spy_addr_regs = [0xA00C0094, 0xA00C0098, 0xA00C00CC, 0xA00C00D0]
+                            buf_end_addrs = []                   
+                            for femb in range(4):
+                                buf_end_addrs.append(self.peek(spy_addr_regs[femb*2]))
+                                buf_end_addrs.append(self.peek(spy_addr_regs[femb*2+1]))                         
+                            if abs(max(buf_end_addrs) - min(buf_end_addrs)) < 32:
+                                rawdata = self.spybuf(fembs)
+                                data0 = (rawdata, buf_end_addrs[0], spy_rec_ticks, trig_cmd)
+                                data.append(data0)
+                            else:
+                                print("Two buffers out of sync")
+                                pass
+                        else:
+                            spy_full_flgs = False
+                        if spy_full_flgs:
+                            break
+                        else:
+                            print ("No external trigger received, Wait a second ")
+                            time.sleep(1)                
+            syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=True)
+
+            if syncsts == True:
+                break
+            #else:
+            #    self.data_align(fembs)
+                #time.sleep(1)
         return data
 #    def spybuf_trig(self, fembs,  num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
 #        if trig_cmd == 0x00:

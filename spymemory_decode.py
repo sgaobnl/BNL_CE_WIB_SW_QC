@@ -81,7 +81,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
     PKT_LEN = 899 #in words
     buflen = len(buf)
 
-    for oft in range(8):
+    for oft in [0]:
         num_words = int ((buflen-oft)// 8) 
         words = list(struct.unpack_from("<%dQ"%(num_words),buf[oft:buflen])) #unpack [num_words] big-endian 64-bit unsigned integers
         
@@ -108,7 +108,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
         i = 0
         while i < num_words-PKT_LEN-oft:       
             #if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
-            if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
+            if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (abs(words[i+PKT_LEN+1] - words[i+1])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
             #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
@@ -118,21 +118,21 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 
         if len(f_heads) > 30:
             break
+    if fastchk:
+        if len(f_heads) > 30:
+            return True
         else:
-            print (oft, len(f_heads))
-        break
+            return False
+
     f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
     w_sofs, tmsts = zip(*f_heads)
     num_frams = num_words // PKT_LEN
     ordered_frames = []
-    if fastchk:
-        return words[w_sofs[0]+1]
-    else:
-        for i in range( len(w_sofs)):
-            frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN])
-            ordered_frames.append(frame_dict)
-        
-        return ordered_frames
+    for i in range( len(w_sofs)):
+        frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN])
+        ordered_frames.append(frame_dict)
+    
+    return ordered_frames
     
 def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3f000, fembs=range(4), fastchk=False): #synchronize samples in 8 spy buffers
     #^change default trigger_rec_ticks?
@@ -200,14 +200,9 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
         
         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
         if fastchk:
-            cd_syncs = []
             for fembno in fembs:
-                cd_syncs.append(dec_data[2*fembno]&0x7fff)
-                cd_syncs.append(dec_data[2*fembno+1]&0x7fff)
-            for i in range(len(cd_syncs)-1):
-                if cd_syncs[i] != cd_syncs[i+1]:
-                    print ("Data is not synchoronized...")
-                    print (fembs, hex(cd_syncs[0]), hex(cd_syncs[1]))
+                if (dec_data[fembno*2] != True) or (dec_data[fembno*2+1] != True):
+                    print ("Data of FEMB{} is not synchoronized...".format(fembno))
                     return False
             return True
             

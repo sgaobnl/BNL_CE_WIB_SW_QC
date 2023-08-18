@@ -23,7 +23,7 @@ class DAT_CFGS(WIB_CFGS):
 #            self.Vref = 1.589
         self.fembs = [self.dat_on_wibslot]
         self.data_align_flg = False
-        self.data_align_pwron_flg = False
+        self.data_align_pwron_flg = True
 
         #MUX (SN74LV405AD)
         self.mon_fe_cs = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
@@ -428,7 +428,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.femb_adc_cfg(femb_id=femb_id)
                 self.sddflg = sdd 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
-        print ("Wait %d seconds for FEMB configruation is stable..."%self.fedly)
+        print ("Wait %d seconds for FEMB configruatio (FE) is stable..."%self.fedly)
         time.sleep(self.fedly)
         return cfg_paras_rec
 

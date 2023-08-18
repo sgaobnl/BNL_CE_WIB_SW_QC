@@ -15,7 +15,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_005000001_005000002_005000203_005000004_005000005_005000006_005000007_005000008"
+fsubdir = "FE_004000001_004000002_004000203_004000004_004000005_004000006_004000007_004000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -181,6 +181,7 @@ def data_ana(fembs, rawdata, rms_flg=False):
     pkps = []
     pkns = []
     wfs = []
+    wfsf = []
 
     ppos0=0
     npos0=0
@@ -191,11 +192,11 @@ def data_ana(fembs, rawdata, rms_flg=False):
         amax = np.max(chndata[300:-150])
         amin = np.min(chndata[300:-150])
         if achn==0:
-            ppos0 = np.where(chndata[300:]==amax)[0][0] + 300
-            npos0 = np.where(chndata[300:]==amin)[0][0] + 300
+            ppos0 = np.where(chndata[300:-150]==amax)[0][0] + 300
+            npos0 = np.where(chndata[300:-150]==amin)[0][0] + 300
         if achn==64:
-            ppos64 = np.where(chndata[300:]==amax)[0][0] + 300
-            npos64 = np.where(chndata[300:]==amin)[0][0] + 300
+            ppos64 = np.where(chndata[300:-150]==amax)[0][0] + 300
+            npos64 = np.where(chndata[300:-150]==amin)[0][0] + 300
 
         if rms_flg:
             arms = np.std(chndata)
@@ -205,19 +206,21 @@ def data_ana(fembs, rawdata, rms_flg=False):
                 arms = np.std(chndata[ppos0-150:ppos0-50])
                 aped = int(np.mean(chndata[ppos0-150:ppos0-50]))
                 wfs.append(chndata[ppos0-50:ppos0+150])
+                wfsf.append(chndata)
             else:
                 arms = np.std(chndata[ppos64-150:ppos64-50])
                 aped = int(np.mean(chndata[ppos64-150:ppos64-50]))
                 wfs.append(chndata[ppos64-50:ppos64+150])
+                wfsf.append(chndata)
         chns.append(achn)
         rmss.append(arms)
         peds.append(aped)
         pkps.append(amax)
         pkns.append(amin)
-    return chns, rmss, peds, pkps, pkns, wfs
+    return chns, rmss, peds, pkps, pkns, wfs,wfsf
 
 def ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
-    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
     show_flg=True
     amps = np.array(pkps) - np.array(peds)
     if all(item > par[0] for item in amps) and all(item < par[1] for item in amps) :
@@ -233,7 +236,7 @@ def plt_subplot(plt, fembs, rawdata ):
     ax3 = plt.subplot2grid((2, 3), (1, 1), colspan=1, rowspan=1)
     ax4 = plt.subplot2grid((2, 3), (1, 2), colspan=1, rowspan=1)
 
-    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
 
 
 
@@ -270,7 +273,7 @@ def plt_subplot(plt, fembs, rawdata ):
 
     for chn in chns:
         ax1.plot(wfs[chn][30:70], marker='.')
-        ax2.plot(wfs[chn], marker='.')
+        ax2.plot(wfsf[chn], color="C%d"%(chn//64+1))
     ax1.set_title("Overlap waveforms", fontsize=8)
     ax1.set_ylabel("Amplitude", fontsize=8)
     ax1.set_xlabel("Time", fontsize=8)
@@ -703,7 +706,7 @@ if 5 in tms:
                     fembs = cfgdata[0]
                     rawdata = cfgdata[1]
                     cfg_info = cfgdata[2]
-                    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata, rms_flg=True)
+                    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
 
                     ax1.plot(np.array(peds), marker='.', label="ST0%d_ST1%d"%(st0, st1))
                     ax2.plot(np.array(rmss), marker='.', label="ST0%d_ST1%d"%(st0, st1))
@@ -733,7 +736,7 @@ if 5 in tms:
                     fembs = cfgdata[0]
                     rawdata = cfgdata[1]
                     cfg_info = cfgdata[2]
-                    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata, rms_flg=True)
+                    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
 
                     ax1.plot(np.array(peds), marker='.', label="ST0%d_ST1%d"%(slk0, slk1))
                     ax2.plot(np.array(rmss), marker='.', label="ST0%d_ST1%d"%(slk0, slk1))
@@ -778,7 +781,7 @@ if 61 in tms:
                 fembs = cfgdata[0]
                 rawdata = cfgdata[1]
                 cfg_info = cfgdata[2]
-                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+                chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
                 ax1.plot(pkps, marker='.', label=onekey)
                 ax2.plot(pkns, marker='.', label=onekey)
         ax1.set_xlim((-10,200))
@@ -824,7 +827,7 @@ if 62 in tms:
                     fembs = cfgdata[0]
                     rawdata = cfgdata[1]
                     cfg_info = cfgdata[2]
-                    chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+                    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
                     ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)
                     ax2.plot(np.array(pkns)-np.array(peds), marker='.', label=onekey)
             ax1.set_xlim((-10,200))
@@ -867,7 +870,7 @@ if 63 in tms:
                 fembs = cfgdata[0]
                 rawdata = cfgdata[1]
                 cfg_info = cfgdata[2]
-                chns, rmss, peds, pkps, pkns, wfs = data_ana(fembs, rawdata)
+                chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
 #                ax1.plot(pkps, marker='.', label=onekey)
 #                ax2.plot(pkns, marker='.', label=onekey)
                 ax1.plot(np.array(pkps)-np.array(peds), marker='.', label=onekey)

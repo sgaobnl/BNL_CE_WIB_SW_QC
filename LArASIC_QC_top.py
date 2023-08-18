@@ -110,7 +110,8 @@ if 10 in tms:
     print ("Turn DAT on and wait 10 seconds")
     #set FEMB voltages
     dat.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
-    dat.femb_powering([0])
+    dat.femb_powering([dat.dat_on_wibslot])
+    dat.data_align_pwron_flg = True
     time.sleep(10)
 
 if 0 in tms:
