@@ -123,11 +123,9 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
         break
     f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
     w_sofs, tmsts = zip(*f_heads)
-    print (f_heads)
     num_frams = num_words // PKT_LEN
     ordered_frames = []
     if fastchk:
-        print ( hex(words[w_sofs[0]]), hex(words[w_sofs[0]+1])) 
         return words[w_sofs[0]+1]
     else:
         for i in range( len(w_sofs)):
@@ -219,9 +217,9 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
                 chdata_64ticks0 = [dec_data[0][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
                 femb00 = femb00 + chdata_64ticks0        
-                tmts[0].append(dec_data[0][i]["TMTS"])
+                tmts[0].append(dec_data[0][i]["FEMB_CD0TS"])
                 femb01 = femb01 + chdata_64ticks1        
-                tmts[1].append(dec_data[1][i]["TMTS"])
+                tmts[1].append(dec_data[1][i]["FEMB_CD1TS"])
 
         if 1 in fembs:        
             flen = min(len(dec_data[2]), len(dec_data[3]))
@@ -229,9 +227,9 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
                 chdata_64ticks0 = [dec_data[2][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
                 femb10 = femb10 + chdata_64ticks0        
-                tmts[2].append(dec_data[2][i]["TMTS"])
+                tmts[2].append(dec_data[2][i]["FEMB_CD0TS"])
                 femb11 = femb11 + chdata_64ticks1        
-                tmts[3].append(dec_data[3][i]["TMTS"])
+                tmts[3].append(dec_data[3][i]["FEMB_CD1TS"])
 
         if 2 in fembs:       
             flen = min(len(dec_data[4]), len(dec_data[5]))
@@ -239,9 +237,9 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
                 chdata_64ticks0 = [dec_data[4][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
                 femb20 = femb20 + chdata_64ticks0        
-                tmts[4].append(dec_data[4][i]["TMTS"])
+                tmts[4].append(dec_data[4][i]["FEMB_CD0TS"])
                 femb21 = femb21 + chdata_64ticks1        
-                tmts[5].append(dec_data[5][i]["TMTS"])
+                tmts[5].append(dec_data[5][i]["FEMB_CD1TS"])
 
         if 3 in fembs:
             flen = min(len(dec_data[6]), len(dec_data[7]))
@@ -249,9 +247,9 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
                 chdata_64ticks0 = [dec_data[6][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
                 femb30 = femb30 + chdata_64ticks0        
-                tmts[6].append(dec_data[6][i]["TMTS"])
+                tmts[6].append(dec_data[6][i]["FEMB_CD0TS"])
                 femb31 = femb31 + chdata_64ticks1        
-                tmts[7].append(dec_data[7][i]["TMTS"])
+                tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
 
 
         t0s = [-1, -1, -1, -1, -1, -1, -1, -1]

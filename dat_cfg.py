@@ -521,6 +521,8 @@ class DAT_CFGS(WIB_CFGS):
                 chmax = np.max(datd[ch][500:1500])
                 if ch == 0:
                     chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                if ch == 64:
+                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
                 chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
                 chmin = np.min(datd[ch][500:1500])
                 if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
@@ -547,6 +549,8 @@ class DAT_CFGS(WIB_CFGS):
             for ch in range(16*8):
                 chmax = np.max(datd[ch][500:1500])
                 if ch == 0:
+                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                if ch == 64:
                     chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
                 chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
                 chmin = np.min(datd[ch][500:1500])
