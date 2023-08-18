@@ -22,6 +22,9 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
 
     logs={}
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+    tester=input("\033[92m Please input your name:   \033[0m")
+    logs['tester']=tester
+
     
     if infile_mode:
         while True:
@@ -33,10 +36,11 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
             with open(index_f, 'r') as fp:
                 print (index_f)
                 for cl in fp:
-                    print (cl)
                     tmp = cl.split(",")
                     tmp = tmp[:-1]
-                    logs[tmp[0]] = tmp[1]
+                    if "tester" not in tmp[0]:
+                        print (cl)
+                        logs[tmp[0]] = tmp[1]
 
             if itemized_flg:
                 csvfile = 'Y'
@@ -45,6 +49,7 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:
+                input ("click ENTER after you modify and save asic_info.csv.")
                 continue
 
             fe_id = {}

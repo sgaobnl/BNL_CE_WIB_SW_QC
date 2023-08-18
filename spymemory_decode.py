@@ -8,7 +8,7 @@ import struct
 
 get_bin = lambda x, n: format(x, 'b').zfill(n)
 
-def deframe(words, tsoft_flg=False): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
+def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     data_begin = 3 #word # in frame where data starts
     tick_word_length = 14
     
@@ -47,7 +47,6 @@ def deframe(words, tsoft_flg=False): #based on WIB DEIMOS format - WIB-DAQ-forma
     frame_dict["Context_code"]  = (words[1]>>44)&0xff
     frame_dict["Version"]       = (words[1]>>52)&0xf
     frame_dict["Chn_ID"]        = (words[1]>>56)&0xff
-    frame_dict["TS_offset_flg"] = tsoft_flg 
     #see latest wib firmware doc for descriptions
 
     for tick in range(num_ticks):
@@ -78,13 +77,13 @@ def deframe(words, tsoft_flg=False): #based on WIB DEIMOS format - WIB-DAQ-forma
 
     return frame_dict
     
-def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000): #change default trigger_rec_ticks?
+def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000, fastchk=False): #change default trigger_rec_ticks?
+    PKT_LEN = 899 #in words
+    buflen = len(buf)
+
     for oft in range(8):
-        num_words = int(len(buf[oft:]) // 8) 
-        words = list(struct.unpack_from("<%dQ"%(num_words),buf[oft:])) #unpack [num_words] big-endian 64-bit unsigned integers
-        
-        PKT_LEN = 899 #in words
-        tsoft_flg = False 
+        num_words = int ((buflen-oft)// 8) 
+        words = list(struct.unpack_from("<%dQ"%(num_words),buf[oft:buflen])) #unpack [num_words] big-endian 64-bit unsigned integers
         
         if trigmode == "SW" :
             pass
@@ -117,26 +116,27 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             else:
                 i = i + 1   
 
-#            if not tsoft_flg:
-#                if  (abs(words[i+PKT_LEN] - words[i])%0x800 !=0):
-#                    print ("observe timestamp offset")
-#                    tsoft_flg = True
-
         if len(f_heads) > 30:
             break
         else:
             print (oft, len(f_heads))
         break
+    f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
     w_sofs, tmsts = zip(*f_heads)
+    print (f_heads)
     num_frams = num_words // PKT_LEN
     ordered_frames = []
-    for i in range( len(w_sofs)):
-        frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN], tsoft_flg=tsoft_flg)
-        ordered_frames.append(frame_dict)
+    if fastchk:
+        print ( hex(words[w_sofs[0]]), hex(words[w_sofs[0]+1])) 
+        return words[w_sofs[0]+1]
+    else:
+        for i in range( len(w_sofs)):
+            frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN])
+            ordered_frames.append(frame_dict)
+        
+        return ordered_frames
     
-    return ordered_frames
-    
-def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3f000, fembs=range(4)): #synchronize samples in 8 spy buffers
+def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3f000, fembs=range(4), fastchk=False): #synchronize samples in 8 spy buffers
     #^change default trigger_rec_ticks?
     frames = [[],[],[],[],[],[],[],[]] #frame buffers
     
@@ -144,9 +144,8 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
         buf0 = bufs[femb*2]
         buf1 = bufs[femb*2+1]
         
-        frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
-        frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks)
-        
+        frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
+        frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
 #    if fembs == list(range(4)):
 #        #find minimum length frame and make everything that length
 #        min_len = len(min(frames, key=len))
@@ -172,11 +171,13 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
     return frames
    
 
-def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB  
+def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one WIB  
     spy_num_all = len(data)
     if spy_num_all < spy_num:
         spy_num = spy_num_all
     wibdata = []
+    if fastchk == True:
+        spy_num=1
 
     for sn in range(spy_num):
         tmts = [[],[],[],[],[],[],[],[]]
@@ -199,7 +200,19 @@ def wib_dec(data, fembs=range(4), spy_num= 1): #data from one WIB
         else:
             trigmode="HW"
         
-        dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs)
+        dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
+        if fastchk:
+            cd_syncs = []
+            for fembno in fembs:
+                cd_syncs.append(dec_data[2*fembno]&0x7fff)
+                cd_syncs.append(dec_data[2*fembno+1]&0x7fff)
+            for i in range(len(cd_syncs)-1):
+                if cd_syncs[i] != cd_syncs[i+1]:
+                    print ("Data is not synchoronized...")
+                    print (fembs, hex(cd_syncs[0]), hex(cd_syncs[1]))
+                    return False
+            return True
+            
         if 0 in fembs:
             flen = min(len(dec_data[0]), len(dec_data[1]))
             for i in range(flen):

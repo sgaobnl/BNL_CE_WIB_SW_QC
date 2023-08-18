@@ -117,16 +117,16 @@ if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
 
-    pwr_meas, link_mask = dat.wib_pwr_on_dat()
-    datad["WIB_PWR"] = pwr_meas
-    datad["WIB_LINK"] = link_mask
-    fes_pwr_info = dat.fe_pwr_meas()
-    datad["FE_PWRON"] = fes_pwr_info
-    adcs_pwr_info = dat.adc_pwr_meas()
-    datad["ADC_PWRON"] = adcs_pwr_info
-    cds_pwr_info = dat.cd_pwr_meas()
-    datad["CD_PWRON"] = cds_pwr_info
-    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
+#    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+#    datad["WIB_PWR"] = pwr_meas
+#    datad["WIB_LINK"] = link_mask
+#    fes_pwr_info = dat.fe_pwr_meas()
+#    datad["FE_PWRON"] = fes_pwr_info
+#    adcs_pwr_info = dat.adc_pwr_meas()
+#    datad["ADC_PWRON"] = adcs_pwr_info
+#    cds_pwr_info = dat.cd_pwr_meas()
+#    datad["CD_PWRON"] = cds_pwr_info
+#    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
     chkdata = dat.dat_asic_chk()
     datad.update(chkdata)
     print ("FE mapping to be done")
