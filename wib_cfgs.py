@@ -1038,22 +1038,24 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return mon_dict
 
     def spybuf_idle(self, fembs): 
-        for tmp in range(5):
-            self.poke(0xA00C0024, 0x3fff) #spy rec time
-            rdreg = self.peek(0xA00C0004)
-            wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-            self.poke(0xA00C0004, wrreg) #reset spy buffer
-            wrreg = (rdreg&0xffffffbf)|0x00 #NEW FW
-            self.poke(0xA00C0004, wrreg) #release spy buffer
-            time.sleep(0.001) #NEW FW
-            rdreg = self.peek(0xA00C0004)
-            wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-            self.poke(0xA00C0004, wrreg) #reset spy buffer
-            self.spybuf(fembs)
+        for tmp in range(1):
+             self.poke(0xA00C0024, 0x3fff) #spy rec time
+             rdreg = self.peek(0xA00C0004)
+             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+             self.poke(0xA00C0004, wrreg) #reset spy buffer
+             rdreg = self.peek(0xA00C0004)
+             wrreg = rdreg&0xffffffbf #NEW FW
+             self.poke(0xA00C0004, wrreg) #release spy buffer
+             time.sleep(0.001) #NEW FW
+             rdreg = self.peek(0xA00C0004)
+             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+             self.poke(0xA00C0004, wrreg) #reset spy buffer
+             self.spybuf(fembs)
 
     def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
-        self.spybuf_idle(fembs) 
+        tmp = 0
         while True:
+            self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
 	    #spy_rec_ticks subject to change
 	    #(spy_rec_ticks register now only 15 bits instead of 18)
             if trig_cmd == 0x00:
@@ -1068,7 +1070,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     rdreg = self.peek(0xA00C0004)
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg) #reset spy buffer
-                    wrreg = (rdreg&0xffffffbf)|0x00 #NEW FW
+                    rdreg = self.peek(0xA00C0004)
+                    wrreg = rdreg&0xffffffbf #NEW FW
                     self.poke(0xA00C0004, wrreg) #release spy buffer
                     time.sleep(0.001) #NEW FW
                     rdreg = self.peek(0xA00C0004)
@@ -1081,9 +1084,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     rdreg = self.peek(0xA00C0004)   
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg)
-                    wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+                    rdreg = self.peek(0xA00C0004)
+                    wrreg = rdreg&0xffffffbf #NEW FW
                     self.poke(0xA00C0004, wrreg) #release spy buffer
-	                
                     self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
                     rdreg = self.peek(0xA00C0014)
                     wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
@@ -1118,9 +1121,15 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
             if syncsts == True:
                 break
-            #else:
-            #    self.data_align(fembs)
-                #time.sleep(1)
+            else:
+                tmp = tmp+1
+                if tmp > 100:
+                    print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                    exit()
+                if tmp%10 == 0:
+                    print ("perform data synchronzation again...")
+                    self.data_align(fembs)
+                    time.sleep(1)
         return data
 #    def spybuf_trig(self, fembs,  num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
 #        if trig_cmd == 0x00:

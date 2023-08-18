@@ -15,7 +15,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_004000001_004000002_004000203_004000004_004000005_004000006_004000007_004000008"
+fsubdir = "FE_006000001_006000002_006000203_006000004_006000005_006000006_006000007_006000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -969,16 +969,18 @@ if 8 in tms:
                 pps = []
 
                 for femb in fembs:
-                #    import matplotlib.pyplot as plt
-                #    fig = plt.figure(figsize=(8,6))
+                    import matplotlib.pyplot as plt
+                    fig = plt.figure(figsize=(8,6))
 
-                    for chn in chns:
+                    #for chn in chns:
+                    for chn in [16]:
                         #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
                         pps.append (np.max(wibdata[femb][chn]))
-                #        plt.plot(wibdata[femb][chn], label="%d"%chn)
-                #    plt.legend()
-                #    plt.show()
-                #    plt.close()
+                        plt.plot(wibdata[femb][chn], label="%d"%chn)
+                    plt.legend()
+                    plt.show()
+                    plt.close()
+                exit()
 
 
                 pps4.append(pps)
