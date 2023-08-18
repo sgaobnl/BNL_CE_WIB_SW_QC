@@ -15,7 +15,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_006000001_006000002_006000203_006000004_006000005_006000006_006000007_006000008"
+fsubdir = "FE_008000001_008000002_008000203_008000004_008000005_008000006_008000007_008000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -172,7 +172,7 @@ def plt_fepwr(plt, pwr_meas):
 
 
 def data_ana(fembs, rawdata, rms_flg=False):
-    wibdata = wib_dec(rawdata,fembs, spy_num=1)[0]
+    wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
     chns =[]
@@ -963,24 +963,24 @@ if 8 in tms:
                 cfg_info = cfgdata[7]
                 vals.append(val)
         
-                wibdata = wib_dec(rawdata, fembs, spy_num=1)[0]
+                wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
                 #chns = np.arange(fembs[0]*128 + fembchn, fembs[0]*128 + fembchn + 128, 16)
                 chns = np.arange( fembchn, fembchn + 128, 16)
                 pps = []
 
                 for femb in fembs:
-                    import matplotlib.pyplot as plt
-                    fig = plt.figure(figsize=(8,6))
 
-                    #for chn in chns:
-                    for chn in [16]:
-                        #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
+                    for chn in chns:
                         pps.append (np.max(wibdata[femb][chn]))
-                        plt.plot(wibdata[femb][chn], label="%d"%chn)
-                    plt.legend()
-                    plt.show()
-                    plt.close()
-                exit()
+                    #for chn in [6]:
+                    #    import matplotlib.pyplot as plt
+                    #    fig = plt.figure(figsize=(8,6))
+                    #    #print (np.max(wibdata[femb][chn]), np.mean(wibdata[femb][chn]))
+                    #    plt.plot(wibdata[femb][chn], label="%d"%chn)
+                    #    plt.legend()
+                    #    plt.show()
+                    #    plt.close()
+                    #    #exit()
 
 
                 pps4.append(pps)

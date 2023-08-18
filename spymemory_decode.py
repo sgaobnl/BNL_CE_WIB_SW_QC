@@ -110,7 +110,12 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             #if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
             #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (abs(words[i+PKT_LEN+1] - words[i+1])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
             #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
-            if  (abs(words[i+PKT_LEN] - words[i]) == 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (abs(words[i+PKT_LEN+1] - words[i+1])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
+            if words[i+PKT_LEN] > words[i]:
+                steplen = words[i+PKT_LEN] - words[i]
+            else:
+                steplen = words[i] - words[i+PKT_LEN]  
+
+            if   (steplen < 0x800*2) and (steplen>=0x800) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
                 i = i + PKT_LEN
@@ -118,15 +123,20 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
                 i = i + 1   
 
         if len(f_heads) > 30:
+            f_heads = f_heads[0:30]
             break
+
     if fastchk:
-        if len(f_heads) > 30:
+        if len(f_heads) == 30:
             return True
         else:
+#            print (f_heads)
             return False
-
+#    w_sofs, tmsts = zip(*f_heads[0:30])
+#    print ("A", np.array(tmsts) - tmsts[0])
     f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
     w_sofs, tmsts = zip(*f_heads)
+#    print (np.array(tmsts) - tmsts[0])
     num_frams = num_words // PKT_LEN
     ordered_frames = []
     for i in range( len(w_sofs)):
@@ -170,7 +180,7 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
     return frames
    
 
-def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one WIB  
+def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False): #data from one WIB  
     spy_num_all = len(data)
     if spy_num_all < spy_num:
         spy_num = spy_num_all
@@ -247,25 +257,28 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False): #data from one W
                 femb31 = femb31 + chdata_64ticks1        
                 tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
 
+        if cd0cd1sync:
+            t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
+            if 0 in fembs:
+                t0s[0]=tmts[0][0]
+                t0s[1]=tmts[1][0]
+            if 1 in fembs:
+                t0s[2]=tmts[2][0]
+                t0s[3]=tmts[3][0]
+            if 2 in fembs:
+                t0s[4]=tmts[4][0]
+                t0s[5]=tmts[5][0]
+            if 3 in fembs:
+                t0s[6]=tmts[6][0]
+                t0s[7]=tmts[7][0]
 
-        t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
-        if 0 in fembs:
-            t0s[0]=tmts[0][0]
-            t0s[1]=tmts[1][0]
-        if 1 in fembs:
-            t0s[2]=tmts[2][0]
-            t0s[3]=tmts[3][0]
-        if 2 in fembs:
-            t0s[4]=tmts[4][0]
-            t0s[5]=tmts[5][0]
-        if 3 in fembs:
-            t0s[6]=tmts[6][0]
-            t0s[7]=tmts[7][0]
-
-        t0max = np.max(t0s)
-        for i in range(8):
-            if t0s[i] != -1:
-                t0s[i] = (t0max - t0s[i])//32 
+            t0max = np.max(t0s)
+            for i in range(8):
+                if t0s[i] != -1:
+                    t0s[i] = (t0max - t0s[i])//32 
+        else:
+            t0s = [0, 0, 0, 0, 0, 0, 0, 0]
+            t0max = 0
 
         if 0 in fembs:
             femb00 = list(zip(*femb00))

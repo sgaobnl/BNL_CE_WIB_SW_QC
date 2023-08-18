@@ -1122,6 +1122,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if syncsts == True:
                 break
             else:
+                self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
                 tmp = tmp+1
                 if tmp > 100:
                     print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
