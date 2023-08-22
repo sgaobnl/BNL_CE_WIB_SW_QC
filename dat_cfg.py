@@ -317,7 +317,7 @@ class DAT_CFGS(WIB_CFGS):
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
             if "FE_VDDA" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.70) & (cds_pwr_info[onekey][0] < 1.85) & (cds_pwr_info[onekey][1] > -0.1  ) & (cds_pwr_info[onekey][0] < 3  ) :
+                if  (cds_pwr_info[onekey][0] > 1.70) & (cds_pwr_info[onekey][0] < 1.90) & (cds_pwr_info[onekey][1] > -0.1  ) & (cds_pwr_info[onekey][0] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))

@@ -1039,7 +1039,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def spybuf_idle(self, fembs): 
         for tmp in range(1):
-             self.poke(0xA00C0024, 0x3fff) #spy rec time
+             self.poke(0xA00C0024, 0x7fff) #spy rec time
              rdreg = self.peek(0xA00C0004)
              wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
              self.poke(0xA00C0004, wrreg) #reset spy buffer
@@ -1052,7 +1052,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
              self.poke(0xA00C0004, wrreg) #reset spy buffer
              self.spybuf(fembs)
 
-    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
+    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff): 
         tmp = 0
         while True:
             self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
@@ -1073,7 +1073,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     rdreg = self.peek(0xA00C0004)
                     wrreg = rdreg&0xffffffbf #NEW FW
                     self.poke(0xA00C0004, wrreg) #release spy buffer
-                    time.sleep(0.001) #NEW FW
+                    time.sleep(0.003) #NEW FW
                     rdreg = self.peek(0xA00C0004)
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg) #reset spy buffer
