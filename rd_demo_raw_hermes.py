@@ -43,6 +43,7 @@ for fe in range(8):
             c = 'r'
         else:
             c = 'b'
+        print (fe*16+fe_chn,fe, fe_chn, hex(fechndata[1650]))
         plt.plot(fechndata, color=c)
 plt.show()
 plt.close()

@@ -79,12 +79,15 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     
 def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000, fastchk=False): #change default trigger_rec_ticks?
     PKT_LEN = 899 #in words
-    buflen = len(buf)
+    #buf = buf[8:]
 
-    for oft in [0]:
-        num_words = int ((buflen-oft)// 8) 
-        words = list(struct.unpack_from("<%dQ"%(num_words),buf[oft:buflen])) #unpack [num_words] big-endian 64-bit unsigned integers
-        
+    for tryi in range(2):
+        f_heads = []
+        #tryi : find the position of frame with minimum timestamp, re-order the buffer
+        #tryi==2: decode it
+        buflen=len(buf)
+        num_words = int (buflen// 8) 
+        words = list(struct.unpack_from("<%dQ"%(num_words),buf)) #unpack [num_words] big-endian 64-bit unsigned integers
         if trigmode == "SW" :
             pass
             deoding_start_addr = 0x0
@@ -96,55 +99,58 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             else:
                 deoding_start_addr = spy_addr_word  - trigger_rec_ticks
 
-#        for x in range (0, 899*20+1, 899):
-#            print ("KKKKKKKKKKKKKKKKKK")
-#            print (x//899)
-#            print (x, hex(words[x]))
-#            print (x+1, hex(words[x+1]), hex((words[x+1]) -(words[x+1-899]) ))
-#            print (x+2, hex(words[x+2]), hex((words[x+2]&0x7fff) -(words[x+2-899]&0x7fff)))
-#            print (x+3, hex(words[x+3]))
-#
-        f_heads = []
         i = 0
-        while i < num_words-PKT_LEN-oft:       
-            #if abs(words[i+PKT_LEN] - words[i]) % 0x800 == 0 and not (words[i+PKT_LEN] == 0 and words[i] == 0):
-            #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800) and (abs(words[i+PKT_LEN] - words[i])%0x20 == 0x00) and (abs(words[i+PKT_LEN+1] - words[i+1])%0x20 == 0x00) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
-            #if  (abs(words[i+PKT_LEN] - words[i]) < 0x800*2) and (abs(words[i+PKT_LEN] - words[i]) >= 0x800)  and  (words[i+2]==0):
-            if words[i+PKT_LEN] > words[i]:
-                steplen = words[i+PKT_LEN] - words[i]
-            else:
-                steplen = words[i] - words[i+PKT_LEN]  
-
-            if   (steplen < 0x800*2) and (steplen>=0x800) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
+        xlen = num_words-PKT_LEN
+        while i < xlen:       
+            if   (words[i+PKT_LEN] - words[i]==0x800) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
                 i = i + PKT_LEN
             else:
                 i = i + 1   
 
-        if len(f_heads) > 30:
-            f_heads = f_heads[0:30]
-            break
+        if tryi == 1:
+            endpkgi = f_heads[-1][0]
+            if  (words[endpkgi+PKT_LEN] - words[endpkgi]==0x800) and (words[endpkgi+1]&0x7fff == (words[endpkgi+1]>>16)&0x7fff) and  (words[endpkgi+2]==0):
+                tmts = words[endpkgi]
+                f_heads.append([endpkgi,tmts])
+
+        if tryi == 0:
+            w_sofs, tmsts = zip(*f_heads)
+            tmst0 = tmsts[0]
+            w_sof0 = w_sofs[0]
+            f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
+            w_min = f_heads[0][0]
+            tmstmin=f_heads[0][1]
+            w_max = f_heads[-1][0]
+            #tmstmax=f_heads[-1][1]
+            #print (w_sof0, w_min, w_max, ((buflen-w_min*8)//8//899)*64, tmstmin,   tmstmax,  tmstmax-tmstmin, (tmstmax-tmst0)//0x20, (buflen//8//899)*64 + 64)
+            if (tmst0-tmstmin)//0x20 < ((buflen//8//899)*64 + 64): #ring buffer was rolled back (data is larger than the length of ring buffer)
+                buf = buf[w_min*8:] + buf[:w_min*8]
+                if fastchk: # this line should be commented later
+                    print ("fastchk warning: wait time is longer than 1ms")
+                    return True # this line should be commented later
+            else:
+                buf = buf[w_sof0*8:w_max*8+PKT_LEN ]
+        else:
+            w_sofs, tmsts = zip(*f_heads)
+            f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
 
     if fastchk:
-        if len(f_heads) == 30:
+        if (len(f_heads) > 30):
             return True
         else:
-#            print (f_heads)
             return False
-#    w_sofs, tmsts = zip(*f_heads[0:30])
-#    print ("A", np.array(tmsts) - tmsts[0])
-    f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
-    w_sofs, tmsts = zip(*f_heads)
-#    print (np.array(tmsts) - tmsts[0])
-    num_frams = num_words // PKT_LEN
+
+    w_sofs, tmsts = zip(*f_heads[:-1])
     ordered_frames = []
     for i in range( len(w_sofs)):
         frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN])
         ordered_frames.append(frame_dict)
-    
+   
     return ordered_frames
-    
+
+
 def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3f000, fembs=range(4), fastchk=False): #synchronize samples in 8 spy buffers
     #^change default trigger_rec_ticks?
     frames = [[],[],[],[],[],[],[],[]] #frame buffers
@@ -155,28 +161,6 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
         
         frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
         frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
-#    if fembs == list(range(4)):
-#        #find minimum length frame and make everything that length
-#        min_len = len(min(frames, key=len))
-#        for frame in frames:
-#            frame = frame[0:min_len]
-#    
-#    if all([frame for frame in frames]): #if no frames buffers are empty
-#        #check if all spymemories are synced
-#        tmts0_all = [frame[0]["TMTS"] for frame in frames]
-#        while not all(tmts0 == tmts0_all[0] for tmts0 in tmts0_all): #if spymemory synced, pass
-#            for frame in frames[1:]:
-#                if frames[0][0]["TMTS"] > frame[0]["TMTS"]:
-#                    oft = frames[0][0]["TMTS"] - frame[0]["TMTS"] // 0x800 #0x800 = difference between 3 adjacent DAQ frames
-#                    if frames[0][0]["TMTS"] == frame[0]["TMTS"]:
-#                        frames[0] = frames[0][0:0-oft]
-#                        frame = frame[oft:]
-#                elif frames[0][0]["TMTS"] < frame[0]["TMTS"]: 
-#                    oft = abs(frames[0][0]["TMTS"] - frame[0]["TMTS"]) // 0x800
-#                    print("spymemory sync", oft, hex(frames[0][0]["TMTS"]), hex(frame[0]["TMTS"]))
-#                    if frames[0][oft]["TMTS"] == frame[0]["TMTS"]:
-#                        frames[0] = frames[0][oft:]
-#                        frame = frame[0:0-oft]
     return frames
    
 

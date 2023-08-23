@@ -1073,7 +1073,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     rdreg = self.peek(0xA00C0004)
                     wrreg = rdreg&0xffffffbf #NEW FW
                     self.poke(0xA00C0004, wrreg) #release spy buffer
-                    time.sleep(0.003) #NEW FW
+                    time.sleep(0.001) #NEW FW
                     rdreg = self.peek(0xA00C0004)
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg) #reset spy buffer
