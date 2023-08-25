@@ -104,8 +104,6 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             if   (words[i+PKT_LEN] - words[i]==0x800) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
-                if tryi == 1:
-                    print ([i,tmts])
                 i = i + PKT_LEN
             else:
                 i = i + 1   
