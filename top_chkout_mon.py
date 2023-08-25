@@ -65,6 +65,7 @@ for femb_id in fembs:
 
 if True: # FE monitoring 
     if True: # FE monitoring 
+        chips = 8
         sps = 1
         if True:
             print ("monitor power rails")
@@ -72,91 +73,93 @@ if True: # FE monitoring
             dkeys = list(vold.keys())
             print (dkeys)
             LSB = 2.048/16384
+            vgnd = vold["GND"][0][1]
             for key in dkeys:
-                if "HALF" in key:
-                    print ( key, vold[key][0][1], vold[key][0][1]*LSB*2) 
-                else:
+                if "GND" in key:
                     print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
+                elif "HALF" in key:
+                    print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+                else:
+                    print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
             print ("###################")
 
-#        if True:
-#            print ("monitor bandgap reference")
-#            mon_refs = {}
-#            for mon_chip in range(chips):
-#                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=1)
-#                print (adcrst)
-#                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=0)
-#                print (adcrst)
-#                print ("###################")
-#
+        if True:
+            print ("monitor bandgap reference")
+            mon_refs = {}
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=1)
+                print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=0)
+                print (adcrst)
+                print ("###################")
+
 ##
-#        if True:
-#            print ("monitor temperature")
-#            mon_temps = {}
-#            for mon_chip in range(chips):
-#                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=1)
-#                print (adcrst)
-#                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
-#                print (adcrst)
-#                print ("###################")
+        if True:
+            print ("monitor temperature")
+            mon_temps = {}
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=1)
+                print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps, sdf=0)
+                print (adcrst)
+                print ("###################")
 
 
-#        if True:
-#            print ("monitor BL")
-#            mon_temps = {}
-#            for mon_chip in [1]: #range(chips):
-#                for chni in [10,13]: #range(16):
-#                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=chni, snc=1, sdf=0, sps=sps)
-#                    print (mon_chip*16+chni, adcrst)
-#                    input()
-                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=0, sdf=1, sps=sps)
-                #print (adcrst)
-                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=0, sps=sps)
-                #print (adcrst)
-                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=1, sps=sps)
-                #print (adcrst)
+        if True:
+            print ("monitor BL")
+            mon_temps = {}
+            for mon_chip in range(chips):
+                for chni in range(16):
+                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=chni, snc=1, sdf=0, sps=sps)
+                    print (mon_chip*16+chni, adcrst)
+                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=0, sdf=1, sps=sps)
+                    print (adcrst)
+                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=0, sps=sps)
+                    print (adcrst)
+                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=1, sps=sps)
+                    print (adcrst)
+
+        if True:
+            print ("monitor vdac ")
+            mon_refs = {}
+            #for mon_chip in range(chips):
+            #for mon_chip in [1]:
+            while True:
+                for mon_chip in range(chips):
+                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
+                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[63], sps = 1 )
+                    print (adcrst)
+                for mon_chip in range(chips):
+                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
+                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[0], sps = 1 )
+                    print (adcrst)
+                break
 
 #        if True:
 #            print ("monitor vdac ")
 #            mon_refs = {}
 #            #for mon_chip in range(chips):
 #            #for mon_chip in [1]:
-#            while True:
-#                for mon_chip in range(chips):
-#                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
-#                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[63], sps = 1 )
-#                    print (adcrst)
-#                for mon_chip in range(chips):
-#                    #adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=range(0,64,8), sps = 1 )
-#                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=0, sg1=0, vdacs=[0], sps = 1 )
-#                    print (adcrst)
-#                break
-#
-##        if True:
-##            print ("monitor vdac ")
-##            mon_refs = {}
-##            #for mon_chip in range(chips):
-##            #for mon_chip in [1]:
-##            for mon_chip in range(chips):
-##                adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=1, sg1=0, vdacs=[64], sps = 1 )
-##                print (adcrst)
-#
-#        if True:
-#            print ("monitor bandgap reference")
-#            mon_refs = {}
-#            #for mon_chip in range(chips):
-#            #for mon_chip in [1]:
 #            for mon_chip in range(chips):
-#                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
-#                #chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
+#                adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=True, sg0=1, sg1=0, vdacs=[64], sps = 1 )
 #                print (adcrst)
-#     
-#        #if True:
-#        #    print ("monitor temperature")
-#        #    mon_temps = {}
-#        #    for mon_chip in range(chips):
-#        #        adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
-#        #        mon_ts=time.time_ns()
-#        #        mon_temps[f"chip{mon_chip}_temper"] = adcrst
-#        #    mon_paras.append([ip,mon_temps, mon_ts])
-#
+
+        if True:
+            print ("monitor bandgap reference")
+            mon_refs = {}
+            #for mon_chip in range(chips):
+            #for mon_chip in [1]:
+            for mon_chip in range(chips):
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps)
+                #chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=0,sgp=True, sg0=1, sg1=0, vdacs=range(64), sps = 3 )
+                print (adcrst)
+     
+        #if True:
+        #    print ("monitor temperature")
+        #    mon_temps = {}
+        #    for mon_chip in range(chips):
+        #        adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=mon_chip, sps=sps)
+        #        mon_ts=time.time_ns()
+        #        mon_temps[f"chip{mon_chip}_temper"] = adcrst
+        #    mon_paras.append([ip,mon_temps, mon_ts])
+

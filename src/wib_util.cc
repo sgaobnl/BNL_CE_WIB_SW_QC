@@ -151,6 +151,7 @@ uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
 	i2c_t i2c_bus;
 	bool fail;
 	if (bus == 0) fail = i2c_init(&i2c_bus, (char*)"/dev/i2c-0"); //sel
+    //else if (bus == 1) i2c_init(&i2c_bus, (char*)"/dev/i2c-1");
 	else if (bus == 2) fail = i2c_init(&i2c_bus,(char*)"/dev/i2c-2"); //pwr
 	else {
 		printf("Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
@@ -176,6 +177,7 @@ void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data) {
 	i2c_t i2c_bus;
 	
 	if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+    //else if (bus == 1) i2c_init(&i2c_bus, (char*)"/dev/i2c-1");
 	else if (bus == 2) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
 	else {
 		printf("Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
@@ -201,8 +203,9 @@ void i2cselect(uint8_t device) {
 
 double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {	
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
+    //i2cselect(I2C_SENSOR);
+	//else if (bus == 1) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
 	
 	//uint8_t buf[1] = {0x7};
 	//i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
@@ -216,7 +219,8 @@ double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {
 
 double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch) { //ltc2991 are on 2 different buses
 	i2c_t i2c_bus;
-	if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	//if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	if (bus == 1) i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
 	else if (bus == 2) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
 	else {
 		printf("read_ltc2991 Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
@@ -232,8 +236,9 @@ double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch) {
 
 double read_ad7414(uint8_t slave) {
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
+//	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	//i2cselect(I2C_SENSOR);
 
 	//uint8_t buf[1] = {0x7};
 	//i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
@@ -246,8 +251,9 @@ double read_ad7414(uint8_t slave) {
 
 double read_ina226_c(uint8_t slave) {
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
+    //i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	//i2cselect(I2C_SENSOR);
 
 	double val= read_ina226_vshunt(&i2c_bus, slave);
     val = val*(2.5e-6)/0.005;
@@ -257,8 +263,9 @@ double read_ina226_c(uint8_t slave) {
 
 double read_ina226_v(uint8_t slave) {
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
+	//i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	//i2cselect(I2C_SENSOR);
 
 	double val= read_ina226_vbus(&i2c_bus, slave);
     val=val*1.25/1000;
@@ -269,8 +276,9 @@ double read_ina226_v(uint8_t slave) {
 
 double read_ltc2499(uint8_t ch) {
 	i2c_t i2c_bus;
-	i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
-	i2cselect(I2C_SENSOR);
+	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
+	//i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
+	//i2cselect(I2C_SENSOR);
 
 	//uint8_t buf[1] = {0x7};
 	//i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater

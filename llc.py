@@ -371,7 +371,7 @@ class LLC():
         power_meas["P3.3V_V"] = ltc2990_4c_vs[3]
         power_meas["P3.3V_I"] = (ltc2990_4c_vs[2] - ltc2990_4c_vs[3])/r350
 
-        bus = 0
+        bus = 1
         ltc2991_48_vs = []
         for i  in range(1,9,1):
             v = self.wib.read_ltc2991(bus, 0x48, False, i) 
