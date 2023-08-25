@@ -56,11 +56,11 @@ python3 top_chkout_pls_fake_timing.py 0 1 save 10
 
 #### 3. Data decoder at the server 
 ```
-python3 rd_demo_raw_hermes.py <file_path/file_name>   
+python3 rd_demo_raw_hermes.py <file_path/file_name>    <a slot number>
 ```
-e.g.
+e.g. plot waveforms for FEMB channels on slot 1
 ```
-python3 rd_demo_raw_hermes.py tmp_data/Raw_25_08_2023_14_22_54.bin
+python3 rd_demo_raw_hermes.py tmp_data/Raw_25_08_2023_14_22_54.bin 1
 ```
 It is better to transfer the data to the server through scp command and then perform data analysis on the server side. 
 
