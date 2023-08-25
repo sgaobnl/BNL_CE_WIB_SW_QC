@@ -6,6 +6,13 @@ If powershell on windows machine is used as terminal.
 ssh root@192.168.121.1  $wibdate
 ```
 
+# Login WIB
+open an terminal
+```
+ssh root@192.168.121.1
+```
+pwd: fpga
+
 # BNL_CE_WIB_SW_QC
  
 These scripts are developed for standalone WIB operation on WIB 
