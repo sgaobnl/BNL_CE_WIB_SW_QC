@@ -998,6 +998,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
+        self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict
 
     def wib_adc_mon(self, femb_ids, sps=10  ): 
@@ -1102,7 +1103,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg) #reset spy buffer
                     rawdata = self.spybuf(fembs)
-                    data.append((rawdata, 0, 0x3ffff, 0x00))    
+                    data.append((rawdata, 0, spy_rec_ticks, 0x00))    
                 else: #HW
                     print ("DTS trigger mode only supports 4 FEMBs attached")
                     rdreg = self.peek(0xA00C0004)   

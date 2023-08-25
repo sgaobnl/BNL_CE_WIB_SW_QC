@@ -72,7 +72,7 @@ time.sleep(0.5)
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 pwr_meas = chk.get_sensors()
-
+#
 if save:
     fdir = "./tmp_data/"
     ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
