@@ -39,6 +39,7 @@ It adjusts the i2c phase by 300 steps
 python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 ```
 The four arguments correspond to the four slots 
+
 e.g.  Turn FEMBs on WIB slot 0 and 1 on
 ```
 python3 top_femb_powering.py on on off off 
