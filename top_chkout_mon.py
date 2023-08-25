@@ -46,18 +46,18 @@ for femb_id in fembs:
 #Here Coldata uses default setting in the script (not the ASIC default register values)
 #ColdADC configuraiton
     chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                        [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                        [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x4, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x5, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x6, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x7, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x8, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0x9, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0xA, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                        [0xB, 0x08, 1, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                       ]
 
 #LArASIC register configuration
-    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
+    chk.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
     adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
 #step 3
@@ -66,7 +66,19 @@ for femb_id in fembs:
 if True: # FE monitoring 
     if True: # FE monitoring 
         sps = 1
-        chips = 8
+        if True:
+            print ("monitor power rails")
+            vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
+            dkeys = list(vold.keys())
+            print (dkeys)
+            LSB = 2.048/16384
+            for key in dkeys:
+                if "HALF" in key:
+                    print ( key, vold[key][0][1], vold[key][0][1]*LSB*2) 
+                else:
+                    print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
+            print ("###################")
+
 #        if True:
 #            print ("monitor bandgap reference")
 #            mon_refs = {}
@@ -89,14 +101,14 @@ if True: # FE monitoring
 #                print ("###################")
 
 
-        if True:
-            print ("monitor BL")
-            mon_temps = {}
-            for mon_chip in [1]: #range(chips):
-                for chni in [10,13]: #range(16):
-                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=chni, snc=1, sdf=0, sps=sps)
-                    print (mon_chip*16+chni, adcrst)
-                    input()
+#        if True:
+#            print ("monitor BL")
+#            mon_temps = {}
+#            for mon_chip in [1]: #range(chips):
+#                for chni in [10,13]: #range(16):
+#                    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=chni, snc=1, sdf=0, sps=sps)
+#                    print (mon_chip*16+chni, adcrst)
+#                    input()
                 #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=0, sdf=1, sps=sps)
                 #print (adcrst)
                 #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=0, mon_chip=mon_chip, mon_chipchn=0, snc=1, sdf=0, sps=sps)

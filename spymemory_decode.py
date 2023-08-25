@@ -115,6 +115,11 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
                 tmts = words[endpkgi]
                 f_heads.append([endpkgi,tmts])
 
+#        with open("./tmp_data/hexdata.txt", "w") as fp:
+#            for x in range(0, len(buf), 8):
+#                fp.write ("%02x%02x%02x%02x%02x%02x%02x%02x\n"%(buf[x+7], buf[x+6], buf[x+5], buf[x+4], buf[x+3], buf[x+2], buf[x+1], buf[x+0]))
+#        exit()
+
         if tryi == 0:
             w_sofs, tmsts = zip(*f_heads)
             tmst0 = tmsts[0]
@@ -123,10 +128,15 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             w_min = f_heads[0][0]
             tmstmin=f_heads[0][1]
             w_max = f_heads[-1][0]
-            #tmstmax=f_heads[-1][1]
-            #print (w_sof0, w_min, w_max, ((buflen-w_min*8)//8//899)*64, tmstmin,   tmstmax,  tmstmax-tmstmin, (tmstmax-tmst0)//0x20, (buflen//8//899)*64 + 64)
             if (tmst0-tmstmin)//0x20 < ((buflen//8//899)*64 + 64): #ring buffer was rolled back (data is larger than the length of ring buffer)
                 buf = buf[w_min*8:] + buf[:w_min*8]
+                print ("fastchk warning: wait time is longer than 1ms")
+#                with open("./tmp_data/hexdata2.txt", "w+") as fp:
+#                    for x in range(0, len(buf), 8):
+#                        fp.write ("%02x%02x%02x%02x%02x%02x%02x%02x\n"%(buf[x+7], buf[x+6], buf[x+5], buf[x+4], buf[x+3], buf[x+2], buf[x+1], buf[x+0]))
+#                exit()
+
+
                 if fastchk: # this line should be commented later
                     print ("fastchk warning: wait time is longer than 1ms")
                     return True # this line should be commented later
@@ -142,7 +152,8 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
         else:
             return False
 
-    w_sofs, tmsts = zip(*f_heads[:-1])
+    #w_sofs, tmsts = zip(*f_heads[:-1])
+    w_sofs, tmsts = zip(*f_heads)
     ordered_frames = []
     for i in range( len(w_sofs)):
         frame_dict = deframe(words = words[w_sofs[i]:w_sofs[i]+PKT_LEN])
@@ -187,6 +198,8 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
         bufs = raw[0]
         buf_end_addr = raw[1]
         spy_rec_ticks = raw[2]
+        print (hex(spy_rec_ticks))
+        #exit()
         trig_cmd      = raw[3]
         if trig_cmd == 0:
             trigmode="SW"

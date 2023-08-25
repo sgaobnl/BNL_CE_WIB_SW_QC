@@ -976,6 +976,30 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=adcs_addr[mon_chip], reg_page=1, reg_addr=0x9b, wrdata=vcmi) #vcmi
         self.femb_i2c_wr(femb_id=femb_id,    chip_addr=adcs_addr[mon_chip], reg_page=1, reg_addr=0xaf, wrdata=(mon_i<<2)|0x01)
 
+    def wib_vol_mon(self, femb_ids, sps=10 ):
+        vms = ["CDVDDA", "CDVDDIO_HALF", "ADCRVDDD1P2", "ADCLVDDD1P2", "FERVDDP", "FELVDDP", "ADCRP25V_HALF", "ADCLP25V_HALF", "GND"]
+        vols=[0x01, 0x03, 0x09, 0x0b, 0x11, 0x13, 0x19, 0x1b]
+        vms_dict = {}
+        for volcs in range (len(vms)):
+            print (f"Monitor Power Rail of {vms[volcs]}")
+            for femb_id in femb_ids:
+                if "GND" in vms[volcs]:
+                    self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x02,cd1_0x27 = 0x1f, cd2_0x26 =0x00 ,cd2_0x27 = 0x1f)
+                else:
+                    self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x04,cd1_0x27 = 0x1f, cd2_0x26 =vols[volcs] ,cd2_0x27 = 0x1f)
+
+            if self.longcable:
+                time.sleep(0.5)
+            else:
+                time.sleep(0.05)
+            self.wib_mon_adcs() #get rid of previous result
+            adcss = []
+            for i in range(sps):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs)
+            vms_dict[f"{vms[volcs]}"] = adcss
+        return vms_dict
+
     def wib_adc_mon(self, femb_ids, sps=10  ): 
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
