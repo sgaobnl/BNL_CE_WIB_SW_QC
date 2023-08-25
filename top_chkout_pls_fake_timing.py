@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pickle
 import copy
+import os
 import time, datetime, random, statistics
 
 if len(sys.argv) < 2:
@@ -75,6 +76,12 @@ pwr_meas = chk.get_sensors()
 #
 if save:
     fdir = "./tmp_data/"
+    if not os.path.exists(fdir):
+        try:
+            os.makedirs(fdir)
+        except OSError:
+            print ("Error to create folder %s"%save_dir)
+            sys.exit()
     ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
     fp = fdir + "Raw_" + ts  + ".bin"
     with open(fp, 'wb') as fn:
