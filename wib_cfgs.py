@@ -278,6 +278,26 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         rdreg = self.peek(0xA00C003C)
         self.poke(0xA00C003C, (rdreg&0xffffffC0)|reg_value)
 
+    def wib_cali_dac(self, dacvol= 0, ref=2.048):
+        dacbit = int((dacvol/ref)*2**16)
+        dacv = (dacbit&0xffff)<<16
+        rdreg = self.peek(0xA00C003C)
+        wrreg = (rdreg&0x0000ffff) + dacv
+        self.poke(0xA00C003C, wrreg)
+        time.sleep(0.001)
+        while True:
+            rdreg = self.peek(0xA00C0090)
+            cal_dac_busy = (rdreg>>20)&0x01 
+            if cal_dac_busy == 0:
+                break
+            else:
+                time.sleep(0.001)
+        rdreg = self.peek(0xA00C0004)
+        #set bit22(cal_dac) to 1 and then to 0 to start monitring ADC conversion
+        self.poke(0xA00C0004,(rdreg&0xffBfffff)|0x400000) #Set bit22 to 1
+        self.poke(0xA00C0004,rdreg&0xfffBffff) #set bit22 to 0
+        time.sleep(0.001)
+
     def wib_mon_adcs(self):
         rdreg = self.peek(0xA00C0004)
         #set bit19(mon_adc_start) to 1 and then to 0 to start monitring ADC conversion
@@ -853,7 +873,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             stb1=0
             chn=mon_chipchn
 
-        t0 = time.time_ns()
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
         self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
@@ -880,7 +899,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             stb1=0
             chn=mon_chipchn
 
-        t0 = time.time_ns()
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
         self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
@@ -892,7 +910,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
     def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
-        #t0 = time.time_ns() 
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
@@ -901,10 +918,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         #step 2
         #for femb_id in femb_ids:
         #    self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
-        #t0 = time.time_ns() 
         self.fembs_fe_mon(femb_ids, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
-        #print (time.time_ns() - t0)
-        #exit()
         #step4
         if self.longcable:
             time.sleep(0.5)
@@ -923,8 +937,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             mon_str = "Channel"
         mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss]
         self.wib_mon_switches()
-        #print (time.time_ns() - t0)
-        #exit()
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
@@ -1062,25 +1074,24 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.wib_mon_switches()
         return mon_dict
 
-    def spybuf_idle(self, fembs): 
-        for tmp in range(1):
-             self.poke(0xA00C0024, 0x7fff) #spy rec time
-             rdreg = self.peek(0xA00C0004)
-             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-             self.poke(0xA00C0004, wrreg) #reset spy buffer
-             rdreg = self.peek(0xA00C0004)
-             wrreg = rdreg&0xffffffbf #NEW FW
-             self.poke(0xA00C0004, wrreg) #release spy buffer
-             time.sleep(0.001) #NEW FW
-             rdreg = self.peek(0xA00C0004)
-             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
-             self.poke(0xA00C0004, wrreg) #reset spy buffer
-             self.spybuf(fembs)
-
+#    def spybuf_idle(self, fembs): 
+#        for tmp in range(1):
+#             self.poke(0xA00C0024, 0x7fff) #spy rec time
+#             rdreg = self.peek(0xA00C0004)
+#             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+#             self.poke(0xA00C0004, wrreg) #reset spy buffer
+#             rdreg = self.peek(0xA00C0004)
+#             wrreg = rdreg&0xffffffbf #NEW FW
+#             self.poke(0xA00C0004, wrreg) #release spy buffer
+#             time.sleep(0.001) #NEW FW
+#             rdreg = self.peek(0xA00C0004)
+#             wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
+#             self.poke(0xA00C0004, wrreg) #reset spy buffer
+#             self.spybuf(fembs)
+#
     def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff): 
         tmp = 0
         while True:
-            self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
 	    #spy_rec_ticks subject to change
 	    #(spy_rec_ticks register now only 15 bits instead of 18)
             if trig_cmd == 0x00:
@@ -1144,10 +1155,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                             time.sleep(1)                
             syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=True)
 
+
             if syncsts == True:
                 break
             else:
-                self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
+                #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
                 tmp = tmp+1
                 if tmp > 100:
                     print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
@@ -1157,65 +1169,3 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.data_align(fembs)
                     time.sleep(1)
         return data
-#    def spybuf_trig(self, fembs,  num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x3f00): 
-#        if trig_cmd == 0x00:
-#            print (f"Data collection for FEMB {fembs} with software trigger")
-#        else:
-#            print (f"Data collection for FEMB {fembs} with trigger operations")
-#
-#        data = []
-#        for i in range(num_samples):
-#            if trig_cmd == 0x00:
-#                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-#                rdreg = self.peek(0xA00C0004)
-#                wrreg = (rdreg&0xffffff3f)|0xC0
-#                self.poke(0xA00C0004, wrreg) #reset spy buffer
-#                wrreg = (rdreg&0xffffff3f)|0x00
-#                self.poke(0xA00C0004, wrreg) #release spy buffer
-#                time.sleep(0.002)
-#                rdreg = self.peek(0xA00C0004)
-#                wrreg = (rdreg&0xffffff3f)|0xC0
-#                self.poke(0xA00C0004, wrreg) #reset spy buffer
-#                rawdata = self.spybuf(fembs)
-#                data.append((rawdata, 0, 0x3ffff, 0x00))
-#            else:
-#                print ("DTS trigger mode only supports 4 FEMBs attached")
-#                rdreg = self.peek(0xA00C0004)
-#                wrreg = (rdreg&0xffffff3f)|0xC0
-#                self.poke(0xA00C0004, wrreg) #reset spy buffer
-#                wrreg = (rdreg&0xffffff3f)|0x00
-#                self.poke(0xA00C0004, wrreg) #release spy buffer
-#                
-#                self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-#                rdreg = self.peek(0xA00C0014)
-#                wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
-#                self.poke(0xA00C0014, wrreg) #program cmd_code_trigger
-#
-#                while True:
-#                    spy_full_flgs = False
-#                    rdreg = self.peek(0xA00C0080)
-#                    if rdreg&0x03 == 0x03:
-#                        print ("Recived %d of %d triggers"%((i+1), num_samples))
-#                        spy_full_flgs = True
-#                        buf0_end_addr = self.peek(0xA00C0094)
-#                        buf1_end_addr = self.peek(0xA00C0098)
-#                        if (abs(buf0_end_addr - buf1_end_addr)<32) or (abs(buf1_end_addr - buf0_end_addr)<32):
-#                            spy_full_flgs = True
-#                            rawdata = self.spybuf(fembs)
-#                            data0 = (rawdata, buf0_end_addr, spy_rec_ticks, trig_cmd)
-#                            data.append(data0)
-#                        else:
-#                            print ("Two buffers out of synced")
-#                            pass
-#                    else:
-#                        spy_full_flgs = False
-#                    if spy_full_flgs:
-#                        break
-#                    else:
-#                        print ("No external trigger received, Wait a second ")
-#                        time.sleep(1)
-#        return data
-  
-#wib = WIB_CFGS()
-#wib.wib_fw()
-

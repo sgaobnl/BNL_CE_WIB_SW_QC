@@ -79,7 +79,6 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
     
 def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000, fastchk=False): #change default trigger_rec_ticks?
     PKT_LEN = 899 #in words
-    #buf = buf[8:]
 
     for tryi in range(2):
         f_heads = []
@@ -105,15 +104,11 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
             if   (words[i+PKT_LEN] - words[i]==0x800) and (words[i+1]&0x7fff == (words[i+1]>>16)&0x7fff) and  (words[i+2]==0):
                 tmts = words[i]
                 f_heads.append([i,tmts])
+                if tryi == 1:
+                    print ([i,tmts])
                 i = i + PKT_LEN
             else:
                 i = i + 1   
-
-        if tryi == 1:
-            endpkgi = f_heads[-1][0]
-            if  (words[endpkgi+PKT_LEN] - words[endpkgi]==0x800) and (words[endpkgi+1]&0x7fff == (words[endpkgi+1]>>16)&0x7fff) and  (words[endpkgi+2]==0):
-                tmts = words[endpkgi]
-                f_heads.append([endpkgi,tmts])
 
 #        with open("./tmp_data/hexdata.txt", "w") as fp:
 #            for x in range(0, len(buf), 8):
@@ -146,7 +141,6 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
         else:
             return False
 
-    #w_sofs, tmsts = zip(*f_heads[:-1])
     w_sofs, tmsts = zip(*f_heads)
     ordered_frames = []
     for i in range( len(w_sofs)):

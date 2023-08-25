@@ -36,9 +36,9 @@ for fe in range(8):
     for fe_chn in range(16):
         fechndata = datd[fe*16+fe_chn]
         if np.max(fechndata) - np.mean(fechndata) > 6000:
-            pass
-        else:
             print (fe*16+fe_chn,fe, fe_chn) 
+        else:
+            pass
         if fe*16+fe_chn < 64:
             c = 'r'
         else:
