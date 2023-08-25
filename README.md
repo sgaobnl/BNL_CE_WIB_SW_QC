@@ -39,19 +39,21 @@ It adjusts the i2c phase by 300 steps
 python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
 ```
 The four arguments correspond to the four slots 
+e.g.  Turn FEMBs on WIB slot 0 and 1 on
+```
+python3 top_femb_powering.py on on off off 
+```
 
 #### 3. Data taking using PLL timing
 ```
 python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
 ```
-e.g.
+e.g.   save 10 times of spy buffer for FEMBs on WIB slot 0 and 1
 ```
-python3 top_chkout_pls_fake_timing.py 0 1 save 10 # save 10 times of spy buffer for FEMBs on WIB slot 0 and 1
+python3 top_chkout_pls_fake_timing.py 0 1 save 10 
 ```
 
-#### 4. transfer the data to server through scp command
-
-#### 5. Data decoder at the server 
+#### 3. Data decoder at the server 
 ```
 python3 rd_demo_raw.py <file_path/file_name>   
 ```
