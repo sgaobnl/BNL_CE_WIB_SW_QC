@@ -23,7 +23,7 @@ with open(fp, 'rb') as fn:
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-fembs = [1]
+fembs = [int(sys.argv[2])]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
