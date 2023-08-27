@@ -49,7 +49,7 @@ class QC_Runs:
 
         ####### Create data saving directory #######
 
-        save_dir = "/mnt/towibs/tmp/FEMB_QC_data/QC/"
+        save_dir = "./tmp_data/FEMB_QC_data/QC/"
         for key,femb_no in self.fembNo.items():
             save_dir = save_dir + "femb{}_".format(femb_no)
 
@@ -149,6 +149,7 @@ class QC_Runs:
 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
+        time.sleep(3)
 
         if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)

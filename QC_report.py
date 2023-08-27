@@ -15,8 +15,8 @@ class QC_reports:
 
       def __init__(self, fdir, fembs=[]):
 
-          savedir = "QC_reports/"
-          self.datadir = "QC_data/"+fdir+"/"
+          savedir = "./QC_reports/"
+          self.datadir = "./tmp_data/"+fdir+"/"
 
 #          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
 #          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
@@ -162,16 +162,14 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
 
-          pldata,tmst = qc.data_decode(rawdata, self.fembs)
-          pldata = np.array(pldata)
-          tmst = np.array(tmst)
+          pldata = qc.data_decode(rawdata, self.fembs)
 
           for ifemb in self.fembs:
               fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_SE_200mVBL_14_0mVfC_2_0us_pwr_meas"
               qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
               fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_SE_200mVBL_14_0mVfC_2_0us")
+              qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_200mVBL_14_0mVfC_2_0us")
 
           f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
@@ -181,16 +179,14 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
 
-          pldata,tmst = qc.data_decode(rawdata, self.fembs)
-          pldata = np.array(pldata)
-          tmst = np.array(tmst)
+          pldata = qc.data_decode(rawdata, self.fembs)
 
           for ifemb in self.fembs:
               fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
               qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
               fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
+              qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
 
           f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
@@ -200,16 +196,14 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
 
-          pldata,tmst = qc.data_decode(rawdata, self.fembs)
-          pldata = np.array(pldata)
-          tmst = np.array(tmst)
+          pldata= qc.data_decode(rawdata, self.fembs)
 
           for ifemb in self.fembs:
               fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
               qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
               fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
+              qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
 
           for ifemb in self.fembs:
               fdir = self.savedir[ifemb] + "PWR_Meas/"
@@ -235,16 +229,14 @@ class QC_reports:
               with open(f_pl, 'rb') as fn:
                    rawdata = pickle.load(fn)[0]
 
-              pldata,tmst = qc.data_decode(rawdata, self.fembs)
-              pldata = np.array(pldata)
-              tmst = np.array(tmst)
+              pldata = qc.data_decode(rawdata, self.fembs)
 
               for ifemb in self.fembs:
                   fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_pwr_meas".format(i)
                   qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
                   fp = self.savedir[ifemb] + "PWR_Cycle/"
-                  qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us".format(i))
+                  qc.GetPeaks(pldata, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us".format(i))
 
           f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
@@ -254,16 +246,14 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
 
-          pldata,tmst = qc.data_decode(rawdata, self.fembs)
-          pldata = np.array(pldata)
-          tmst = np.array(tmst)
+          pldata = qc.data_decode(rawdata, self.fembs)
 
           for ifemb in self.fembs:
               fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
               qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
               fp = self.savedir[ifemb] + "PWR_Cycle/"
-              qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
+              qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
 
           f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
@@ -273,16 +263,14 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
 
-          pldata,tmst = qc.data_decode(rawdata, self.fembs)
-          pldata = np.array(pldata)
-          tmst = np.array(tmst)
+          pldata = qc.data_decode(rawdata, self.fembs)
 
           for ifemb in self.fembs:
               fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
               qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
               fp = self.savedir[ifemb] + "PWR_Cycle/"
-              qc.GetPeaks(pldata, tmst, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
+              qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
 
 
           for ifemb in self.fembs:
@@ -305,9 +293,7 @@ class QC_reports:
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              pldata,tmst = qc.data_decode(rawdata, self.fembs)
-              pldata = np.array(pldata)
-              tmst = np.array(tmst)
+              pldata = qc.data_decode(rawdata, self.fembs)
 
               if '\\' in afile:
                   fname = afile.split("\\")[-1][:-4]
@@ -315,7 +301,7 @@ class QC_reports:
                   fname = afile.split("/")[-1][:-4]
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb] + fdir+"/" 
-                  qc.GetPeaks(pldata, tmst, ifemb, fp, fname)
+                  qc.GetPeaks(pldata, ifemb, fp, fname)
 
       def RMS_report(self):
 
@@ -335,9 +321,7 @@ class QC_reports:
                   fname = afile.split("/")[-1][7:-9]
 
               qc=ana_tools()
-              pldata,tmst = qc.data_decode(rawdata, self.fembs)
-              pldata = np.array(pldata)
-              tmst = np.array(tmst)
+              pldata = qc.data_decode(rawdata, self.fembs)
 
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb]+"RMS/"

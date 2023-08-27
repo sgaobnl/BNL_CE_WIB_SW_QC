@@ -742,7 +742,6 @@ class ana_tools:
 
             wibdata = self.data_decode(rawdata, fembs)
             pldata = wibdata
-            pldata = np.array(pldata)
             #tmst = np.array(tmst)
 
             for ifemb in fembs:
