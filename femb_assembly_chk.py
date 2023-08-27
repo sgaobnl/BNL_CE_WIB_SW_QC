@@ -237,6 +237,8 @@ if len(fembs) == 0:
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
 
+
+
 ################ Measure RMS at 200mV, 14mV/fC, 2us ###################
 print("Take RMS data")
 snc = 1 # 200 mV
@@ -262,6 +264,8 @@ if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
+
+
 
 ################ Measure FEMB current 2 ####################
 print("Check FEMB current")
@@ -301,6 +305,25 @@ if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump([pwr_meas2, fembs], fn)
+
+################# monitoring power rails ###################
+print ("monitor power rails")
+sps = 10
+vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
+dkeys = list(vold.keys())
+LSB = 2.048/16384
+vgnd = vold["GND"][0][1]
+for key in dkeys:
+    if "GND" in key:
+        print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
+    elif "HALF" in key:
+        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+    else:
+        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+if save:
+    fp = datadir + "MON_PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+    with open(fp, 'wb') as fn:
+        pickle.dump([vold, fembs], fn)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
@@ -349,6 +372,24 @@ if save:
     fp = datadir + "Raw_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
+
+print ("monitor power rails")
+sps=10
+vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
+dkeys = list(vold.keys())
+LSB = 2.048/16384
+vgnd = vold["GND"][0][1]
+for key in dkeys:
+    if "GND" in key:
+        print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
+    elif "HALF" in key:
+        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+    else:
+        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+if save:
+    fp = datadir + "MON_PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+    with open(fp, 'wb') as fn:
+        pickle.dump([vold, fembs], fn)
 
 ####### Take monitoring data #######
 chk.femb_cd_rst()

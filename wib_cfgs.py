@@ -1010,7 +1010,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
-        self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
+        for femb_id in femb_ids:
+            self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict
 
     def wib_adc_mon(self, femb_ids, sps=10  ): 
