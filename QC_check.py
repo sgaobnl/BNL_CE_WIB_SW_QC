@@ -105,58 +105,25 @@ def CHKADC(data, nfemb, nchips, key, lo, hi):
     return BAD,badlist
 
 
-def CHKPulse(data):  # assume the input is a list
+def CHKPulse(data, errbar=3):  # assume the input is a list
     data_np = np.array(data)
+    tmp_max = np.max(data_np) 
+    tmp_max_pos = np.argmax(data_np) 
+    tmp_min = np.min(data_np) 
+    tmp_min_pos = np.argmin(data_np) 
+    tmp_data = np.delete(data_np, [tmp_max_pos,tmp_min_pos])
+    tmp_mean = np.mean(data_np) 
+    tmp_std = np.std(data_np) 
 
-    mean_list = []
-    std_list = []
     flag = False
     bad_chan=[]
     bad_chip=[]
 
-    for i in range(8):  # 8 chips
-        chip_data = data_np[i*16:(i+1)*16]
-
-        tmp_max = np.max(chip_data) 
-        tmp_max_pos = np.argmax(chip_data) 
-        tmp_min = np.min(chip_data) 
-        tmp_min_pos = np.argmin(chip_data) 
-
-        tmp_data = np.delete(chip_data, [tmp_max_pos,tmp_min_pos])
-  
-        tmp_mean = np.mean(tmp_data) 
-        tmp_std = np.std(tmp_data) 
-
-        if (tmp_max-tmp_mean)>tmp_mean*0.05:
+    for ch in range(128):
+        if abs(data_np[ch]-tmp_mean)>tmp_std*3:
            flag = True
-           bad_chan.append(i*16+tmp_max_pos)
-   
-        if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
-           flag = True
-           bad_chan.append(i*16+tmp_min_pos)
-    
-        if flag==False:
-           tmp_mean = np.mean(chip_data)
-
-        mean_list.append(tmp_mean)
-
-    mean_np = np.array(mean_list)
-      
-    tmp_max = np.max(mean_np) 
-    tmp_max_pos = np.argmax(mean_np) 
-    tmp_min = np.min(mean_np) 
-    tmp_min_pos = np.argmin(mean_np) 
-
-    tmp_data = np.delete(mean_np, [tmp_max_pos,tmp_min_pos])
-    tmp_mean = np.mean(tmp_data) 
-
-    if (tmp_max-tmp_mean)>tmp_mean*0.05:
-       flag = True
-       bad_chip.append(tmp_max_pos)
-   
-    if abs(tmp_min-tmp_mean)>tmp_mean*0.05:
-       flag = True
-       bad_chip.append(tmp_min_pos)
+           bad_chan.append(ch)
+           bad_chip.append(ch//16)
 
     return flag,[bad_chan,bad_chip]
        

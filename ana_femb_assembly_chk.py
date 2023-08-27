@@ -201,23 +201,23 @@ for ifemb in range(len(fembs)):
     chkflag["MON_BGP"].append(tmp[0])
     badlist["MON_BGP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMI",900,950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",900,950)
     chkflag["MON_ADC"]["VCMI"].append(tmp[0])
     badlist["MON_ADC"]["VCMI"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VCMO",1200,1250)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1200,1250)
     chkflag["MON_ADC"]["VCMO"].append(tmp[0])
     badlist["MON_ADC"]["VCMO"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFP",1900,1950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1900,1950)
     chkflag["MON_ADC"]["VREFP"].append(tmp[0])
     badlist["MON_ADC"]["VREFP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VREFN",460,510)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",460,510)
     chkflag["MON_ADC"]["VREFN"].append(tmp[0])
     badlist["MON_ADC"]["VREFN"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,ifemb,nchips,"VSSA",0,70)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",0,70)
     chkflag["MON_ADC"]["VSSA"].append(tmp[0])
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 

@@ -152,51 +152,65 @@ if len(fembs) == 0:
 chk.femb_powering(fembs)
 
 ################# check the default COLDATA and COLDADC register ##################
-if False:    
+if True:    
     print("Check FEMB registers")
+    chk.femb_cd_rst()
     chk.femb_cd_rst()
     time.sleep(0.1)
     for ifemb in fembs:
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
         time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
         time.sleep(0.01)
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
     time.sleep(0.1)
     for ifemb in fembs:
         errflag = chk.femb_cd_chkreg(ifemb)
         if errflag:
-           print("FEMB ID {} faild COLDATA register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d'%ifemb]))
            outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
-           fembs.remove(ifemb)
-           fembNo.pop('femb%d'%ifemb)
+           #fembs.remove(ifemb)
+           #fembNo.pop('femb%d'%ifemb)
            continue
     
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
-           print("FEMB ID {} faild COLDADC register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d'%ifemb]))
            outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d'%ifemb]))
-           fembs.remove(ifemb)
-           fembNo.pop('femb%d'%ifemb)
+           #fembs.remove(ifemb)
+           #fembNo.pop('femb%d'%ifemb)
 
     ################ reset COLDATA, COLDADC and LArASIC ##############
     print("Reset FEMBs")
     chk.femb_cd_rst()
+    chk.femb_cd_rst()
     time.sleep(0.1)
     for ifemb in fembs:
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
         time.sleep(0.01)
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
         time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
     
     time.sleep(0.1)
     ################ check the default COLDATA and COLDADC register ###########
-    print("Check FEMB registers")
+    print("Check FEMB registers second times")
     for ifemb in fembs:
         errflag = chk.femb_cd_chkreg(ifemb)
         if errflag:
-           print("FEMB ID {} faild COLDATA register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           print("FEMB ID {} faild COLDATA register check 2".format(fembNo['femb%d'%ifemb]))
+           strcs = input ("skip this femb? (Y/N")
+           if "Y" in strcs or "y" in strcs:
+               pass
+           else:
+               print ("Exit anyway...")
+               exit()
            outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
            fembs.remove(ifemb)
            fembNo.pop('femb%d'%ifemb)
@@ -204,7 +218,14 @@ if False:
     
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
-           print("FEMB ID {} faild COLDADC register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           print("FEMB ID {} faild COLDADC register check 2".format(fembNo['femb%d'%ifemb]))
+           strcs = input ("skip this femb? (Y/N")
+           if "Y" in strcs or "y" in strcs:
+               pass
+           else:
+               print ("Exit anyway...")
+               exit()
+
            outfile.write("FEMB ID {} faild COLDADC register 2 check\n".format(fembNo['femb%d'%ifemb]))
            fembs.remove(ifemb)
            fembNo.pop('femb%d'%ifemb)
