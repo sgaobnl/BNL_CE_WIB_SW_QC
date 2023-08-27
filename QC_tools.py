@@ -1,4 +1,4 @@
-from spymemory_decode import wib_spy_dec_syn
+from spymemory_decode import wib_dec
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -75,87 +75,88 @@ class ana_tools:
         self.fadc = 1/(2**14)*2048 # mV
 
     def data_decode(self,raw,fembs):
-    
-        nevent = len(raw)
-        sss=[]
-        ttt=[]
-   
-        for i in range(nevent):
-            data = raw[i][0]
-            buf_end_addr = raw[i][1]
-            trigger_rec_ticks = raw[i][2]
-            if raw[i][3] != 0:
-                trigmode = 'HW';
-            else:
-                trigmode = 'SW';
-    
-            buf0 = data[0]
-            buf1 = data[1]
-    
-            wib_data = wib_spy_dec_syn(buf0, buf1, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
-    
-            if (0 in fembs) or (1 in fembs):
-                nsamples0 = len(wib_data[0])
-            else:
-                nsamples0 = -1
-            if (2 in fembs) or (3 in fembs):
-                nsamples1 = len(wib_data[1])
-            else:
-                nsamples1 = -1
-            if (nsamples0 > 0) and (nsamples1 > 0):
-                if nsamples0 > nsamples1:
-                    nsamples = nsamples1
-                else:
-                    nsamples = nsamples0
-            elif nsamples0 > 0 :
-                nsamples = nsamples0
-            elif nsamples1 > 0 :
-                nsamples = nsamples1
-    
-            chns=[]
-            tmst0=[]
-            tmst1=[]
-            for j in range(nsamples):
-                if 0 in fembs:
-                   a0 = wib_data[0][j]["FEMB0_2"]
-                else:
-                   a0 = [0]*128
-    
-                if 1 in fembs:
-                   a1 = wib_data[0][j]["FEMB1_3"]
-                else:
-                   a1 = [0]*128
-    
-                if 2 in fembs:
-                   a2 = wib_data[1][j]["FEMB0_2"]
-                else:
-                   a2 = [0]*128
-    
-                if 3 in fembs:
-                   a3 = wib_data[1][j]["FEMB1_3"]
-                else:
-                   a3 = [0]*128
-
-                if 0 in fembs or 1 in fembs:
-                   t0 = wib_data[0][j]["TMTS"]
-                else:
-                   t0 = 0
-    
-                if 2 in fembs or 3 in fembs:
-                   t1 = wib_data[1][j]["TMTS"]
-                else:
-                   t1 = 0
-   
-                aa=a0+a1+a2+a3
-                chns.append(aa)
-                tmst0.append(t0)
-                tmst1.append(t1)
-    
-            chns = list(zip(*chns))
-            sss.append(chns)
-            ttt.append([tmst0,tmst1])
-    
-        return sss,ttt
+        wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True) 
+        return wibdata
+#        sss=[]
+#        ttt=[]
+#   
+###        for i in range(nevent):
+#            wib_data = wib_dec(raw[i], fembs)
+#            data = raw[i][0]
+#            buf_end_addr = raw[i][1]
+#            trigger_rec_ticks = raw[i][2]
+#            if raw[i][3] != 0:
+#                trigmode = 'HW';
+#            else:
+#                trigmode = 'SW';
+#    
+#            buf0 = data[0]
+#            buf1 = data[1]
+#    
+#            wib_data = wib_dec(data, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
+#    
+#            if (0 in fembs) or (1 in fembs):
+#                nsamples0 = len(wib_data[0])
+#            else:
+#                nsamples0 = -1
+#            if (2 in fembs) or (3 in fembs):
+#                nsamples1 = len(wib_data[1])
+#            else:
+#                nsamples1 = -1
+#            if (nsamples0 > 0) and (nsamples1 > 0):
+#                if nsamples0 > nsamples1:
+#                    nsamples = nsamples1
+#                else:
+#                    nsamples = nsamples0
+#            elif nsamples0 > 0 :
+#                nsamples = nsamples0
+#            elif nsamples1 > 0 :
+#                nsamples = nsamples1
+#    
+#            chns=[]
+#            tmst0=[]
+#            tmst1=[]
+#            for j in range(nsamples):
+#                if 0 in fembs:
+#                   a0 = wib_data[0][j]["FEMB0_2"]
+#                else:
+#                   a0 = [0]*128
+#    
+#                if 1 in fembs:
+#                   a1 = wib_data[0][j]["FEMB1_3"]
+#                else:
+#                   a1 = [0]*128
+#    
+#                if 2 in fembs:
+#                   a2 = wib_data[1][j]["FEMB0_2"]
+#                else:
+#                   a2 = [0]*128
+#    
+#                if 3 in fembs:
+#                   a3 = wib_data[1][j]["FEMB1_3"]
+#                else:
+#                   a3 = [0]*128
+#
+#                if 0 in fembs or 1 in fembs:
+#                   t0 = wib_data[0][j]["TMTS"]
+#                else:
+#                   t0 = 0
+#    
+#                if 2 in fembs or 3 in fembs:
+#                   t1 = wib_data[1][j]["TMTS"]
+#                else:
+#                   t1 = 0
+#   
+#                aa=a0+a1+a2+a3
+#                chns.append(aa)
+#                tmst0.append(t0)
+#                tmst1.append(t1)
+#    
+#            chns = list(zip(*chns))
+#            sss.append(chns)
+#            ttt.append([tmst0,tmst1])
+#    
+#        return sss,ttt
     
     def GetRMS(self, data, nfemb, fp, fname):
     
@@ -172,7 +173,7 @@ class ana_tools:
             first = True
             allpls=np.empty(0)
             for itr in range(nevent):
-                evtdata = data[itr][global_ch]
+                evtdata = data[itr][nfemb][ich]
                 allpls=np.append(allpls,evtdata)
     
             ch_ped = np.mean(allpls)
@@ -205,7 +206,7 @@ class ana_tools:
     
         return ped,rms
 
-    def GetPeaks(self, data, tmst, nfemb, fp, fname, funcfit=False, shapetime=2):
+    def GetPeaks(self, data,  nfemb, fp, fname, funcfit=False, shapetime=2, period=500):
     
         nevent = len(data)
     
@@ -216,57 +217,16 @@ class ana_tools:
        
         for ich in range(128):
             global_ch = nfemb*128+ich
-            allpls=np.zeros(500)
+            allpls=np.zeros(period)
             npulse=0
             hasError=False
             for itr in range(nevent):
-                evtdata = data[itr][global_ch]
-        
-                if itr==0:
-                   peak1_pos = np.argmax(evtdata[0:500]) 
-                   peak_val = evtdata[peak1_pos]
-
-                   if peak1_pos<100:
-                      tmp_bl = np.mean(evtdata[peak1_pos+200:500])
-                   else:
-                      tmp_bl = np.mean(evtdata[0:50])
-                   if abs(peak_val/tmp_bl-1)<0.04:
-                      print(fname)
-                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
-                      hasError=True
-                      break
-
-                   if peak1_pos>400 or peak1_pos<50:
-                      t0 = peak1_pos+50+np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
-                      t0 = t0-200
-                      if t0<0:
-                          t0=0
-                      allpls = allpls + evtdata[t0:t0+500]
-                      t0 = tmst[0][nfemb//2][t0]
-                   else:
-                      allpls = allpls + evtdata[:500]
-                      t0 = tmst[0][nfemb//2][0]
-                   npulse=1
-
-                start_t = 500-(tmst[itr][nfemb//2][0]-t0)%500
-                end_t = len(evtdata)-500
-                for tt in range(start_t, end_t, 500):
-                    allpls = allpls + evtdata[tt:tt+500]
+                evtdata = np.array(data[itr][nfemb][ich])
+                tstart = data[itr][4]//0x20
+                for tt in range(period-(tstart%period), len(evtdata)-period, period):
+                    allpls = allpls + evtdata[tt:tt+period]
                     npulse = npulse+1
 
-            if hasError:
-               ppk_val.append(peak_val)
-               npk_val.append(0)
-               bl_val.append(tmp_bl)
-               apulse = data[0][global_ch] 
-               if peak1_pos>=30 and peak1_pos<len(apulse)-90:
-                  ax[0].plot(range(120),apulse[peak1_pos-30:peak1_pos+90])
-               if peak1_pos<30:
-                  ax[0].plot(range(120),apulse[0:120])
-               if peak1_pos>=len(apulse)-90:
-                   ax[0].plot(range(120),apulse[len(apulse)-120:])
-               continue
- 
             apulse = allpls/npulse
 
             pmax = np.amax(apulse)
@@ -278,7 +238,6 @@ class ana_tools:
                ax[0].plot(range(120),apulse[0:120])
             if maxpos>=len(apulse)-90:
                 ax[0].plot(range(120),apulse[len(apulse)-120:])
-
 
             if funcfit:
                popt = FitFunc(apulse, shapetime, makeplot=False)
@@ -316,6 +275,75 @@ class ana_tools:
         with open(fp_bin, 'wb') as fn:
              pickle.dump([ppk_val,npk_val,bl_val], fn) 
         return ppk_val,npk_val,bl_val    
+
+
+#
+#
+#                if itr==0:
+#                    peak1_pos = np.argmax(evtdata[200:period+200]) 
+#                    peak_val = evtdata[peak1_pos]
+#                    tmp_bl = np.mean(evtdata[peak1_pos-50:peak1_pos-150])
+#                    t0 = (peak1_pos + tstart + 200)%period
+#                    if abs(peak_val/tmp_bl-1)<0.04:
+#                        print(fname)
+#                        print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
+#                        hasError=True
+#                        break
+#                start_t = period - tstart%500kk
+#                  
+#
+#
+#
+#        
+#                if itr==0:
+#                   peak1_pos = np.argmax(evtdata[0:500]) 
+#                   peak_val = evtdata[peak1_pos]
+#
+#                   if peak1_pos<100:
+#                      tmp_bl = np.mean(evtdata[peak1_pos+200:500])
+#                   else:
+#                      tmp_bl = np.mean(evtdata[0:50])
+#                   if abs(peak_val/tmp_bl-1)<0.04:
+#                      print(fname)
+#                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
+#                      hasError=True
+#                      break
+#
+#                   if peak1_pos>400 or peak1_pos<50:
+#                      t0 = peak1_pos+50+np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
+#                      t0 = t0-200
+#                      if t0<0:
+#                          t0=0
+#                      allpls = allpls + evtdata[t0:t0+500]
+#                      t0 = tmst[0][nfemb//2][t0]
+#                   else:
+#                      allpls = allpls + evtdata[:500]
+#                      t0 = tmst[0][nfemb//2][0]
+#                   npulse=1
+#
+#                start_t = 500-(tmst[itr][nfemb//2][0]-t0)%500
+#                end_t = len(evtdata)-500
+#                for tt in range(start_t, end_t, 500):
+#                    allpls = allpls + evtdata[tt:tt+500]
+#                    npulse = npulse+1
+#
+#            if hasError:
+#               ppk_val.append(peak_val)
+#               npk_val.append(0)
+#               bl_val.append(tmp_bl)
+#               apulse = data[0][nfemb][ich] 
+#               if peak1_pos>=30 and peak1_pos<len(apulse)-90:
+#                  ax[0].plot(range(120),apulse[peak1_pos-30:peak1_pos+90])
+#               if peak1_pos<30:
+#                  ax[0].plot(range(120),apulse[0:120])
+#               if peak1_pos>=len(apulse)-90:
+#                   ax[0].plot(range(120),apulse[len(apulse)-120:])
+#               continue
+# 
+#
+
+
+
 
     def PrintPWR(self, pwr_data, nfemb, fp):
 
@@ -712,9 +740,10 @@ class ana_tools:
             rawdata = raw[0]
             pwr_meas = raw[1]
 
-            pldata,tmst = self.data_decode(rawdata, fembs)
+            wibdata = self.data_decode(rawdata, fembs)
+            pldata = wibdata
             pldata = np.array(pldata)
-            tmst = np.array(tmst)
+            #tmst = np.array(tmst)
 
             for ifemb in fembs:
                 fp = savedir[ifemb]+fdir
@@ -723,7 +752,8 @@ class ana_tools:
                    pk_list[ifemb].append(np.zeros(128)) 
                 else:
                    fname_1 = namepat.format(snc,sgs,sts,dac)
-                   ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname_1)
+                   #ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname_1)
+                   ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1)
                    ppk_np = np.array(ppk)
                    bl_np = np.array(bl)
                    new_ppk = ppk_np-bl_np

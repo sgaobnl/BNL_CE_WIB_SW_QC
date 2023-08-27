@@ -135,7 +135,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 
     if fastchk:
         if (len(f_heads) > 30):
-            return True
+            return f_heads[0][1] 
         else:
             return False
 
@@ -161,7 +161,7 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
     return frames
    
 
-def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False): #data from one WIB  
+def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True): #data from one WIB  
     spy_num_all = len(data)
     if spy_num_all < spy_num:
         spy_num = spy_num_all
@@ -193,10 +193,12 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
         if fastchk:
             for fembno in fembs:
-                if (dec_data[fembno*2] != True) or (dec_data[fembno*2+1] != True):
+                if (dec_data[fembno*2] != False) and (dec_data[fembno*2+1] != False) and (dec_data[fembno*2] == dec_data[fembno*2+1]) :
+                #CD0 and CD1 of the same FEMB has different time stamp
+                    return True
+                else:
                     print ("Data of FEMB{} is not synchoronized...".format(fembno))
                     return False
-            return True
             
         if 0 in fembs:
             flen = min(len(dec_data[0]), len(dec_data[1]))
@@ -204,9 +206,11 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
                 chdata_64ticks0 = [dec_data[0][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
                 femb00 = femb00 + chdata_64ticks0        
-                tmts[0].append(dec_data[0][i]["FEMB_CD0TS"])
+                #tmts[0].append(dec_data[0][i]["FEMB_CD0TS"])
+                tmts[0].append(dec_data[0][i]["TMTS"])
                 femb01 = femb01 + chdata_64ticks1        
-                tmts[1].append(dec_data[1][i]["FEMB_CD1TS"])
+                #tmts[1].append(dec_data[1][i]["FEMB_CD1TS"])
+                tmts[1].append(dec_data[1][i]["TMTS"])
 
         if 1 in fembs:        
             flen = min(len(dec_data[2]), len(dec_data[3]))
@@ -214,9 +218,11 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
                 chdata_64ticks0 = [dec_data[2][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
                 femb10 = femb10 + chdata_64ticks0        
-                tmts[2].append(dec_data[2][i]["FEMB_CD0TS"])
+                #tmts[2].append(dec_data[2][i]["FEMB_CD0TS"])
+                tmts[2].append(dec_data[2][i]["TMTS"])
                 femb11 = femb11 + chdata_64ticks1        
-                tmts[3].append(dec_data[3][i]["FEMB_CD1TS"])
+                #tmts[3].append(dec_data[3][i]["FEMB_CD1TS"])
+                tmts[3].append(dec_data[3][i]["TMTS"])
 
         if 2 in fembs:       
             flen = min(len(dec_data[4]), len(dec_data[5]))
@@ -224,9 +230,11 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
                 chdata_64ticks0 = [dec_data[4][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
                 femb20 = femb20 + chdata_64ticks0        
-                tmts[4].append(dec_data[4][i]["FEMB_CD0TS"])
+                #tmts[4].append(dec_data[4][i]["FEMB_CD0TS"])
+                tmts[4].append(dec_data[4][i]["TMTS"])
                 femb21 = femb21 + chdata_64ticks1        
-                tmts[5].append(dec_data[5][i]["FEMB_CD1TS"])
+                #tmts[5].append(dec_data[5][i]["FEMB_CD1TS"])
+                tmts[5].append(dec_data[5][i]["TMTS"])
 
         if 3 in fembs:
             flen = min(len(dec_data[6]), len(dec_data[7]))
@@ -234,9 +242,11 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
                 chdata_64ticks0 = [dec_data[6][i]["CD_data"][tick] for tick in range(64)]        
                 chdata_64ticks1 = [dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
                 femb30 = femb30 + chdata_64ticks0        
-                tmts[6].append(dec_data[6][i]["FEMB_CD0TS"])
+                #tmts[6].append(dec_data[6][i]["FEMB_CD0TS"])
+                tmts[6].append(dec_data[6][i]["TMTS"])
                 femb31 = femb31 + chdata_64ticks1        
-                tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
+                #tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
+                tmts[7].append(dec_data[7][i]["TMTS"])
 
         if cd0cd1sync:
             t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
@@ -274,30 +284,30 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=False)
         if 1 in fembs:
             femb10 = list(zip(*femb10))
             for i in range(len(femb10)):
-                femb10[i]=femb10[i][t0s[0]:]
+                femb10[i]=femb10[i][t0s[2]:]
             femb11 = list(zip(*femb11))
             for i in range(len(femb11)):
-                femb11[i]=femb11[i][t0s[1]:]
+                femb11[i]=femb11[i][t0s[3]:]
             femb1 = femb10 + femb11
         else:
             femb1 = None
         if 2 in fembs:
             femb20 = list(zip(*femb20))
             for i in range(len(femb20)):
-                femb20[i]=femb20[i][t0s[0]:]
+                femb20[i]=femb20[i][t0s[4]:]
             femb21 = list(zip(*femb21))
             for i in range(len(femb21)):
-                femb21[i]=femb21[i][t0s[1]:]
+                femb21[i]=femb21[i][t0s[5]:]
             femb2 = femb20 + femb21
         else:
             femb2 = None
         if 3 in fembs:
             femb30 = list(zip(*femb30))
             for i in range(len(femb30)):
-                femb30[i]=femb30[i][t0s[0]:]
+                femb30[i]=femb30[i][t0s[6]:]
             femb31 = list(zip(*femb31))
             for i in range(len(femb31)):
-                femb31[i]=femb31[i][t0s[1]:]
+                femb31[i]=femb31[i][t0s[7]:]
             femb3 = femb30 + femb31
         else:
             femb3 = None

@@ -4,11 +4,11 @@ import sys
 import pickle
 import copy
 import os
-import time, datetime, random, statistics
+import datetime
 
 def CreateFolders(fembNo, env, toytpc):
 
-    datadir = "/mnt/towibs/tmp/FEMB_QC_data/CHK/"
+    datadir = "./tmp_data/CHK/"
     for key,femb_no in fembNo.items():
         datadir = datadir + "femb{}_".format(femb_no)
 
@@ -144,67 +144,75 @@ for ifemb in fembs:
  
 for femb_id in fembs_remove:
     fembs.remove(femb_id)
+
+if len(fembs) == 0:
+    print ("All FEMB fail, exit anyway")
+    exit()
        
 chk.femb_powering(fembs)
 
 ################# check the default COLDATA and COLDADC register ##################
-print("Check FEMB registers")
-chk.femb_cd_rst()
-time.sleep(0.1)
-for ifemb in fembs:
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-    time.sleep(0.01)
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-    time.sleep(0.01)
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
-time.sleep(0.1)
+if False:    
+    print("Check FEMB registers")
+    chk.femb_cd_rst()
+    time.sleep(0.1)
+    for ifemb in fembs:
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+    time.sleep(0.1)
+    for ifemb in fembs:
+        errflag = chk.femb_cd_chkreg(ifemb)
+        if errflag:
+           print("FEMB ID {} faild COLDATA register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
+           continue
+    
+        errflag = chk.femb_adc_chkreg(ifemb)
+        if errflag:
+           print("FEMB ID {} faild COLDADC register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d'%ifemb]))
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
 
-for ifemb in fembs:
-    errflag = chk.femb_cd_chkreg(ifemb)
-    if errflag:
-       print("FEMB ID {} faild COLDATA register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
-       fembs.remove(ifemb)
-       fembNo.pop('femb%d'%ifemb)
-       continue
+    ################ reset COLDATA, COLDADC and LArASIC ##############
+    print("Reset FEMBs")
+    chk.femb_cd_rst()
+    time.sleep(0.1)
+    for ifemb in fembs:
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+    
+    time.sleep(0.1)
+    ################ check the default COLDATA and COLDADC register ###########
+    print("Check FEMB registers")
+    for ifemb in fembs:
+        errflag = chk.femb_cd_chkreg(ifemb)
+        if errflag:
+           print("FEMB ID {} faild COLDATA register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
+           continue
+    
+        errflag = chk.femb_adc_chkreg(ifemb)
+        if errflag:
+           print("FEMB ID {} faild COLDADC register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+           outfile.write("FEMB ID {} faild COLDADC register 2 check\n".format(fembNo['femb%d'%ifemb]))
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
 
-    errflag = chk.femb_adc_chkreg(ifemb)
-    if errflag:
-       print("FEMB ID {} faild COLDADC register check 1, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d'%ifemb]))
-       fembs.remove(ifemb)
-       fembNo.pop('femb%d'%ifemb)
-
-################ reset COLDATA, COLDADC and LArASIC ##############
-print("Reset FEMBs")
-chk.femb_cd_rst()
-time.sleep(0.1)
-for ifemb in fembs:
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-    time.sleep(0.01)
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-    time.sleep(0.01)
-    chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
-
-time.sleep(0.1)
-################ check the default COLDATA and COLDADC register ###########
-print("Check FEMB registers")
-for ifemb in fembs:
-    errflag = chk.femb_cd_chkreg(ifemb)
-    if errflag:
-       print("FEMB ID {} faild COLDATA register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
-       fembs.remove(ifemb)
-       fembNo.pop('femb%d'%ifemb)
-       continue
-
-    errflag = chk.femb_adc_chkreg(ifemb)
-    if errflag:
-       print("FEMB ID {} faild COLDADC register check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild COLDADC register 2 check\n".format(fembNo['femb%d'%ifemb]))
-       fembs.remove(ifemb)
-       fembNo.pop('femb%d'%ifemb)
-
+if len(fembs) == 0:
+   print ("All FEMB fail, exit anyway")
+   exit()
+   
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
 

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    reportdir = "reports/"+datadir+"/"
+    reportdir = "./reports/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -56,7 +56,7 @@ if len(sys.argv) > 2:
 
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
-fdata = "tmp_data/"+datadir+"/"
+fdata = "./tmp_data/"+datadir+"/"
 print(fdata)
 
 ###### load logs and create report folder ######
@@ -94,12 +94,12 @@ PLOTDIR=CreateFolders(fembs, fembNo, env, toytpc)
 
 qc_tools = ana_tools()
 
-pldata,_ = qc_tools.data_decode(rmsdata, fembs)
-pldata = np.array(pldata)
+pldata = qc_tools.data_decode(rmsdata, fembs)
+#pldata = np.array(pldata)
 
-for ifemb in fembs:
-    fp = PLOTDIR[ifemb]
-    ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, "SE_200mVBL_14_0mVfC_2_0us")
+for ifemb in range(len(fembs)):
+    fp = PLOTDIR[fembs[ifemb]]
+    ped,rms=qc_tools.GetRMS(pldata, fembs[ifemb], fp, "SE_200mVBL_14_0mVfC_2_0us")
     tmp = QC_check.CHKPulse(ped)
     chkflag["BL"].append(tmp[0])
     badlist["BL"].append(tmp[1])
@@ -115,13 +115,12 @@ with open(fpulse, 'rb') as fn:
 
 sedata = raw[0]
 
-pldata,tmst = qc_tools.data_decode(sedata, fembs)
-pldata = np.array(pldata)
-tmst = np.array(tmst)
+pldata = qc_tools.data_decode(sedata, fembs)
 
-for ifemb in fembs:
-    fp = PLOTDIR[ifemb]
-    ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname, funcfit=False)
+#for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    fp = PLOTDIR[fembs[ifemb]]
+    ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], fp, fname, funcfit=False)
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
@@ -145,13 +144,12 @@ with open(fpulse, 'rb') as fn:
 
 diffdata = raw[0]
 
-pldata,tmst = qc_tools.data_decode(diffdata, fembs)
-pldata = np.array(pldata)
-tmst = np.array(tmst)
+pldata = qc_tools.data_decode(diffdata, fembs)
 
-for ifemb in fembs:
-    fp = PLOTDIR[ifemb]
-    ppk,npk,bl=qc_tools.GetPeaks(pldata, tmst, ifemb, fp, fname)
+#for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    fp = PLOTDIR[fembs[ifemb]]
+    ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], fp, fname)
     outfp = fp + "pulse_{}.bin".format(fname)
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
@@ -181,10 +179,11 @@ with open(fpwr, 'rb') as fn:
     rawpwr = pickle.load(fn)
 
 pwr_meas=rawpwr[0]
-for ifemb in fembs:
-    fp_pwr = PLOTDIR[ifemb]+"pwr_meas"
-    qc_tools.PrintPWR(pwr_meas, ifemb, fp_pwr)
-    tmp=QC_check.CHKPWR(pwr_meas,ifemb)
+#for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    fp_pwr = PLOTDIR[fembs[ifemb]]+"pwr_meas"
+    qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
+    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb])
     chkflag["PWR"].append(tmp[0])
     badlist["PWR"].append(tmp[1])
 
@@ -192,12 +191,13 @@ nchips=range(8)
 makeplot=True
 qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplot)
 
-for ifemb in fembs:
-    tmp = QC_check.CHKFET(mon_temps,ifemb,nchips,env)
+#for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips,env)
     chkflag["MON_T"].append(tmp[0])
     badlist["MON_T"].append(tmp[1])
 
-    tmp = QC_check.CHKFEBGP(mon_refs,ifemb,nchips)
+    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips)
     chkflag["MON_BGP"].append(tmp[0])
     badlist["MON_BGP"].append(tmp[1])
 
@@ -222,9 +222,9 @@ for ifemb in fembs:
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
 ###### Generate Report ######
-
-for ifemb in fembs:
-    plotdir = PLOTDIR[ifemb]
+#for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    plotdir = PLOTDIR[fembs[ifemb]]
 
     pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
     pdf.alias_nb_pages()
@@ -233,7 +233,7 @@ for ifemb in fembs:
     pdf.set_font('Times', 'B', 20)
     pdf.cell(85)
     pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%ifemb])), 0, new_x="LMARGIN", new_y="NEXT", align='C')
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0, new_x="LMARGIN", new_y="NEXT", align='C')
     pdf.ln(2)
 
     pdf.set_font('Times', '', 12)
