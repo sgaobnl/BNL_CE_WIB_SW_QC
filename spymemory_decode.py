@@ -114,6 +114,9 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 #        exit()
 
         if tryi == 0:
+            if (len(f_heads) < 30):
+                print ("Invalid data length...")
+                return False
             w_sofs, tmsts = zip(*f_heads)
             tmst0 = tmsts[0]
             w_sof0 = w_sofs[0]

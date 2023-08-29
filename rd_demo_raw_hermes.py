@@ -29,7 +29,7 @@ wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 wibdata = wibdata[0]
 
-datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][1]
+datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
 import matplotlib.pyplot as plt
 for fe in range(8):

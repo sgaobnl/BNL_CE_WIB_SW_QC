@@ -86,7 +86,7 @@ dat.fembs = fembs
 if dat.dat_on_wibslot  == 0:
     Vref = 1.583
 if dat.dat_on_wibslot  == 1:
-    Vref = 1.589
+    Vref = 1.5738
 logs.update(logsd)
 
 #tms=[0]
