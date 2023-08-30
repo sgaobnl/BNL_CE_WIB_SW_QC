@@ -53,6 +53,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         fw_day    = (val>>27)&0x1f
         print (f"WIB FW generated at {fw_year}-{fw_month}-{fw_day} {fw_hour}:{fw_minute}:{fw_second}")
 
+    def wib_zynq_mon(self):
+        t_mult=509.3140064
+        t_sub=280.23087870
+        two_b=2**16
+        rdreg = self.peek(0xA00C00D4) #temp
+        sm_temp = (rdreg&0xffff)*t_mult/two_b - t_sub
+        sm_vccint = ((rdreg>>16)&0xffff)*3.0/65536
+        rdreg = self.peek(0xA00C00D8) #temp
+        sm_vccaux = (rdreg&0xffff)*3.0/65536
+        sm_vccbram = ((rdreg>>16)&0xffff)*3.0/65536
+        return sm_temp, sm_vccint, sm_vccaux, sm_vccbram
+
     def wib_i2c_adj(self, n = 300):
         rdreg = self.peek(0xA00C0004)
         for i in range(n):
@@ -265,7 +277,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB%d is off"%femb_id)
             time.sleep(1)
-
+t_mult=509.3140064
+t_sub=280.23087870
+two_b=2**16
     def en_ref10MHz(self, ref_en = False):
         if ref_en:
             self.poke(0xff5e00c4, 0x1033200)
@@ -297,6 +311,32 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C0004,(rdreg&0xffBfffff)|0x400000) #Set bit22 to 1
         self.poke(0xA00C0004,rdreg&0xfffBffff) #set bit22 to 0
         time.sleep(0.001)
+
+    def wib_pls_gen(self, fembs=[0,1,2,3], cp_period=500, cp_phase=0, cp_high_time=500*16/2):
+        cd_period_regaddr = 0xA00C0040
+        rdreg = self.peek(cd_period_regaddr)
+        wrreg = (rdreg&ffe00000) + (cp_period&0x1fffff)
+        self.poke(cd_period_regaddr, wrreg) 
+
+        cd_high_time_regaddr = 0xA00C0044
+        rdreg = self.peek(cd_high_time_regaddr)
+        wrreg = (rdreg&fC000000) + (cp_high_time&0x3fffff)
+        self.poke(cd_high_time_regaddr, wrreg) 
+        
+        rdreg = self.peek(0xA00C003C)
+        wrreg = (rdreg&0xffff803f)
+        for fembid in fembs:
+            if fembid == 0:
+                wrreg = wrreg | 0x800
+            if fembid == 1:
+                wrreg = wrreg | 0x1000
+            if fembid == 2:
+                wrreg = wrreg | 0x2000
+            if fembid == 3:
+                wrreg = wrreg | 0x4000
+        wrreg = rdreg|((cp_phase&0x1f)<<6)
+        self.poke(0xA00C003C, wrreg)
+
 
     def wib_mon_adcs(self):
         rdreg = self.peek(0xA00C0004)
