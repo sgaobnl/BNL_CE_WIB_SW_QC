@@ -46,19 +46,20 @@ if True:
     #Configur Coldata, ColdADC, and LArASIC parameters. 
     #Here Coldata uses default setting in the script (not the ASIC default register values)
     #ColdADC configuraiton
+        sdd = 1
         chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
     
     #LArASIC register configuration
-        chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
+        chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=sdd,dac=0x20 )
         adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3

@@ -32,18 +32,22 @@ wibdata = wibdata[0]
 datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
 import matplotlib.pyplot as plt
+rms = []
 for fe in range(8):
     for fe_chn in range(16):
         fechndata = datd[fe*16+fe_chn]
         if np.max(fechndata) - np.mean(fechndata) > 6000:
-            print (fe*16+fe_chn,fe, fe_chn) 
-        else:
             pass
+        else:
+            print (fe*16+fe_chn,fe, fe_chn) 
         if fe*16+fe_chn < 64:
             c = 'r'
         else:
             c = 'b'
         plt.plot(fechndata, color=c)
+        #rms.append(np.std(fechndata[350:450]))
+#print (rms)
+#plt.plot(np.arange(128),rms)
 plt.show()
 plt.close()
 #bufs = [[],[],[],[],[],[],[],[]]
