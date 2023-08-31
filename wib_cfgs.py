@@ -277,9 +277,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
             print ("FEMB%d is off"%femb_id)
             time.sleep(1)
-t_mult=509.3140064
-t_sub=280.23087870
-two_b=2**16
+
     def en_ref10MHz(self, ref_en = False):
         if ref_en:
             self.poke(0xff5e00c4, 0x1033200)
@@ -313,15 +311,18 @@ two_b=2**16
         time.sleep(0.001)
 
     def wib_pls_gen(self, fembs=[0,1,2,3], cp_period=500, cp_phase=0, cp_high_time=500*16/2):
-        cd_period_regaddr = 0xA00C0040
-        rdreg = self.peek(cd_period_regaddr)
-        wrreg = (rdreg&ffe00000) + (cp_period&0x1fffff)
-        self.poke(cd_period_regaddr, wrreg) 
+        if cp_period <= 1:
+            cp_period = 1
+        cp_period = cp_period - 1
+        cp_period_regaddr = 0xA00C0040
+        rdreg = self.peek(cp_period_regaddr)
+        wrreg = (rdreg&0xffe00000) + (cp_period&0x1fffff)
+        self.poke(cp_period_regaddr, wrreg) 
 
-        cd_high_time_regaddr = 0xA00C0044
-        rdreg = self.peek(cd_high_time_regaddr)
-        wrreg = (rdreg&fC000000) + (cp_high_time&0x3fffff)
-        self.poke(cd_high_time_regaddr, wrreg) 
+        cp_high_time_regaddr = 0xA00C0044
+        rdreg = self.peek(cp_high_time_regaddr)
+        wrreg = (rdreg&0xfC000000) + (int(cp_high_time)&0x3ffffff)
+        self.poke(cp_high_time_regaddr, wrreg) 
         
         rdreg = self.peek(0xA00C003C)
         wrreg = (rdreg&0xffff803f)
@@ -334,8 +335,10 @@ two_b=2**16
                 wrreg = wrreg | 0x2000
             if fembid == 3:
                 wrreg = wrreg | 0x4000
-        wrreg = rdreg|((cp_phase&0x1f)<<6)
+        wrreg = wrreg|((cp_phase&0x1f)<<6)
         self.poke(0xA00C003C, wrreg)
+        for fembid in fembs:
+            self.femb_cd_gpio(femb_id=fembid, cd1_0x26 = 0x01,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
 
     def wib_mon_adcs(self):

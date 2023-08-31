@@ -312,14 +312,15 @@ sps = 10
 vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
 dkeys = list(vold.keys())
 LSB = 2.048/16384
-vgnd = vold["GND"][0][1]
-for key in dkeys:
-    if "GND" in key:
-        print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
-    elif "HALF" in key:
-        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
-    else:
-        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+for fembid in fembs:
+    vgnd = vold["GND"][0][fembid]
+    for key in dkeys:
+        if "GND" in key:
+            print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+        elif "HALF" in key:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+        else:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
 if save:
     fp = datadir + "MON_PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
@@ -378,14 +379,15 @@ sps=10
 vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
 dkeys = list(vold.keys())
 LSB = 2.048/16384
-vgnd = vold["GND"][0][1]
-for key in dkeys:
-    if "GND" in key:
-        print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
-    elif "HALF" in key:
-        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
-    else:
-        print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+for fembid in fembs:
+    vgnd = vold["GND"][0][fembid]
+    for key in dkeys:
+        if "GND" in key:
+            print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+        elif "HALF" in key:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+        else:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
 if save:
     fp = datadir + "MON_PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:

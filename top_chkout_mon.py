@@ -73,15 +73,18 @@ if True: # FE monitoring
             dkeys = list(vold.keys())
             print (dkeys)
             LSB = 2.048/16384
-            vgnd = vold["GND"][0][1]
-            for key in dkeys:
-                if "GND" in key:
-                    print ( key, vold[key][0][1], vold[key][0][1]*LSB) 
-                elif "HALF" in key:
-                    print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
-                else:
-                    print ( key, vold[key][0][1], (vold[key][0][1]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+            for fembid in fembs:
+                vgnd = vold["GND"][0][fembid]
+                print (vgnd)
+                for key in dkeys:
+                    if "GND" in key:
+                        print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+                    elif "HALF" in key:
+                        print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+                    else:
+                        print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
             print ("###################")
+        exit()
 
         if True:
             print ("monitor bandgap reference")

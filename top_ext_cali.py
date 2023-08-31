@@ -59,19 +59,44 @@ if True:
                           ]
     
     #LArASIC register configuration
-        chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=sdd,dac=0x20 )
-        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=2, sdd=sdd,dac=0x00 )
+        adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-
 time.sleep(0.5)
+
+chk.wib_cali_dac(dacvol=0.5)
+for fembid in fembs:
+    if fembid == 0:
+        chk.wib_mon_switches(dac0_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+    if fembid == 1:
+        chk.wib_mon_switches(dac1_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+    if fembid == 2:
+        chk.wib_mon_switches(dac2_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+    if fembid == 3:
+        chk.wib_mon_switches(dac3_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+cp_period=1000
+cp_high_time = int(cp_period*32*3/4)
+chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
+
 
 ####################FEMBs Data taking################################
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
+pwr_meas = chk.get_sensors()
+#
+if save:
+    fdir = "./tmp_data/"
+    ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    fp = fdir + "Raw_" + ts  + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
+
+chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=16, cp_high_time=cp_high_time)
+rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 pwr_meas = chk.get_sensors()
 #
 if save:
