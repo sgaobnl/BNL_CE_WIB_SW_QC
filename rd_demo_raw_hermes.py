@@ -45,7 +45,7 @@ for fe in range(8):
         else:
             c = 'b'
         plt.plot(fechndata, color=c)
-        #rms.append(np.std(fechndata[350:450]))
+        #rms.append(np.mean(fechndata[550:750]))
 #print (rms)
 #plt.plot(np.arange(128),rms)
 plt.show()

@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 def CreateFolders(fembs, fembNo, env, toytpc):
 
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    reportdir = "./reports/"+datadir+"/"
+    #reportdir = "./reports/"+datadir+"/"
+    reportdir = "D:/IO_1865_1D_QC/CHK/Reports/"+datadir+"/"
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -56,7 +57,7 @@ if len(sys.argv) > 2:
 
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
-fdata = "./tmp_data/"+datadir+"/"
+fdata = "D:/IO_1865_1D_QC/CHK/"+datadir+"/"
 print(fdata)
 
 ###### load logs and create report folder ######
@@ -221,6 +222,45 @@ for ifemb in range(len(fembs)):
     chkflag["MON_ADC"]["VSSA"].append(tmp[0])
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
+
+for buf in ["SE", "DIFF"]:
+    fsub = "MON_PWR_" + buf + "_200mVBL_14_0mVfC_2_0us_0x00.bin"
+    fpwr = fdata+ fsub
+    with open(fpwr, 'rb') as fn:
+        monvols = pickle.load(fn)
+        vfembs = monvols[1]
+        vold = monvols[0]
+    vkeys = list(vold.keys())
+    LSB = 2.048/16384
+    for ifemb in range(len(vfembs)):
+        mvold = {}
+        for key in vkeys:
+            f0, f1, f2, f3=zip(*vold[key])
+            vfs=[f0, f1,f2,f3]
+            vf = list(vfs[vfembs[ifemb]])
+            vf.remove(np.max(vf))
+            vf.remove(np.min(vf))
+            vfm = np.mean(vf)
+            vfstd = np.std(vf)
+            mvold[key] = [vfm, vfstd]
+    
+        for key in vkeys:
+            if "GND" in key:
+                mvold[key].append(mvold[key][0]*LSB)
+            elif "HALF" in key:
+                mvold[key].append((mvold[key][0]-mvold["GND"][0])*LSB*2)
+            else:
+                mvold[key].append((mvold[key][0]--mvold["GND"][0])*LSB)
+        mvvold = {}
+        for key in mvold.keys():
+            if "HALF" in key:
+                mvvold[key.replace("_HALF", "")]=int(mvold[key][2]*1000)
+            else:
+                mvvold[key]=[int(mvold[key][2]*1000)]
+    
+    qc_tools.PrintVolMON(vfembs, mvvold, PLOTDIR, fsub)
+
+
 ###### Generate Report ######
 #for ifemb in fembs:
 for ifemb in range(len(fembs)):
@@ -335,13 +375,18 @@ for ifemb in range(len(fembs)):
     pdf.add_page()
 
     pwr_image = plotdir+"pwr_meas.png"
-    pdf.image(pwr_image,0,40,200,40)
+    pdf.image(pwr_image,0,20,200,40)
 
     mon_image = plotdir+"mon_meas_plot.png"
-    pdf.image(mon_image,10,85,180,72)
+    pdf.image(mon_image,10,60,200,60)
+
+    mon_image = plotdir+"MON_PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
+    pdf.image(mon_image,10,120,200,20)
+    mon_image = plotdir+"MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png"
+    pdf.image(mon_image,10,140,200,20)
 
     mon_image = plotdir+"mon_meas.png"
-    pdf.image(mon_image,0,157,200,95)
+    pdf.image(mon_image,10,160,200,90)
 
     pdf.add_page()
 

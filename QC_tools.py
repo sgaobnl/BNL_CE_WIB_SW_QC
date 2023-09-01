@@ -387,6 +387,24 @@ class ana_tools:
         fig.savefig(fp+".png")
         plt.close(fig)
 
+
+    def PrintVolMON(self, fembs, mvold, fp, fsub):
+        for nfemb in fembs:
+            mon_dic = mvold
+            df=pd.DataFrame(data=mon_dic)
+            fig, ax =plt.subplots(figsize=(12,1))
+            ax.axis('off')
+            table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+            ax.set_title("Monitoring power rails (#mV) when " + fsub[0:-4])
+            table.auto_set_font_size(False)
+            table.set_fontsize(10)
+            table.scale(1,2)
+            newfp=fp[nfemb]+fsub[0:-4]+".png"
+            plt.tight_layout()
+            fig.savefig(newfp)
+            plt.close(fig)
+
+
     def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp, makeplot=False):
 
         for nfemb in fembs:
@@ -414,13 +432,14 @@ class ana_tools:
                 mon_dic['ADC VSSA'].append(vssa)
 
             df=pd.DataFrame(data=mon_dic)
-            fig, ax =plt.subplots(figsize=(10,5))
+            fig, ax =plt.subplots(figsize=(10,4.5))
             ax.axis('off')
             table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
             ax.set_title("Monitoring path for FE-ADC (#mV)")
             table.set_fontsize(14)
             table.scale(1,2.2)
             newfp=fp[nfemb]+"mon_meas.png"
+            plt.tight_layout()
             fig.savefig(newfp)
             plt.close(fig)
 
