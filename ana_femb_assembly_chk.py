@@ -22,21 +22,23 @@ def CreateFolders(fembs, fembNo, env, toytpc):
         femb_no = fembNo['femb%d'%ifemb]
         plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc)
 
-        n=1
-        while (os.path.exists(plotdir)):
-            if n==1:
-                plotdir = plotdir + "_R{:03d}".format(n)
-            else:
-                plotdir = plotdir[:-3] + "{:03d}".format(n)
-            n=n+1
-            if n>20:
-                raise Exception("There are more than 20 folders for FEMB %d..."%femb_no)
-
-        try:
-            os.makedirs(plotdir)
-        except OSError:
-            print ("Error to create folder %s"%plotdir)
-            sys.exit()
+        #n=1
+        #while (os.path.exists(plotdir)):
+        #    if n==1:
+        #        plotdir = plotdir + "_R{:03d}".format(n)
+        #    else:
+        #        plotdir = plotdir[:-3] + "{:03d}".format(n)
+        #    n=n+1
+        #    if n>20:
+        #        raise Exception("There are more than 20 folders for FEMB %d..."%femb_no)
+        if os.path.exists(plotdir):
+            pass
+        else:
+            try:
+                os.makedirs(plotdir)
+            except OSError:
+                print ("Error to create folder %s"%plotdir)
+                sys.exit()
 
         plotdir = plotdir+"/"
 
@@ -244,20 +246,15 @@ for buf in ["SE", "DIFF"]:
             vfstd = np.std(vf)
             mvold[key] = [vfm, vfstd]
     
+        mvvold = {}
         for key in vkeys:
             if "GND" in key:
-                mvold[key].append(mvold[key][0]*LSB)
+                mvvold[key] = [int(mvold[key][0]*LSB*1000)]
             elif "HALF" in key:
-                mvold[key].append((mvold[key][0]-mvold["GND"][0])*LSB*2)
+                mvvold[key.replace("_HALF", "")] = [int((mvold[key][0]-mvold["GND"][0])*LSB*2*1000)]
             else:
-                mvold[key].append((mvold[key][0]--mvold["GND"][0])*LSB)
-        mvvold = {}
-        for key in mvold.keys():
-            if "HALF" in key:
-                mvvold[key.replace("_HALF", "")]=int(mvold[key][2]*1000)
-            else:
-                mvvold[key]=[int(mvold[key][2]*1000)]
-    
+                mvvold[key] = [int((mvold[key][0]-mvold["GND"][0])*LSB*1000)]
+
     qc_tools.PrintVolMON(vfembs, mvvold, PLOTDIR, fsub)
 
 

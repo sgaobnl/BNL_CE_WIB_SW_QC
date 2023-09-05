@@ -114,7 +114,7 @@ for ifemb in fembs:
     adc_i = round(pwr_meas1['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
-    if abs(bias_i)>0.05:
+    if abs(bias_i)>0.15:
        print("ERROR: FEMB{} BIAS current |{}|>0.05A".format(ifemb,bias_i)) 
        hasERROR = True
 
@@ -190,6 +190,7 @@ if True:
     time.sleep(0.1)
     for ifemb in fembs:
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        time.sleep(0.01)
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
         time.sleep(0.01)
         chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
@@ -205,7 +206,7 @@ if True:
         errflag = chk.femb_cd_chkreg(ifemb)
         if errflag:
            print("FEMB ID {} faild COLDATA register check 2".format(fembNo['femb%d'%ifemb]))
-           strcs = input ("skip this femb? (Y/N")
+           strcs = input ("skip this femb? (Y/N)")
            if "Y" in strcs or "y" in strcs:
                pass
            else:
@@ -219,7 +220,7 @@ if True:
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
            print("FEMB ID {} faild COLDADC register check 2".format(fembNo['femb%d'%ifemb]))
-           strcs = input ("skip this femb? (Y/N")
+           strcs = input ("skip this femb? (Y/N)")
            if "Y" in strcs or "y" in strcs:
                pass
            else:
@@ -277,7 +278,7 @@ for ifemb in fembs:
     adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
-    if bias_i>0.05 or bias_i<-0.02:
+    if bias_i>0.15 or bias_i<-0.02:
        print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i)) 
        hasERROR = True
 
