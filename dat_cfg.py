@@ -311,7 +311,7 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(cds_pwr_info.keys())
         for onekey in kl:
             if "CD_VDDA" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.05) & (cds_pwr_info[onekey][0] < 1.15) & (cds_pwr_info[onekey][1] > 5   ) & (cds_pwr_info[onekey][0] < 10  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 5   ) & (cds_pwr_info[onekey][0] < 10  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
@@ -324,13 +324,13 @@ class DAT_CFGS(WIB_CFGS):
                     warn_flg = True
 
             if "CD_VDDCORE" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.05) & (cds_pwr_info[onekey][0] < 1.15) & (cds_pwr_info[onekey][1] > 7  ) & (cds_pwr_info[onekey][0] < 12  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 7  ) & (cds_pwr_info[onekey][0] < 12  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
             if "CD_VDDD" in onekey: 
-                if  (cds_pwr_info[onekey][0] > 1.05) & (cds_pwr_info[onekey][0] < 1.15) & (cds_pwr_info[onekey][1] > 15  ) & (cds_pwr_info[onekey][0] < 25  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 15  ) & (cds_pwr_info[onekey][0] < 25  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))

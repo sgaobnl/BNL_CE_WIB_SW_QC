@@ -1199,19 +1199,22 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                         else:
                             print ("No external trigger received, Wait a second ")
                             time.sleep(1)                
-            syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=True)
+            fastchk = True
+            if fastchk:
+                syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=fastchk)
 
-
-            if syncsts == True:
-                break
+                if syncsts == True:
+                    break
+                else:
+                    #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
+                    tmp = tmp+1
+                    if tmp > 100:
+                        print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                        exit()
+                    if tmp%10 == 0:
+                        print ("perform data synchronzation again...")
+                        self.data_align(fembs)
+                        time.sleep(1)
             else:
-                #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
-                tmp = tmp+1
-                if tmp > 100:
-                    print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
-                    exit()
-                if tmp%10 == 0:
-                    print ("perform data synchronzation again...")
-                    self.data_align(fembs)
-                    time.sleep(1)
+                break
         return data
