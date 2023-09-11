@@ -15,7 +15,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "FE_010000001_010000002_010000203_010000004_010000005_010000006_010000007_010000008"
+fsubdir = "FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
@@ -343,6 +343,7 @@ if 0 in tms:
                 show_flg = ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
             if ("ASICDAC_CALI_CHK" in onekey):
                 show_flg = ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,3000] )
+            show_flg=True
 
             if show_flg:
                 print (onekey + "  : Fail")
@@ -410,6 +411,7 @@ if 1 in tms:
             if not show_flg:
                 show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[300,2000] )
 
+        show_flg=True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")
@@ -485,6 +487,7 @@ if 2 in tms:
         if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
 
+        show_flg = True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")
@@ -810,7 +813,7 @@ if 62 in tms:
     logsd = data["logs"]
     dkeys.remove("logs")
 
-    for snc in [ 1]:
+    for snc in [0, 1]:
         for buf in [0,1,2]:
             sdd = buf//2
             sdf = buf%2
@@ -856,7 +859,7 @@ if 63 in tms:
     logsd = data["logs"]
     dkeys.remove("logs")
 
-    for snc in [ 1]:
+    for snc in [ 0, 1]:
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(8,6))
         plt.rcParams.update({'font.size': 8})
@@ -911,6 +914,7 @@ if 7 in tms:
         cfg_info = cfgdata[2]
 
         show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,45], pedr=[8000,10000] )
+        show_flg = True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")

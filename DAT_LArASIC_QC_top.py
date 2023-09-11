@@ -83,9 +83,10 @@ if itemized_flg:
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
 dat.fembs = fembs
-if dat.dat_on_wibslot  == 0:
+dat_sn = int(logsd["DAT_SN"])
+if dat_sn  == 1:
     Vref = 1.583
-if dat.dat_on_wibslot  == 1:
+if dat_sn  == 2:
     Vref = 1.5738
 logs.update(logsd)
 
