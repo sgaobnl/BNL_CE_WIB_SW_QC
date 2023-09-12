@@ -53,13 +53,10 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
         
         tick_data = frame_data[tick*tick_word_length:(tick+1)*tick_word_length]
         for ch in range(64): #channel num = adc num * 16 + adc ch num
-            
             low_bit = ch*14
             low_word = low_bit // 64
             high_bit = (ch+1)*14-1
             high_word = high_bit // 64
-            
-            
             
             if low_word == high_word:
                 frame_dict["CD_data"][tick][ch] = (tick_data[low_word] >> (low_bit%64)) & 0x3fff
@@ -70,34 +67,38 @@ def deframe(words): #based on WIB DEIMOS format - WIB-DAQ-formats-all.xlsx
                 high_off = high_word*64-low_bit
                 frame_dict["CD_data"][tick][ch] = (tick_data[low_word] >> (low_bit%64)) & (0x3fff >> (14-high_off))
                 frame_dict["CD_data"][tick][ch] = frame_dict["CD_data"][tick][ch] | (tick_data[high_word] << high_off) & ((0x3fff << high_off) & 0x3fff)
-                
                 adc = ch // 16
                 adc_ch = ch % 16                
-                
 
     return frame_dict
     
-def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x3f000, fastchk=False): #change default trigger_rec_ticks?
+def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x7fff, fastchk=False): #change default trigger_rec_ticks?
     PKT_LEN = 899 #in words
+    pkgn =  trigger_rec_ticks//PKT_LEN
 
-    for tryi in range(2):
+    if trigmode == "SW" :
+        try_num = 2
+    else:
+        try_num = 1
+    for tryi in range(try_num):
         f_heads = []
         #tryi : find the position of frame with minimum timestamp, re-order the buffer
-        #tryi==2: decode it
+        #tryi==2: decode it only when trigmode is software trigger
+        if tryi == 0:
+            if trigmode == "SW" :
+                deoding_start_addr = 0x0
+            else:
+                spy_addr_word = buf_end_addr
+                if spy_addr_word <= trigger_rec_ticks:
+                    deoding_start_addr = spy_addr_word + 0x8000 - trigger_rec_ticks #? to be updated
+                else:
+                    deoding_start_addr = spy_addr_word  - trigger_rec_ticks
+                buf2=buf+buf
+                buf = buf2[deoding_start_addr*8: deoding_start_addr*8 + trigger_rec_ticks*8]
+
         buflen=len(buf)
         num_words = int (buflen// 8) 
         words = list(struct.unpack_from("<%dQ"%(num_words),buf)) #unpack [num_words] big-endian 64-bit unsigned integers
-        if trigmode == "SW" :
-            pass
-            deoding_start_addr = 0x0
-        else: #the following 5 lines to be updated
-            print ("hardware trigger decoding to be updated...")
-            spy_addr_word = buf_end_addr>>2
-            if spy_addr_word <= trigger_rec_ticks:
-                deoding_start_addr = spy_addr_word + 0x40000 - trigger_rec_ticks #? to be updated
-            else:
-                deoding_start_addr = spy_addr_word  - trigger_rec_ticks
-
         i = 0
         xlen = num_words-PKT_LEN
         while i < xlen:       
@@ -114,7 +115,7 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 #        exit()
 
         if tryi == 0:
-            if (len(f_heads) < 30):
+            if (len(f_heads) < pkgn-2):
                 print ("Invalid data length...")
                 return False
             w_sofs, tmsts = zip(*f_heads)
@@ -132,12 +133,9 @@ def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0
 #                exit()
             else:
                 buf = buf[w_sof0*8:w_max*8+PKT_LEN ]
-        else:
-            w_sofs, tmsts = zip(*f_heads)
-            f_heads = sorted(f_heads, key=lambda ts: ts[1]) 
 
     if fastchk:
-        if (len(f_heads) > 30):
+        if (len(f_heads) > pkgn-2):
             return f_heads[0][1] 
         else:
             return False
@@ -159,8 +157,8 @@ def wib_spy_dec_syn(bufs, trigmode="SW", buf_end_addr=0x0, trigger_rec_ticks=0x3
         buf0 = bufs[femb*2]
         buf1 = bufs[femb*2+1]
         
-        frames[femb*2] = spymemory_decode(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
-        frames[femb*2+1] = spymemory_decode(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
+        frames[femb*2] = spymemory_decode(buf=buf0, trigmode=trigmode, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
+        frames[femb*2+1] = spymemory_decode(buf=buf1,trigmode=trigmode,buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
     return frames
    
 
@@ -192,7 +190,6 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True):
             trigmode="SW"
         else:
             trigmode="HW"
-        
         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
         if fastchk:
             for fembno in fembs:

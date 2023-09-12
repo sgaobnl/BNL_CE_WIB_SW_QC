@@ -1135,15 +1135,28 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #             self.poke(0xA00C0004, wrreg) #reset spy buffer
 #             self.spybuf(fembs)
 #
-    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff): 
-        tmp = 0
+    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True): 
+        synctry = 0
         while True:
 	    #spy_rec_ticks subject to change
 	    #(spy_rec_ticks register now only 15 bits instead of 18)
             if trig_cmd == 0x00:
                 print (f"Data collection for FEMB {fembs} with software trigger")
+            elif trig_cmd != 0xff:
+                print (f"Data collection for FEMB {fembs} with trigger from DTS") 
+            if trig_cmd == 0xFF: #P11 trigger
+                print (f"Data collection for FEMB {fembs} with trigger from P11") 
+                rdreg = self.peek(0xA00C0004)   
+                wrreg = (rdreg&0xfbffffff)|0x2000000 #NEW FW
+                self.poke(0xA00C0004, wrreg) #Eanble syp memory trigger from P11 connector
             else:
-                print (f"Data collection for FEMB {fembs} with trigger operations") 
+                rdreg = self.peek(0xA00C0004)   
+                wrreg = rdreg&0xfbffffff
+                self.poke(0xA00C0004, wrreg) 
+
+            rdreg = self.peek(0xA00C0014)
+            wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
+            self.poke(0xA00C0014, wrreg) #program cmd_code_trigger     
 	    
             data = []    
             for i in range(num_samples):
@@ -1162,7 +1175,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     rawdata = self.spybuf(fembs)
                     data.append((rawdata, 0, spy_rec_ticks, 0x00))    
                 else: #HW
-                    print ("DTS trigger mode only supports 4 FEMBs attached")
+                    #print ("DTS trigger mode only supports 4 FEMBs attached")
                     rdreg = self.peek(0xA00C0004)   
                     wrreg = (rdreg&0xffffffbf)|0x40 #NEW FW
                     self.poke(0xA00C0004, wrreg)
@@ -1170,27 +1183,42 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     wrreg = rdreg&0xffffffbf #NEW FW
                     self.poke(0xA00C0004, wrreg) #release spy buffer
                     self.poke(0xA00C0024, spy_rec_ticks) #spy rec time
-                    rdreg = self.peek(0xA00C0014)
-                    wrreg = (rdreg&0xff00ffff)|(trig_cmd<<16)|0x40000000
-                    self.poke(0xA00C0014, wrreg) #program cmd_code_trigger     
+                    time.sleep(0.005)
 	    
                     while True:
                         spy_full_flgs = False
                         rdreg = self.peek(0xA00C0080)
-                        if rdreg&0x1fb == 0x1fb:
+                        fullsig = 0x00
+                        for fembid in fembs:
+                            if fembid == 0:
+                                fullsig = fullsig|0x03
+                            if fembid == 1:
+                                fullsig = fullsig|0x18
+                            if fembid == 2:
+                                fullsig = fullsig|0x60
+                            if fembid == 3:
+                                fullsig = fullsig|0x180
+                        
+                        if rdreg&0x1fb == fullsig:
                             print ("Recived %d of %d triggers"%((i+1), num_samples))
                             spy_full_flgs = True
                             spy_addr_regs = [0xA00C0094, 0xA00C0098, 0xA00C00CC, 0xA00C00D0]
-                            buf_end_addrs = []                   
-                            for femb in range(4):
-                                buf_end_addrs.append(self.peek(spy_addr_regs[femb*2]))
-                                buf_end_addrs.append(self.peek(spy_addr_regs[femb*2+1]))                         
-                            if abs(max(buf_end_addrs) - min(buf_end_addrs)) < 32:
+                            buf_end_addrs = [0, 0, 0, 0, 0, 0, 0, 0 ]
+                            for fembid in fembs:
+                                femb_buf_end_addrs =  self.peek(spy_addr_regs[fembid])                  
+                                buf_end_addrs[fembid*2] = femb_buf_end_addrs&0x7fff                 
+                                buf_end_addrs[fembid*2+1] = (femb_buf_end_addrs>>16)&0x7fff                 
+                            syncfemb = True
+                            tmpend = buf_end_addrs[fembs[0]*2] 
+                            for fembid in fembs:
+                                if (tmpend != buf_end_addrs[fembid*2]) and (tmpend !=buf_end_addrs[fembid*2+1]):
+                                    syncfemb = False
+                            if syncfemb:
                                 rawdata = self.spybuf(fembs)
-                                data0 = (rawdata, buf_end_addrs[0], spy_rec_ticks, trig_cmd)
+                                data0 = (rawdata, buf_end_addrs[fembs[0]*2], spy_rec_ticks, trig_cmd)
                                 data.append(data0)
                             else:
-                                print("Two buffers out of sync")
+                                print("buffers out of sync")
                                 pass
                         else:
                             spy_full_flgs = False
@@ -1199,7 +1227,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                         else:
                             print ("No external trigger received, Wait a second ")
                             time.sleep(1)                
-            fastchk = True
             if fastchk:
                 syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=fastchk)
 
@@ -1207,11 +1234,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     break
                 else:
                     #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
-                    tmp = tmp+1
-                    if tmp > 100:
+                    synctry = synctry+1
+                    if synctry > 100:
                         print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
                         exit()
-                    if tmp%10 == 0:
+                    if synctry%10 == 0:
                         print ("perform data synchronzation again...")
                         self.data_align(fembs)
                         time.sleep(1)
