@@ -195,8 +195,10 @@ uint16_t dat_monadc_getdata(uint8_t cd, uint8_t adc, uint8_t fe) {
 	return ((cdpeek(0, 0xC, 0, msb_reg) & 0x7F) << 8) | cdpeek(0, 0xC, 0, lsb_reg);
 }
 
-void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
-	uint16_t val_int = (uint16_t)(val*65536/2.5);
+//void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
+void dat_set_dac(uint16_t val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
+	//uint16_t val_int = (uint16_t)(val*65536/2.5);
+	uint16_t val_int = val;
 	uint8_t dac_lsb = val_int & 0xFF;
 	uint8_t dac_msb = (val_int & 0xFF00) >> 8; 
 	uint8_t msb_reg, lsb_reg, set_reg;

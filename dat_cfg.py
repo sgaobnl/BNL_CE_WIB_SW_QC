@@ -32,6 +32,7 @@ class DAT_CFGS(WIB_CFGS):
         self.monadc_avg = 1
         self.fedly= 3
         self.sddflg = 0 
+        self.ADCVREF = 2.5
 
     def wib_pwr_on_dat(self):
         print ("Initilization checkout")
@@ -383,6 +384,33 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
+    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, adf_en=0, vrefp=0xDF, vrefn=0x33, vcmo=0x89, vcmi=0x67):
+        self.femb_cd_rst()
+        cfg_paras_rec = []
+        for femb_id in self.fembs:
+            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+                                [0x4, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x5, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x6, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x7, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x8, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x9, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0xA, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0xB, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                              ]
+            self.set_fe_reset()
+            self.set_fe_sync()
+            adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
+            cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
+            self.femb_cfg(femb_id, adac_pls_en )
+        if self.data_align_pwron_flg == True:
+            self.data_align(self.fembs)
+            self.data_align_pwron_flg = False
+            time.sleep(0.1)
+        if self.data_align_flg != True:
+            self.data_align(self.fembs)
+            self.data_align_flg = False
+        return cfg_paras_rec
 
     def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
@@ -486,7 +514,8 @@ class DAT_CFGS(WIB_CFGS):
 
         self.dat_fpga_reset()
         if cali_mode < 2:
-            self.dat_set_dac(val=val, fe_cal=0)
+            valint = val*65536/self.ADCVREF
+            self.dat_set_dac(val=valint, fe_cal=0)
             self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
             width = width&0xfff # width = duty, it must be less than (perod-2)
             period = period&0xfff #period = ADC samples between uplses
@@ -603,6 +632,18 @@ class DAT_CFGS(WIB_CFGS):
                     #pass
         return datad
 
+    def dat_coldadc_cali_cs(self):
+        #DAC ADC N to 0V
+        #self.dat_set_dac(0,adc=1)
+        #make sure ADCs are hooked to their ADCs
+        # ##Set ADC_P_TST_CSABC to 3, set ADC_N_TST_CSABC to 3  [Set ADC_PN_TST_SEL to 3 | (3 << 4)]
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
+        # ##Set ADC_TEST_IN_SEL to 0
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
+        # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x0)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x0)
+
     def dat_fpga_reset(self):
         while True:
             time.sleep(0.1)
@@ -613,6 +654,13 @@ class DAT_CFGS(WIB_CFGS):
             if rdv == 0x00:
                 time.sleep(0.5)
                 break
+            else:
+                print ("Can't reset DAT FPGA, please check data cable connection")
+                input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
+                self.femb_powering([])
+                self.data_align_flg = False
+                exit()
+
 
     def dat_monadcs(self):
         avg_datas = [[],[],[],[],[],[],[],[]]

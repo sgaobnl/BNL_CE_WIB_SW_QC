@@ -1141,11 +1141,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 	    #spy_rec_ticks subject to change
 	    #(spy_rec_ticks register now only 15 bits instead of 18)
             if trig_cmd == 0x00:
-                print (f"Data collection for FEMB {fembs} with software trigger")
+                #print (f"Data collection for FEMB {fembs} with software trigger")
+                pass
             elif trig_cmd != 0xff:
-                print (f"Data collection for FEMB {fembs} with trigger from DTS") 
+                #print (f"Data collection for FEMB {fembs} with trigger from DTS") 
+                pass
             if trig_cmd == 0xFF: #P11 trigger
-                print (f"Data collection for FEMB {fembs} with trigger from P11") 
+                #print (f"Data collection for FEMB {fembs} with trigger from P11") 
                 rdreg = self.peek(0xA00C0004)   
                 wrreg = (rdreg&0xfbffffff)|0x2000000 #NEW FW
                 self.poke(0xA00C0004, wrreg) #Eanble syp memory trigger from P11 connector
