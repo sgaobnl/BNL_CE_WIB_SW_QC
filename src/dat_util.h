@@ -108,6 +108,7 @@ extern "C" {
 	bool dat_monadc_busy(uint8_t cd, uint8_t adc, uint8_t fe);
 	uint16_t dat_monadc_getdata(uint8_t cd, uint8_t adc, uint8_t fe);
 	
-	void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal);
+	//void dat_set_dac(float val, uint8_t fe, uint8_t adc, uint8_t fe_cal);
+	void dat_set_dac(uint16_t val, uint8_t fe, uint8_t adc, uint8_t fe_cal);
 	void dat_set_pulse(uint8_t en, uint16_t period, uint16_t width, float amplitude);
 }

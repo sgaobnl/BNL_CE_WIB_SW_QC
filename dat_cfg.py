@@ -451,6 +451,11 @@ class DAT_CFGS(WIB_CFGS):
         time.sleep(self.fedly)
         return cfg_paras_rec
 
+    def dat_adc_qc_acq(self, num_samples = 1):
+        rawdata = self.spybuf_trig(fembs=self.fembs, num_samples=num_samples, trig_cmd=0, fastchk=False) #returns list of size 1
+        wibdata = wib_dec(rawdata,fembs=self.fembs, spy_num=1)[0][self.fembs[0]]
+        return wibdata
+
 
     def dat_fe_only_cfg(self, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         cfg_paras_rec = []

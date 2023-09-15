@@ -186,6 +186,7 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True):
         buf_end_addr = raw[1]
         spy_rec_ticks = raw[2]
         trig_cmd      = raw[3]
+        #print (len(bufs),buf_end_addr,  spy_rec_ticks ) 
         if trig_cmd == 0:
             trigmode="SW"
         else:

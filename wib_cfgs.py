@@ -1232,9 +1232,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if fastchk:
                 syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=fastchk)
 
-                if syncsts == True:
-                    break
-                else:
+                if not syncsts : 
                     #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
                     synctry = synctry+1
                     if synctry > 100:
