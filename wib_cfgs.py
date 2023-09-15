@@ -1242,6 +1242,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                         print ("perform data synchronzation again...")
                         self.data_align(fembs)
                         time.sleep(1)
+                else:
+                    break
             else:
                 break
         return data

@@ -198,6 +198,7 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True):
                 #CD0 and CD1 of the same FEMB has different time stamp
                     return True
                 else:
+                    print ("Not SYNCED", hex(dec_data[fembno*2]), hex(dec_data[fembno*2+1]) )
                     print ("Data of FEMB{} is not synchoronized...".format(fembno))
                     return False
             

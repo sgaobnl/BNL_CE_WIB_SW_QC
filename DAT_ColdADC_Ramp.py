@@ -10,36 +10,66 @@ dat =  DAT_CFGS()
 dat.fembs = [0]
 
 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)
+cfg_info = dat.dat_adc_qc_cfg()
 dat.dat_coldadc_cali_cs()
 dat.dat_set_dac(0, adc=1) #set ADC_N to 0 V
 
-histo = []
-for x in range(pow(2,16)):
-    histo.append(0)
-histo128s = []
-for x in range(128):
-    histo128s.append(histo)
-
-t0 = time.time_ns()
-
-#for valint in range(pow(2,16)):
-for valint in range(100,10000, 100):
-    dat.dat_set_dac(valint, adc=0)
-    wibdata =  dat.dat_adc_qc_acq(1)
-    for ch in range(128):
-        for addr in wibdata[ch]:
-            histo128s[ch][addr] = histo128s[ch][addr] + 1
-
-datad = {}
-datad["ColdADC_HISTO"] = histo128s 
-t1 = time.time_ns()
-print (t1-t0)
-
-if False:
-    fdir = "./tmp_data/"
-    fp = fdir + "QC_ColdADC.bin"
+fdir = "./tmp_data/"
+for tmp in range(65):
+    if tmp%10 == 0:
+        input ("transfer data")
+    datad = {}
+    for valint in range(tmp*1000,(tmp+1)*1000, 1):
+        if valint%100==0:
+            print (valint)
+        dat.dat_set_dac(val=valint, adc=0)
+        rawdata =  dat.dat_adc_qc_acq(1)
+        datad["DAC%06d"%valint] = rawdata 
+    fp = fdir + "QC_ColdADC%06d.bin"%tmp
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
 
+
+
+
+#histo = []
+#for x in range(pow(2,14)):
+#    histo.append(0)
+#histo128s = []
+#for x in range(128):
+#    histo128s.append(list(histo))
+#
+##histo128s[0][123] = histo128s[0][123]  + 1
+##histo128s[127][123] = histo128s[127][123]  + 3
+##print (histo128s[0][123], histo128s[127][123])
+#
+#
+##for valint in range(pow(2,16)):
+#for valint in range(20000,30000, 1000):
+#    t0 = time.time_ns()
+#    dat.dat_set_dac(val=valint, adc=0)
+#    t1 = time.time_ns()
+#    print ("A", t1-t0)
+#    t0=t1
+#    wibdata =  dat.dat_adc_qc_acq(1)
+#    t1 = time.time_ns()
+#    print ("B", t1-t0)
+#    #print (len(wibdata))
+#    #print (len(wibdata[0]))
+#    #print (wibdata[0][0:10])
+#    #print (wibdata[1][0:10])
+#    for ch in range(128):
+#        for addr in wibdata[ch]:
+#            histo128s[ch][addr] = histo128s[ch][addr] + 1
+#    #print (valint, np.mean(wibdata[5]), np.std(wibdata[5]))
+#
+#datad = {}
+#datad["ColdADC_HISTO"] = histo128s 
+#
+#if False:
+#    fdir = "./tmp_data/"
+#    fp = fdir + "QC_ColdADC.bin"
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#
 
