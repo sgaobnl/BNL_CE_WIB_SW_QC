@@ -22,6 +22,15 @@ for ch in [0]:
     histo = histo128s[ch]
     rdacm = rdacm128[ch]
     rdacstd = rdacstd128[ch]
+
+    import matplotlib.pyplot as plt
+    #plt.plot(histo)
+    plt.plot(rdacstd)
+    plt.show()
+    plt.close()
+    exit()
+
+
     for i in range(len(histo)):
         if histo[i] != 0:
             print (i, histo[i])
