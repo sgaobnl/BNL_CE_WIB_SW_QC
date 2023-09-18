@@ -29,7 +29,7 @@ entity DUNE_DAT_FPGA is
 		--#DAT_FPGA_CLK
 		--SBND_CLK_P       
 		--CLK_100MHz_OSC_P
-		CLK_DAQ_P		: IN STD_LOGIC;
+		--CLK_DAQ_P		: IN STD_LOGIC;
 		--CLK_125MHz_OSC_P
 		--#set_location_assignment PIN_AA23 -to c125_LP_P
 		--#set_location_assignment PIN_K10 -to c125_LP_P
@@ -334,7 +334,9 @@ component DAT_PLL2
 	PORT
 	(
 		inclk0		: IN STD_LOGIC  := '0';
-		c0				: OUT STD_LOGIC 
+		c0				: OUT STD_LOGIC; 
+		c1				: OUT STD_LOGIC; 
+		c2				: OUT STD_LOGIC 
 	);
 end component;
 
@@ -345,7 +347,10 @@ SIGNAL	CLK_100MHz		:  STD_LOGIC;
 SIGNAL	CLK_62_5MHz		:  STD_LOGIC;
 SIGNAL	CLK_50MHz 		:  STD_LOGIC;
 SIGNAL	CLK_25MHz 		:  STD_LOGIC;
+SIGNAL	CLK_10MHz 		:  STD_LOGIC;
 SIGNAL	CLK_12_5MHz   	:  STD_LOGIC;
+SIGNAL	CLK_1M953125Hz   	:  STD_LOGIC;
+
 
 --SIGNAL	SYS_RESET		:  STD_LOGIC;
 SIGNAL	reset 			:  STD_LOGIC;
@@ -441,7 +446,7 @@ SIGNAL	TP_PERIOD				: STD_LOGIC_VECTOR(15 downto 0);
 SIGNAL	DAC_CNTL					: STD_LOGIC_VECTOR(12 downto 0);
 SIGNAL	ASIC_DAC_CNTL			: STD_LOGIC;
 SIGNAL	Test_pulse				: STD_LOGIC;
-SIGNAL	Test_pulse_buffer		: STD_LOGIC_VECTOR(7 downto 0);
+--SIGNAL	Test_pulse_buffer		: STD_LOGIC_VECTOR(7 downto 0);
 
 --Registers
 SIGNAL	reg0_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
@@ -541,9 +546,12 @@ SIGNAL	I2C_SDA_W2C		:  STD_LOGIC;
 SIGNAL	I2C_SCL			:  STD_LOGIC;
 SIGNAL	CD_sEL			:  STD_LOGIC;
 
+SIGNAL	SYS_RESET				:  STD_LOGIC;
+SIGNAL	REG_RESET				:  STD_LOGIC;
+
 begin
 
-TP_INT_GEN <= CLK_12_5MHz;
+TP_INT_GEN <= CLK_1M953125Hz;
 DAC_CNTL(12)	<= '1';
 
 CD1_CLK_64MHZ_SYS_P	<= CLK_64MHZ_SYS_P;
@@ -588,8 +596,8 @@ CD2_ADC_I2C_ADD2 		<= not CD_sEL;
 CD2_ADC_I2C_ADD3 		<= CD_sEL;
 
 --Test pulse gen
-Test_pulse_buffer <= (others => Test_pulse);
-FE_INS_PLS_CS <= TP_SOCKET_EN AND Test_pulse_buffer; --bitwise and
+--Test_pulse_buffer <= (others => Test_pulse);
+FE_INS_PLS_CS <= TP_SOCKET_EN ; --AND Test_pulse_buffer; --bitwise and
 
 
 --------------------------------------
@@ -604,8 +612,14 @@ FE_INS_PLS_CS <= TP_SOCKET_EN AND Test_pulse_buffer; --bitwise and
 --MISC_U1_IO(2) <= CLK_64MHZ_SYS_P;
 --MISC_U1_IO(3) <= CLK_62_5MHz;
 --MISC_U1_IO(4) <= CLK_100MHz;
-MISC_U1_IO	<= reg63_p(2 downto 0);
-			
+MISC_U1_IO(4 downto 3)	<= reg63_p(1 downto 0);
+--MISC_U1_IO(3) <= reset;
+--MISC_U1_IO(4) <= SYS_RESET;
+MISC_U1_IO(5) <= CLK_10MHz;
+
+SYS_RESET				<= reg0_p(0);							-- SYSTEM RESET
+REG_RESET				<= reg0_p(1);							-- RESISTER RESET
+	
 CD_sEL				<= reg1_p(0);
 CD1_PAD_RESET 		<= not reg1_p(4);
 CD2_PAD_RESET 		<= not reg1_p(5);
@@ -717,7 +731,7 @@ ADC_N_TST_AMON_INH	<= reg36_p(7);
 
 ADC_TEST_IN_SEL <= reg37_p(0);
 
-EXT_PULSE_CNTL <=	reg38_p(0);	
+EXT_PULSE_CNTL <=	reg38_p(0) AND (not Test_pulse);	
 	
 --DAC, ETC
 FE_DAC_TP_set <= reg39_p;
@@ -876,7 +890,7 @@ ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else
 
 sys_rst_inst : entity work.sys_rst
 PORT MAP(	clk 			=> CLK_50MHz,
-				reset_in 	=> '0' , --SYS_RESET,
+				reset_in 	=> SYS_RESET,
 				start 		=> start,
 				RST_OUT 		=> reset);
 		
@@ -906,8 +920,9 @@ DAT_PLL_inst : entity work.DAT_PLL
 DAT_PLL2_inst : entity work.DAT_PLL2 
 	PORT MAP (
 		inclk0	 => CLK_64MHZ_SYS_P,
-		c0	 => CLK_12_5MHz
-
+		c0	 => CLK_12_5MHz,
+		c1	 => CLK_1M953125Hz,
+		c2	 => CLK_10MHz
 	);
 
 	
@@ -1306,6 +1321,7 @@ gen_ro_cnt: for i in 7 downto 0 generate
 	);
 end generate gen_ro_cnt;
 
+TP_EXT_GEN <= '0';
 TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE 
 	PORT MAP 
 	(
@@ -1329,6 +1345,7 @@ TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE
 DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 	PORT MAP
 	(
+		--rst         => reset or REG_RESET,	
 		rst         => reset,	
 		clk         => CLK_62_5MHz,
 
