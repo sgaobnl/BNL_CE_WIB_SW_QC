@@ -18,21 +18,10 @@ if "logs" in dkeys:
 print (dkeys)
 for onekey in dkeys:
     print (onekey)
-    #cfgdata = data[onekey]
-    #fembs = cfgdata[0]
     fembs = [0]
-    #rawdata = cfgdata
-    #fembs = cfgdata[1]
-    #rawdata = cfgdata[0]
     rawdata = data[onekey]
     
     datd = wib_dec(rawdata,fembs, spy_num=1)[0][0]
-
-    #wibdata = wib_dec(rawdata[0],fembs, spy_num=1)[0]
-    #print (len(wibdata))
-    #wibdata = wib_dec(rawdata,fembs, spy_num=1)
-
-    #datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
 
     import matplotlib.pyplot as plt
     for fe in range(8):
