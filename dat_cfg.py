@@ -649,12 +649,16 @@ class DAT_CFGS(WIB_CFGS):
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x00)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x00)
 
-    def dat_coldadc_ext_p6(self):
+    def dat_coldadc_ext(self, ext_source="DAT_P6"):
         #DAC ADC N to 0V
         #make sure ADCs are hooked to P6/P7
         # ##Set ADC_P_TST_CSABC to 2, set ADC_N_TST_CSABC to 0  [Set ADC_P_TST_SEL to 0 | (0 << 4)]
 
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x30) #N tie to GND
+        if "P6" in ext_source:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND
+        elif "WIB" in ext_source:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01) #N tie to GND
+            print ("WIB")
 
         # ##Set ADC_TEST_IN_SEL to 0, direct input to ADC x16 inputs
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)

@@ -24,8 +24,8 @@ for ch in [0]:
     rdacstd = rdacstd128[ch]
 
     import matplotlib.pyplot as plt
-    #plt.plot(histo)
-    plt.plot(rdacstd)
+    plt.plot(histo)
+    #plt.plot(rdacstd)
     plt.show()
     plt.close()
     exit()

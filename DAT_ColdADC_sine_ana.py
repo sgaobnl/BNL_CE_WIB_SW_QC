@@ -7,7 +7,7 @@ import time, datetime, random, statistics
 from spymemory_decode import wib_dec
 
 fdir = "./tmp_data/"
-fp = fdir + "QC_sine" + ".bin"
+fp = fdir + "QC_TRI_chn3" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)
 
@@ -36,13 +36,17 @@ for onekey in dkeys:
 
     import matplotlib.pyplot as plt
     for fe in range(8):
-        for fe_chn in range(16):
+        for fe_chn in range( 16):
             fechndata = datd[fe*16+fe_chn]
+            print (fe_chn, np.mean(fechndata), np.std(fechndata))
+            if np.max(fechndata) - np.mean(fechndata) > 3000:
+                print (fe*16+fe_chn)
 #            if np.max(fechndata) - np.mean(fechndata) > 8000:
 #                pass
 #            else:
 #                print (fe*16+fe_chn,fe, fe_chn) 
-            plt.plot(fechndata)
+            plt.plot(fechndata, marker = '.', label="%d"%fe_chn)
+    plt.legend()
     plt.show()
     plt.close()
             #    pp = np.max(fechndata[500:1500])
