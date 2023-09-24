@@ -16,6 +16,7 @@ colorama.init(autoreset=True)
 #print(Back.RED + 'Red background text')
 
 fsubdir = "FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008"
+#fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
 froot = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/"
 fdir = froot + fsubdir + "/"
 
