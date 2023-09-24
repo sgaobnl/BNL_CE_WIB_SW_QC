@@ -5,12 +5,13 @@ import numpy as np
 #import copy
 import struct
 import platform
+import ctypes, ctypes.util
 
 system_info = platform.system()
 if "Linux" in system_info:
-    Py_Dec_flg = True
-else:
     Py_Dec_Flg = False
+else:
+    Py_Dec_Flg = True
 
 if Py_Dec_Flg: # line#10 to line#371 use python for decoding
     #get_bin = lambda x, n: format(x, 'b').zfill(n)
