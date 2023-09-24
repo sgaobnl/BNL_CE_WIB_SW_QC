@@ -656,7 +656,6 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND
         elif "WIB" in ext_source:
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01) #N tie to GND
-            print ("WIB")
 
         # ##Set ADC_TEST_IN_SEL to 0, direct input to ADC x16 inputs
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
@@ -670,22 +669,27 @@ class DAT_CFGS(WIB_CFGS):
         tmpi = 0
         while True:
             tmpi = tmpi + 1
-            time.sleep(0.1)
             wrv = 0x03
             self.cdpoke(0, 0xC, 0, self.DAT_FPGA_RST, 0x3)  
             time.sleep(0.2)
             rdv = self.cdpeek(0, 0xC, 0, self.DAT_FPGA_RST)  
             if rdv == 0x00:
-                time.sleep(0.5)
+                print ("DAT FPGA is reset")
+                self.data_align_flg = False
                 break
             else:
-                print ("Can't reset DAT FPGA, please check data cable connection")
-                print (rdv)
-                self.data_align_flg = False
-                #if tmpi > 20:
-                #    input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
-                #    self.femb_powering([])
-                #    exit()
+                time.sleep(1)
+                if tmpi < 30:
+                    print ("Try to reset DAT FPGA...")
+                else:
+                    tmpstr = input ("Continue trying (Y/N) : ")
+                    if "Y" in tmpstr or "y" in tmpstr:
+                        tmpi = 0
+                    else:
+                        print ("Can't reset DAT FPGA, please check data cable connection")
+                        input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
+                        self.femb_powering([])
+                        exit()
 
 
     def dat_monadcs(self):
