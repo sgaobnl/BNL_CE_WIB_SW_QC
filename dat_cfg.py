@@ -52,9 +52,10 @@ class DAT_CFGS(WIB_CFGS):
         self.data_align_pwron_flg = True
         print ("Wait ~10 seconds ...")
         
-        for i in range(3):
+        for i in range(5):
             self.wib_pwr_on_dat_chk(fullon_chk=False)
             time.sleep(0.1)
+            print (i)
         self.dat_fpga_reset()
         self.cdpoke(0, 0xC, 0, self.DAT_CD_AMON_SEL, self.cd_sel)    
         self.femb_cd_rst()
@@ -62,9 +63,6 @@ class DAT_CFGS(WIB_CFGS):
            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
-        for i in range(2):
-            self.wib_pwr_on_dat_chk(fullon_chk=False)
-            time.sleep(0.1)
         pwr_meas = self.wib_pwr_on_dat_chk()
 
         link_mask=self.wib_femb_link_en(self.fembs)
@@ -519,7 +517,7 @@ class DAT_CFGS(WIB_CFGS):
 
         self.dat_fpga_reset()
         if cali_mode < 2:
-            valint = val*65536/self.ADCVREF
+            valint = int(val*65536/self.ADCVREF)
             self.dat_set_dac(val=valint, fe_cal=0)
             self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
             width = width&0xfff # width = duty, it must be less than (perod-2)
@@ -583,7 +581,7 @@ class DAT_CFGS(WIB_CFGS):
                     chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
                 chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
                 chmin = np.min(datd[ch][500:1500])
-                if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
+                if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-3]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+3]) > 1000) :
                     c1 = True
                 else:
                     c1 = False
@@ -669,21 +667,25 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_fpga_reset(self):
+        tmpi = 0
         while True:
+            tmpi = tmpi + 1
             time.sleep(0.1)
             wrv = 0x03
             self.cdpoke(0, 0xC, 0, self.DAT_FPGA_RST, 0x3)  
-            time.sleep(0.1)
+            time.sleep(0.2)
             rdv = self.cdpeek(0, 0xC, 0, self.DAT_FPGA_RST)  
             if rdv == 0x00:
                 time.sleep(0.5)
                 break
             else:
                 print ("Can't reset DAT FPGA, please check data cable connection")
-                input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
-                self.femb_powering([])
+                print (rdv)
                 self.data_align_flg = False
-                exit()
+                #if tmpi > 20:
+                #    input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
+                #    self.femb_powering([])
+                #    exit()
 
 
     def dat_monadcs(self):

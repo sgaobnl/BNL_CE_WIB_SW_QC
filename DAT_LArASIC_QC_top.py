@@ -572,8 +572,11 @@ if 8 in tms:
         cali_fe_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sts=sts, swdac=swdac, chn=chn) #direct input, tp=3us, sg=4.7mV
         
         for val in cali_vals:
-            val = int(val*1000)/1000.0
-            dat.dat_set_dac(val=val, fe_cal=0)
+            #:w
+            #val = int(val*1000)/1000.0
+            valint = int(val*65536/dat.ADCVREF)
+
+            dat.dat_set_dac(val=valint, fe_cal=0)
             data = dat.dat_fe_qc_acq(num_samples=5)
             datad["FECHN%02d_%04dmV_CALI"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, cali_fe_info, cfg_info]
         
@@ -588,7 +591,7 @@ if 8 in tms:
         
         for val in  dire_vals:
             val = int(val*1000)/1000.0
-            dat.dat_set_dac(val=val, fe_cal=0)
+            dat.dat_set_dac(val=valint, fe_cal=0)
             data = dat.dat_fe_qc_acq(num_samples=5)
             datad["FECHN%02d_%04dmV_INPUT"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, direct_fe_info, cfg_info]
     
