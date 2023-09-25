@@ -339,6 +339,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C003C, wrreg)
         for fembid in fembs:
             self.femb_cd_gpio(femb_id=fembid, cd1_0x26 = 0x01,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+        time.sleep(0.05)
 
 
     def wib_mon_adcs(self):

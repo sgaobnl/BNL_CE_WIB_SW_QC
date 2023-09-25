@@ -205,7 +205,6 @@ class QC_Runs:
             vdacmax=self.vdacmax + self.vgndoft
             vdacs = np.arange(self.vgndoft,vdacmax,(vdacmax-self.vgndoft)/16)
             for vdac in vdacs:
-                print (vdac)
                 for femb_id in self.fembs:
                     self.chk.wib_cali_dac(dacvol=vdac)
                     if femb_id == 0:
@@ -429,6 +428,19 @@ class QC_Runs:
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
                     self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False) 
                     #time.sleep(0.5)
+
+#    def femb_chk_pulse2(self):
+#
+#        datadir = self.save_dir+"CHK2/"
+#        try:
+#            os.makedirs(datadir)
+#        except OSError:
+#            print ("Error to create folder %s !!! Continue to next test........"%datadir)
+#            return 
+#
+##SE off/on, DIFF on  (14mV/fC, 200mV BL/ 900mV BL, 2us) = 3*2, External pulse
+##
+
 
     def femb_rms(self):
 
