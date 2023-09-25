@@ -10,6 +10,7 @@ import ctypes, ctypes.util
 system_info = platform.system()
 if "Linux" in system_info:
     Py_Dec_Flg = False
+    print ("Linux")
 else:
     Py_Dec_Flg = True
 
@@ -477,12 +478,16 @@ else:
             buf1 = bufs[femb*2+1]   
             
             #order buffers
-            buf0_ordered, n_frames0 = order_buf(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
-            buf1_ordered, n_frames1 = order_buf(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
-            
-            frames[femb*2] = decode(buf0_ordered,n_frames0,0) #0=CD 0
-            frames[femb*2+1] = decode(buf1_ordered,n_frames1,1) #1=CD 1
-        
+            wib_dec0 = order_buf(buf=buf0, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
+            wib_dec1 = order_buf(buf=buf1, buf_end_addr=buf_end_addr, trigger_rec_ticks=trigger_rec_ticks, fastchk=fastchk)
+            if not fastchk:
+                buf0_ordered, n_frames0 = wib_dec0
+                buf1_ordered, n_frames1 = wib_dec1
+                frames[femb*2] = decode(buf0_ordered,n_frames0,0) #0=CD 0
+                frames[femb*2+1] = decode(buf1_ordered,n_frames1,1) #1=CD 1
+            else:
+                frames[femb*2]  = wib_dec0
+                frames[femb*2+1] = wib_dec1
         return frames
         
     def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True): #data from one WIB  

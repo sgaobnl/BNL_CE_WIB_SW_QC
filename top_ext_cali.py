@@ -82,6 +82,7 @@ cp_period=1000
 cp_high_time = int(cp_period*32*3/4)
 chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
 
+time.sleep(2)
 
 ####################FEMBs Data taking################################
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
@@ -95,14 +96,14 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
-chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=16, cp_high_time=cp_high_time)
-rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
-pwr_meas = chk.get_sensors()
+#chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=16, cp_high_time=cp_high_time)
+#rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+#pwr_meas = chk.get_sensors()
+##
+#if save:
+#    fdir = "./tmp_data/"
+#    ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+#    fp = fdir + "Raw_" + ts  + ".bin"
+#    with open(fp, 'wb') as fn:
+#        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 #
-if save:
-    fdir = "./tmp_data/"
-    ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-    fp = fdir + "Raw_" + ts  + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
-

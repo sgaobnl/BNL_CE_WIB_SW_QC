@@ -6,7 +6,7 @@ import time
 ag = argparse.ArgumentParser()
 ag.add_argument("fembs", help="a list of femb slots number", type=int, nargs='+')
 #ag.add_argument("-s", "--save", help="number of pulses to be saved", type=int, default=1)
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,13),  nargs='+', default=range(1,13))
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,16),  nargs='+', default=range(1,16))
 args = ag.parse_args()
 
 fembs = args.fembs
@@ -57,6 +57,19 @@ for tm in tasks:
 
     if tm==12:
        qc.femb_MON_3()
+
+    if tm==13:
+       qc.vgndoft = 0 #to be added later
+       qc.vdacmax = 0.4 
+       qc.femb_CALI_5() #external calibration 900mV BL
+
+    if tm==14:
+       qc.vgndoft = 0 #to be added later
+       qc.vdacmax = 0.8 
+       qc.femb_CALI_6() #external calibration 200mV BL
+
+    if tm==15:
+       qc.femb_adc_sync_pat()
 
     t2=time.time()
     tt[tm]=t2-t1

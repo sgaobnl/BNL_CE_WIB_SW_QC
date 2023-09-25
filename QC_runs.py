@@ -12,6 +12,8 @@ class QC_Runs:
         self.fembs = fembs
         self.sample_N = sample_N
         self.fembNo={}
+        self.vgndoft = 0 
+        self.vdacmax = 0.8
 
         self.sncs = ["900mVBL", "200mVBL"]
         self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
@@ -110,19 +112,20 @@ class QC_Runs:
 
         return pwr_sts
 
-    def take_data(self, sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0, autocali=0, pwr_flg=True, swdac=1):
+    def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0,  pwr_flg=True, swdac=1, adc_sync_pat=False):
          
         cfg_paras_rec = []
+        ext_cali_flg = False 
 
-        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, 
+                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                           ]
         for femb_id in self.fembs:
             if sdd==1:
@@ -130,10 +133,15 @@ class QC_Runs:
                 for i in range(8):
                     self.chk.adcs_paras[i][2]=1   # enable differential 
 
-            if autocali==1:
+            if adc_sync_pat:
                 self.chk.adc_flg[femb_id] = True 
                 for i in range(8):
-                    self.chk.adcs_paras[i][8]=1   # enable adc calibration
+                    self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x10
+
+            #if self.autocali_flg not True:
+            #    self.chk.adc_flg[femb_id] = True 
+            #    for i in range(8):
+            #        self.chk.adcs_paras[i][8]=1   # enable adc calibration
 
             self.chk.fe_flg[femb_id] = True 
             if sts == 1 : 
@@ -143,6 +151,7 @@ class QC_Runs:
                 elif  swdac==2: #external DAC is enabled
                     self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=2, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
                     adac_pls_en = 0
+                    ext_cali_flg = True
             else:
                self.chk.set_fe_board(sts=sts, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x0, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
                adac_pls_en = 0
@@ -155,16 +164,70 @@ class QC_Runs:
             self.chk.data_align(self.fembs)
             self.chk.align_flg = False
             time.sleep(0.1)
+        #if swdac==2:
+        #    sps = 10
+        #    vold = self.chk.wib_vol_mon(femb_ids=self.fembs,sps=sps)
+        #    time.sleep(1)
+        #    vold = self.chk.wib_vol_mon(femb_ids=self.fembs,sps=sps)
+        #    dkeys = list(vold.keys())
+        #    LSB = 2.048/16384
+        #    for fembid in self.fembs:
+        #        vgnd = vold["GND"][0][fembid]*LSB
+        #        print ("vgnd", vgnd)
+        #        break
+        #    self.vgndoft = vgnd
+
         if pwr_flg==True:
             time.sleep(0.5)
             pwr_meas = self.chk.get_sensors()
+            sps = 10
+            vold = self.chk.wib_vol_mon(femb_ids=self.fembs,sps=sps)
+            pwr_meas["Powerrails"] = vold
+            #dkeys = list(vold.keys())
+            #LSB = 2.048/16384
+            #for fembid in self.fembs:
+            #    vgnd = vold["GND"][0][fembid]
+            #    for key in dkeys:
+            #        if "GND" in key:
+            #            print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+            #        elif "HALF" in key:
+            #            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+            #        else:
+            #            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+            #if save:
+            #    fp = datadir + "MON_PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+            #    with open(fp, 'wb') as fn:
+            #        pickle.dump([vold, fembs], fn)
         else:
             time.sleep(0.05)
             pwr_meas = None
-        rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
+        if ext_cali_flg: 
+            vdacmax=self.vdacmax + self.vgndoft
+            vdacs = np.arange(self.vgndoft,vdacmax,(vdacmax-self.vgndoft)/16)
+            for vdac in vdacs:
+                print (vdac)
+                for femb_id in self.fembs:
+                    self.chk.wib_cali_dac(dacvol=vdac)
+                    if femb_id == 0:
+                        self.chk.wib_mon_switches(dac0_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                    if femb_id == 1:
+                        self.chk.wib_mon_switches(dac1_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                    if femb_id == 2:
+                        self.chk.wib_mon_switches(dac2_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                    if femb_id == 3:
+                        self.chk.wib_mon_switches(dac3_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                cp_period=1000
+                cp_high_time = int(cp_period*32*3/4)
+                self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
+                rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
+                fplocal = fp[0:-4] + "_vdac%06dmV"%(int(vdac*1000))+fp[-4:]
+                with open(fplocal, 'wb') as fn:
+                    pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, vdac], fn)
+        else:
+            rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
 
-        with open(fp, 'wb') as fn:
-            pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
+            with open(fp, 'wb') as fn:
+                pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
 
     def pwr_consumption(self):
 
@@ -394,7 +457,21 @@ class QC_Runs:
                     st1 = sti//2 
  
                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, autocali=1, pwr_flg=False) 
+                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False) 
+
+    def femb_adc_sync_pat(self):
+
+        datadir = self.save_dir+"ADC_SYNC_PAT/"
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print ("Error to create folder %s !!! Continue to next test........"%datadir)
+            return 
+
+        self.chk.femb_cd_rst()
+        self.sample_N = 10
+        fp = datadir + "ADC_SYNC_PAT.bin"
+        self.take_data(fp=fp, adc_sync_pat=True) 
 
     def femb_CALI_1(self):
 
@@ -487,6 +564,44 @@ class QC_Runs:
         for dac in range(0,32):
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
             self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False) 
+
+    def femb_CALI_5(self):
+        datadir = self.save_dir+"CALI5/"
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print ("Error to create folder %s !!! Continue to next test........"%datadir)
+            return 
+        snc = 0 # 900 mV BL
+        sg0 = 0
+        sg1 = 0 # 14_0 mv/fC
+        st0 = 1
+        st1 = 1 # 2 us
+        sts = 1
+        dac=0
+        self.chk.femb_cd_rst()
+        self.sample_N = 5
+        fp = datadir + "CALI5_SE_{}_{}_{}.bin".format("900mVBL","14_0mVfC","2_0us")
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False) 
+
+    def femb_CALI_6(self):
+        datadir = self.save_dir+"CALI6/"
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print ("Error to create folder %s !!! Continue to next test........"%datadir)
+            return 
+        snc = 1 # 200 mV BL
+        sg0 = 0
+        sg1 = 0 # 14_0 mv/fC
+        st0 = 1
+        st1 = 1 # 2 us
+        sts = 1
+        dac=0
+        self.chk.femb_cd_rst()
+        self.sample_N = 5
+        fp = datadir + "CALI6_SE_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False) 
         
     def femb_MON_1(self, sps=5):
 
@@ -599,7 +714,7 @@ class QC_Runs:
 
         self.chk.femb_cd_rst()
 
-        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi 
                        [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
