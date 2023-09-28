@@ -46,23 +46,24 @@ while True:
     #Configur Coldata, ColdADC, and LArASIC parameters. 
     #Here Coldata uses default setting in the script (not the ASIC default register values)
     #ColdADC configuraiton
-        sdd = 0
+        sdd = 1
         chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                           ]
     
     #LArASIC register configuration
-        kk = int(input ("number"))
+        #kk = int(input ("number"))
+        kk=0
         k0 = kk%2
         k1 = kk//2
-        chk.set_fe_board(sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, slk1=k1, slk0=k0, sdd=sdd, sdf=0, dac=0x00 )
+        chk.set_fe_board(sts=0, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, slk1=k1, slk0=k0, sdd=sdd, sdf=0, dac=0x20 )
         adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
@@ -72,6 +73,7 @@ while True:
 chk.data_align(fembs)
 
 time.sleep(0.5)
+exit()
 
 ####################FEMBs Data taking################################
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
