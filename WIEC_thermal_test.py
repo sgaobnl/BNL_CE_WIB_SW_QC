@@ -30,15 +30,14 @@ try:
 #        print (pwr_meas['LTC4644_WIB3_temp']*1.299/1.25)
 
 
-        print ((1.543-pwr_meas["LTC4644_WIB1_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_WIB2_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_WIB3_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_BRD0_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_BRD1_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_BRD2_temp"])/0.0033 - 273)
-        print ((1.543-pwr_meas["LTC4644_BRD3_temp"])/0.0033 - 273)
-        print (pwr_meas["ZYNQ_MON"][0])
-
+        print ("LTC4644_WIB1_temp", (1.543-pwr_meas["LTC4644_WIB1_temp"])/0.0033 - 273)
+        print ("LTC4644_WIB2_temp", (1.543-pwr_meas["LTC4644_WIB2_temp"])/0.0033 - 273)
+        print ("LTC4644_WIB3_temp", (1.543-pwr_meas["LTC4644_WIB3_temp"])/0.0033 - 273)
+        print ("LTC4644_BRD0_temp", (1.543-pwr_meas["LTC4644_BRD0_temp"])/0.0033 - 273)
+        print ("LTC4644_BRD1_temp", (1.543-pwr_meas["LTC4644_BRD1_temp"])/0.0033 - 273)
+        print ("LTC4644_BRD2_temp", (1.543-pwr_meas["LTC4644_BRD2_temp"])/0.0033 - 273)
+        print ("LTC4644_BRD3_temp", (1.543-pwr_meas["LTC4644_BRD3_temp"])/0.0033 - 273)
+        print ("ZYNQ_MON         ", pwr_meas["ZYNQ_MON"][0])
 
 #        print ((1.2-pwr_meas['LTC4644_BRD0_temp']*1.299/1.25)/0.002 - 273 )
 #        print ((1.2-pwr_meas['LTC4644_BRD1_temp']*1.299/1.25)/0.002 - 273 )
