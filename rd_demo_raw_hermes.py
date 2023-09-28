@@ -31,25 +31,55 @@ wibdata = wibdata[0]
 
 datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+#rms = []
+#for fe in range(8):
+##for fe in [2]:
+#    for fe_chn in range(16):
+#        fechndata = datd[fe*16+fe_chn]
+#        #print (fe, fe_chn, np.std(fechndata))
+#        #if np.max(fechndata) - np.mean(fechndata) > 6000:
+#        #    pass
+#        #else:
+#        #    print (fe*16+fe_chn,fe, fe_chn) 
+#        #if fe*16+fe_chn < 64:
+#        #    c = 'r'
+#        #else:
+#        #    c = 'b'
+#        #c = 'r'
+#        #plt.plot(fechndata)
+#        #print (np.std(fechndata))
+#        #rms.append(np.std(fechndata))
+##print (rms)
+##plt.plot(np.arange(128),rms)
+#plt.show()
+#plt.close()
+#
+
 rms = []
-for fe in range(8):
-    for fe_chn in range(16):
+#for fe in range(8):
+for fe in [1]:
+#    for fe_chn in range(16):
+    for fe_chn in [15]:
+        import matplotlib.pyplot as plt
         fechndata = datd[fe*16+fe_chn]
-        if np.max(fechndata) - np.mean(fechndata) > 6000:
-            pass
-        else:
-            print (fe*16+fe_chn,fe, fe_chn) 
-        if fe*16+fe_chn < 64:
-            c = 'r'
-        else:
-            c = 'b'
+        #print (fe, fe_chn, np.std(fechndata))
+        #if np.max(fechndata) - np.mean(fechndata) > 6000:
+        #    pass
+        #else:
+        #    print (fe*16+fe_chn,fe, fe_chn) 
+        #if fe*16+fe_chn < 64:
+        #    c = 'r'
+        #else:
+        #    c = 'b'
+        c = 'r'
         plt.plot(fechndata, color=c)
-        #rms.append(np.mean(fechndata[550:750]))
-#print (rms)
-#plt.plot(np.arange(128),rms)
-plt.show()
-plt.close()
+        print (fe*16+fe_chn, np.std(fechndata))
+        #rms.append(np.std(fechndata))
+        #print (rms)
+        #plt.plot(np.arange(128),rms)
+        plt.show()
+        plt.close()
 #bufs = [[],[],[],[],[],[],[],[]]
 #
 #for i in range(8):
