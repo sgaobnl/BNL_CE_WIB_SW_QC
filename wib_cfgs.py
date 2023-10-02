@@ -716,6 +716,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(0.01)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x03)
         if autocali&0x01:
+            print ("ADC ADC automatic calbiraiton process ...")
             time.sleep(0.5) #wait for ADC automatic calbiraiton process to complete
             for adc_no in range(8):
                 c_id    = self.adcs_paras[adc_no][0]

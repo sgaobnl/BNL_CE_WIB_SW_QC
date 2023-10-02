@@ -25,11 +25,68 @@ pwr_meas = raw[1]
 runi = 0
 fembs = [int(sys.argv[2])]
 
+#wibdata = wib_dec(rawdata,fembs, spy_num=10)
 wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
-wibdata = wibdata[0]
+datd = []
+fechndata = []
+for i in [0]:
+    wibdatai = wibdata[i]
+    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
 
-datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+import matplotlib.pyplot as plt
+rms = []
+for fe in range(8):
+    for fe_chn in range(16):
+        fechndata = datd[fe*16+fe_chn]
+#        plt.plot(fechndata)
+#        rms.append(np.std(fechndata))
+        rms.append(np.mean(fechndata))
+plt.plot(np.arange(128),rms)
+plt.grid()
+plt.title("Noise distribution (1nA)")
+plt.ylabel("RMS noise / bit")
+plt.xlabel("Channel")
+plt.show()
+plt.close()
+#
+#
+#
+#exit()
+##for xi in range(16):
+#for xi in [2, 3]:
+#    datd = []
+#    fechndata = []
+#    for i in range(10):
+#    #for i in [0]:
+#        wibdatai = wibdata[i]
+#        datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+#        for fe in [7]:
+#            for fe_chn in [xi]:
+#                fechndata = fechndata + list(datd[fe*16+fe_chn])
+#    
+#    print (fe*16+fe_chn, "RMS=%.3f"%np.std(fechndata))
+#    #print (len(fechndata))
+#    import matplotlib.pyplot as plt
+#    plt.plot(fechndata)
+#    plt.title("Waveform (leakage current = 500pA)")
+#    plt.ylabel("ADC readout / bit")
+#    plt.xlabel("Time (512ns/step)")
+#    plt.show()
+#    plt.close()
+#
+#    import matplotlib.pyplot as plt
+#    # Create a histogram
+#    plt.hist(fechndata, bins=(np.max(fechndata)-np.min(fechndata)+1),rwidth=0.8, color='blue', alpha=0.7)
+#    # Add labels and title
+#    plt.xlabel('Amplitude / bit')
+#    plt.ylabel('Counts')
+#    plt.title('Histogram Plot')
+#    # Show the plot
+#    plt.show()
+#    plt.close()
+#
+#exit()
 
 #import matplotlib.pyplot as plt
 #rms = []
@@ -56,31 +113,31 @@ datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 #plt.close()
 #
 
-rms = []
-#for fe in range(8):
-for fe in [1]:
-#    for fe_chn in range(16):
-    for fe_chn in [15]:
-        import matplotlib.pyplot as plt
-        fechndata = datd[fe*16+fe_chn]
-        #print (fe, fe_chn, np.std(fechndata))
-        #if np.max(fechndata) - np.mean(fechndata) > 6000:
-        #    pass
-        #else:
-        #    print (fe*16+fe_chn,fe, fe_chn) 
-        #if fe*16+fe_chn < 64:
-        #    c = 'r'
-        #else:
-        #    c = 'b'
-        c = 'r'
-        plt.plot(fechndata, color=c)
-        print (fe*16+fe_chn, np.std(fechndata))
-        #rms.append(np.std(fechndata))
-        #print (rms)
-        #plt.plot(np.arange(128),rms)
-        plt.show()
-        plt.close()
-#bufs = [[],[],[],[],[],[],[],[]]
+#rms = []
+##for fe in range(8):
+#for fe in [1]:
+##    for fe_chn in range(16):
+#    for fe_chn in [15]:
+#        import matplotlib.pyplot as plt
+#        fechndata = datd[fe*16+fe_chn]
+#        #print (fe, fe_chn, np.std(fechndata))
+#        #if np.max(fechndata) - np.mean(fechndata) > 6000:
+#        #    pass
+#        #else:
+#        #    print (fe*16+fe_chn,fe, fe_chn) 
+#        #if fe*16+fe_chn < 64:
+#        #    c = 'r'
+#        #else:
+#        #    c = 'b'
+#        c = 'r'
+#        plt.plot(fechndata, color=c)
+#        print (fe*16+fe_chn, np.std(fechndata))
+#        #rms.append(np.std(fechndata))
+#        #print (rms)
+#        #plt.plot(np.arange(128),rms)
+#        plt.show()
+#        plt.close()
+##bufs = [[],[],[],[],[],[],[],[]]
 #
 #for i in range(8):
 #    bufs[i] = rawdata[runi][0][i]
