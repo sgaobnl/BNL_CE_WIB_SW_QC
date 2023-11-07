@@ -23,10 +23,11 @@ with open(fp, 'rb') as fn:
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-fembs = [int(sys.argv[2])]
+#fembs = [int(sys.argv[2])]
+fembs = [0]
 
-#wibdata = wib_dec(rawdata,fembs, spy_num=10)
-wibdata = wib_dec(rawdata,fembs, spy_num=1)
+wibdata = wib_dec(rawdata,fembs, spy_num=10)
+#wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 datd = []
 fechndata = []
@@ -34,58 +35,259 @@ for i in [0]:
     wibdatai = wibdata[i]
     datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
 
-import matplotlib.pyplot as plt
-rms = []
-for fe in range(8):
-    for fe_chn in range(16):
-        fechndata = datd[fe*16+fe_chn]
-#        plt.plot(fechndata)
-#        rms.append(np.std(fechndata))
-        rms.append(np.mean(fechndata))
-plt.plot(np.arange(128),rms)
-plt.grid()
-plt.title("Noise distribution (1nA)")
-plt.ylabel("RMS noise / bit")
-plt.xlabel("Channel")
-plt.show()
-plt.close()
+
+if 1:
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(8,6))
+    plt.rcParams.update({'font.size': 14})
+    rms = []
+    pkp  = []
+    for fe in range(8):
+        for fe_chn in range(16):
+    
+            fechndata = datd[fe*16+fe_chn]
+            #plt.plot(fechndata)
+    #        print (np.std(fechndata))
+#            rms.append(np.std(fechndata))
+#            pkp.append(np.max(fechndata))
+            rms.append(np.mean(fechndata))
+            if fe==0 and fe_chn==2:
+                print (np.mean(fechndata))
+
+    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
+#    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
+#    plt.legend()
+#    plt.grid()
+#    
+    for i in range(0,128,8):
+        plt.vlines(i-0.5, -1, 17000, color='y')
 #
+#    plt.title("ADC noise distribution (bypass SHA) ")
+#    plt.title("ADC noise distribution (known anlog patten, SHA) ")
+#    plt.ylabel("RMS noise / bit")
+#    plt.ylim((-1,5))
+#    plt.xlim((-1,130))
+#    plt.xlabel("Channel")
+###    plt.grid()
+#    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+#    plt.show()
+#    plt.close()
 #
-#
-#exit()
-##for xi in range(16):
-#for xi in [2, 3]:
+
+#    #plt.title("ADC pedestal distribution (bypass SHA) ")
+#    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
+#    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
+    plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
+#    #plt.ylabel("RMS noise / bit")
+    plt.ylabel("ADC count / bit")
+    plt.ylim((0,17000))
+    plt.xlim((-1,130))
+    plt.xlabel("Channel")
+#    plt.grid()
+    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+    plt.show()
+    plt.close()
+
+#    plt.title("ADC test pattern")
+#    #plt.ylabel("RMS noise / bit")
+#    plt.ylabel("RMS noise / bit")
+#    plt.ylim((0,17000))
+#    plt.xlim((-10,130))
+#    plt.xlabel("Channel")
+#    plt.grid()
+#    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+#    plt.show()
+#    plt.close()
+
+
+    exit()
+
+
+
+#for xi in [0,4]:
 #    datd = []
 #    fechndata = []
 #    for i in range(10):
 #    #for i in [0]:
 #        wibdatai = wibdata[i]
 #        datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
-#        for fe in [7]:
-#            for fe_chn in [xi]:
+#        for fe in [xi]:
+#            for fe_chn in [0]:
 #                fechndata = fechndata + list(datd[fe*16+fe_chn])
 #    
 #    print (fe*16+fe_chn, "RMS=%.3f"%np.std(fechndata))
 #    #print (len(fechndata))
+##    import matplotlib.pyplot as plt
+##    plt.plot(fechndata)
+##    #plt.title("Waveform (leakage current = 500pA)")
+##    plt.title("Waveform ")
+##    plt.ylabel("ADC readout / bit")
+##    plt.xlabel("Time (512ns/step)")
+##    plt.show()
+##    plt.close()
+##
+#    from fft_chn import chn_rfft_psd
+#    f,p = chn_rfft_psd(fechndata,  fft_s = 2000, avg_cycle = 20)
 #    import matplotlib.pyplot as plt
-#    plt.plot(fechndata)
-#    plt.title("Waveform (leakage current = 500pA)")
-#    plt.ylabel("ADC readout / bit")
-#    plt.xlabel("Time (512ns/step)")
+#    plt.plot(f,p)
+#    #plt.title("Waveform (leakage current = 500pA)")
+#    plt.title("FFT ")
+#    plt.ylabel(" / dB ")
+#    plt.xlabel("Freq / Hz")
 #    plt.show()
 #    plt.close()
+##exit()
+#####
+
+if 0:
+    import matplotlib.pyplot as plt
+    rms = []
+    pkp  = []
+    for fe in range(8):
+        for fe_chn in range(16):
+    
+            fechndata = datd[fe*16+fe_chn]
+#            plt.plot(fechndata)
+    #        print (np.std(fechndata))
+            rms.append(np.std(fechndata))
+#            pkp.append(np.max(fechndata))
+#            rms.append(np.mean(fechndata))
+    plt.plot(np.arange(64),rms[0:64], color='b', label="Tied")
+    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
+    plt.legend()
+#    plt.plot(np.arange(128),pkp)
+
+#    ax1.set_title("Overlap Waveforms of CH0-63")
+#    ax1.set_ylabel("ADC readout / bit")
+#    ax1.set_xlabel("Time (512ns/step)")
+#    ax2.set_title("Overlap Waveforms of CH64-127")
+#    ax2.set_ylabel("ADC readout / bit")
+#    ax2.set_xlabel("Time (512ns/step)")
 #
-#    import matplotlib.pyplot as plt
-#    # Create a histogram
-#    plt.hist(fechndata, bins=(np.max(fechndata)-np.min(fechndata)+1),rwidth=0.8, color='blue', alpha=0.7)
-#    # Add labels and title
-#    plt.xlabel('Amplitude / bit')
-#    plt.ylabel('Counts')
-#    plt.title('Histogram Plot')
-#    # Show the plot
-#    plt.show()
-#    plt.close()
 #
+#    ax1.grid()
+#    ax2.grid()
+    plt.grid()
+    
+    plt.title("Noise distribution")
+    plt.ylabel("RMS noise / bit")
+    plt.xlabel("Channel")
+    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+    plt.show()
+    plt.close()
+    exit()
+
+
+if 1:
+    import matplotlib.pyplot as plt
+    rms = []
+    pkp  = []
+    ax1 = plt.subplot(211)
+    ax2 = plt.subplot(212)
+    for fe in range(8):
+    #for fe in [4,5,6,7]:
+    #for fe in [0,1,2,3]:
+        for fe_chn in range(16):
+    #for fe in [3]:
+    #   for fe_chn in [0]:
+    
+            fechndata = datd[fe*16+fe_chn]
+            if np.max(fechndata) > 12000: 
+                if fe*16+fe_chn < 64:
+                    print ("PLS w/ SE ON CHN %d"%(fe*16+fe_chn))
+            if fe*16+fe_chn < 64: 
+                ax1.plot(fechndata[000:1400], color='b' )
+            else:
+                ax2.plot(fechndata[000:1400], color='r' )
+
+#            if fe*16+fe_chn < 16: 
+#                ax1.plot(fechndata[000:2000], color='b' )
+#                #ax1.plot(fechndata, color='b' )
+#            elif fe*16+fe_chn < 32: 
+#                ax1.plot(fechndata[000:2000], color='g' )
+#                #ax1.plot(fechndata, color='g' )
+#            elif fe*16+fe_chn < 48: 
+#                ax1.plot(fechndata[000:2000], color='m' )
+#                #ax1.plot(fechndata, color='m' )
+#            elif fe*16+fe_chn < 64: 
+#                ax1.plot(fechndata[000:2000], color='y' )
+#                #ax1.plot(fechndata, color='y' )
+#            else:
+#                #ax2.plot(fechndata[400:900], color='r')
+#                #ax2.plot(fechndata, color='r')
+#                if fe*16+fe_chn < 80: 
+#                    ax2.plot(fechndata[000:2000], color='b' )
+#                    #ax1.plot(fechndata, color='b' )
+#                elif fe*16+fe_chn < 96: 
+#                    ax2.plot(fechndata[000:2000], color='g' )
+#                    #ax1.plot(fechndata, color='g' )
+#                elif fe*16+fe_chn < 112: 
+#                    ax2.plot(fechndata[000:2000], color='m' )
+#                    #ax1.plot(fechndata, color='m' )
+#                elif fe*16+fe_chn < 128: 
+#                    ax2.plot(fechndata[000:2000], color='y' )
+#                    #ax1.plot(fechndata, color='y' )
+
+    #        print (np.std(fechndata))
+    #        rms.append(np.std(fechndata))
+#            pkp.append(np.max(fechndata))
+#            rms.append(np.mean(fechndata))
+#    plt.plot(np.arange(128),rms)
+#    plt.plot(np.arange(128),pkp)
+
+    ax1.set_title("Overlap Waveforms of CH0-63")
+    ax1.set_ylabel("ADC readout / bit")
+    ax1.set_xlabel("Time (512ns/step)")
+    ax2.set_title("Overlap Waveforms of CH64-127")
+    ax2.set_ylabel("ADC readout / bit")
+    ax2.set_xlabel("Time (512ns/step)")
+
+
+    ax1.grid()
+    ax2.grid()
+    
+#    plt.title("Noise distribution")
+#    plt.ylabel("RMS noise / bit")
+#    plt.xlabel("Channel")
+    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+    plt.show()
+    plt.close()
+    exit()
+
+##for xi in range(16):
+for xi in [15]:
+    datd = []
+    fechndata = []
+    for i in range(10):
+    #for i in [0]:
+        wibdatai = wibdata[i]
+        datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+        for fe in [1]:
+            for fe_chn in [xi]:
+                fechndata = fechndata + list(datd[fe*16+fe_chn])
+    
+    print (fe*16+fe_chn, "RMS=%.3f"%np.std(fechndata))
+    #print (len(fechndata))
+    import matplotlib.pyplot as plt
+    plt.plot(fechndata)
+    #plt.title("Waveform (leakage current = 500pA)")
+    plt.title("Waveform ")
+    plt.ylabel("ADC readout / bit")
+    plt.xlabel("Time (512ns/step)")
+    plt.show()
+    plt.close()
+
+    import matplotlib.pyplot as plt
+    # Create a histogram
+    plt.hist(fechndata, bins=(np.max(fechndata)-np.min(fechndata)+1),rwidth=0.8, color='blue', alpha=0.7)
+    # Add labels and title
+    plt.xlabel('Amplitude / bit')
+    plt.ylabel('Counts')
+    plt.title('Histogram Plot')
+    # Show the plot
+    plt.show()
+    plt.close()
+
 #exit()
 
 #import matplotlib.pyplot as plt

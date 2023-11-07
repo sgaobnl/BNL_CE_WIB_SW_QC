@@ -636,16 +636,52 @@ class DAT_CFGS(WIB_CFGS):
         return datad
 
     def dat_coldadc_cali_cs(self):
-        #DAC ADC N to 0V
-        #self.dat_set_dac(0,adc=1)
-        #make sure ADCs are hooked to their ADCs
-        # ##Set ADC_P_TST_CSABC to 3, set ADC_N_TST_CSABC to 3  [Set ADC_PN_TST_SEL to 3 | (3 << 4)]
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
-        # ##Set ADC_TEST_IN_SEL to 0
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
         # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x00)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x00)
+
+    def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
+        if (efuseid < 0) :
+            print ("Error, EFUSE ID must be >=0")
+            input ("Pause...")
+        elif (efuseid > 0x80000000) :
+            print ("Error, EFUSE ID must be <0x80000000")
+            input ("Pause...")
+        efusevalue=(efuseid<<1)&0xFFFFFFFF
+        efuse_start_regadr = 67
+        efuse_data07adr =63 
+        efuse_data0fadr =64 
+        efuse_data17adr =65 
+        efuse_data1fadr =66 
+
+        while True:
+            self.femb_cd_rst()
+            time.sleep(0.1)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data07adr,  wrdata=efusevalue&0xff      )
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data0fadr, wrdata=(efusevalue>>8)&0xff )
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data17adr, wrdata=(efusevalue>>16)&0xff)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data1fadr, wrdata=(efusevalue>>24)&0xff)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 1)
+            time.sleep(0.1)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
+            self.femb_cd_rst()
+
+            self.femb_i2c_wrchk(0, 0x3, 0, 0x1f,1)
+            time.sleep(0.01)
+            efusev18 = self.cdpeek(0, 0x3, 0, 0x18)
+            efusev19 = self.cdpeek(0, 0x3, 0, 0x19)
+            efusev1A = self.cdpeek(0, 0x3, 0, 0x1A)
+            efusev1B = self.cdpeek(0, 0x3, 0, 0x1B)
+            efusev = efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24)
+            if (efuseid&efusev) == efuseid :
+                print ("Efuse was programmed, readback value is 0x%x"%efusev)
+                break
+            else:
+                print ("Not all bits were programmed, re-program...")
+                print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
 
     def dat_coldadc_ext(self, ext_source="DAT_P6"):
         #DAC ADC N to 0V
