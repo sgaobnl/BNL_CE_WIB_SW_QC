@@ -382,19 +382,19 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
-    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, adf_en=0, vrefp=0xDF, vrefn=0x33, vcmo=0x89, vcmi=0x67):
+    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xDF, vrefn=0x33, vcmo=0x89, vcmi=0x67, autocali=1):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
             self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                                [0x4, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0x5, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0x6, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0x7, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0x8, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0x9, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0xA, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
-                                [0xB, data_fmt, diff_en, diff_en, vrefp, vrefn, vcmo, vcmi, 0],
+                                [0x4, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x5, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x6, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x7, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x8, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x9, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0xA, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0xB, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
                               ]
             self.set_fe_reset()
             self.set_fe_sync()
@@ -650,15 +650,17 @@ class DAT_CFGS(WIB_CFGS):
             print ("Error, EFUSE ID must be <0x80000000")
             input ("Pause...")
         efusevalue=(efuseid<<1)&0xFFFFFFFF
+        efuse_enable_regadr =  62
         efuse_start_regadr = 67
-        efuse_data07adr =63 
-        efuse_data0fadr =64 
-        efuse_data17adr =65 
-        efuse_data1fadr =66 
+        efuse_data07adr =88 
+        efuse_data0fadr =89 
+        efuse_data17adr =90 
+        efuse_data1fadr =91 
 
         while True:
             self.femb_cd_rst()
             time.sleep(0.1)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x8)
             self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
             self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data07adr,  wrdata=efusevalue&0xff      )
             self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data0fadr, wrdata=(efusevalue>>8)&0xff )
@@ -668,6 +670,7 @@ class DAT_CFGS(WIB_CFGS):
             time.sleep(0.1)
             self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
             self.femb_cd_rst()
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x0)
 
             self.femb_i2c_wrchk(0, 0x3, 0, 0x1f,1)
             time.sleep(0.01)
@@ -682,6 +685,7 @@ class DAT_CFGS(WIB_CFGS):
             else:
                 print ("Not all bits were programmed, re-program...")
                 print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
+                break
 
     def dat_coldadc_ext(self, ext_source="DAT_P6"):
         #DAC ADC N to 0V

@@ -17,7 +17,7 @@ def test():
     efusev19 = dat.cdpeek(0, 0x3, 0, 0x19)
     efusev1A = dat.cdpeek(0, 0x3, 0, 0x1A)
     efusev1B = dat.cdpeek(0, 0x3, 0, 0x1B)
-    print ("Efuse", hex(efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24))
+    print ("Efuse", hex(efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24)))
     dat.cdpoke(0, 0x3, 0, 0x1f,0)
 
 print ("AAAAAAAAAAAAAAAA",0, 0)
