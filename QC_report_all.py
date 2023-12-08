@@ -16,9 +16,9 @@ fembs = args.fembs
 rp = QC_reports(fdir, fembs)
 
 tt={}
-
+t1=time.time()
 for tm in tasks:
-    t1=time.time()
+
     print("start tm=",tm)
     if tm==1:
        rp.PWR_consumption_report()
@@ -56,11 +56,11 @@ for tm in tasks:
     if tm==12:
        rp.ColdADC_DAC_MON_report()
 
-    if tm==13:
-       rp.CHK_report()
+    # if tm==13:
+    #    rp.CHK_report()
 
-    t2=time.time()
-    tt[tm]=t2-t1
-    time.sleep(1)
+t2=time.time()
+tt=t2-t1
+time.sleep(1)
 
 print(tt)

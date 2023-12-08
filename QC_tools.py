@@ -75,7 +75,7 @@ class ana_tools:
         self.fadc = 1/(2**14)*2048 # mV
 
     def data_decode(self,raw,fembs):
-        wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True) 
+        wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True)
         return wibdata
 #        sss=[]
 #        ttt=[]
@@ -223,7 +223,7 @@ class ana_tools:
             for itr in range(nevent):
                 evtdata = np.array(data[itr][nfemb][ich])
                 tstart = data[itr][4]//0x20
-                for tt in range(period-(tstart%period), len(evtdata)-period, period):
+                for tt in range(int(period-(tstart%period)), len(evtdata)-period, period):
                     allpls = allpls + evtdata[tt:tt+period]
                     npulse = npulse+1
 

@@ -8,7 +8,7 @@ import datetime
 
 def CreateFolders(fembNo, env, toytpc):
 
-    datadir = "./tmp_data/CHK/"
+    datadir = "./CHK/"
     for key,femb_no in fembNo.items():
         datadir = datadir + "femb{}_".format(femb_no)
 

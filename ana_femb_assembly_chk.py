@@ -9,15 +9,11 @@ from QC_tools import ana_tools
 import QC_check
 from fpdf import FPDF
 import matplotlib.pyplot as plt
-
+import Path as newpath
 
 def CreateFolders(fembs, fembNo, env, toytpc):
 
-    #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
-    #reportdir = "./reports/"+datadir+"/"
-    #reportdir = "D:/IO_1865_1D_QC/CHK/Reports/"+datadir+"/"
-    #reportdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
-    reportdir = "D:/IO_1865_1G_QC/Reports/"+datadir+"/"
+    reportdir = newpath.report_dir_RTCK + "/"
     
     PLOTDIR = {}
 
@@ -25,15 +21,6 @@ def CreateFolders(fembs, fembNo, env, toytpc):
         femb_no = fembNo['femb%d'%ifemb]
         plotdir = reportdir + "FEMB{}_{}_{}".format(femb_no, env, toytpc)
 
-        #n=1
-        #while (os.path.exists(plotdir)):
-        #    if n==1:
-        #        plotdir = plotdir + "_R{:03d}".format(n)
-        #    else:
-        #        plotdir = plotdir[:-3] + "{:03d}".format(n)
-        #    n=n+1
-        #    if n>20:
-        #        raise Exception("There are more than 20 folders for FEMB %d..."%femb_no)
         if os.path.exists(plotdir):
             pass
         else:
@@ -51,7 +38,7 @@ def CreateFolders(fembs, fembNo, env, toytpc):
     return PLOTDIR
 
 ###### Main ######
-
+t1=time.time()
 if len(sys.argv) < 2:
     print('Please specify the folder to analyze')
     exit()
@@ -62,7 +49,7 @@ if len(sys.argv) > 2:
 
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
-fdata = "D:/IO_1865_1G_QC/"+datadir+"/"
+fdata = newpath.data_dir_RTCK + datadir+"/"
 #fdata = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
 
 print(fdata)
@@ -275,19 +262,19 @@ for ifemb in range(len(fembs)):
     pdf.set_font('Times', 'B', 20)
     pdf.cell(85)
     pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0, new_x="LMARGIN", new_y="NEXT", align='C')
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0)
     pdf.ln(2)
 
     pdf.set_font('Times', '', 12)
-    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, new_x="RIGHT", new_y="TOP")
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0)
     pdf.cell(80)
-    pdf.cell(30, 5, 'Date: {}'.format(date), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Date: {}'.format(date), 0)
 
-    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, new_x="RIGHT", new_y="TOP")
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0)
     pdf.cell(80)
-    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0)
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0)
+    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0)
 
     pdf.ln(10)
 
@@ -363,16 +350,16 @@ for ifemb in range(len(fembs)):
     if len2==len1:
        chk_result.append(("ADC Monitoring","Pass"))
            
-    with pdf.table() as table:
-        for data_row in chk_result:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    # with pdf.table() as table:
+    #     for data_row in chk_result:
+    #         row = table.row()
+    #         for datum in data_row:
+    #             row.cell(datum)
 
     if err_messg:
        pdf.ln(10)
        for istr in err_messg:
-           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0, new_x="LMARGIN", new_y="NEXT")
+           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0)
  
     pdf.add_page()
 
@@ -406,4 +393,5 @@ for ifemb in range(len(fembs)):
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile)
-
+t2=time.time()
+print(t2-t1)
