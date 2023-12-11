@@ -1,4 +1,4 @@
-from wib_cfgs import WIB_CFGS
+from components.wib_cfgs import WIB_CFGS
 import time
 import sys
 import pickle
@@ -98,8 +98,13 @@ t1 = time.time()
 chk = WIB_CFGS()
 chk.wib_fw()
 
+#   parameter hub
+voltage_FE      = 3.0
+voltage_COLDATA = 3.0
+voltage_ColdADC = 3.0
+
 # set FEMB voltages
-chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+chk.fembs_vol_set(vfe=voltage_FE, vcd=voltage_COLDATA, vadc=voltage_ColdADC)
 
 print("Check FEMB currents")
 
@@ -108,7 +113,7 @@ for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
     pwr_meas1 = chk.get_sensors()
 
-    bias_i = round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)  
+    bias_i = round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)
     fe_i = round(pwr_meas1['FEMB%d_DC2DC0_I'%ifemb],3)
     cd_i = round(pwr_meas1['FEMB%d_DC2DC1_I'%ifemb],3)
     adc_i = round(pwr_meas1['FEMB%d_DC2DC2_I'%ifemb],3)

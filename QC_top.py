@@ -59,14 +59,16 @@ for tm in tasks:
        qc.femb_MON_3()
 
     if tm==13:
-       qc.vgndoft = 0 #to be added later
-       qc.vdacmax = 0.4 
-       qc.femb_CALI_5() #external calibration 900mV BL
+       vdac_offset = 0.084
+       qc.vgndoft = 1.04 + vdac_offset - 0.4  # to be added later
+       qc.vdacmax = 1.04 + vdac_offset
+       qc.femb_CALI_5()  # external calibration 900mV BL
 
     if tm==14:
-       qc.vgndoft = 0 #to be added later
-       qc.vdacmax = 0.8 
-       qc.femb_CALI_6() #external calibration 200mV BL
+       vdac_offset = 0.084
+       qc.vgndoft = 1.04 + vdac_offset - 0.8  # to be added later
+       qc.vdacmax = 1.04 + vdac_offset
+       qc.femb_CALI_6()  # external calibration 900mV BL
 
     if tm==15:
        qc.femb_adc_sync_pat()

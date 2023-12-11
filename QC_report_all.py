@@ -56,6 +56,21 @@ for tm in tasks:
     if tm==12:
        rp.ColdADC_DAC_MON_report()
 
+    if tm==13:
+       rp.CALI_report_5()
+
+    if tm==14:
+       rp.CALI_report_6()
+
+    if tm==15:
+       rp.ADC_DC_Noise_report()
+
+    if tm==16:
+       rp.PLL_scan_report()
+
+    if tm==17:
+       rp.CHK_report()
+
     # if tm==13:
     #    rp.CHK_report()
 

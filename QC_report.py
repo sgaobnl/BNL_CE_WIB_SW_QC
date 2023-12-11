@@ -484,6 +484,41 @@ class QC_reports:
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
 
+
+      def CALI_report_5(self):
+
+          qc=ana_tools()
+          dac_list = range(0, 390, 25)
+          print(dac_list)
+
+          self.CreateDIR("CALI5")
+          datadir = self.datadir+"CALI5/"
+          print("analyze CALI5 900mVBL 14_0mVfC External")
+          qc.GetGain(self.fembs, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+          qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
+          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI5/")
+
+
+      def CALI_report_6(self):
+
+          qc=ana_tools()
+          dac_list = range(0, 790, 25)
+
+          self.CreateDIR("CALI6")
+          datadir = self.datadir+"CALI4/"
+          print("analyze CALI4 900mVBL 14_0mVfC External")
+          qc.GetGain(self.fembs, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
+          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI6/")
+
+
+
+
+
+
+
+
+
       def CHK_Peaks(self,data,fname):
 
           err_mssg=[]

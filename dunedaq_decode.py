@@ -173,17 +173,12 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True):
         #flen is always going to be 32
         if 0 in fembs:
             femb00 = np.transpose(dec_data[0][0])
-
             femb01 = np.transpose(dec_data[1][0])
             tmts[0] = dec_data[0][1]
             tmts[1] = dec_data[1][1]
             cd_tmts[0] = dec_data[0][3]
             cd_tmts[1] = dec_data[1][3]
         if 1 in fembs:
-            # print(1111)
-            # print(len(dec_data[2]))
-            # print((dec_data[2][i]["CD_data"][tick] for tick in range(64)))
-            # print(dec_data[2][0])
             femb10 = np.transpose(dec_data[2][0])
             femb11 = np.transpose(dec_data[3][0])
             tmts[2] = dec_data[2][1]
@@ -204,7 +199,6 @@ def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True):
             tmts[7] = dec_data[7][1]
             cd_tmts[6] = dec_data[6][3]
             cd_tmts[7] = dec_data[7][3]
-        # print(np.shape(femb00))
         if cd0cd1sync:
             t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
             if 0 in fembs:
