@@ -262,19 +262,19 @@ for ifemb in range(len(fembs)):
     pdf.set_font('Times', 'B', 20)
     pdf.cell(85)
     pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0)
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(2)
 
     pdf.set_font('Times', '', 12)
-    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0)
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, new_x="LMARGIN", new_y="NEXT")
     pdf.cell(80)
-    pdf.cell(30, 5, 'Date: {}'.format(date), 0)
+    pdf.cell(30, 5, 'Date: {}'.format(date), 0, new_x="LMARGIN", new_y="NEXT")
 
-    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0)
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, new_x="LMARGIN", new_y="NEXT")
     pdf.cell(80)
-    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0)
-    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0)
-    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0)
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(10)
 
@@ -359,7 +359,7 @@ for ifemb in range(len(fembs)):
     if err_messg:
        pdf.ln(10)
        for istr in err_messg:
-           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0)
+           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0, new_x="LMARGIN", new_y="NEXT")
  
     pdf.add_page()
 

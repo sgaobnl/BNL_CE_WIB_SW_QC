@@ -426,9 +426,44 @@ class QC_Runs:
                     st1 = sti//2 
  
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False) 
-                    #time.sleep(0.5)
+                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
+
+        print('Differential Pulse')
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1    # enable differential interface
+        #self.chk.set_fe_board(sts=1, snc=0, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x10)
+        self.sample_N = 1
+        for snci in range(2):
+            for sgi in range(4):
+                sg0 = sgi % 2
+                sg1 = sgi // 2
+                for sti in range(4):
+                    st0 = sti % 2
+                    st1 = sti //2
+                    fp = datadir + "CHK_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[sti], dac)
+                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False, swdac = 1)
+                                #time.sleep(0.5)
+#       External Pulse
+        print('External pulse')
+
+        snc = 1 # 200 mV BL
+        sg0 = 0
+        sg1 = 0 # 14_0 mv/fC
+        #st0 = 1
+        #st1 = 1 # 2 us
+        sts = 1
+        dac=0
+        self.chk.femb_cd_rst()
+        self.sample_N = 1
+        for snci in range(2):
+                for sti in range(4):
+                    st0 = sti % 2
+                    st1 = sti //2
+                    fp = datadir + "CHK_EXTERNAL_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
+                    self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
 #    def femb_chk_pulse2(self):
 #
 #        datadir = self.save_dir+"CHK2/"
@@ -509,7 +544,20 @@ class QC_Runs:
 #            time.sleep(5)
             for dac in range(0,64,4):
                 fp = datadir + "CALI1_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL",sgs[sgi],"2_0us",dac)
-                self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False) 
+                self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1
+        self.sample_N = 5
+        for sgi in range(4):
+            sg0 = sgi % 2
+            sg1 = sgi // 2
+            #            time.sleep(5)
+            for dac in range(0, 64, 4):
+                fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[sgi], "2_0us", dac)
+                self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
 
     def femb_CALI_2(self):
 
@@ -531,7 +579,20 @@ class QC_Runs:
         self.sample_N = 5
         for dac in range(0,64,4):
             fp = datadir + "CALI2_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False) 
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+
+        print('cali2_differential pusle')
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1    # enable differential interface
+
+        self.sample_N = 5
+        for dac in range(0,64,4):
+            fp = datadir + "CALI2_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+
+
 
     def femb_CALI_3(self):
 
@@ -553,7 +614,19 @@ class QC_Runs:
         self.sample_N = 5
         for dac in range(0,32):
             fp = datadir + "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False) 
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
+
+        print('cali3_differential pusle')
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1    # enable differential interface
+
+        self.sample_N = 5
+        for dac in range(0,32):
+            fp = datadir + "CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
+
 
     def femb_CALI_4(self):
 
@@ -575,7 +648,18 @@ class QC_Runs:
         self.sample_N = 5
         for dac in range(0,32):
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False) 
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
+
+        print('cali4_differential pusle')
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1    # enable differential interface
+
+        self.sample_N = 5
+        for dac in range(0,32):
+            fp = datadir + "CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
 
     def femb_CALI_5(self):
         datadir = self.save_dir+"CALI5/"
