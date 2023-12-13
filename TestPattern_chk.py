@@ -65,28 +65,28 @@ if save:
     logs={}
     tester=input("please input your name:  ")
     logs['tester']=tester
-    
+
     env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
     if ("Y" in env_cs) or ("y" in env_cs):
         env = "TPL"
     else:
         env = "TPR"
     logs['env']=env
-    
+
     ToyTPC_en = input("ToyTPC at FE inputs (Y/N) : ")
     if ("Y" in ToyTPC_en) or ("y" in ToyTPC_en):
         toytpc = "TPC_pF"
     else:
         toytpc = "0pF"
     logs['toytpc']=toytpc
-    
+
     note = input("A short note (<200 letters):")
     logs['note']=note
-    
+
     fembNo={}
     for i in fembs:
         fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
-    
+
     logs['femb id']=fembNo
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
@@ -214,8 +214,7 @@ for ifemb in fembs:
        fembNo.pop('femb%d'%ifemb)
 
 ################# enable certain fembs ###################
-print(fembs)
-input("print")
+
 chk.wib_femb_link_en(fembs)
 
 chk.adcs_paras = [  # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
@@ -289,7 +288,7 @@ for i in range(0x1C, 0x3F):
     rmsdata = raw[0]
     fembs = raw[2]
 # end
-
+'''
     PLOTDIR=datadir
     print(PLOTDIR)
 
@@ -308,7 +307,7 @@ for i in range(0x1C, 0x3F):
         #     V_Range[c] = hex(i)
     c = c + 1
 
-''' 
+
 
 
 

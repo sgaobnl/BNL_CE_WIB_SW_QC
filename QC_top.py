@@ -73,6 +73,9 @@ for tm in tasks:
     if tm==15:
        qc.femb_adc_sync_pat()
 
+    if tm == 16:
+       qc.femb_test_pattern_pll()
+
     t2=time.time()
     tt[tm]=t2-t1
     time.sleep(1)

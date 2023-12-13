@@ -6,6 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
+import TestPattern_chk as PLL_TP
 
 class QC_Runs:
     def __init__(self, fembs, sample_N=1):
@@ -518,7 +519,19 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.sample_N = 10
         fp = datadir + "ADC_SYNC_PAT.bin"
-        self.take_data(fp=fp, adc_sync_pat=True) 
+        self.take_data(fp=fp, adc_sync_pat=True)
+
+    def femb_test_pattern_pll(self):
+        datadir = self.save_dir + "PLL_PAT/"
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print ("Error to create folder %s !!! Continue to next test........"%datadir)
+            return
+        self.chk.femb_cd_rst()
+        test = PLL_TP()
+
+
 
     def femb_CALI_1(self):
 
