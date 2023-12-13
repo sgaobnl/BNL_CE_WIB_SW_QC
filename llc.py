@@ -100,6 +100,7 @@ class LLC():
         #DAT registers
         #DAT registers in case needed
         self.DAT_FPGA_RST = 0x00 #bit0-system reset, bit1-reg reset
+        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
         self.DAT_CD1_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_CONTROL')
         self.DAT_CD2_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_CONTROL')
         self.DAT_SOCKET_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_SOCKET_SEL')

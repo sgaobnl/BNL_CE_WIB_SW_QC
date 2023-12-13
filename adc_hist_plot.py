@@ -21,45 +21,23 @@ with open(fp, 'rb') as fn:
 num_bins = 50
 x = np.arange(0,pow(2,14)+1)
 real_max = 0 #for stuff with a lot of data outside bounds
+ch_cs = int(input("select a channel (0-127):"))
 for ch, ch_hist_data in enumerate(hist_data):
-    fig, ax = plt.subplots(figsize=(10,6)) #one "FEMB"
-    
-    #idea sort of from https://stackoverflow.com/a/19361027: convert into un-binned data and then run
-    # plt.hist(chdata_unordered,num_bins,color='C%d'%chip)
-    
-    # chdata_unordered = []
-    # for addr, count in enumerate(ch_hist_data):
-        # for i in range(count):
-            # chdata_unordered.append(addr)
-    
-    
-    # ch_group = int(ch % 16 < 8)    
-    print(ch)
-    chip = ch // 16
-    
-    #for stuff with a lot of data outside bounds:
-    if any(height > real_max for height in ch_hist_data[1:-1]): 
-        real_max = max(ch_hist_data[1:-1])
+    if ch == ch_cs:
+        fig, ax = plt.subplots(figsize=(10,6)) #one "FEMB"
         
-    # ax.bar(x, ch_hist_data, linewidth=1, edgecolor='C%d'%chip, facecolor='C%d'%chip)
-    # ax.hist(chdata_unordered,num_bins,color='C%d'%chip)
-    # print(np.histogram(chdata_unordered))
-    ax.stairs(ch_hist_data, x, fill=True, color='C%d'%chip)
-    # ax.hist(chdata_unordered,bins=num_bins,color='C%d'%chip)
-    
-# plt.xticks(ticks=[0x48d, 0x2af3]) #<- the 2 values expected from test pattern   
-# ax.get_xaxis().set_major_formatter(ticker.FormatStrFormatter("0x%x"))
+        chip = ch // 16
+        print (chip)
+        
+        if any(height > real_max for height in ch_hist_data[1:-1]): 
+            real_max = max(ch_hist_data[1:-1])
+            
+        ax.stairs(ch_hist_data, x, fill=True, color='C%d'%chip)
 
-# plt.title("ADC Histogram w/ No Pulse (2000 samples)")
-# plt.title("ADC Histogram w/ DAC constant voltage of ~1.22V (2000 samples)")
-# plt.title("ADC Histogram w/ Test Pattern (2000 samples)")
-# plt.title("ADC Histogram Ch %d w/ Test Pattern (2000 samples)"%(ch))
+        plt.ylim([0, 200])
+        plt.show()
 
-#for stuff with a lot of data outside bounds
-    #plt.ylim([0,real_max+10])
-    plt.show()
-
-    plt.close()
+        plt.close()
 
 #plt.savefig(fdir+"adc_hist.jpg")
 
@@ -67,5 +45,4 @@ for ch, ch_hist_data in enumerate(hist_data):
 
 
 
-# plt.savefig(fdir+"adc_hist"+str(ch)+".jpg")
 
