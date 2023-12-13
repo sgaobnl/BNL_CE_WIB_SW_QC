@@ -181,12 +181,33 @@ class ana_tools:
 
             ped.append(ch_ped)
             rms.append(ch_rms)
-    
+
+            if ch_rms > rms_max:
+                rms_max = ch_rms
+            if ch_rms < rms_min:
+                rms_min = ch_rms
+
+            if ch_ped > ped_max:
+                ped_max = ch_ped
+            if ch_ped < ped_min:
+                ped_min = ch_ped
+
+
+        rms_mode = np.mean(rms)
+        ped_mode = np.mean(ped)
+
         fig,ax = plt.subplots(figsize=(6,4))
         ax.plot(range(128), rms, marker='.')
         ax.set_title(fname)
         ax.set_xlabel("chan")
         ax.set_ylabel("rms")
+        x_sticks = range(0, 129, 16)
+        ax.set_xticks(x_sticks)
+        ax.grid(axis='x')
+        if (rms_max < (rms_mode + 5)) and (rms_min > (rms_mode - 5)):
+            ax.set_ylim(rms_mode - 5, rms_mode + 5)
+        else:
+            ax.grid(axis='y')
         fp_fig = fp+"rms_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
@@ -196,6 +217,13 @@ class ana_tools:
         ax.set_title(fname)
         ax.set_xlabel("chan")
         ax.set_ylabel("ped")
+        x_sticks = range(0, 129, 16)
+        ax.set_xticks(x_sticks)
+        ax.grid(axis = 'x')
+        if (ped_max < (ped_mode + 400)) and (ped_min > (ped_mode - 400)):
+            ax.set_ylim(ped_mode - 400, ped_mode + 400)
+        else:
+            ax.grid(axis = 'y')
         fp_fig = fp+"ped_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
@@ -722,7 +750,7 @@ class ana_tools:
         y_max = pk_list[index-1]
         y_min = pk_list[0]
         INL=0
-        for i in range(index):
+        for i in range(len(dac_list) - 5):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_f + intercept_f
             inl = abs(y_r-y_p)/(y_max-y_min)

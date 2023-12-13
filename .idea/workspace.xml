@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_runs.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_runs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,17 +30,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "DAT__FEMB__new",
-    "last_opened_file_path": "D:/GitHub/DAT_QC_HERMES/BNL_CE_WIB_SW_QC_origin"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;DAT__FEMB__new&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/GitHub/DAT_QC_HERMES/BNL_CE_WIB_SW_QC_origin&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\GitHub\DAT_QC_HERMES\BNL_CE_WIB_SW_QC\components" />
