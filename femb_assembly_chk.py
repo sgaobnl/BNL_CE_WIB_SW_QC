@@ -1,4 +1,4 @@
-from components.wib_cfgs import WIB_CFGS
+from wib_cfgs import WIB_CFGS
 import time
 import sys
 import pickle
@@ -255,23 +255,22 @@ st1 = 1 # 2us
 
 chk.femb_cd_rst()
 cfg_paras_rec = []
+for i in range(8):
+    chk.adcs_paras[i][8]=1   # enable  auto
+
 for femb_id in fembs:
     chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
     adac_pls_en = 0
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
-
 chk.data_align(fembs)
-time.sleep(3)
-
+time.sleep(1)
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 if save:
     fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
-
-
 
 ################ Measure FEMB current 2 ####################
 print("Check FEMB current")
@@ -342,6 +341,9 @@ st1 = 1 # 2us
 
 chk.femb_cd_rst()
 cfg_paras_rec = []
+for i in range(8):
+    chk.adcs_paras[i][8]=1   # enable  auto
+
 for femb_id in fembs:
     chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=0x10 )
     adac_pls_en = 1
@@ -349,7 +351,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-time.sleep(3)
+time.sleep(1)
 
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -358,12 +360,13 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
+############ Take pulse data 900mV 14mV/fC 2us (DIFF) ##################
 print("Take differential pulse data")
 chk.femb_cd_rst()
 cfg_paras_rec = []
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
-
+    chk.adcs_paras[i][8]=1   # enable  auto
 for femb_id in fembs:
     chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x10 )
     adac_pls_en = 1
@@ -371,7 +374,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-time.sleep(3)
+time.sleep(5)
 
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 

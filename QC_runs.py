@@ -203,8 +203,11 @@ class QC_Runs:
             time.sleep(0.05)
             pwr_meas = None
         if ext_cali_flg: 
-            vdacmax=self.vdacmax + self.vgndoft
-            vdacs = np.arange(self.vgndoft,vdacmax,(vdacmax-self.vgndoft)/16)
+            vdacmax=self.vdacmax
+            vdacs = np.arange(vdacmax,self.vgndoft,-(vdacmax-self.vgndoft)/16)
+            print(vdacmax)
+            print(self.vgndoft)
+            print(vdacs)
             for vdac in vdacs:
                 for femb_id in self.fembs:
                     self.chk.wib_cali_dac(dacvol=vdac)
@@ -220,7 +223,7 @@ class QC_Runs:
                 cp_high_time = int(cp_period*32*3/4)
                 self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
                 rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
-                fplocal = fp[0:-4] + "_vdac%06dmV"%(int(vdac*1000))+fp[-4:]
+                fplocal = fp[0:-4] + "_vdac%06dmV"%(int((vdacmax-vdac+0.0001)*1000))+fp[-4:]
                 with open(fplocal, 'wb') as fn:
                     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, vdac], fn)
         else:

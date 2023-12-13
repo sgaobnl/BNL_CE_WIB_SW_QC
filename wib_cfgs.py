@@ -10,16 +10,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         super().__init__()
         self.i2cerror = False 
         self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                           ]
-        self.adcs_paras = self.adcs_paras_init
+        self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
         self.adac_cali_quo = [False,False,False,False]
         self.longcable = False #>7m
         self.cd_flg=[True, True, True, True]
@@ -367,7 +367,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     #Reset COLDATA
     #This fixes the problem where some COLDATAs don't toggle the pulse when they're told to
         print ("Sending Fast command reset")
-        self.adcs_paras = self.adcs_paras_init
+        self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
         self.fastcmd(cmd= 'reset')
         self.adac_cali_quo = [False,False,False,False]
         time.sleep(0.05)
@@ -1102,6 +1102,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         mon_dict = {}
         mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VSSA"]
+
         for mon_i in range(len(mons)):
             print (f"Monitor ADC {mons[mon_i]}")
             for femb_id in femb_ids:

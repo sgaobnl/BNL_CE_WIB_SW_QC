@@ -252,7 +252,7 @@ class ana_tools:
             pulseoffset = 30
         else:
             pulrange = 500
-            pulseoffset = 380
+            pulseoffset = 300
 
         for ich in range(128):
             global_ch = nfemb*128+ich
@@ -688,11 +688,16 @@ class ana_tools:
 
         dac_init=[]
         pk_init=[]
+        print(updac)
+        c = 0
         for i in range(len(dac_list)):
-            if dac_list[i]<updac and dac_list[i]>=lodac:
+            #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$???????????????????????????????#
+            if ((pk_list[i]<updac)):
                dac_init.append(dac_list[i])
                pk_init.append(pk_list[i])
 
+        print(dac_init)
+        print(pk_init)
         try:
            slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
         except:
@@ -711,8 +716,8 @@ class ana_tools:
         y_max = pk_list[-1]
         linear_dac_max=dac_list[-1]
 
-        index=-1
-        for i in range(len(dac_list)):
+        index=len(dac_init)-1
+        for i in range(len(dac_init)):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_i + intercept_i
             inl = abs(y_r-y_p)/(y_max-y_min)
@@ -750,8 +755,10 @@ class ana_tools:
             print("fail at first linear range searching: inl=%f for dac=0 is bigger than 0.03"%inl)
             return 0,0,0
 
+        print(dac_list[:index])
+
         try:
-            slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
+            slope_f,intercept_f=np.polyfit(dac_init[:index],pk_init[:index],1)
         except:
             fig3,ax3 = plt.subplots()
             ax3.plot(dac_list[:index],pk_list[:index],marker='.')
@@ -763,10 +770,11 @@ class ana_tools:
             print("fail at second gain fit")
             return 0,0,0
 
-        y_max = pk_list[index-1]
-        y_min = pk_list[0]
+        y_max = pk_init[index-1]
+        y_min = pk_init[0]
         INL=0
-        for i in range(len(dac_list) - 5):
+        print(index)
+        for i in range(index):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_f + intercept_f
             inl = abs(y_r-y_p)/(y_max-y_min)
@@ -815,7 +823,11 @@ class ana_tools:
                 else:
                    fname_1 = namepat.format(snc,sgs,sts,dac)
                    #ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname_1)
-                   ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1)
+                   if 'vdac' in namepat:
+                        ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000)
+                        print("vdac")
+                   else:
+                        ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1)
                    ppk_np = np.array(ppk)
                    bl_np = np.array(bl)
                    new_ppk = ppk_np-bl_np

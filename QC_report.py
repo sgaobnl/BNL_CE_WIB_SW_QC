@@ -625,7 +625,7 @@ class QC_reports:
           self.CreateDIR("CALI5")
           datadir = self.datadir+"CALI5/"
           print("analyze CALI5 900mVBL 14_0mVfC External")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+          qc.GetGain(self.fembs, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI5/")
 
@@ -633,14 +633,41 @@ class QC_reports:
       def CALI_report_6(self):
 
           qc=ana_tools()
-          dac_list = range(0, 790, 25)
+          dac_list = range(0, 790, 50)
 
           self.CreateDIR("CALI6")
-          datadir = self.datadir+"CALI4/"
-          print("analyze CALI4 900mVBL 14_0mVfC External")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+          datadir = self.datadir+"CALI6/"
+          print("analyze CALI6 900mVBL 14_0mVfC External")
+          qc.GetGain(self.fembs, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
           self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI6/")
+
+
+      def femb_adc_sync_pat_report(self, fdir):
+          self.CreateDIR(fdir)
+          datadir = self.datadir+fdir+"/"
+          qc = ana_tools()
+          files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          for afile in files:
+              with open(afile, 'rb') as fn:
+                   raw = pickle.load(fn)
+              #print("analyze file: %s"%afile)
+
+              rawdata = raw[0]
+              pwr_meas = raw[1]
+
+              pldata = qc.data_decode(rawdata, self.fembs)
+
+              if '\\' in afile:
+                  fname = afile.split("\\")[-1][:-4]
+              else:
+                  fname = afile.split("/")[-1][:-4]
+              for ifemb in self.fembs:
+                  fp = self.savedir[ifemb] + fdir+"/"
+                  if 'vdac' in fname:
+                      qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+                  else:
+                      qc.GetPeaks(pldata, ifemb, fp, fname)
 
 
 
@@ -683,8 +710,8 @@ class QC_reports:
           if test == 0:
               datadir = self.datadir
           else:
-              datadir = "D:\A0-FEMB_test_script_improvement\T3_QC_Performance_TEST\AQC_REPORTS_T3\FEMB65069_RT_150pF_R003"
-          item_report.gather_report(datadir)
+              datadir = "D:\A0-FEMB_test_script_improvement\T3_QC_Performance_TEST\AQC_REPORTS_T3\FEMB75_RT_150pF_R016"
+          item_report.Gather_Report(datadir)
 
       def CHK_pwr(self,data,fdir,fname,ifemb):
 

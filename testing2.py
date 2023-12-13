@@ -69,11 +69,12 @@ while True:
     #step 1
         chk.femb_cfg(femb_id, adac_pls_en )
         #chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
-    break
+    #break
+    print("XXXXXXXXXXXXXXXX")
+    print(i)
 
-chk.data_align(fembs)
+    chk.data_align(fembs)
 
-time.sleep(3)
 ####################FEMBs Data taking################################
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
