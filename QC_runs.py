@@ -6,7 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-import TestPattern_chk as PLL_TP
+#import TestPattern_chk as PLL_TP
 
 class QC_Runs:
     def __init__(self, fembs, sample_N=1):

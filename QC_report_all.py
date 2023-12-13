@@ -5,12 +5,14 @@ import time
 
 ag = argparse.ArgumentParser()
 ag.add_argument("folder", help="data folder", type=str)
-ag.add_argument("-t", "--tasks",help="a list of tasks to be analyzed", type=int, choices=range(1,14), nargs='+',default=range(1,14))
+ag.add_argument("-t", "--tasks",help="a list of tasks to be analyzed", type=int, choices=range(1,17+1), nargs='+',default=range(1,17+1))
 ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int, choices=range(0,4), nargs='+')
 args = ag.parse_args()
+print(args)
 
 fdir = args.folder
 tasks = args.tasks
+print(args.tasks)
 fembs = args.fembs
 
 rp = QC_reports(fdir, fembs)
@@ -65,11 +67,18 @@ for tm in tasks:
     if tm==15:
        rp.ADC_DC_Noise_report()
 
-    if tm==16:
-       rp.PLL_scan_report()
+    # if tm==16:
+    #    rp.PLL_scan_report()
 
     if tm==17:
-       rp.CHK_report()
+       #rp.CHK_report()
+       if args.tasks == [17]:
+           rp.temp_report(test = 1)
+           print(1)
+       else:
+           rp.temp_report(test = 0)
+           print(0)
+
 
     # if tm==13:
     #    rp.CHK_report()

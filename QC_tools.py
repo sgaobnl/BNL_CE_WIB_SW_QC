@@ -164,6 +164,10 @@ class ana_tools:
     
         rms=[]
         ped=[]
+        rms_max = 0
+        rms_min = 1000
+        ped_max = 0
+        ped_min = 10000
     
         for ich in range(128):
             global_ch = nfemb*128+ich
@@ -242,30 +246,42 @@ class ana_tools:
         npk_val=[]
         bl_val=[]
         fig,ax = plt.subplots(1,2,figsize=(12,4))
-       
+        offset2 = 120
+        if period == 500:
+            pulrange = 120
+            pulseoffset = 30
+        else:
+            pulrange = 500
+            pulseoffset = 380
+
         for ich in range(128):
             global_ch = nfemb*128+ich
             allpls=np.zeros(period)
+            allpls2 = np.zeros(period)
             npulse=0
             hasError=False
             for itr in range(nevent):
                 evtdata = np.array(data[itr][nfemb][ich])
                 tstart = data[itr][4]//0x20
-                for tt in range(int(period-(tstart%period)), len(evtdata)-period, period):
+                for tt in range(int(period-(tstart%period)), len(evtdata)-period-offset2-1, period):
                     allpls = allpls + evtdata[tt:tt+period]
+                    allpls2 = allpls2 + evtdata[tt + offset2:tt+period + offset2]
                     npulse = npulse+1
 
             apulse = allpls/npulse
+            apulse2 = allpls2 / npulse
 
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
 
-            if maxpos>=30 and maxpos<len(apulse)-90:
-               ax[0].plot(range(120),apulse[maxpos-30:maxpos+90])
-            if maxpos<30:
-               ax[0].plot(range(120),apulse[0:120])
-            if maxpos>=len(apulse)-90:
-                ax[0].plot(range(120),apulse[len(apulse)-120:])
+            if maxpos>=pulseoffset and maxpos<len(apulse) +pulseoffset -pulrange:
+               ax[0].plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
+            if maxpos<pulseoffset:
+               ax[0].plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
+               #ax[0].plot(range(120),apulse[0:120])
+            if maxpos>=len(apulse) +pulseoffset -pulrange:
+                ax[0].plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
+                #ax[0].plot(range(120),apulse[len(apulse)-120:])
 
             if funcfit:
                popt = FitFunc(apulse, shapetime, makeplot=False)

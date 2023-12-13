@@ -11,11 +11,6 @@ import QC_check
 from fpdf import FPDF
 import argparse
 import Path as newpath
-import components.item_report as item_report
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import os
-from PIL import Image
 
 class QC_reports:
 
@@ -27,7 +22,7 @@ class QC_reports:
 
 #          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
 #          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
-          self.report_source_doc = 0
+
           fp = self.datadir+"logs_env.bin"
           with open(fp, 'rb') as fn:
                logs = pickle.load(fn)
@@ -36,7 +31,6 @@ class QC_reports:
           self.logs=logs
 
           self.fembsID={}
-
           if fembs:
               self.fembs = fembs
               for ifemb in fembs:
@@ -154,80 +148,6 @@ class QC_reports:
           
           outfile = fdir+'report.pdf'
           pdf.output(outfile, "F")
-
-      def Gather_PNG_PDF(self, fdir):
-
-          #input_folder_path = fdir + '/path/to/your/png/files'
-          output_pdf_path = fdir + '/report.pdf'
-
-          png_files = [f for f in os.listdir(fdir) if f.endswith('.png')]
-          c = canvas.Canvas(output_pdf_path, pagesize=letter)
-          #image_count = 0  # 记录已经处理的图像数量
-          current_page = 0  # 记录当前页数
-
-          for i, png_file in enumerate(png_files):
-              png_path = os.path.join(fdir, png_file)
-              img = Image.open(png_path)
-
-              # 通过 drawImage 将图像添加到 PDF 文件
-              remainder = i%4
-              c.drawImage(png_path, 0, 600-remainder*160, width=img.width*160/img.height, height=40 * 4)
-              if remainder == 3:
-                c.showPage()  # 开始新的一页
-              current_page += 1
-
-          c.save()
-
-
-
-
-          # pdf = FPDF(orientation='P', unit='mm', format='Letter')
-          # pdf.alias_nb_pages()
-          # pdf.add_page()
-          # #pdf.set_auto_page_break(False,0)
-          # images = sorted(glob.glob(fdir + "*.png"), key=os.path.getmtime)
-          # nn = 0
-          # for im in images:
-          #     if '\\' in im:
-          #         im_name = im.split("\\")[-1][4:-13]
-          #     else:
-          #         im_name = im.split("/")[-1][4:-13]
-          #     pdf.set_font('Times', 'B', 14)
-          #     if nn < 4:
-          #         pdf.text(55, 45 + 50 * nn, im_name)
-          #         pdf.image(im, 0, 47 + nn * 50, 160, 40)
-          #     else:
-          #         if nn % 4 == 0:
-          #             pdf.add_page()
-          #         pdf.text(55, 45 + 50 * nn, im_name)
-          #         pdf.image(im, 0, 47 + nn * 50, 160, 40)
-          #     nn = nn + 1
-
-          # pdf.alias_nb_pages()
-          # pdf.add_page()
-          #
-          # chk_images = sorted(glob.glob(fdir + "pulse_*.png"), key=os.path.getmtime)
-          # nn = 0
-          # for im in chk_images:
-          #     if '\\' in im:
-          #         im_name = im.split("\\")[-1][6:-4]
-          #     else:
-          #         im_name = im.split("/")[-1][6:-4]
-          #
-          #     pdf.set_font('Times', 'B', 14)
-          #     if nn < 3:
-          #         pdf.text(55, 10 + nn * 80, im_name)
-          #         pdf.image(im, 0, 12 + nn * 80, 220, 70)
-          #     else:
-          #         if nn % 3 == 0:
-          #             pdf.alias_nb_pages()
-          #             pdf.add_page()
-          #         pdf.text(55, 10 + (nn - 3) * 80, im_name)
-          #         pdf.image(im, 0, 12 + (nn - 3) * 80, 220, 70)
-          #     nn = nn + 1
-
-          # outfile = fdir + 'report.pdf'
-          # pdf.output(outfile, "F")
          
       def PWR_consumption_report(self):
           
@@ -370,7 +290,7 @@ class QC_reports:
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
-              #print("analyze file: %s"%afile)
+              print("analyze file: %s"%afile)
 
               rawdata = raw[0]
               pwr_meas = raw[1]
@@ -382,12 +302,8 @@ class QC_reports:
               else:
                   fname = afile.split("/")[-1][:-4]
               for ifemb in self.fembs:
-                  fp = self.savedir[ifemb] + fdir+"/"
-                  if 'vdac' in fname:
-                      qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-                  else:
-                      qc.GetPeaks(pldata, ifemb, fp, fname)
-          self.Gather_PNG_PDF(fp)
+                  fp = self.savedir[ifemb] + fdir+"/" 
+                  qc.GetPeaks(pldata, ifemb, fp, fname)
 
       def RMS_report(self):
 
@@ -412,7 +328,6 @@ class QC_reports:
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb]+"RMS/"
                   qc.GetRMS(pldata, ifemb, fp, fname)
-          self.Gather_PNG_PDF(fp)
          
       def FE_MON_report(self):
 
@@ -508,19 +423,12 @@ class QC_reports:
           qc=ana_tools()
     
           self.CreateDIR("CALI1")
-          self.CreateDIR("CALI1_DIFF")
-          dac_list = range(0,64,4)
+          dac_list = range(0,64,4) 
           datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1_DIFF/")
 
           datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
@@ -529,34 +437,16 @@ class QC_reports:
           self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1/")
 
           datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1_DIFF/")
-
-          datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1/")
 
           datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1_DIFF/")
-
-          datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1_DIFF/")
 
       def CALI_report_2(self):
 
@@ -570,13 +460,6 @@ class QC_reports:
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2/")
 
-          self.CreateDIR("CALI2_DIFF")
-          datadir = self.datadir+"CALI2/"
-          print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
-          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2_DIFF/")
-
       def CALI_report_3(self):
 
           qc=ana_tools()
@@ -589,13 +472,6 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
           self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3/")
 
-          self.CreateDIR("CALI3_DIFF")
-          datadir = self.datadir+"CALI3/"
-          print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI3_DIFF/", "CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
-          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3_DIFF/")
-          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3_DIFF/")
-
       def CALI_report_4(self):
 
           qc=ana_tools()
@@ -607,13 +483,6 @@ class QC_reports:
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
-
-          self.CreateDIR("CALI4_DIFF")
-          datadir = self.datadir+"CALI4/"
-          print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI4_DIFF/", "CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
-          qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4_DIFF/")
-          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4_DIFF/")
 
 
       def CALI_report_5(self):
@@ -677,14 +546,6 @@ class QC_reports:
                 err_mssg.append("{} baseline chips: {}".format(fname,tmp[1][1]))
 
           return chkflag,err_mssg
-
-      def temp_report(self, test):
-          print(test)
-          if test == 0:
-              datadir = self.datadir
-          else:
-              datadir = "D:\A0-FEMB_test_script_improvement\T3_QC_Performance_TEST\AQC_REPORTS_T3\FEMB65069_RT_150pF_R003"
-          item_report.gather_report(datadir)
 
       def CHK_pwr(self,data,fdir,fname,ifemb):
 
