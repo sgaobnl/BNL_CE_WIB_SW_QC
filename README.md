@@ -48,13 +48,16 @@ The four arguments correspond to the four slots
 #### 3. FEMBs quick checkout
 Generate a report that includes pulse response at 200 mV 14mV/fC 2us, power consumption, and ColdADC monitoring data
 
-Use time master
 ```
-python3 quick_checkout.py <slot lists> save <number of events>
+python3 femb_assembly_chk.py 0 1 2 3 save 5
 ```
-e.g. take data from four fembs and record 10 events
+Data is saved at tmp_data/. Please copy the data to PC and run the following command at the PC:
 ```
-python3 quick_checkout.py 0 1 2 3 save 10
+python3 ana_femb_assembly_chk.py <folder name>
+```
+e.g.
+```
+python3 ana_femb_assembly_chk.py femb0_femb1_femb2_femb3_RT_0pF
 ```
 #### 4. Data taking using PLL timing
 ```
