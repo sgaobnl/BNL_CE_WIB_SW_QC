@@ -384,7 +384,7 @@ class QC_Runs:
          
         ####### 500 pA #######
         self.chk.femb_cd_rst()
-        self.sample_N = 1
+        self.sample_N = 5
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "500pA")
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False) 
 

@@ -5,14 +5,7 @@ import pickle
 import copy
 import os
 import datetime
-from QC_tools import ana_tools
-import QC_check
-import components.assembly_parameter as paras
-import components.assembly_log as log
-import components.assembly_function as a_func
-import numpy as np
 
-qc_tools = ana_tools()
 def CreateFolders(fembNo, env, toytpc):
 
     datadir = "./CHK/"
@@ -20,6 +13,7 @@ def CreateFolders(fembNo, env, toytpc):
         datadir = datadir + "femb{}_".format(femb_no)
 
     datadir = datadir+"{}_{}".format(env,toytpc)
+
     n=1
     while (os.path.exists(datadir)):
         if n==1:
@@ -37,7 +31,6 @@ def CreateFolders(fembNo, env, toytpc):
         sys.exit()
 
     datadir = datadir+"/"
-
 
     return datadir
 
@@ -104,10 +97,15 @@ t1 = time.time()
 ################## Power on FEMBs and check currents ##################
 chk = WIB_CFGS()
 chk.wib_fw()
-para_initial = paras.para(env)
+
+#   parameter hub
+voltage_FE      = 3.0
+voltage_COLDATA = 3.0
+voltage_ColdADC = 3.0
 
 # set FEMB voltages
-chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
+chk.fembs_vol_set(vfe=voltage_FE, vcd=voltage_COLDATA, vadc=voltage_ColdADC)
+
 print("Check FEMB currents")
 
 fembs_remove = []
@@ -115,25 +113,25 @@ for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
     pwr_meas1 = chk.get_sensors()
 
-    bias_i  =   round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)
-    fe_i    =   round(pwr_meas1['FEMB%d_DC2DC0_I'%ifemb],3)
-    cd_i    =   round(pwr_meas1['FEMB%d_DC2DC1_I'%ifemb],3)
-    adc_i   =   round(pwr_meas1['FEMB%d_DC2DC2_I'%ifemb],3)
+    bias_i = round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)
+    fe_i = round(pwr_meas1['FEMB%d_DC2DC0_I'%ifemb],3)
+    cd_i = round(pwr_meas1['FEMB%d_DC2DC1_I'%ifemb],3)
+    adc_i = round(pwr_meas1['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
-    if abs(bias_i)>paras.bias_i_low:
+    if abs(bias_i)>0.15:
        print("ERROR: FEMB{} BIAS current |{}|>0.05A".format(ifemb,bias_i)) 
        hasERROR = True
 
-    if fe_i > paras.fe_i_high or fe_i < paras.fe_i_low:
+    if fe_i>0.6 or fe_i<0.3:
        print("ERROR: FEMB{} LArASIC current {} out of range (0.3A,0.6A)".format(ifemb,fe_i)) 
        hasERROR = True
 
-    if cd_i>paras.cd_i_high  or cd_i<paras.cd_i_low :
+    if cd_i>0.3 or cd_i<0.1:
        print("ERROR: FEMB{} COLDATA current {} out of range (0.1A,0.3A)".format(ifemb,cd_i)) 
        hasERROR = True
 
-    if adc_i>paras.adc_i_high or adc_i<paras.adc_i_low:
+    if adc_i>1.8 or adc_i<1.2:
        print("ERROR: FEMB{} ColdADC current {} out of range (1.2A,1.8A)".format(ifemb,adc_i)) 
        hasERROR = True
 
@@ -245,8 +243,7 @@ if len(fembs) == 0:
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
 
-#   create report dir
-datareport = a_func.CreateFolders(fembs, fembNo, env, toytpc, datadir)
+
 
 ################ Measure RMS at 200mV, 14mV/fC, 2us ###################
 print("Take RMS data")
@@ -256,11 +253,11 @@ sg1 = 0 # 14mV/fC
 st0 = 1
 st1 = 1 # 2us 
 
-# configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
 for i in range(8):
     chk.adcs_paras[i][8]=1   # enable  auto
+
 for femb_id in fembs:
     chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
     adac_pls_en = 0
@@ -268,25 +265,10 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 chk.data_align(fembs)
 time.sleep(1)
-# data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
-# data analysis ========================
-fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
-pldata = qc_tools.data_decode(rms_rawdata, fembs)
-for ifemb in range(len(fembs)):
-    ped,rms=qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-    tmp = QC_check.CHKPulse(ped)
-    log.chkflag["BL"].append(tmp[0])
-    log.badlist["BL"].append(tmp[1])
-
-    tmp = QC_check.CHKPulse(rms)
-    log.chkflag["RMS"].append(tmp[0])
-    log.badlist["RMS"].append(tmp[1])
-#   =====================================
-#   save data
 if save:
-    fp = datadir + fname + ".bin"
+    fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
 
@@ -329,21 +311,25 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump([pwr_meas2, fembs], fn)
 
-
-#   power analysis
-pwr_meas=pwr_meas2
-#for ifemb in fembs:
-for ifemb in range(len(fembs)):
-    fp_pwr = datareport[fembs[ifemb]]+"pwr_meas"
-    qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
-    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb])
-    log.chkflag["PWR"].append(tmp[0])
-    log.badlist["PWR"].append(tmp[1])
-
 ################# monitoring power rails ###################
-
-power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport)
+print ("monitor power rails")
+sps = 10
+vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
+dkeys = list(vold.keys())
+LSB = 2.048/16384
+for fembid in fembs:
+    vgnd = vold["GND"][0][fembid]
+    for key in dkeys:
+        if "GND" in key:
+            print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+        elif "HALF" in key:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+        else:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+if save:
+    fp = datadir + "MON_PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+    with open(fp, 'wb') as fn:
+        pickle.dump([vold, fembs], fn)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
@@ -353,7 +339,6 @@ sg1 = 0 # 14mV/fC
 st0 = 1
 st1 = 1 # 2us 
 
-#   initial configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
 for i in range(8):
@@ -367,33 +352,11 @@ for femb_id in fembs:
 
 chk.data_align(fembs)
 time.sleep(1)
-#   data acquire
+
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
-#   data analysis
-fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
-pldata = qc_tools.data_decode(pls_rawdata, fembs)
-
-for ifemb in range(len(fembs)):
-    ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname, funcfit=False)
-    # outfp = datareport[fembs[ifemb]] + "pulse_{}.bin".format(fname)
-    # with open(outfp, 'wb') as fn:
-    #      pickle.dump([ppk,npk,bl], fn)
-
-    tmp = QC_check.CHKPulse(ppk)
-    log.chkflag["Pulse_SE"]["PPK"].append(tmp[0])
-    log.badlist["Pulse_SE"]["PPK"].append(tmp[1])
-
-    tmp = QC_check.CHKPulse(npk)
-    log.chkflag["Pulse_SE"]["NPK"].append(tmp[0])
-    log.badlist["Pulse_SE"]["NPK"].append(tmp[1])
-
-    tmp = QC_check.CHKPulse(bl)
-    log.chkflag["Pulse_SE"]["BL"].append(tmp[0])
-    log.badlist["Pulse_SE"]["BL"].append(tmp[1])
-
 if save:
-    fp = datadir + fname
+    fp = datadir + "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
@@ -413,75 +376,59 @@ for femb_id in fembs:
 chk.data_align(fembs)
 time.sleep(5)
 
-#   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
-#   data save
+
 if save:
-    fp = datadir + fname + ".bin"
+    fp = datadir + "Raw_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
-#   data analysis
-fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
-pldata = qc_tools.data_decode(pls_rawdata, fembs)
-for ifemb in range(len(fembs)):
-    ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
+print ("monitor power rails")
+sps=10
+vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
+dkeys = list(vold.keys())
+LSB = 2.048/16384
+for fembid in fembs:
+    vgnd = vold["GND"][0][fembid]
+    for key in dkeys:
+        if "GND" in key:
+            print ( key, vold[key][0][fembid], vold[key][0][fembid]*LSB) 
+        elif "HALF" in key:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB*2, "voltage offset caused by power cable is substracted") 
+        else:
+            print ( key, vold[key][0][fembid], (vold[key][0][fembid]-vgnd)*LSB, "voltage offset caused by power cable is substracted") 
+if save:
+    fp = datadir + "MON_PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+    with open(fp, 'wb') as fn:
+        pickle.dump([vold, fembs], fn)
 
-    tmp = QC_check.CHKPulse(ppk)
-    log.chkflag["Pulse_DIFF"]["PPK"].append(tmp[0])
-    log.badlist["Pulse_DIFF"]["PPK"].append(tmp[1])
-
-    tmp = QC_check.CHKPulse(npk)
-    log.chkflag["Pulse_DIFF"]["NPK"].append(tmp[0])
-    log.badlist["Pulse_DIFF"]["NPK"].append(tmp[1])
-
-    tmp = QC_check.CHKPulse(bl)
-    log.chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
-    log.badlist["Pulse_DIFF"]["BL"].append(tmp[1])
-
-######   6   DIFF monitor power rails   ######
-power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport)
-
-
-######  7   Take monitoring data #######
-#   initial ColdADC, COLDATA
+####### Take monitoring data #######
 chk.femb_cd_rst()
-#   data acquisition
-mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
-#   data analysis
-nchips = range(8)
-qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot = True)
+sps=1
+print ("monitor bandgap reference")
+nchips=range(8)
+mon_refs = {}
+for i in nchips:   # 8 chips per femb
+    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
+    mon_refs[f"chip{i}"] = adcrst[7]
 
-for ifemb in range(len(fembs)):
-    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips,env)
-    log.chkflag["MON_T"].append(tmp[0])
-    log.badlist["MON_T"].append(tmp[1])
+print ("monitor temperature")
+mon_temps = {}
+for i in nchips:
+    adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=1, mon_chip=i, snc=snc, sg0=sg0, sg1=sg1, sps=sps)
+    mon_temps[f"chip{i}"] = adcrst[7]
 
-    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips)
-    log.chkflag["MON_BGP"].append(tmp[0])
-    log.badlist["MON_BGP"].append(tmp[1])
+print ("monitor ColdADCs")
+mon_adcs = {}
+for i in nchips:
+    mon_adc =  chk.wib_adc_mon_chip(femb_ids=fembs, mon_chip=i, sps=sps)
+    mon_adcs[f"chip{i}"] = mon_adc
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",900,950)
-    log.chkflag["MON_ADC"]["VCMI"].append(tmp[0])
-    log.badlist["MON_ADC"]["VCMI"].append(tmp[1])
+if save:
+    fp = datadir + "Mon_{}_{}.bin".format("200mVBL","14_0mVfC")
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1200,1250)
-    log.chkflag["MON_ADC"]["VCMO"].append(tmp[0])
-    log.badlist["MON_ADC"]["VCMO"].append(tmp[1])
-
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1900,1950)
-    log.chkflag["MON_ADC"]["VREFP"].append(tmp[0])
-    log.badlist["MON_ADC"]["VREFP"].append(tmp[1])
-
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",460,510)
-    log.chkflag["MON_ADC"]["VREFN"].append(tmp[0])
-    log.badlist["MON_ADC"]["VREFN"].append(tmp[1])
-
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",0,70)
-    log.chkflag["MON_ADC"]["VSSA"].append(tmp[0])
-    log.badlist["MON_ADC"]["VSSA"].append(tmp[1])
-
+    with open(fp, 'wb') as fn:
+        pickle.dump( [mon_refs, mon_temps, mon_adcs, fembs], fn)
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
@@ -489,3 +436,8 @@ chk.femb_powering([])
 t2=time.time()
 print(t2-t1)
 
+print(datadir)
+outfile_tmp = open("./CHK/"+"chk_tmp.txt", "w")
+datadir_name = os.path.basename(os.path.normpath(datadir))
+print(datadir_name)
+outfile_tmp.write(datadir_name)

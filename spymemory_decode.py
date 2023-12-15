@@ -490,157 +490,157 @@ else:
                 frames[femb*2+1] = wib_dec1
         return frames
         
-    def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True): #data from one WIB  
-        spy_num_all = len(data)
-        if spy_num_all < spy_num:
-            spy_num = spy_num_all
-        wibdata = []
-        if fastchk == True:
-            spy_num=1
-    
-        for sn in range(spy_num):
-            tmts = [[],[],[],[],[],[],[],[]]
-            cd_tmts = [[],[],[],[],[],[],[],[]]
-            femb00 = []
-            femb01 = []
-            femb10 = []
-            femb11 = []
-            femb20 = []
-            femb21 = []
-            femb30 = []
-            femb31 = []
-    
-            raw  = data[sn]
-            bufs = raw[0]
-            buf_end_addr = raw[1]
-            spy_rec_ticks = raw[2]
-            trig_cmd      = raw[3]
-            if trig_cmd == 0:
-                trigmode="SW"
-            else:
-                trigmode="HW"
-    
-            dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
-                
-            if fastchk:
-                for fembno in fembs:
-                    if (dec_data[fembno*2] != False) and (dec_data[fembno*2+1] != False) and (dec_data[fembno*2] == dec_data[fembno*2+1]) :
-                    #buf0 and buf1 of the same FEMB has sampe time stamp
-                        return True
-                    else:
-                        print ("Data of FEMB{} is not synchoronized...".format(fembno))
-                        return False
-                        
-            #finessing data into correct format, used to be in rd demo        
-            # tmts = [list(dec_data[b][1]) for b in range(8)]
-            #flen is always going to be 32
-            if 0 in fembs:
-                femb00 = np.transpose(dec_data[0][0])
-                femb01 = np.transpose(dec_data[1][0])
-                tmts[0] = dec_data[0][1]
-                tmts[1] = dec_data[1][1]
-                cd_tmts[0] = dec_data[0][3]
-                cd_tmts[1] = dec_data[1][3]            
-            if 1 in fembs:
-                femb10 = np.transpose(dec_data[2][0])
-                femb11 = np.transpose(dec_data[3][0])  
-                tmts[2] = dec_data[2][1]
-                tmts[3] = dec_data[3][1]   
-                cd_tmts[2] = dec_data[2][3]
-                cd_tmts[3] = dec_data[3][3]               
-            if 2 in fembs:
-                femb20 = np.transpose(dec_data[4][0])
-                femb21 = np.transpose(dec_data[5][0])
-                tmts[4] = dec_data[4][1]
-                tmts[5] = dec_data[5][1]            
-                cd_tmts[4] = dec_data[4][3]
-                cd_tmts[5] = dec_data[5][3]   
-            if 3 in fembs:
-                femb30 = np.transpose(dec_data[6][0])
-                femb31 = np.transpose(dec_data[7][0])            
-                tmts[6] = dec_data[6][1]
-                tmts[7] = dec_data[7][1]
-                cd_tmts[6] = dec_data[6][3]
-                cd_tmts[7] = dec_data[7][3]           
-
-            if cd0cd1sync:
-                t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
-                if 0 in fembs:
-                    t0s[0]=tmts[0][0]
-                    t0s[1]=tmts[1][0]
-                if 1 in fembs:
-                    t0s[2]=tmts[2][0]
-                    t0s[3]=tmts[3][0]
-                if 2 in fembs:
-                    t0s[4]=tmts[4][0]
-                    t0s[5]=tmts[5][0]
-                if 3 in fembs:
-                    t0s[6]=tmts[6][0]
-                    t0s[7]=tmts[7][0]
-    
-                t0max = np.max(t0s)
-                for i in range(8):
-                    if t0s[i] != -1:
-                        t0s[i] = int((t0max - t0s[i])//32)  #0x20
-            else:
-                t0s = [0, 0, 0, 0, 0, 0, 0, 0]
-                t0max = 0        
-
-            if 0 in fembs:
-                for i in range(len(femb00)):
-                    femb00[i]=femb00[i][t0s[0]:]
-                for i in range(len(femb01)):
-                    femb01[i]=femb01[i][t0s[1]:]
-                femb0 = list(femb00) + list(femb01)
-                tmts[0] = tmts[0][t0s[0]:]
-                cd_tmts[0] = cd_tmts[0][t0s[0]:] 
-                tmts[1] = tmts[1][t0s[1]:]
-                cd_tmts[1] = cd_tmts[1][t0s[1]:]            
-
-            else:
-                femb0 = None
-            if 1 in fembs:
-                for i in range(len(femb10)):
-                    femb10[i]=femb10[i][t0s[2]:]
-                for i in range(len(femb11)):
-                    femb11[i]=femb11[i][t0s[3]:]
-                femb1 = list(femb10) + list(femb11)
-                tmts[2] = tmts[2][t0s[2]:]
-                cd_tmts[2] = cd_tmts[2][t0s[2]:] 
-                tmts[3] = tmts[3][t0s[3]:]
-                cd_tmts[3] = cd_tmts[3][t0s[3]:]            
-
-            else:
-                femb1 = None
-            if 2 in fembs:
-                for i in range(len(femb20)):
-                    femb20[i]=femb20[i][t0s[4]:]
-                for i in range(len(femb21)):
-                    femb21[i]=femb21[i][t0s[5]:]
-                femb2 = list(femb20) + list(femb21)
-                tmts[4] = tmts[4][t0s[4]:]
-                cd_tmts[4] = cd_tmts[4][t0s[4]:] 
-                tmts[5] = tmts[5][t0s[5]:]
-                cd_tmts[5] = cd_tmts[5][t0s[5]:]            
-
-            else:
-                femb2 = None
-            if 3 in fembs:
-                for i in range(len(femb30)):
-                    femb30[i]=femb30[i][t0s[6]:]
-                for i in range(len(femb31)):
-                    femb31[i]=femb31[i][t0s[7]:]
-                femb3 = list(femb30) + list(femb31)
-                tmts[6] = tmts[6][t0s[6]:]
-                cd_tmts[6] = cd_tmts[6][t0s[6]:] 
-                tmts[7] = tmts[7][t0s[7]:]
-                cd_tmts[7] = cd_tmts[7][t0s[7]:]            
-
-            else:
-                femb3 = None
-    
-            wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, cd_tmts]) #temp for graphing 
-        return wibdata
+    # def wib_dec(data, fembs=range(4), spy_num= 1, fastchk = False, cd0cd1sync=True): #data from one WIB
+    #     spy_num_all = len(data)
+    #     if spy_num_all < spy_num:
+    #         spy_num = spy_num_all
+    #     wibdata = []
+    #     if fastchk == True:
+    #         spy_num=1
+    #
+    #     for sn in range(spy_num):
+    #         tmts = [[],[],[],[],[],[],[],[]]
+    #         cd_tmts = [[],[],[],[],[],[],[],[]]
+    #         femb00 = []
+    #         femb01 = []
+    #         femb10 = []
+    #         femb11 = []
+    #         femb20 = []
+    #         femb21 = []
+    #         femb30 = []
+    #         femb31 = []
+    #
+    #         raw  = data[sn]
+    #         bufs = raw[0]
+    #         buf_end_addr = raw[1]
+    #         spy_rec_ticks = raw[2]
+    #         trig_cmd      = raw[3]
+    #         if trig_cmd == 0:
+    #             trigmode="SW"
+    #         else:
+    #             trigmode="HW"
+    #
+    #         dec_data = wib_spy_dec_syn(bufs, trigmode, buf_end_addr, spy_rec_ticks, fembs, fastchk)
+    #
+    #         if fastchk:
+    #             for fembno in fembs:
+    #                 if (dec_data[fembno*2] != False) and (dec_data[fembno*2+1] != False) and (dec_data[fembno*2] == dec_data[fembno*2+1]) :
+    #                 #buf0 and buf1 of the same FEMB has sampe time stamp
+    #                     return True
+    #                 else:
+    #                     print ("Data of FEMB{} is not synchoronized...".format(fembno))
+    #                     return False
+    #
+    #         #finessing data into correct format, used to be in rd demo
+    #         # tmts = [list(dec_data[b][1]) for b in range(8)]
+    #         #flen is always going to be 32
+    #         if 0 in fembs:
+    #             femb00 = np.transpose(dec_data[0][0])
+    #             femb01 = np.transpose(dec_data[1][0])
+    #             tmts[0] = dec_data[0][1]
+    #             tmts[1] = dec_data[1][1]
+    #             cd_tmts[0] = dec_data[0][3]
+    #             cd_tmts[1] = dec_data[1][3]
+    #         if 1 in fembs:
+    #             femb10 = np.transpose(dec_data[2][0])
+    #             femb11 = np.transpose(dec_data[3][0])
+    #             tmts[2] = dec_data[2][1]
+    #             tmts[3] = dec_data[3][1]
+    #             cd_tmts[2] = dec_data[2][3]
+    #             cd_tmts[3] = dec_data[3][3]
+    #         if 2 in fembs:
+    #             femb20 = np.transpose(dec_data[4][0])
+    #             femb21 = np.transpose(dec_data[5][0])
+    #             tmts[4] = dec_data[4][1]
+    #             tmts[5] = dec_data[5][1]
+    #             cd_tmts[4] = dec_data[4][3]
+    #             cd_tmts[5] = dec_data[5][3]
+    #         if 3 in fembs:
+    #             femb30 = np.transpose(dec_data[6][0])
+    #             femb31 = np.transpose(dec_data[7][0])
+    #             tmts[6] = dec_data[6][1]
+    #             tmts[7] = dec_data[7][1]
+    #             cd_tmts[6] = dec_data[6][3]
+    #             cd_tmts[7] = dec_data[7][3]
+    #
+    #         if cd0cd1sync:
+    #             t0s = [-1, -1, -1, -1, -1, -1, -1, -1]
+    #             if 0 in fembs:
+    #                 t0s[0]=tmts[0][0]
+    #                 t0s[1]=tmts[1][0]
+    #             if 1 in fembs:
+    #                 t0s[2]=tmts[2][0]
+    #                 t0s[3]=tmts[3][0]
+    #             if 2 in fembs:
+    #                 t0s[4]=tmts[4][0]
+    #                 t0s[5]=tmts[5][0]
+    #             if 3 in fembs:
+    #                 t0s[6]=tmts[6][0]
+    #                 t0s[7]=tmts[7][0]
+    #
+    #             t0max = np.max(t0s)
+    #             for i in range(8):
+    #                 if t0s[i] != -1:
+    #                     t0s[i] = int((t0max - t0s[i])//32)  #0x20
+    #         else:
+    #             t0s = [0, 0, 0, 0, 0, 0, 0, 0]
+    #             t0max = 0
+    #
+    #         if 0 in fembs:
+    #             for i in range(len(femb00)):
+    #                 femb00[i]=femb00[i][t0s[0]:]
+    #             for i in range(len(femb01)):
+    #                 femb01[i]=femb01[i][t0s[1]:]
+    #             femb0 = list(femb00) + list(femb01)
+    #             tmts[0] = tmts[0][t0s[0]:]
+    #             cd_tmts[0] = cd_tmts[0][t0s[0]:]
+    #             tmts[1] = tmts[1][t0s[1]:]
+    #             cd_tmts[1] = cd_tmts[1][t0s[1]:]
+    #
+    #         else:
+    #             femb0 = None
+    #         if 1 in fembs:
+    #             for i in range(len(femb10)):
+    #                 femb10[i]=femb10[i][t0s[2]:]
+    #             for i in range(len(femb11)):
+    #                 femb11[i]=femb11[i][t0s[3]:]
+    #             femb1 = list(femb10) + list(femb11)
+    #             tmts[2] = tmts[2][t0s[2]:]
+    #             cd_tmts[2] = cd_tmts[2][t0s[2]:]
+    #             tmts[3] = tmts[3][t0s[3]:]
+    #             cd_tmts[3] = cd_tmts[3][t0s[3]:]
+    #
+    #         else:
+    #             femb1 = None
+    #         if 2 in fembs:
+    #             for i in range(len(femb20)):
+    #                 femb20[i]=femb20[i][t0s[4]:]
+    #             for i in range(len(femb21)):
+    #                 femb21[i]=femb21[i][t0s[5]:]
+    #             femb2 = list(femb20) + list(femb21)
+    #             tmts[4] = tmts[4][t0s[4]:]
+    #             cd_tmts[4] = cd_tmts[4][t0s[4]:]
+    #             tmts[5] = tmts[5][t0s[5]:]
+    #             cd_tmts[5] = cd_tmts[5][t0s[5]:]
+    #
+    #         else:
+    #             femb2 = None
+    #         if 3 in fembs:
+    #             for i in range(len(femb30)):
+    #                 femb30[i]=femb30[i][t0s[6]:]
+    #             for i in range(len(femb31)):
+    #                 femb31[i]=femb31[i][t0s[7]:]
+    #             femb3 = list(femb30) + list(femb31)
+    #             tmts[6] = tmts[6][t0s[6]:]
+    #             cd_tmts[6] = cd_tmts[6][t0s[6]:]
+    #             tmts[7] = tmts[7][t0s[7]:]
+    #             cd_tmts[7] = cd_tmts[7][t0s[7]:]
+    #
+    #         else:
+    #             femb3 = None
+    #
+    #         wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, cd_tmts]) #temp for graphing
+    #     return wibdata
         
 
 

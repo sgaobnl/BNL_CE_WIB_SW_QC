@@ -68,7 +68,7 @@ for tm in tasks:
        vdac_offset = 0.084
        qc.vgndoft = 1.04 + vdac_offset - 0.8  # to be added later
        qc.vdacmax = 1.04 + vdac_offset
-       qc.femb_CALI_6()  # external calibration 900mV BL
+       qc.femb_CALI_6()  # external calibration 200mV BL
 
     if tm==15:
        qc.femb_adc_sync_pat()

@@ -11,10 +11,11 @@ from fpdf import FPDF
 import matplotlib.pyplot as plt
 import Path as newpath
 
-def CreateFolders(fembs, fembNo, env, toytpc):
+def CreateFolders(fembs, fembNo, env, toytpc, datadir):
 
+    #reportdir = "./CHK/" + datadir + "/"
     reportdir = newpath.report_dir_RTCK + "/"
-    
+
     PLOTDIR = {}
 
     for ifemb in fembs:
@@ -50,11 +51,14 @@ if len(sys.argv) > 2:
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
 fdata = newpath.data_dir_RTCK + datadir+"/"
+#fdata = "./CHK/" + datadir + "/"
+
 #fdata = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
 
 print(fdata)
 
 ###### load logs and create report folder ######
+
 flog = fdata+"logs_env.bin"
 with open(flog, 'rb') as fn:
     evlog = pickle.load(fn)
@@ -85,7 +89,7 @@ with open(frms, 'rb') as fn:
 rmsdata = raw[0]
 fembs = raw[2]
 
-PLOTDIR=CreateFolders(fembs, fembNo, env, toytpc)
+PLOTDIR=CreateFolders(fembs, fembNo, env, toytpc, datadir)
 
 qc_tools = ana_tools()
 
@@ -103,6 +107,8 @@ for ifemb in range(len(fembs)):
     chkflag["RMS"].append(tmp[0])
     badlist["RMS"].append(tmp[1])
 
+
+###### analyze SE pulse Data ######
 fpulse = fdata+"Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin"
 fname = "SE_900mVBL_14_0mVfC_2_0us_0x10"
 with open(fpulse, 'rb') as fn:
@@ -160,6 +166,9 @@ for ifemb in range(len(fembs)):
     tmp = QC_check.CHKPulse(bl)
     chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
     badlist["Pulse_DIFF"]["BL"].append(tmp[1])
+
+
+#   mon analysis
 
 fmon = fdata+"Mon_200mVBL_14_0mVfC.bin"
 with open(fmon, 'rb') as fn:
@@ -262,19 +271,19 @@ for ifemb in range(len(fembs)):
     pdf.set_font('Times', 'B', 20)
     pdf.cell(85)
     pdf.l_margin = pdf.l_margin*2
-    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d'%fembs[ifemb]])), 0)
     pdf.ln(2)
 
     pdf.set_font('Times', '', 12)
-    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0)
     pdf.cell(80)
-    pdf.cell(30, 5, 'Date: {}'.format(date), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Date: {}'.format(date), 0)
 
-    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0)
     pdf.cell(80)
-    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0)
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0)
+    pdf.cell(30, 5, 'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL","14_0mVfC","2_0us","500pA",0x20), 0)
 
     pdf.ln(10)
 
@@ -359,7 +368,7 @@ for ifemb in range(len(fembs)):
     if err_messg:
        pdf.ln(10)
        for istr in err_messg:
-           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0, new_x="LMARGIN", new_y="NEXT")
+           pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0)
  
     pdf.add_page()
 
