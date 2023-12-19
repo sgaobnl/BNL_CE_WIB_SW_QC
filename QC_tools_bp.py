@@ -246,7 +246,7 @@ class ana_tools:
         npk_val=[]
         bl_val=[]
         bl_rms = []
-    #    fig,ax = plt.subplots(1,2,figsize=(12,4))
+        fig,ax = plt.subplots(1,2,figsize=(12,4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -275,20 +275,15 @@ class ana_tools:
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
 
-            data_type = apulse.dtype
             if maxpos>=pulseoffset and maxpos<len(apulse) +pulseoffset -pulrange:
-                plt.subplot(3, 1, 1)
-                plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
-                #baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
-                baseline = np.concatenate((apulse[:maxpos-20], apulse[maxpos+80:len(apulse)]))
+                ax[0].plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
+                baseline = apulse[maxpos-pulseoffset : maxpos-pulseoffset+20]
             if maxpos<pulseoffset:
-                plt.subplot(3, 1, 1)
-                plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
-                baseline = apulse[maxpos+80:maxpos+500-100]
+                ax[0].plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
+                baseline = apulse[maxpos-pulseoffset+380 : maxpos-pulseoffset+380 + 20]
             if maxpos>=len(apulse) +pulseoffset -pulrange:
-                plt.subplot(3, 1, 1)
-                plt.plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
-                baseline = apulse[80:maxpos-20]
+                ax[0].plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
+                baseline = apulse[maxpos - pulseoffset-120 : maxpos - pulseoffset-120 + 20]
 
             bbl_rms = np.std(baseline)
             bbl          = np.mean(baseline)
@@ -311,25 +306,20 @@ class ana_tools:
             bl_rms.append(bbl_rms)
             bl_val.append(bbl)
         
-        # ax[0].set_title(fname)
-        # ax[0].set_xlabel("ticks")
-        # ax[0].set_ylabel("ADC")
-        plt.subplot(3, 1, 2)
-        plt.plot(range(128), ppk_val, marker='.',label='pos')
-        plt.plot(range(128), npk_val, marker='.',label='neg')
-        plt.plot(range(128), bl_val, marker='.',label='ped')
+        ax[0].set_title(fname)
+        ax[0].set_xlabel("ticks")
+        ax[0].set_ylabel("ADC")
 
-        plt.subplot(3, 1, 3)
-        plt.plot(range(128), bl_rms)
-        # plt.set_title(fname)
-        # plt.set_xlabel("chan")
-        # plt.set_ylabel("ADC")
-        # plt.legend()
+        ax[1].plot(range(128), ppk_val, marker='.',label='pos')
+        ax[1].plot(range(128), npk_val, marker='.',label='neg')
+        ax[1].plot(range(128), bl_val, marker='.',label='ped')
+        ax[1].set_title(fname)
+        ax[1].set_xlabel("chan")
+        ax[1].set_ylabel("ADC")
+        ax[1].legend()
         fp_fig = fp+"pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
-
-
-        plt.close()
+        plt.close(fig)
    
         fp_bin = fp+"Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:

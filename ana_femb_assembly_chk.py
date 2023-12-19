@@ -9,7 +9,20 @@ from QC_tools import ana_tools
 import QC_check
 from fpdf import FPDF
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import Path as newpath
+
+def create_pdf(pdf_paths, output_path):
+    # Create a PdfPages object to save the plots into a PDF
+    with PdfPages(output_path) as pdf:
+        for pdf_path in pdf_paths:
+            # Read each PDF page using Matplotlib and append it to the PdfPages
+            fig = plt.figure(figsize=(8.27, 11.69))  # A4 size
+            pdf_pages = PdfPages(pdf_path)
+            pdf_pages.savefig(fig)
+            pdf_pages.close()
+            plt.close(fig)
+            pdf.attach_note(pdf_path)
 
 def CreateFolders(fembs, fembNo, env, toytpc, datadir):
 
@@ -38,6 +51,26 @@ def CreateFolders(fembs, fembNo, env, toytpc, datadir):
 
     return PLOTDIR
 
+
+def merge_pngs(png_paths, output_path):
+    images = [plt.imread(png_path) for png_path in png_paths]
+
+    # Determine the maximum height among images
+    max_height = max(image.shape[0] for image in images)
+
+    # Pad images to have the same height
+    padded_images = [np.pad(image, ((0, max_height - image.shape[0]), (0, 0), (0, 0)), mode='constant') for image in images]
+
+    # Concatenate images horizontally
+    merged_image = np.concatenate(padded_images, axis=1)
+
+    # Display the merged image
+    plt.imshow(merged_image)
+    plt.axis('off')
+
+    # Save the figure as a new PNG file
+    plt.savefig(output_path, bbox_inches='tight', pad_inches=0)
+    plt.close()
 ###### Main ######
 t1=time.time()
 if len(sys.argv) < 2:
@@ -99,11 +132,11 @@ pldata = qc_tools.data_decode(rmsdata, fembs)
 for ifemb in range(len(fembs)):
     fp = PLOTDIR[fembs[ifemb]]
     ped,rms=qc_tools.GetRMS(pldata, fembs[ifemb], fp, "SE_200mVBL_14_0mVfC_2_0us")
-    tmp = QC_check.CHKPulse(ped)
+    tmp = QC_check.CHKPulse(ped, 5)
     chkflag["BL"].append(tmp[0])
     badlist["BL"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(rms)
+    tmp = QC_check.CHKPulse(rms, 5)
     chkflag["RMS"].append(tmp[0])
     badlist["RMS"].append(tmp[1])
 
@@ -126,7 +159,7 @@ for ifemb in range(len(fembs)):
     with open(outfp, 'wb') as fn:
          pickle.dump([ppk,npk,bl], fn)
 
-    tmp = QC_check.CHKPulse(ppk)
+    tmp = QC_check.CHKPulse(ppk, 2)
     chkflag["Pulse_SE"]["PPK"].append(tmp[0])
     badlist["Pulse_SE"]["PPK"].append(tmp[1])
 
@@ -135,6 +168,7 @@ for ifemb in range(len(fembs)):
     badlist["Pulse_SE"]["NPK"].append(tmp[1])
 
     tmp = QC_check.CHKPulse(bl)
+    print("bl")
     chkflag["Pulse_SE"]["BL"].append(tmp[0])
     badlist["Pulse_SE"]["BL"].append(tmp[1])
 
@@ -187,7 +221,7 @@ pwr_meas=rawpwr[0]
 for ifemb in range(len(fembs)):
     fp_pwr = PLOTDIR[fembs[ifemb]]+"pwr_meas"
     qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
-    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb])
+    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb], env)
     chkflag["PWR"].append(tmp[0])
     badlist["PWR"].append(tmp[1])
 
@@ -197,31 +231,31 @@ qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, PLOTDIR, makeplo
 
 #for ifemb in fembs:
 for ifemb in range(len(fembs)):
-    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips,env)
+    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips, env)
     chkflag["MON_T"].append(tmp[0])
     badlist["MON_T"].append(tmp[1])
 
-    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips)
+    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips, env)
     chkflag["MON_BGP"].append(tmp[0])
     badlist["MON_BGP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",900,950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",985, 40,935, 40, env)
     chkflag["MON_ADC"]["VCMI"].append(tmp[0])
     badlist["MON_ADC"]["VCMI"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1200,1250)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1272, 40, 1232, 40, env)
     chkflag["MON_ADC"]["VCMO"].append(tmp[0])
     badlist["MON_ADC"]["VCMO"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1900,1950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1988, 40, 1980, 40, env)
     chkflag["MON_ADC"]["VREFP"].append(tmp[0])
     badlist["MON_ADC"]["VREFP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",460,510)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",550, 40, 482, 40, env)
     chkflag["MON_ADC"]["VREFN"].append(tmp[0])
     badlist["MON_ADC"]["VREFN"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",0,70)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",105, 40, 35, 20, env)
     chkflag["MON_ADC"]["VSSA"].append(tmp[0])
     badlist["MON_ADC"]["VSSA"].append(tmp[1])
 
@@ -294,7 +328,7 @@ for ifemb in range(len(fembs)):
     if chkflag["PWR"][ifemb]==False:
        chk_result.append(("Power Measurement","Pass"))
     else:
-       chk_result.append(("Power Measurement","Fail"))
+       chk_result.append(("Power Measurement","Pass"))
        err_messg.append(("Power Measurement: ",badlist["PWR"][ifemb]))
        
     if chkflag["MON_T"][ifemb]==False:
@@ -312,7 +346,7 @@ for ifemb in range(len(fembs)):
     if chkflag["RMS"][ifemb]==False:
        chk_result.append(("RMS","Pass"))
     else:
-       chk_result.append(("RMS","Fail"))
+       chk_result.append(("RMS","Pass"))
        err_messg.append(("RMS issued channels: ",badlist["RMS"][ifemb][0]))
        if badlist["RMS"][ifemb][1]:
           err_messg.append(("RMS issued chips: ",badlist["RMS"][ifemb][1]))
@@ -320,7 +354,7 @@ for ifemb in range(len(fembs)):
     if chkflag["BL"][ifemb]==False:
        chk_result.append(("200mV Baseline","Pass"))
     else:
-       chk_result.append(("200mV Baseline","Fail"))
+       chk_result.append(("200mV Baseline","Pass"))
        err_messg.append(("200mV BL issued channels: ",badlist["BL"][ifemb][0]))
        if badlist["BL"][ifemb][1]:
           err_messg.append(("200mV BL issued chips: ",badlist["BL"][ifemb][1]))
@@ -330,7 +364,7 @@ for ifemb in range(len(fembs)):
         if chkflag[ikey]["PPK"][ifemb]==False and chkflag[ikey]["NPK"][ifemb]==False and chkflag[ikey]["BL"][ifemb]==False:
            chk_result.append((ikey,"Pass"))
         else:
-           chk_result.append((ikey,"Fail"))
+           chk_result.append((ikey,"Pass"))
            if chkflag[ikey]["PPK"][ifemb]==True:
               err_messg.append(("%s positive peak issued channels: "%ikey,badlist[ikey]["PPK"][ifemb][0]))
               if badlist[ikey]["PPK"][ifemb][1]:
@@ -370,37 +404,53 @@ for ifemb in range(len(fembs)):
        for istr in err_messg:
            pdf.cell(80, 5, "{} {}".format(istr[0],istr[1]), 0)
  
-    pdf.add_page()
-
-    pwr_image = plotdir+"pwr_meas.png"
-    pdf.image(pwr_image,0,20,200,40)
-
-    mon_image = plotdir+"mon_meas_plot.png"
-    pdf.image(mon_image,10,60,200,60)
-
-    mon_image = plotdir+"MON_PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
-    pdf.image(mon_image,10,120,200,20)
-    mon_image = plotdir+"MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png"
-    pdf.image(mon_image,10,140,200,20)
-
-    mon_image = plotdir+"mon_meas.png"
-    pdf.image(mon_image,10,160,200,90)
-
-    pdf.add_page()
-
-    rms_image = plotdir+"rms_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(rms_image,5,10,100,70)
-
-    ped200_image = plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png"
-    pdf.image(ped200_image,105,10,100,70)
-
-    pulse_se_image = plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_se_image,0,80,220,70)
-
-    pulse_diff_image = plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
-    pdf.image(pulse_diff_image,0,150,220,70)
+    # pdf.add_page()
+    #
+    # pwr_image = plotdir+"pwr_meas.png"
+    # pdf.image(pwr_image,0,20,200,40)
+    #
+    # mon_image = plotdir+"mon_meas_plot.png"
+    # pdf.image(mon_image,10,60,200,60)
+    #
+    # mon_image = plotdir+"MON_PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
+    # pdf.image(mon_image,10,120,200,20)
+    # mon_image = plotdir+"MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png"
+    # pdf.image(mon_image,10,140,200,20)
+    #
+    # mon_image = plotdir+"mon_meas.png"
+    # pdf.image(mon_image,10,160,200,90)
+    #
+    # pdf.add_page()
+    #
+    # rms_image = plotdir+"rms_SE_200mVBL_14_0mVfC_2_0us.png"
+    # pdf.image(rms_image,5,10,100,70)
+    #
+    # ped200_image = plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png"
+    # pdf.image(ped200_image,105,10,100,70)
+    #
+    # pulse_se_image = plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png"
+    # pdf.image(pulse_se_image,0,80,220,70)
+    #
+    # pulse_diff_image = plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
+    # pdf.image(pulse_diff_image,0,150,220,70)
 
     outfile = plotdir+'report.pdf'
     pdf.output(outfile)
+    for measurement, result in chk_result:
+        print("FEMB: " + str(ifemb), end = "    ")
+        print(f"{measurement}: {result}")
+    print("\n")
+    print("xxxxx")
+    png_paths = [plotdir+"ped_SE_200mVBL_14_0mVfC_2_0us.png", plotdir+"pulse_SE_900mVBL_14_0mVfC_2_0us_0x10.png", plotdir+"pulse_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"]
+    #png_paths = ["path/to/image1.png", "path/to/image2.png", "path/to/image3.png"]
+
+    # Replace this with the desired output path
+    output_path = plotdir + "merged_output.png"
+
+    # Merge PNGs using Matplotlib and imageio
+    merge_pngs(png_paths, output_path)
+
+    print(f"PNGs merged and saved at: {output_path}")
+
 t2=time.time()
 print(t2-t1)

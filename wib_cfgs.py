@@ -200,10 +200,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.wib_timing(ts_clk_sel=ts_clk_sel, fp1_ptc0_sel=fp1_ptc0_sel, cmd_stamp_sync= cmd_stamp_sync)
 
     def fembs_vol_set(self, vfe=3.0, vcd=3.0, vadc=3.5):
-        #self.femb_power_set(0, 0, vfe, vcd, vadc)
-        #self.femb_power_set(1, 0, vfe, vcd, vadc)
-        #self.femb_power_set(2, 0, vfe, vcd, vadc)
-        #self.femb_power_set(3, 0, vfe, vcd, vadc)
         self.femb_power_config(0,  vfe, vcd, vadc)
         self.femb_power_config(1,  vfe, vcd, vadc)
         self.femb_power_config(2,  vfe, vcd, vadc)

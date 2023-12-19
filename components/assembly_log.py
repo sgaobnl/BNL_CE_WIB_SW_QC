@@ -8,3 +8,4 @@ badlist={"RMS":[],"BL":[],"Pulse_SE":{},"Pulse_DIFF":{},"PWR":[],"MON_T":[],"MON
 badlist["Pulse_SE"]={"PPK":[],"NPK":[],"BL":[]}
 badlist["Pulse_DIFF"]={"PPK":[],"NPK":[],"BL":[]}
 badlist["MON_ADC"]={"VCMI":[],"VCMO":[],"VREFP":[],"VREFN":[],"VSSA":[]}
+

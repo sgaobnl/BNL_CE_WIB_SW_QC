@@ -1,5 +1,5 @@
 import numpy as np
-def CHKPWR(data, nfemb):
+def CHKPWR(data, nfemb, env):
 
     BAD = False  
     bad_list=[]
@@ -30,17 +30,17 @@ def CHKPWR(data, nfemb):
        BAD = True 
        bad_list.append("LArASIC current")
 
-    if cd_v>3 or cd_v<2.95:
+    if cd_v>3 or cd_v<2.90:
        BAD = True 
        bad_list.append("COLDATA voltage")
     if cd_i>0.35 or cd_i<0.15:
        BAD = True 
        bad_list.append("COLDATA current")
 
-    if adc_v>3.5 or adc_v<3.38:
+    if adc_v>3.1 or adc_v<2.90:
        BAD = True 
        bad_list.append("ColdADC voltage")
-    if adc_i>1.85 or adc_i<1.35:
+    if adc_i>1.95 or adc_i<1.35:
        BAD = True 
        bad_list.append("ColdADC current")
 
@@ -53,11 +53,11 @@ def CHKFET(data, nfemb, nchips, env):
     badlist=[]
 
     if env=='RT':
-       lo = 850
-       hi = 950
+       lo = 890
+       hi = 990
 
     if env=='LN':
-       lo = 310
+       lo = 350
        hi = 250
 
     BAD = False
@@ -70,12 +70,17 @@ def CHKFET(data, nfemb, nchips, env):
  
     return BAD,badlist
 
-def CHKFEBGP(data, nfemb, nchips):
+def CHKFEBGP(data, nfemb, nchips, env):
 
     fadc = 1/(2**14)*2048 # mV
 
-    lo = 1100
-    hi = 1300
+    if env=='RT':
+       lo = 1260-50
+       hi = 1260+50
+
+    if env=='LN':
+       lo = 1180-50
+       hi = 1180+50
 
     BAD = False
     badlist=[]
@@ -88,12 +93,20 @@ def CHKFEBGP(data, nfemb, nchips):
  
     return BAD,badlist
 
-def CHKADC(data, nfemb, nchips, key, lo, hi):
+def CHKADC(data, nfemb, nchips, key, rtm, rterrbar, lnm, lnerrbar, env):
 
     fadc = 1/(2**14)*2048 # mV
 
     BAD = False
     badlist=[]
+
+    if env=='RT':
+       lo = rtm-rterrbar
+       hi = rtm+rterrbar
+
+    if env=='LN':
+       lo = lnm-lnerrbar
+       hi = lnm+lnerrbar
 
     for i in nchips: # 8 chips per board
         vcmi = data[f'chip{i}'][key][1][0][nfemb]*fadc
@@ -105,7 +118,8 @@ def CHKADC(data, nfemb, nchips, key, lo, hi):
     return BAD,badlist
 
 
-def CHKPulse(data, errbar=3):  # assume the input is a list
+def CHKPulse(data, errbar=10):  # assume the input is a list
+    print("start check pulse")
     data_np = np.array(data)
     tmp_max = np.max(data_np) 
     tmp_max_pos = np.argmax(data_np) 
@@ -113,17 +127,21 @@ def CHKPulse(data, errbar=3):  # assume the input is a list
     tmp_min_pos = np.argmin(data_np) 
     tmp_data = np.delete(data_np, [tmp_max_pos,tmp_min_pos])
     tmp_mean = np.mean(data_np) 
-    tmp_std = np.std(data_np) 
+    tmp_std = np.std(data_np)
+    print(tmp_mean)
+    print(tmp_std)
 
     flag = False
     bad_chan=[]
     bad_chip=[]
 
     for ch in range(128):
-        if abs(data_np[ch]-tmp_mean)>tmp_std*3:
+        if abs(data_np[ch]-tmp_mean)>tmp_std*errbar:
            flag = True
            bad_chan.append(ch)
            bad_chip.append(ch//16)
+           #
+
 
     return flag,[bad_chan,bad_chip]
        

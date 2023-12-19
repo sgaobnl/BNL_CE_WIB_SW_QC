@@ -46,7 +46,7 @@ if 1:
         for fe_chn in range(16):
     
             fechndata = datd[fe*16+fe_chn]
-            #plt.plot(fechndata)
+            plt.plot(fechndata)
     #        print (np.std(fechndata))
 #            rms.append(np.std(fechndata))
 #            pkp.append(np.max(fechndata))
@@ -54,11 +54,11 @@ if 1:
             if fe==0 and fe_chn==2:
                 print (np.mean(fechndata))
 
-    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
+   # plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #    plt.legend()
 #    plt.grid()
-#    
+    plt.show()
     for i in range(0,128,8):
         plt.vlines(i-0.5, -1, 17000, color='y')
 #
@@ -77,16 +77,16 @@ if 1:
 #    #plt.title("ADC pedestal distribution (bypass SHA) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
-    plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
-#    #plt.ylabel("RMS noise / bit")
-    plt.ylabel("ADC count / bit")
-    plt.ylim((0,17000))
-    plt.xlim((-1,130))
-    plt.xlabel("Channel")
-#    plt.grid()
-    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-    plt.show()
-    plt.close()
+#     plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
+# #    #plt.ylabel("RMS noise / bit")
+#     plt.ylabel("ADC count / bit")
+#     plt.ylim((0,17000))
+#     plt.xlim((-1,130))
+#     plt.xlabel("Channel")
+# #    plt.grid()
+#     plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+#     plt.show()
+#     plt.close()
 
 #    plt.title("ADC test pattern")
 #    #plt.ylabel("RMS noise / bit")

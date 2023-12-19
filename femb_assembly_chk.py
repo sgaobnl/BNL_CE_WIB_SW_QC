@@ -1,48 +1,25 @@
+import PIL
+
 from wib_cfgs import WIB_CFGS
 import time
 import sys
 import pickle
 import copy
-import os
 import datetime
 from QC_tools import ana_tools
 import QC_check
+from fpdf import FPDF
 import components.assembly_parameter as paras
 import components.assembly_log as log
 import components.assembly_function as a_func
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
 qc_tools = ana_tools()
-def CreateFolders(fembNo, env, toytpc):
-
-    datadir = "./CHK/"
-    for key,femb_no in fembNo.items():
-        datadir = datadir + "femb{}_".format(femb_no)
-
-    datadir = datadir+"{}_{}".format(env,toytpc)
-    n=1
-    while (os.path.exists(datadir)):
-        if n==1:
-            datadir = datadir + "_R{:03d}".format(n)
-        else:
-            datadir = datadir[:-3] + "{:03d}".format(n)
-        n=n+1
-        if n>20:
-            raise Exception("There are more than 20 folders...")
-
-    try:
-        os.makedirs(datadir)
-    except OSError:
-        print ("Error to create folder %s"%datadir)
-        sys.exit()
-
-    datadir = datadir+"/"
-
-
-    return datadir
+# Create an array to store the merged image
 
 ####### Input FEMB slots #######
-
 if len(sys.argv) < 2:
     print('Please specify at least one FEMB # to test')
     print('e.g. python3 quick_checkout.py 0')
@@ -61,7 +38,6 @@ else:
     save = False
     sample_N = 1
     fembs = [int(a) for a in sys.argv[1:]]
-
 
 ####### Input test information #######
 if save:
@@ -93,13 +69,15 @@ if save:
     logs['femb id']=fembNo
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
-    datadir=CreateFolders(fembNo, env, toytpc)
+    datadir=a_func.Create_data_folders(fembNo, env, toytpc)
     fp = datadir + "logs_env.bin"
     with open(fp, 'wb') as fn:
         pickle.dump(logs, fn)
 
 outfile = open(datadir+"chk_logs.txt", "w")
 t1 = time.time()
+
+check_item = []
 
 ################## Power on FEMBs and check currents ##################
 chk = WIB_CFGS()
@@ -109,7 +87,25 @@ para_initial = paras.para(env)
 # set FEMB voltages
 chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
 print("Check FEMB currents")
+def merge_pngs(png_paths, output_path):
+    images = [plt.imread(png_path) for png_path in png_paths]
 
+    # Determine the maximum height among images
+    max_height = max(image.shape[0] for image in images)
+
+    # Pad images to have the same height
+    padded_images = [np.pad(image, ((0, max_height - image.shape[0]), (0, 0), (0, 0)), mode='constant') for image in images]
+
+    # Concatenate images horizontally
+    merged_image = np.concatenate(padded_images, axis=1)
+
+    # Display the merged image
+    plt.imshow(merged_image)
+    plt.axis('off')
+
+    # Save the figure as a new PNG file
+    plt.savefig(output_path, bbox_inches='tight', pad_inches=0)
+    plt.close()
 fembs_remove = []
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
@@ -159,21 +155,12 @@ if len(fembs) == 0:
 chk.femb_powering(fembs)
 
 ################# check the default COLDATA and COLDADC register ##################
+a_func.register_check(True, fembs, fembNo, outfile)
 if True:    
     print("Check FEMB registers")
-    chk.femb_cd_rst()
-    chk.femb_cd_rst()
-    time.sleep(0.1)
-    for ifemb in fembs:
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-        time.sleep(0.01)
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-        time.sleep(0.01)
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-    time.sleep(0.1)
+    #   reset 3-ASIC
+    a_func.chip_reset(fembs)
+
     for ifemb in fembs:
         errflag = chk.femb_cd_chkreg(ifemb)
         if errflag:
@@ -191,22 +178,8 @@ if True:
            #fembNo.pop('femb%d'%ifemb)
 
     ################ reset COLDATA, COLDADC and LArASIC ##############
-    print("Reset FEMBs")
-    chk.femb_cd_rst()
-    chk.femb_cd_rst()
-    time.sleep(0.1)
-    for ifemb in fembs:
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-        time.sleep(0.01)
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
-        time.sleep(0.01)
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
-        time.sleep(0.01)
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
-        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
-    
-    time.sleep(0.1)
+    a_func.chip_reset(fembs)
+
     ################ check the default COLDATA and COLDADC register ###########
     print("Check FEMB registers second times")
     for ifemb in fembs:
@@ -246,10 +219,11 @@ if len(fembs) == 0:
 chk.wib_femb_link_en(fembs)
 
 #   create report dir
-datareport = a_func.CreateFolders(fembs, fembNo, env, toytpc, datadir)
+datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
 
 ################ Measure RMS at 200mV, 14mV/fC, 2us ###################
 print("Take RMS data")
+fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
 snc = 1 # 200 mV
 sg0 = 0
 sg1 = 0 # 14mV/fC
@@ -272,15 +246,15 @@ time.sleep(1)
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 # data analysis ========================
-fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
+
 pldata = qc_tools.data_decode(rms_rawdata, fembs)
 for ifemb in range(len(fembs)):
     ped,rms=qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-    tmp = QC_check.CHKPulse(ped)
+    tmp = QC_check.CHKPulse(ped, 5)
     log.chkflag["BL"].append(tmp[0])
     log.badlist["BL"].append(tmp[1])
 
-    tmp = QC_check.CHKPulse(rms)
+    tmp = QC_check.CHKPulse(rms, 5)
     log.chkflag["RMS"].append(tmp[0])
     log.badlist["RMS"].append(tmp[1])
 #   =====================================
@@ -324,6 +298,7 @@ for ifemb in fembs:
        outfile.write("COLDATA current: %f (default range: (0.15A, 0.35A))\n"%cd_i)
        outfile.write("ColdADC current: %f (default range: (1.35A, 1.85A))\n"%adc_i)
 
+#   power data save
 if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
@@ -336,7 +311,7 @@ pwr_meas=pwr_meas2
 for ifemb in range(len(fembs)):
     fp_pwr = datareport[fembs[ifemb]]+"pwr_meas"
     qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
-    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb])
+    tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb], env)
     log.chkflag["PWR"].append(tmp[0])
     log.badlist["PWR"].append(tmp[1])
 
@@ -347,6 +322,7 @@ power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
+fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
 snc = 0 # 900 mV
 sg0 = 0
 sg1 = 0 # 14mV/fC
@@ -371,7 +347,7 @@ time.sleep(1)
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 #   data analysis
-fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
+
 pldata = qc_tools.data_decode(pls_rawdata, fembs)
 
 for ifemb in range(len(fembs)):
@@ -397,8 +373,21 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
+
 ############ Take pulse data 900mV 14mV/fC 2us (DIFF) ##################
+#   take pulse structure:
+#   initial <print note>    <fname>
+#   cd_rst
+#   LArASIC parameter
+#   Coldadc parameter
+#   set fe
+#   femb cfg
+#   data_align
+#   spybuf
+#   save
+#Note: accually, all test actions could have a same general mode and we can just build a mode and reuse it with different items thus it could be concise for us
 print("Take differential pulse data")
+fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
 chk.femb_cd_rst()
 cfg_paras_rec = []
 for i in range(8):
@@ -409,12 +398,12 @@ for femb_id in fembs:
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
-
 chk.data_align(fembs)
 time.sleep(5)
 
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+
 #   data save
 if save:
     fp = datadir + fname + ".bin"
@@ -422,7 +411,7 @@ if save:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
 #   data analysis
-fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
+
 pldata = qc_tools.data_decode(pls_rawdata, fembs)
 for ifemb in range(len(fembs)):
     ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
@@ -443,7 +432,6 @@ for ifemb in range(len(fembs)):
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport)
 
-
 ######  7   Take monitoring data #######
 #   initial ColdADC, COLDATA
 chk.femb_cd_rst()
@@ -454,37 +442,232 @@ nchips = range(8)
 qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot = True)
 
 for ifemb in range(len(fembs)):
-    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips,env)
+    tmp = QC_check.CHKFET(mon_temps,fembs[ifemb],nchips, env)
     log.chkflag["MON_T"].append(tmp[0])
     log.badlist["MON_T"].append(tmp[1])
 
-    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips)
+    tmp = QC_check.CHKFEBGP(mon_refs,fembs[ifemb],nchips, env)
     log.chkflag["MON_BGP"].append(tmp[0])
     log.badlist["MON_BGP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",900,950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMI",985, 40,935, 40, env)
     log.chkflag["MON_ADC"]["VCMI"].append(tmp[0])
     log.badlist["MON_ADC"]["VCMI"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1200,1250)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VCMO",1272, 40, 1232, 40, env)
     log.chkflag["MON_ADC"]["VCMO"].append(tmp[0])
     log.badlist["MON_ADC"]["VCMO"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1900,1950)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFP",1988, 40, 1980, 40, env)
     log.chkflag["MON_ADC"]["VREFP"].append(tmp[0])
     log.badlist["MON_ADC"]["VREFP"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",460,510)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VREFN",550, 40, 482, 40, env)
     log.chkflag["MON_ADC"]["VREFN"].append(tmp[0])
     log.badlist["MON_ADC"]["VREFN"].append(tmp[1])
 
-    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",0,70)
+    tmp = QC_check.CHKADC(mon_adcs,fembs[ifemb],nchips,"VSSA",105, 40, 35, 20, env)
     log.chkflag["MON_ADC"]["VSSA"].append(tmp[0])
     log.badlist["MON_ADC"]["VSSA"].append(tmp[1])
+
 
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])
+
+#   Generate Report
+# a_func.generate_report()
+###### Generate Report ######
+# for ifemb in fembs:
+for ifemb in range(len(fembs)):
+    plotdir = datareport[fembs[ifemb]]
+    ta = time.time()
+    pdf = FPDF(orientation='P', unit='mm', format='Letter')
+    pdf.alias_nb_pages()
+    pdf.add_page()
+    pdf.set_auto_page_break(False, 0)
+    pdf.set_font('Times', 'B', 20)
+    pdf.cell(85)
+    pdf.l_margin = pdf.l_margin * 2
+    pdf.cell(30, 5, 'FEMB#{:04d} Checkout Test Report'.format(int(fembNo['femb%d' % fembs[ifemb]])), 0)
+    pdf.ln(2)
+
+    pdf.set_font('Times', '', 12)
+    pdf.cell(30, 5, 'Tester: {}'.format(tester), 0)
+    pdf.cell(80)
+    # pdf.cell(30, 5, 'Date: {}'.format(date), 0)
+
+    pdf.cell(30, 5, 'Temperature: {}'.format(env), 0)
+    pdf.cell(80)
+    pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(toytpc), 0)
+    pdf.cell(30, 5, 'Note: {}'.format(note[0:80]), 0)
+    pdf.cell(30, 5,
+             'FEMB configuration: {}, {}, {}, {}, DAC=0x{:02x}'.format("200mVBL", "14_0mVfC", "2_0us", "500pA", 0x20),
+             0)
+
+    pdf.ln(10)
+    print("tb", end = " ")
+    tb = time.time()
+    print(tb-ta)
+    chk_result = []
+    err_messg = []
+    chk_result.append(("Measurement", "Result"))
+
+    print("tb", end = " ")
+    tb1 = time.time()
+    print(tb1-tb)
+
+    if log.chkflag["PWR"][ifemb] == False:
+        chk_result.append(("Power Measurement", "Pass"))
+    else:
+        chk_result.append(("Power Measurement", "Fail"))
+        err_messg.append(("Power Measurement: ", log.badlist["PWR"][ifemb]))
+
+    print("tb", end=" ")
+    tb2 = time.time()
+    print(tb2 - tb1)
+
+    if log.chkflag["MON_T"][ifemb] == False:
+        chk_result.append(("Temperature", "Pass"))
+    else:
+        chk_result.append(("Temperature", "Fail"))
+        err_messg.append(("Temperature issued chips: ", log.badlist["MON_T"][ifemb]))
+
+    if log.chkflag["MON_BGP"][ifemb] == False:
+        chk_result.append(("BGP", "Pass"))
+    else:
+        chk_result.append(("BGP", "Fail"))
+        err_messg.append(("BGP issued chips: ", log.badlist["MON_BGP"][ifemb]))
+
+    if log.chkflag["RMS"][ifemb] == False:
+        chk_result.append(("RMS", "Pass"))
+    else:
+        chk_result.append(("RMS", "Fail"))
+        err_messg.append(("RMS issued channels: ", log.badlist["RMS"][ifemb][0]))
+        if log.badlist["RMS"][ifemb][1]:
+            err_messg.append(("RMS issued chips: ", log.badlist["RMS"][ifemb][1]))
+
+    if log.chkflag["BL"][ifemb] == False:
+        chk_result.append(("200mV Baseline", "Pass"))
+    else:
+        chk_result.append(("200mV Baseline", "Fail"))
+        err_messg.append(("200mV BL issued channels: ", log.badlist["BL"][ifemb][0]))
+        if log.badlist["BL"][ifemb][1]:
+            err_messg.append(("200mV BL issued chips: ", log.badlist["BL"][ifemb][1]))
+    print("tc", end=" ")
+    tc = time.time()
+    print(tc-tb2)
+    tmp_key = ["Pulse_SE", "Pulse_DIFF"]
+    for ikey in tmp_key:
+        if log.chkflag[ikey]["PPK"][ifemb] == False and log.chkflag[ikey]["NPK"][ifemb] == False and log.chkflag[ikey]["BL"][
+            ifemb] == False:
+            chk_result.append((ikey, "Pass"))
+        else:
+            chk_result.append((ikey, "Fail"))
+            if log.chkflag[ikey]["PPK"][ifemb] == True:
+                err_messg.append(("%s positive peak issued channels: " % ikey, log.badlist[ikey]["PPK"][ifemb][0]))
+                if log.badlist[ikey]["PPK"][ifemb][1]:
+                    err_messg.append(("%s positive peak issued chips: " % ikey, log.badlist[ikey]["PPK"][ifemb][1]))
+
+            if log.chkflag[ikey]["NPK"][ifemb] == True:
+                err_messg.append(("%s negative peak issued channels: " % ikey, log.badlist[ikey]["NPK"][ifemb][0]))
+                if log.badlist[ikey]["NPK"][ifemb][1]:
+                    err_messg.append(("%s negative peak issued chips: " % ikey, log.badlist[ikey]["NPK"][ifemb][1]))
+
+            if log.chkflag[ikey]["BL"][ifemb] == True:
+                err_messg.append(("%s baseline issued channels: " % ikey, log.badlist[ikey]["BL"][ifemb][0]))
+                if log.badlist[ikey]["BL"][ifemb][1]:
+                    err_messg.append(("%s baseline issued chips: " % ikey, log.badlist[ikey]["BL"][ifemb][1]))
+
+    len1 = len(chk_result)
+    tmpkey = ["VCMI", "VCMO", "VREFP", "VREFN", "VSSA"]
+    for ikey in tmpkey:
+        if log.chkflag["MON_ADC"][ikey][ifemb] == True:
+            len2 = len(chk_result)
+            if len2 == len1:
+                chk_result.append(("ADC Monitoring", "Fail"))
+            err_messg.append(("ADC MON %s issued chips: " % ikey, log.badlist["MON_ADC"][ikey][ifemb]))
+
+    len2 = len(chk_result)
+    if len2 == len1:
+        chk_result.append(("ADC Monitoring", "Pass"))
+
+    # with pdf.table() as table:
+    #     for data_row in chk_result:
+    #         row = table.row()
+    #         for datum in data_row:
+    #             row.cell(datum)
+
+    if err_messg:
+        pdf.ln(10)
+        for istr in err_messg:
+            pdf.cell(80, 5, "{} {}".format(istr[0], istr[1]), 0)
+    td = time.time()
+    print("td", end=" ")
+    print(td-tc)
+
+    pdf.add_page()
+    td1 = time.time()
+    print("td", end=" ")
+    print(td-td1)
+
+    # pwr_image = plotdir + "pwr_meas.png"
+    # pdf.image(pwr_image, 0, 20, 200, 40)
+    #
+    # mon_image = plotdir + "mon_meas_plot.png"
+    # pdf.image(mon_image, 10, 60, 200, 60)
+    #
+    # mon_image = plotdir + "MON_PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
+    # pdf.image(mon_image, 10, 120, 200, 20)
+    # mon_image = plotdir + "MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png"
+    # pdf.image(mon_image, 10, 140, 200, 20)
+    #
+    # mon_image = plotdir + "mon_meas.png"
+    # pdf.image(mon_image, 10, 160, 200, 90)
+    #
+    # pdf.add_page()
+    #
+    # rms_image = plotdir + "rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
+    #
+    # pdf.image(rms_image, 5, 10, 100, 70)
+    #
+    # ped200_image = plotdir + "ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png"
+    # pdf.image(ped200_image, 105, 10, 100, 70)
+    #
+    # pulse_se_image = plotdir + "pulse_Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
+    # pdf.image(pulse_se_image, 0, 80, 220, 70)
+    #
+    # pulse_diff_image = plotdir + "pulse_Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"
+    # pdf.image(pulse_diff_image, 0, 150, 220, 70)
+
+    outfile = plotdir + 'report.pdf'
+    pdf.output(outfile)
+    print("te", end=" ")
+
+    outfile = plotdir+'report.pdf'
+    pdf.output(outfile)
+    for measurement, result in chk_result:
+        print("FEMB: " + str(ifemb), end = "    ")
+        print(f"{measurement}: {result}")
+    print("\n")
+    print("xxxxx")
+    png_paths = [plotdir+"rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png", plotdir+"ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png", plotdir+"pulse_Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png"]
+    #png_paths = ["path/to/image1.png", "path/to/image2.png", "path/to/image3.png"]
+
+    # Replace this with the desired output path
+    output_path = plotdir + "merged_output.png"
+
+    # Merge PNGs using Matplotlib and imageio
+    merge_pngs(png_paths, output_path)
+    te = time.time()
+    print(f"PNGs merged and saved at: {output_path}")
+    print(te-td)
+
+    #print(chk_result)
+    for measurement, result in chk_result:
+        print("FEMB: " + str(ifemb), end = "    ")
+        print(f"{measurement}: {result}")
+    print("\n")
 
 t2=time.time()
 print(t2-t1)

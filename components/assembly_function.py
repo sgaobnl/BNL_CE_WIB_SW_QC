@@ -4,10 +4,39 @@ from wib_cfgs import WIB_CFGS
 import pickle
 from QC_tools import ana_tools
 import numpy as np
+import time
 
 chk = WIB_CFGS()
 qc_tools = ana_tools()
-def CreateFolders(fembs, fembNo, env, toytpc, datadir):
+
+def Create_data_folders(fembNo, env, toytpc):
+
+    datadir = "./CHK/"
+    for key,femb_no in fembNo.items():
+        datadir = datadir + "femb{}_".format(femb_no)
+
+    datadir = datadir+"{}_{}".format(env,toytpc)
+    n=1
+    while (os.path.exists(datadir)):
+        if n==1:
+            datadir = datadir + "_R{:03d}".format(n)
+        else:
+            datadir = datadir[:-3] + "{:03d}".format(n)
+        n=n+1
+        if n>20:
+            raise Exception("There are more than 20 folders...")
+
+    try:
+        os.makedirs(datadir)
+    except OSError:
+        print ("Error to create folder %s"%datadir)
+        sys.exit()
+
+    datadir = datadir+"/"
+
+    return datadir
+
+def Create_report_folders(fembs, fembNo, env, toytpc, datadir):
 
     reportdir = datadir + "report/"
 
@@ -33,8 +62,26 @@ def CreateFolders(fembs, fembNo, env, toytpc, datadir):
 
     return PLOTDIR
 
+def register_check(en, fembs, fembNo, outfile):
+    if en:
+        print("Check FEMB registers")
+        #   reset 3-ASIC
+        for ifemb in fembs:
+            errflag = chk.femb_cd_chkreg(ifemb)
+            if errflag:
+                print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
+                outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d' % ifemb]))
+                # fembs.remove(ifemb)
+                # fembNo.pop('femb%d'%ifemb)
+                continue
 
-def monitor_power_rail(interface, fembs, datadir, save):
+            errflag = chk.femb_adc_chkreg(ifemb)
+            if errflag:
+                print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
+                outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d' % ifemb]))
+                # fembs.remove(ifemb)
+                # fembNo.pop('femb%d'%ifemb)
+def monitor_power_rail(interface, fembs, datadir, save = False):
     sps = 10
     vold = chk.wib_vol_mon(femb_ids=fembs, sps=sps)
     dkeys = list(vold.keys())
@@ -116,3 +163,27 @@ def monitoring_path(fembs, snc, sg0, sg1, datadir, save):
             pickle.dump([mon_refs, mon_temps, mon_adcs, fembs], fn)
 
     return mon_refs, mon_temps, mon_adcs
+
+
+
+
+################ reset COLDATA, COLDADC and LArASIC ##############
+def chip_reset(fembs):
+    print("Reset FEMBs")
+    chk.femb_cd_rst()
+    chk.femb_cd_rst()
+    time.sleep(0.1)
+    for ifemb in fembs:
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_adcs")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasics")
+        time.sleep(0.01)
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+        chk.femb_cd_fc_act(ifemb, act_cmd="rst_larasic_spi")
+
+    time.sleep(0.1)
+
+# def generate_report(fembs, snc, sg0, sg1, datadir, save):
