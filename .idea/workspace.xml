@@ -5,18 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/QC_tools_bp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_function.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_log.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/wib_cfgs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fe_asic_reg_mapping.py" beforeDir="false" afterPath="$PROJECT_DIR$/fe_asic_reg_mapping.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/assembly_parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_parameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rd_demo_raw_hermes.py" beforeDir="false" afterPath="$PROJECT_DIR$/rd_demo_raw_hermes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wib_cfgs.py" beforeDir="false" afterPath="$PROJECT_DIR$/wib_cfgs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/top_femb_powering.py" beforeDir="false" afterPath="$PROJECT_DIR$/top_femb_powering.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +99,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/components/assembly_function.py</url>
-          <line>188</line>
+          <line>194</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

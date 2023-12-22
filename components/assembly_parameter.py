@@ -17,7 +17,7 @@ voltage_ColdADC = 3.0
 if D==0:
     bias_i_low  =   0.15
     fe_i_low    =   0.3
-    fe_i_high   =   0.6
+    fe_i_high   =   0.7
     cd_i_low    =   0.1
     cd_i_high   =   0.3
     adc_i_low   =   1.2

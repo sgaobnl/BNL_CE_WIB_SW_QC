@@ -12,9 +12,7 @@ from fpdf import FPDF
 import components.assembly_parameter as paras
 import components.assembly_log as log
 import components.assembly_function as a_func
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import numpy as np
+import components.assembly_report as a_repo
 
 qc_tools = ana_tools()
 # Create an array to store the merged image
@@ -77,6 +75,9 @@ if save:
 outfile = open(datadir+"chk_logs.txt", "w")
 t1 = time.time()
 
+log.report_log01["ITEM"] = "01 initial information"
+log.report_log01["Detail"] = logs
+
 check_item = []
 
 ################## Power on FEMBs and check currents ##################
@@ -86,31 +87,17 @@ para_initial = paras.para(env)
 
 # set FEMB voltages
 chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
+input("debug set FEMB voltages")
+
+
 print("Check FEMB currents")
-def merge_pngs(png_paths, output_path):
-    images = [plt.imread(png_path) for png_path in png_paths]
-
-    # Determine the maximum height among images
-    max_height = max(image.shape[0] for image in images)
-
-    # Pad images to have the same height
-    padded_images = [np.pad(image, ((0, max_height - image.shape[0]), (0, 0), (0, 0)), mode='constant') for image in images]
-
-    # Concatenate images horizontally
-    merged_image = np.concatenate(padded_images, axis=1)
-
-    # Display the merged image
-    plt.imshow(merged_image)
-    plt.axis('off')
-
-    # Save the figure as a new PNG file
-    plt.savefig(output_path, bbox_inches='tight', pad_inches=0)
-    plt.close()
 fembs_remove = []
+
+log.report_log02["ITEM"] = "02 FEMB current measurement 1"
 for ifemb in fembs:
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     chk.femb_powering_single(ifemb, 'on')
     pwr_meas1 = chk.get_sensors()
-
     bias_i  =   round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)
     fe_i    =   round(pwr_meas1['FEMB%d_DC2DC0_I'%ifemb],3)
     cd_i    =   round(pwr_meas1['FEMB%d_DC2DC1_I'%ifemb],3)
@@ -118,103 +105,107 @@ for ifemb in fembs:
 
     hasERROR = False
     if abs(bias_i)>paras.bias_i_low:
-       print("ERROR: FEMB{} BIAS current |{}|>0.05A".format(ifemb,bias_i)) 
-       hasERROR = True
+        print("ERROR: FEMB{} BIAS current |{}|>0.05A".format(ifemb,bias_i))
+        hasERROR = True
 
     if fe_i > paras.fe_i_high or fe_i < paras.fe_i_low:
-       print("ERROR: FEMB{} LArASIC current {} out of range (0.3A,0.6A)".format(ifemb,fe_i)) 
-       hasERROR = True
+        print("ERROR: FEMB{} LArASIC current {} out of range (0.3A,0.6A)".format(ifemb,fe_i))
+        hasERROR = True
 
     if cd_i>paras.cd_i_high  or cd_i<paras.cd_i_low :
-       print("ERROR: FEMB{} COLDATA current {} out of range (0.1A,0.3A)".format(ifemb,cd_i)) 
-       hasERROR = True
+        print("ERROR: FEMB{} COLDATA current {} out of range (0.1A,0.3A)".format(ifemb,cd_i))
+        hasERROR = True
 
     if adc_i>paras.adc_i_high or adc_i<paras.adc_i_low:
-       print("ERROR: FEMB{} ColdADC current {} out of range (1.2A,1.8A)".format(ifemb,adc_i)) 
-       hasERROR = True
+        print("ERROR: FEMB{} ColdADC current {} out of range (1.2A,1.8A)".format(ifemb,adc_i))
+        hasERROR = True
 
     if hasERROR:
-       print("FEMB ID {} faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f (default range: <0.05A)\n"%bias_i)
-       outfile.write("LArASIC current: %f (default range: (0.3A, 0.6A)) \n"%fe_i)
-       outfile.write("COLDATA current: %f (default range: (0.1A, 0.3A))\n"%cd_i)
-       outfile.write("ColdADC current: %f (default range: (1.2A, 1.9A))\n"%adc_i)
-       #fembs.remove(ifemb)
-       fembs_remove.append(ifemb)
-       fembNo.pop('femb%d'%ifemb)
-       chk.femb_powering_single(ifemb, 'off')
- 
+        print("FEMB ID {} Faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
+        log.report_log02[femb_id]['check_status'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
+        log.report_log02[femb_id]["Result"] = False
+        # fembs.remove(ifemb)
+        fembs_remove.append(ifemb)
+        fembNo.pop('femb%d' % ifemb)
+        chk.femb_powering_single(ifemb, 'off')
+    else:
+        print("FEMB ID {} Pass current check".format(fembNo['femb%d'%ifemb]))
+        log.report_log02[femb_id]['check_status'] = "FEMB Pass current #1 check\n"
+        log.report_log02[femb_id]["Result"] = True
+    log.report_log02[femb_id]["FC1_BIAS_current_1"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
+    log.report_log02[femb_id]["FC1_LArASIC_current_1"] = "LArASIC current: %f (default range: <0.05A)\n" % fe_i
+    log.report_log02[femb_id]["FC1_COLDATA_current_1"] = "COLDATA current: %f (default range: <0.05A)\n" % cd_i
+    log.report_log02[femb_id]["FC1_ColdADC_current_1"] = "ColdADC current: %f (default range: <0.05A)\n" % adc_i
+
 for femb_id in fembs_remove:
     fembs.remove(femb_id)
 
 if len(fembs) == 0:
     print ("All FEMB fail, exit anyway")
     exit()
-       
+input("begin to check femb power")
 chk.femb_powering(fembs)
 
 ################# check the default COLDATA and COLDADC register ##################
-a_func.register_check(True, fembs, fembNo, outfile)
-if True:    
+#   report in log03
+if True:
     print("Check FEMB registers")
+    log.report_log03["ITEM"] = "03 Check FEMB registers"
     #   reset 3-ASIC
     a_func.chip_reset(fembs)
-
-    for ifemb in fembs:
-        errflag = chk.femb_cd_chkreg(ifemb)
-        if errflag:
-           print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d'%ifemb]))
-           outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d'%ifemb]))
-           #fembs.remove(ifemb)
-           #fembNo.pop('femb%d'%ifemb)
-           continue
-    
-        errflag = chk.femb_adc_chkreg(ifemb)
-        if errflag:
-           print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d'%ifemb]))
-           outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d'%ifemb]))
-           #fembs.remove(ifemb)
-           #fembNo.pop('femb%d'%ifemb)
-
+    check1 = a_func.register_check(fembs, fembNo)
+    log.report_log03.update(check1)
     ################ reset COLDATA, COLDADC and LArASIC ##############
     a_func.chip_reset(fembs)
-
     ################ check the default COLDATA and COLDADC register ###########
     print("Check FEMB registers second times")
+    check2 = a_func.register_check(fembs, fembNo)
     for ifemb in fembs:
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+        log.report_log03[femb_id]["state"] ="FEMB_REG_CHK_1 BEGIN"
         errflag = chk.femb_cd_chkreg(ifemb)
         if errflag:
            print("FEMB ID {} faild COLDATA register check 2".format(fembNo['femb%d'%ifemb]))
+           log.report_log03[femb_id]["COLDATA_REG_CHK_2"] =("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d' % ifemb]))
+           log.report_log03[femb_id]["Result01"] = False
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
            strcs = input ("skip this femb? (Y/N)")
            if "Y" in strcs or "y" in strcs:
                pass
            else:
                print ("Exit anyway...")
                exit()
-           outfile.write("FEMB ID {} faild COLDATA register 2 check\n".format(fembNo['femb%d'%ifemb]))
-           fembs.remove(ifemb)
-           fembNo.pop('femb%d'%ifemb)
            continue
-    
+        else:
+            log.report_log03[femb_id]["COLDATA_REG_CHK_2"] = ("FEMB ID {} SUCCESS\n".format(fembNo['femb%d' % ifemb]))
+            log.report_log03[femb_id]["Result01"] = True
+
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
            print("FEMB ID {} faild COLDADC register check 2".format(fembNo['femb%d'%ifemb]))
+           log.report_log03[femb_id]["ColdADC_REG_CHK_2"] = ("FEMB ID {} faild ColdADC register 1 check\n".format(fembNo['femb%d' % ifemb]))
+           log.report_log03[femb_id]["Result02"] = False
+           fembs.remove(ifemb)
+           fembNo.pop('femb%d'%ifemb)
            strcs = input ("skip this femb? (Y/N)")
            if "Y" in strcs or "y" in strcs:
                pass
            else:
                print ("Exit anyway...")
                exit()
+        else:
+            log.report_log03[femb_id]["ColdADC_REG_CHK_2"] = ("FEMB ID {} SUCCESS\n".format(fembNo['femb%d' % ifemb]))
+            log.report_log03[femb_id]["Result02"] = True
 
-           outfile.write("FEMB ID {} faild COLDADC register 2 check\n".format(fembNo['femb%d'%ifemb]))
-           fembs.remove(ifemb)
-           fembNo.pop('femb%d'%ifemb)
-
+        if (log.report_log03[femb_id]["Result01"] == True) and (log.report_log03[femb_id]["Result02"] == True):
+            log.report_log03[femb_id]["Result"] = True
+        else:
+            log.report_log03[femb_id]["Result"] = False
 if len(fembs) == 0:
    print ("All FEMB fail, exit anyway")
    exit()
-   
+
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
 
@@ -222,7 +213,9 @@ chk.wib_femb_link_en(fembs)
 datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
 
 ################ Measure RMS at 200mV, 14mV/fC, 2us ###################
+#   report in log04
 print("Take RMS data")
+log.report_log04["ITEM"] = "04 Measure RMS at 200mV, 14mV/fC, 2us"
 fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
 snc = 1 # 200 mV
 sg0 = 0
@@ -249,14 +242,24 @@ rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 
 pldata = qc_tools.data_decode(rms_rawdata, fembs)
 for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
     ped,rms=qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
     tmp = QC_check.CHKPulse(ped, 5)
     log.chkflag["BL"].append(tmp[0])
     log.badlist["BL"].append(tmp[1])
+    log.report_log04[femb_id]["baseline chk_status"] = tmp[0]
+    log.report_log04[femb_id]["baseline err_status"] = tmp[1]
 
     tmp = QC_check.CHKPulse(rms, 5)
     log.chkflag["RMS"].append(tmp[0])
     log.badlist["RMS"].append(tmp[1])
+    log.report_log04[femb_id]["RMS chk_status"] = tmp[0]
+    log.report_log04[femb_id]["RMS err_status"] = tmp[1]
+
+    if (log.report_log04[femb_id]["baseline chk_status"] == False) and (log.report_log04[femb_id]["RMS chk_status"] == False):
+        log.report_log04[femb_id]["Result"] = True
+    else:
+        log.report_log04[femb_id]["Result"] = False
 #   =====================================
 #   save data
 if save:
@@ -264,10 +267,12 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
 
-################ Measure FEMB current 2 ####################
+################ Measure FEMB currents 2 ####################
 print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
+log.report_log05['ITEM'] = "05 FEMB SE current measurement 2"
 for ifemb in fembs:
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
     fe_i = round(pwr_meas2['FEMB%d_DC2DC0_I'%ifemb],3)
     cd_i = round(pwr_meas2['FEMB%d_DC2DC1_I'%ifemb],3)
@@ -291,12 +296,18 @@ for ifemb in fembs:
        hasERROR = True
 
     if hasERROR:
-       print("FEMB ID {} faild current check 2. But test will continue".format(fembNo['femb%d'%ifemb]))
-       outfile.write("FEMB ID {} faild current #2 check\n".format(fembNo['femb%d'%ifemb]))
-       outfile.write("BIAS current: %f (default range: (-0.02A, 0.05A))\n"%bias_i)
-       outfile.write("LArASIC current: %f (default range: (0.35A, 0.55A))\n"%fe_i)
-       outfile.write("COLDATA current: %f (default range: (0.15A, 0.35A))\n"%cd_i)
-       outfile.write("ColdADC current: %f (default range: (1.35A, 1.85A))\n"%adc_i)
+        print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+        log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
+        log.report_log05[femb_id]["Result"] = False
+    else:
+        print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
+        log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} Pass current #1 check\n".format(fembNo['femb%d' % ifemb])
+        log.report_log05[femb_id]["Result"] = True
+    log.report_log05[femb_id]["FC1_BIAS_current_2"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
+    log.report_log05[femb_id]["FC1_LArASIC_current_2"] = "LArASIC current: %f (default range: <0.05A)\n" % fe_i
+    log.report_log05[femb_id]["FC1_COLDATA_current_2"] = "COLDATA current: %f (default range: <0.05A)\n" % cd_i
+    log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f (default range: <0.05A)\n" % adc_i
+
 
 #   power data save
 if save:
@@ -309,16 +320,21 @@ if save:
 pwr_meas=pwr_meas2
 #for ifemb in fembs:
 for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
     fp_pwr = datareport[fembs[ifemb]]+"pwr_meas"
     qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
     tmp=QC_check.CHKPWR(pwr_meas,fembs[ifemb], env)
     log.chkflag["PWR"].append(tmp[0])
     log.badlist["PWR"].append(tmp[1])
+    log.report_log05[femb_id]["Power check status"] = tmp[0]
+    log.report_log05[femb_id]["Power ERROR status"] = tmp[1]
 
 ################# monitoring power rails ###################
 
+log.report_log06["ITEM"] = "FEMB power rail"
 power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport)
+
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
@@ -328,7 +344,7 @@ sg0 = 0
 sg1 = 0 # 14mV/fC
 st0 = 1
 st1 = 1 # 2us 
-
+log.report_log07["ITEM"] = "single-ended pulse at 900mV 14mV/fC 2us"
 #   initial configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
@@ -340,7 +356,6 @@ for femb_id in fembs:
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
-
 chk.data_align(fembs)
 time.sleep(1)
 #   data acquire
@@ -351,6 +366,7 @@ pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #re
 pldata = qc_tools.data_decode(pls_rawdata, fembs)
 
 for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
     ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname, funcfit=False)
     # outfp = datareport[fembs[ifemb]] + "pulse_{}.bin".format(fname)
     # with open(outfp, 'wb') as fn:
@@ -359,14 +375,20 @@ for ifemb in range(len(fembs)):
     tmp = QC_check.CHKPulse(ppk)
     log.chkflag["Pulse_SE"]["PPK"].append(tmp[0])
     log.badlist["Pulse_SE"]["PPK"].append(tmp[1])
+    log.report_log07[femb_id]["Pulse_SE PPK err_status"] = tmp[1]
+    log.report_log07[femb_id]["Pulse_SE PPK chk_status"] = tmp[0]
 
     tmp = QC_check.CHKPulse(npk)
     log.chkflag["Pulse_SE"]["NPK"].append(tmp[0])
     log.badlist["Pulse_SE"]["NPK"].append(tmp[1])
+    log.report_log07[femb_id]["Pulse_SE NPK err_status"] = tmp[1]
+    log.report_log07[femb_id]["Pulse_SE NPK chk_status"] = tmp[0]
 
     tmp = QC_check.CHKPulse(bl)
     log.chkflag["Pulse_SE"]["BL"].append(tmp[0])
     log.badlist["Pulse_SE"]["BL"].append(tmp[1])
+    log.report_log07[femb_id]["Pulse_SE BL err_status"] = tmp[1]
+    log.report_log07[femb_id]["Pulse_SE BL chk_status"] = tmp[0]
 
 if save:
     fp = datadir + fname
@@ -390,6 +412,7 @@ print("Take differential pulse data")
 fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
 chk.femb_cd_rst()
 cfg_paras_rec = []
+log.report_log08["ITEM"] = "08 Measure differential pulse at 200mV, 14mV/fC, 2us"
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
     chk.adcs_paras[i][8]=1   # enable  auto
@@ -414,19 +437,26 @@ if save:
 
 pldata = qc_tools.data_decode(pls_rawdata, fembs)
 for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
     ppk,npk,bl=qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
 
     tmp = QC_check.CHKPulse(ppk)
     log.chkflag["Pulse_DIFF"]["PPK"].append(tmp[0])
     log.badlist["Pulse_DIFF"]["PPK"].append(tmp[1])
+    log.report_log08[femb_id]["Pulse_DIFF PPK err_status"] = tmp[1]
+    log.report_log08[femb_id]["Pulse_DIFF PPK chk_status"] = tmp[0]
 
     tmp = QC_check.CHKPulse(npk)
     log.chkflag["Pulse_DIFF"]["NPK"].append(tmp[0])
     log.badlist["Pulse_DIFF"]["NPK"].append(tmp[1])
+    log.report_log08[femb_id]["Pulse_DIFF npk err_status"] = tmp[1]
+    log.report_log08[femb_id]["Pulse_DIFF npk chk_status"] = tmp[0]
 
     tmp = QC_check.CHKPulse(bl)
     log.chkflag["Pulse_DIFF"]["BL"].append(tmp[0])
     log.badlist["Pulse_DIFF"]["BL"].append(tmp[1])
+    log.report_log08[femb_id]["Pulse_DIFF bl err_status"] = tmp[1]
+    log.report_log08[femb_id]["Pulse_DIFF bl chk_status"] = tmp[0]
 
 ######   6   DIFF monitor power rails   ######
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
@@ -480,6 +510,8 @@ chk.femb_powering([])
 ###### Generate Report ######
 # for ifemb in fembs:
 for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+
     plotdir = datareport[fembs[ifemb]]
     ta = time.time()
     pdf = FPDF(orientation='P', unit='mm', format='Letter')
@@ -658,7 +690,7 @@ for ifemb in range(len(fembs)):
     output_path = plotdir + "merged_output.png"
 
     # Merge PNGs using Matplotlib and imageio
-    merge_pngs(png_paths, output_path)
+    a_func.merge_pngs(png_paths, output_path)
     te = time.time()
     print(f"PNGs merged and saved at: {output_path}")
     print(te-td)
@@ -669,6 +701,30 @@ for ifemb in range(len(fembs)):
         print(f"{measurement}: {result}")
     print("\n")
 
+    print(log.report_log01["ITEM"])
+    print(log.report_log01["Detail"])
+    print(log.report_log02["ITEM"])
+    print(log.report_log02[femb_id])
+    print(log.report_log03["ITEM"])
+    print(log.report_log03[femb_id])
+    print(log.report_log04["ITEM"])
+    print(log.report_log04[femb_id])
+    print(log.report_log05["ITEM"])
+    print(log.report_log05[femb_id])
+    print(log.report_log06["ITEM"])
+    print(log.report_log06[femb_id])
+    print(log.report_log07["ITEM"])
+    print(log.report_log07[femb_id])
+    print(log.report_log08["ITEM"])
+    print(log.report_log08[femb_id])
+    print(log.report_log09["ITEM"])
+    print(log.report_log09[femb_id])
+
+
+#================   Final Report    ===================================
+a_repo.final_report(fembs, fembNo)
+
 t2=time.time()
 print(t2-t1)
 
+print("\n\n\n\n\n\n")

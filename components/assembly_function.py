@@ -3,8 +3,11 @@ import sys
 from wib_cfgs import WIB_CFGS
 import pickle
 from QC_tools import ana_tools
-import numpy as np
 import time
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
+from collections import defaultdict
 
 chk = WIB_CFGS()
 qc_tools = ana_tools()
@@ -62,25 +65,28 @@ def Create_report_folders(fembs, fembNo, env, toytpc, datadir):
 
     return PLOTDIR
 
-def register_check(en, fembs, fembNo, outfile):
-    if en:
-        print("Check FEMB registers")
-        #   reset 3-ASIC
-        for ifemb in fembs:
-            errflag = chk.femb_cd_chkreg(ifemb)
-            if errflag:
-                print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
-                outfile.write("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d' % ifemb]))
-                # fembs.remove(ifemb)
-                # fembNo.pop('femb%d'%ifemb)
-                continue
+def register_check(fembs, fembNo):
+    print("Check FEMB registers")
+    report_log = defaultdict(dict)
+    #   reset 3-ASIC
+    for ifemb in fembs:
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+        report_log[femb_id]["state"] ="FEMB_REG_CHK_1 BEGIN"
+        errflag = chk.femb_cd_chkreg(ifemb)
+        if errflag:
+            print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
+            report_log[femb_id]["COLDATA_REG_CHK_1"] =("FEMB ID {} faild COLDATA register 1 check\n".format(fembNo['femb%d' % ifemb]))
+            continue
+        else:
+            report_log[femb_id]["COLDATA_REG_CHK_1"] = ("FEMB ID {} SUCCESS\n".format(fembNo['femb%d' % ifemb]))
+        errflag = chk.femb_adc_chkreg(ifemb)
+        if errflag:
+            print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
+            report_log[femb_id]["ColdADC_REG_CHK_1"] = ("FEMB ID {} faild ColdADC register 1 check\n".format(fembNo['femb%d' % ifemb]))
+        else:
+            report_log[femb_id]["ColdADC_REG_CHK_1"] = ("FEMB ID {} SUCCESS\n".format(fembNo['femb%d' % ifemb]))
+    return report_log
 
-            errflag = chk.femb_adc_chkreg(ifemb)
-            if errflag:
-                print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
-                outfile.write("FEMB ID {} faild COLDADC register 1 check\n".format(fembNo['femb%d' % ifemb]))
-                # fembs.remove(ifemb)
-                # fembNo.pop('femb%d'%ifemb)
 def monitor_power_rail(interface, fembs, datadir, save = False):
     sps = 10
     vold = chk.wib_vol_mon(femb_ids=fembs, sps=sps)
@@ -187,3 +193,23 @@ def chip_reset(fembs):
     time.sleep(0.1)
 
 # def generate_report(fembs, snc, sg0, sg1, datadir, save):
+
+def merge_pngs(png_paths, output_path):
+    images = [plt.imread(png_path) for png_path in png_paths]
+
+    # Determine the maximum height among images
+    max_height = max(image.shape[0] for image in images)
+
+    # Pad images to have the same height
+    padded_images = [np.pad(image, ((0, max_height - image.shape[0]), (0, 0), (0, 0)), mode='constant') for image in images]
+
+    # Concatenate images horizontally
+    merged_image = np.concatenate(padded_images, axis=1)
+
+    # Display the merged image
+    plt.imshow(merged_image)
+    plt.axis('off')
+
+    # Save the figure as a new PNG file
+    plt.savefig(output_path, bbox_inches='tight', pad_inches=0)
+    plt.close()

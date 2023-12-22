@@ -40,7 +40,7 @@ if len(fembs) != 0:
 else:
     print (f"Turn All FEMB off")
 #Measure powers on FEMB
-exit()
+# exit()
 time.sleep(2)
 pwr_meas = chk.get_sensors()
 for key in pwr_meas:
