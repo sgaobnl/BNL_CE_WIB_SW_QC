@@ -641,6 +641,8 @@ class DAT_CFGS(WIB_CFGS):
         # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x00)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x00)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
 
     def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
         if (efuseid < 0) :

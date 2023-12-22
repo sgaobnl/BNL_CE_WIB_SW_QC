@@ -82,6 +82,7 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
         
     def spymemory_decode(buf, trigmode="SW", buf_end_addr = 0x0, trigger_rec_ticks=0x7fff, fastchk=False): #change default trigger_rec_ticks?
         PKT_LEN = 899 #in words
+        print (trigger_rec_ticks)
         pkgn =  trigger_rec_ticks//PKT_LEN
     
         if trigmode == "SW" :
