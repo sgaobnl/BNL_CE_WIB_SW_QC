@@ -22,6 +22,7 @@ extern "C" {
 	constexpr size_t CTRL_REGS              = 0xA00C0000;
 	//constexpr size_t DAQ_SPY_0              = 0xA0100000;
 	//constexpr size_t DAQ_SPY_1              = 0xA0200000;
+	constexpr size_t DAQ_HISTOGRAM 				 = 0xA00C8000; /// <- ADC QC firmware																	 
 	constexpr size_t DAQ_SPY_FEMB0_CD0           = 0x440000000; ///new fw, these replace DAQ_SPY_0
 	constexpr size_t DAQ_SPY_FEMB0_CD1           = 0x440100000; ///and DAQ_SPY_1
 	constexpr size_t DAQ_SPY_FEMB1_CD0           = 0x440200000;
@@ -49,6 +50,7 @@ extern "C" {
 	//Size of a DAQ spy buffer
 	//constexpr size_t DAQ_SPY_SIZE           = 0x00100000;
 	constexpr size_t DAQ_SPY_SIZE           	 = 0x40000; ///new fw, replaces old DAQ_SPY_SIZE
+	constexpr size_t HIST_MEM_SIZE				 = 0x8000; /// <- ADC QC firmware																
 
 	////////////FROM FEMB_3ASIC.H:
 

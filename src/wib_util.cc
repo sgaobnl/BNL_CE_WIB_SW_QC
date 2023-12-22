@@ -124,6 +124,7 @@ void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_a
 //HERMES
 void bufread(char* dest, size_t buf_num) { ///FOR NEW FIRMWARE
 	size_t daq_spy_addr;
+	size_t buf_size = DAQ_SPY_SIZE; //default 									   
 	
 	if (buf_num==0) daq_spy_addr = DAQ_SPY_FEMB0_CD0;
 	else if (buf_num==1) daq_spy_addr = DAQ_SPY_FEMB0_CD1;
@@ -133,18 +134,22 @@ void bufread(char* dest, size_t buf_num) { ///FOR NEW FIRMWARE
 	else if (buf_num==5) daq_spy_addr = DAQ_SPY_FEMB2_CD1;
 	else if (buf_num==6) daq_spy_addr = DAQ_SPY_FEMB3_CD0;
 	else if (buf_num==7) daq_spy_addr = DAQ_SPY_FEMB3_CD1;
+	else if (buf_num==8) {
+		daq_spy_addr = DAQ_HISTOGRAM; /// new for ADC QC firmware
+		buf_size = HIST_MEM_SIZE; /// reassign size for histogram option
+	}					   
 	else return;    
 	
 	//see WIB_upgrade::WIB_upgrade		
     int daq_spy_fd = open("/dev/mem",O_RDWR); // File descriptor for the daq spy mapped memory    
-    void *daq_spy = mmap(NULL,DAQ_SPY_SIZE,PROT_READ,MAP_SHARED,daq_spy_fd,daq_spy_addr); // Pointer to the daq spy firmware buffers
+    void *daq_spy = mmap(NULL,buf_size,PROT_READ,MAP_SHARED,daq_spy_fd,daq_spy_addr); // Pointer to the daq spy firmware buffers
 	
 	close(daq_spy_fd); //"After mmap() call has returned, fd can be closed immediately without invalidating the mapping.
 	if (daq_spy == MAP_FAILED) return; //mmap failed
 	
-	memcpy(dest, daq_spy, DAQ_SPY_SIZE);
+	memcpy(dest, daq_spy, buf_size);
 	
-	munmap(daq_spy,DAQ_SPY_SIZE); 
+	munmap(daq_spy,buf_size); 
 }
 
 uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
