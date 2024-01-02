@@ -26,6 +26,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adc_flg=[True, True, True, True]
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
+        self.pll = 0x20
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -256,7 +257,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.all_femb_bias_ctrl(enable=1 )
 
             self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1 )
-            time.sleep(1)
+            time.sleep(0.5)
             print ("FEMB%d is on"%femb_id)
             
             #enable WIB data link
@@ -721,10 +722,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             for adc_no in range(8):
                 c_id    = self.adcs_paras[adc_no][0]
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB2, wrdata=0x20)
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB3, wrdata=0xCD)
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=0xAB)
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=0x34)
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0x12)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB3, wrdata=0xAA)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=0x55)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=0x55)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0xAA)
         self.adc_flg[femb_id]=False
 
     def fembs_fe_cfg(self, fembs):
@@ -1035,6 +1036,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def wib_vol_mon(self, femb_ids, sps=10 ):
         vms = ["CDVDDA", "CDVDDIO_HALF", "ADCRVDDD1P2", "ADCLVDDD1P2", "FERVDDP", "FELVDDP", "ADCRP25V_HALF", "ADCLP25V_HALF", "GND"]
         vols=[0x01, 0x03, 0x09, 0x0b, 0x11, 0x13, 0x19, 0x1b]
+        #   CDVDDA --> 0x01;    CDVDDIO_HALF --> 0x03;  ADCRVDDD1P2 --> 0x09;   ADCLVDDD1P2 --> 0x0b;   FERVDDP --> 0x11;   FELVDDP --> 0x13;   ADCRP25V_HALF --> 0x19; ADCLP25V_HALF --> 0x1b; GND --> 0x00
         vms_dict = {}
         for volcs in range (len(vms)):
             print (f"Monitor Power Rail of {vms[volcs]}")

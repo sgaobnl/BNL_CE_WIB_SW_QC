@@ -5,20 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tmp_data/output.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_report_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report_all.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_runs.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_runs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_top.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_top.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_function.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_log.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/assembly_parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_parameter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/assembly_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/top_femb_powering.py" beforeDir="false" afterPath="$PROJECT_DIR$/top_femb_powering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/quick_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wib_cfgs.py" beforeDir="false" afterPath="$PROJECT_DIR$/wib_cfgs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExportToHTMLSettings">
+    <option name="printScope" value="1" />
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/exportToHTML" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -96,11 +106,6 @@
           <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
           <line>175</line>
           <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/components/assembly_function.py</url>
-          <line>194</line>
-          <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/ana_femb_assembly_chk.py</url>

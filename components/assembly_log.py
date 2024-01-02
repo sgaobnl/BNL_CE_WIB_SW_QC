@@ -22,3 +22,5 @@ report_log09 = defaultdict(dict)
 report_log10 = defaultdict(dict)
 
 final_status = defaultdict(dict)
+
+power_rail_report_log = defaultdict(dict)

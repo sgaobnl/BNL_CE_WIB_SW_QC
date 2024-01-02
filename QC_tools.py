@@ -164,6 +164,7 @@ class ana_tools:
     
         rms=[]
         ped=[]
+        med = []
         rms_max = 0
         rms_min = 1000
         ped_max = 0
@@ -179,7 +180,7 @@ class ana_tools:
             for itr in range(nevent):
                 evtdata = data[itr][nfemb][ich]
                 allpls=np.append(allpls,evtdata)
-    
+
             ch_ped = np.mean(allpls)
             ch_rms = np.std(allpls)
 
@@ -197,8 +198,8 @@ class ana_tools:
                 ped_min = ch_ped
 
 
-        rms_mode = np.mean(rms)
-        ped_mode = np.mean(ped)
+        fe_rms_med = np.median(rms)
+        fe_ped_med = np.median(ped)
 
         fig,ax = plt.subplots(figsize=(6,4))
         ax.plot(range(128), rms, marker='.')
@@ -208,8 +209,8 @@ class ana_tools:
         x_sticks = range(0, 129, 16)
         ax.set_xticks(x_sticks)
         ax.grid(axis='x')
-        if (rms_max < (rms_mode + 5)) and (rms_min > (rms_mode - 5)):
-            ax.set_ylim(rms_mode - 5, rms_mode + 5)
+        if (rms_max < (fe_rms_med + 5)) and (rms_min > (fe_rms_med - 5)):
+            ax.set_ylim(fe_rms_med - 5, fe_rms_med + 5)
         else:
             ax.grid(axis='y')
         fp_fig = fp+"rms_{}.png".format(fname)
@@ -224,8 +225,8 @@ class ana_tools:
         x_sticks = range(0, 129, 16)
         ax.set_xticks(x_sticks)
         ax.grid(axis = 'x')
-        if (ped_max < (ped_mode + 400)) and (ped_min > (ped_mode - 400)):
-            ax.set_ylim(ped_mode - 400, ped_mode + 400)
+        if (ped_max < (fe_ped_med + 500)) and (ped_min > (fe_ped_med - 500)):
+            ax.set_ylim(fe_ped_med - 500, fe_ped_med + 500)
         else:
             ax.grid(axis = 'y')
         fp_fig = fp+"ped_{}.png".format(fname)

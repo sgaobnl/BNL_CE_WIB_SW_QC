@@ -16,6 +16,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 from PIL import Image
+import components.assembly_function as a_func
 
 class QC_reports:
 
@@ -240,6 +241,8 @@ class QC_reports:
           with open(f_pwr, 'rb') as fn:
                pwr_meas = pickle.load(fn)[1]
 
+
+
           f_pl = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
@@ -260,6 +263,10 @@ class QC_reports:
           f_pl = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
+### 09 power rail
+          power_rail_se = a_func.monitor_power_rail_analysis("SE", datadir, fp, ifemb)
+          power_rail_seon = a_func.monitor_power_rail_analysis("SE_on", datadir, fp, ifemb)
+          power_rail_DIFF = a_func.monitor_power_rail_analysis("DIFF", datadir, fp, ifemb)
 
           pldata = qc.data_decode(rawdata, self.fembs)
 
@@ -509,18 +516,18 @@ class QC_reports:
     
           self.CreateDIR("CALI1")
           self.CreateDIR("CALI1_DIFF")
-          dac_list = range(0,64,4)
+          dac_list = range(0,64,1)
           datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1/")
 
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1_DIFF/")
+          # datadir = self.datadir+"CALI1/"
+          # print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+          # self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1_DIFF/")
 
           datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
@@ -528,11 +535,11 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1/")
 
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1_DIFF/")
+          # datadir = self.datadir+"CALI1/"
+          # print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+          # self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1_DIFF/")
 
           datadir = self.datadir+"CALI1/"
           print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
@@ -552,16 +559,16 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
           self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1/")
 
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1_DIFF/")
+          # datadir = self.datadir+"CALI1/"
+          # print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+          # self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1_DIFF/")
 
       def CALI_report_2(self):
 
           qc=ana_tools()
-          dac_list = range(0,64,4) 
+          dac_list = range(0,64,2)
 
           self.CreateDIR("CALI2")
           datadir = self.datadir+"CALI2/"
@@ -580,7 +587,7 @@ class QC_reports:
       def CALI_report_3(self):
 
           qc=ana_tools()
-          dac_list = range(0,32) 
+          dac_list = range(0,64)
 
           self.CreateDIR("CALI3")
           datadir = self.datadir+"CALI3/"
@@ -589,17 +596,17 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
           self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3/")
 
-          self.CreateDIR("CALI3_DIFF")
-          datadir = self.datadir+"CALI3/"
-          print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI3_DIFF/", "CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
-          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3_DIFF/")
-          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3_DIFF/")
+          # self.CreateDIR("CALI3_DIFF")
+          # datadir = self.datadir+"CALI3/"
+          # print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI3_DIFF/", "CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
+          # qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3_DIFF/")
+          # self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 1, "CALI3_DIFF/")
 
       def CALI_report_4(self):
 
           qc=ana_tools()
-          dac_list = range(0,32) 
+          dac_list = range(0,64)
 
           self.CreateDIR("CALI4")
           datadir = self.datadir+"CALI4/"
@@ -608,12 +615,12 @@ class QC_reports:
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
           self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
 
-          self.CreateDIR("CALI4_DIFF")
-          datadir = self.datadir+"CALI4/"
-          print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI4_DIFF/", "CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
-          qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4_DIFF/")
-          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4_DIFF/")
+          # self.CreateDIR("CALI4_DIFF")
+          # datadir = self.datadir+"CALI4/"
+          # print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI4_DIFF/", "CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+          # qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4_DIFF/")
+          # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4_DIFF/")
 
 
       def CALI_report_5(self):
@@ -669,7 +676,37 @@ class QC_reports:
                   else:
                       qc.GetPeaks(pldata, ifemb, fp, fname)
 
+      def PLL_scan_report(self, fdir):
+          self.CreateDIR(fdir)
+          datadir = self.datadir+fdir+"/"
+          qc = ana_tools()
+          files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          for afile in files:
+                with open(afile, 'rb') as fn:
+                    raw = pickle.load(fn)
 
+            # =========== analysis ===================
+                rmsdata = raw[0]
+                fembs = raw[2]
+
+                PLOTDIR=datadir
+                print(PLOTDIR)
+
+
+                qc_tools = ana_tools()
+
+                #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
+                pldata = qc_tools.data_decode(rmsdata, fembs)
+                pldata = np.array(pldata)
+
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+
+                for ifemb in fembs:
+                    fp = PLOTDIR
+                    ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, fname)
 
 
 

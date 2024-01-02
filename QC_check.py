@@ -126,17 +126,20 @@ def CHKPulse(data, errbar=10):  # assume the input is a list
     tmp_min = np.min(data_np) 
     tmp_min_pos = np.argmin(data_np) 
     tmp_data = np.delete(data_np, [tmp_max_pos,tmp_min_pos])
+    tmp_med = np.median(data_np)
     tmp_mean = np.mean(data_np) 
     tmp_std = np.std(data_np)
+    print(tmp_med)
     print(tmp_mean)
+    print("std: ", end = '')
     print(tmp_std)
 
     flag = False
     bad_chan=[]
     bad_chip=[]
-
+#   半高全宽
     for ch in range(128):
-        if abs(data_np[ch]-tmp_mean)>tmp_std*errbar:
+        if abs(data_np[ch]-tmp_med)>tmp_std*errbar:
            flag = True
            bad_chan.append(ch)
            bad_chip.append(ch//16)
