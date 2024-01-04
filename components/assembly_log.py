@@ -10,16 +10,18 @@ badlist["Pulse_SE"]={"PPK":[],"NPK":[],"BL":[]}
 badlist["Pulse_DIFF"]={"PPK":[],"NPK":[],"BL":[]}
 badlist["MON_ADC"]={"VCMI":[],"VCMO":[],"VREFP":[],"VREFN":[],"VSSA":[]}
 
-report_log01 = defaultdict(dict)
-report_log02 = defaultdict(dict)
-report_log03 = defaultdict(dict)
-report_log04 = defaultdict(dict)
-report_log05 = defaultdict(dict)
-report_log06 = defaultdict(dict)
-report_log07 = defaultdict(dict)
-report_log08 = defaultdict(dict)
-report_log09 = defaultdict(dict)
-report_log10 = defaultdict(dict)
+report_log01 = defaultdict(dict)    # input information
+report_log02 = defaultdict(dict)    # initial current measurement
+report_log03 = defaultdict(dict)    # initial registers check
+report_log04 = defaultdict(dict)    # SE mode: rms & ped
+report_log05 = defaultdict(dict)    # SE mode: current measurement
+report_log06 = defaultdict(dict)    # SE mode: power rail
+report_log07 = defaultdict(dict)    # SE mode: pulse response
+report_log08 = defaultdict(dict)    # DIFF mode: pulse, rms, ped
+report_log09 = defaultdict(dict)    # DIFF mode: power rail
+report_log10 = defaultdict(dict)    # DIFF mode: current measurement
+report_log11 = defaultdict(dict)    # Monitor path
+
 
 final_status = defaultdict(dict)
 

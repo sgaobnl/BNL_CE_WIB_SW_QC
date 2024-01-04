@@ -37,7 +37,7 @@ def CHKPWR(data, nfemb, env):
        BAD = True 
        bad_list.append("COLDATA current")
 
-    if adc_v>3.1 or adc_v<2.90:
+    if adc_v>3.1 or adc_v<2.80:
        BAD = True 
        bad_list.append("ColdADC voltage")
     if adc_i>1.95 or adc_i<1.35:
@@ -129,10 +129,6 @@ def CHKPulse(data, errbar=10):  # assume the input is a list
     tmp_med = np.median(data_np)
     tmp_mean = np.mean(data_np) 
     tmp_std = np.std(data_np)
-    print(tmp_med)
-    print(tmp_mean)
-    print("std: ", end = '')
-    print(tmp_std)
 
     flag = False
     bad_chan=[]
@@ -146,7 +142,7 @@ def CHKPulse(data, errbar=10):  # assume the input is a list
            #
 
 
-    return flag,[bad_chan,bad_chip]
+    return flag,[bad_chan,bad_chip], tmp_std
        
 
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):

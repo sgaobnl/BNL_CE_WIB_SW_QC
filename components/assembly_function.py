@@ -75,12 +75,13 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
         errflag = chk.femb_cd_chkreg(ifemb)
+        print(Decision)
         if errflag:
             print("FEMB ID {} faild COLDATA register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
             log.report_log03[femb_id]["COLDATA_REG_CHK_{}".format(times)] =("FEMB ID {} faild COLDATA register 1 check".format(fembNo['femb%d' % ifemb]))
-            log.report_log03[femb_id]["Result"] = False
-            if Decision:
 
+            if Decision:
+                log.report_log03[femb_id]["Result"] = False
                 fembs.remove(ifemb)
                 fembNo.pop('femb%d' % ifemb)
                 strcs = input("skip this femb? (Y/N)")
@@ -93,14 +94,14 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
             continue
         else:
             log.report_log03[femb_id]["COLDATA_REG_CHK_{}".format(times)] = ("FEMB ID {} SUCCESS".format(fembNo['femb%d' % ifemb]))
-            log.report_log03[femb_id]["Result"] = True
+            if Decision:
+                log.report_log03[femb_id]["Result"] = True
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
             print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
             log.report_log03[femb_id]["ColdADC_REG_CHK_{}".format(times)] = ("FEMB ID {} faild ColdADC register 1 check".format(fembNo['femb%d' % ifemb]))
-            log.report_log03[femb_id]["Result"] = False
             if Decision:
-
+                log.report_log03[femb_id]["Result"] = False
                 fembs.remove(ifemb)
                 fembNo.pop('femb%d' % ifemb)
                 strcs = input("skip this femb? (Y/N)")
@@ -112,7 +113,8 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
 
         else:
             log.report_log03[femb_id]["ColdADC_REG_CHK_{}".format(times)] = ("FEMB ID {} SUCCESS".format(fembNo['femb%d' % ifemb]))
-            log.report_log03[femb_id]["Result"] = True
+            if Decision:
+                log.report_log03[femb_id]["Result"] = True
 
 
 def monitor_power_rail(interface, fembs, datadir, save = False):
@@ -169,7 +171,7 @@ def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
         print(log.power_rail_report_log[femb_id])
         log.power_rail_report_log[femb_id]["Result"] = True
 
-    qc_tools.PrintVolMON(vfembs, mvvold, reportdir, fsub)
+    #qc_tools.PrintVolMON(vfembs, mvvold, reportdir, fsub)
 
 ################ reset COLDATA, COLDADC and LArASIC ##############
 def chip_reset(fembs):
@@ -223,18 +225,21 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
         tmp = QC_check.CHKPulse(ped, 5)
         log.chkflag["BL"].append(tmp[0])
         log.badlist["BL"].append(tmp[1])
-        log.report_log04[femb_id]["baseline chk_status"] = tmp[0]
-        log.report_log04[femb_id]["baseline err_status"] = tmp[1]
+        ped_err_flag = tmp[0]
+        baseline_err_status = tmp[1]
+        log.report_log04[femb_id]["PED channel consistency (rms)"] = tmp[2]
 
         tmp = QC_check.CHKPulse(rms, 5)
         log.chkflag["RMS"].append(tmp[0])
         log.badlist["RMS"].append(tmp[1])
-        log.report_log04[femb_id]["RMS chk_status"] = tmp[0]
-        log.report_log04[femb_id]["RMS err_status"] = tmp[1]
-
-        if (log.report_log04[femb_id]["baseline chk_status"] == False) and (log.report_log04[femb_id]["RMS chk_status"] == False):
+        rms_err_flag = tmp[0]
+        rms_err_status = tmp[1]
+        log.report_log04[femb_id]["RMS channel consistency (rms)"] = tmp[2]
+        if (ped_err_flag == False) and (rms_err_flag == False):
             log.report_log04[femb_id]["Result"] = True
         else:
+            log.report_log04[femb_id]["baseline err_status"] = baseline_err_status
+            log.report_log04[femb_id]["RMS err_status"] = rms_err_status
             log.report_log04[femb_id]["Result"] = False
 
 
@@ -243,14 +248,69 @@ def power_ana(fembs, fembNo, datareport, pwr_meas, env):
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         fp_pwr = datareport[fembs[ifemb]] + "pwr_meas"
-        qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
+        #qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
         tmp = QC_check.CHKPWR(pwr_meas, fembs[ifemb], env)
         log.chkflag["PWR"].append(tmp[0])
         log.badlist["PWR"].append(tmp[1])
-        log.report_log05[femb_id]["Power check status"] = tmp[0]
-        log.report_log05[femb_id]["Power ERROR status"] = tmp[1]
 
+        bias_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
+        LArASIC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
+        COLDATA_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
+        ColdADC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
 
+        bias_i = round(pwr_meas['FEMB%d_BIAS_I'%fembs[ifemb]],3)
+        LArASIC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
+        COLDATA_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
+        ColdADC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
+
+        bias_p = round(bias_v * bias_i, 3)
+        LArASIC_p = round(LArASIC_v * LArASIC_i, 3)
+        COLDATA_p = round(COLDATA_v * COLDATA_i, 3)
+        ColdADC_p = round(ColdADC_v * ColdADC_i, 3)
+
+        # the | is used in Markdown table
+        log.report_log05[femb_id]["name"] = "BIAS | LArASIC | ColdDATA | ColdADC"
+        log.report_log05[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3 "
+        log.report_log05[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
+        log.report_log05[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, COLDATA_i, ColdADC_i)
+        log.report_log05[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
+
+        # log.report_log05[femb_id]["Power check status"] = tmp[0]
+        log.report_log05[femb_id]["Power ERROR status"] = "{} (colspan = 4) |||".format(tmp[1])
+
+def power_ana_diff(fembs, fembNo, datareport, pwr_meas, env):
+    for ifemb in range(len(fembs)):
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+        fp_pwr = datareport[fembs[ifemb]] + "pwr_meas"
+        #qc_tools.PrintPWR(pwr_meas, fembs[ifemb], fp_pwr)
+        tmp = QC_check.CHKPWR(pwr_meas, fembs[ifemb], env)
+        log.chkflag["PWR"].append(tmp[0])
+        log.badlist["PWR"].append(tmp[1])
+
+        bias_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
+        LArASIC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
+        COLDATA_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
+        ColdADC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
+
+        bias_i = round(pwr_meas['FEMB%d_BIAS_I'%fembs[ifemb]],3)
+        LArASIC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
+        COLDATA_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
+        ColdADC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
+
+        bias_p = round(bias_v * bias_i, 3)
+        LArASIC_p = round(LArASIC_v * LArASIC_i, 3)
+        COLDATA_p = round(COLDATA_v * COLDATA_i, 3)
+        ColdADC_p = round(ColdADC_v * ColdADC_i, 3)
+
+        # the | is used in Markdown table
+        log.report_log09[femb_id]["name"] = "BIAS | LArASIC | ColdDATA | ColdADC"
+        log.report_log09[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3 "
+        log.report_log09[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
+        log.report_log09[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, COLDATA_i, ColdADC_i)
+        log.report_log09[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
+
+        # log.report_log05[femb_id]["Power check status"] = tmp[0]
+        log.report_log09[femb_id]["Power ERROR status"] = "{} (colspan = 4) |||".format(tmp[1])
 
 #   item07  Single-ended pulse data
 def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
@@ -266,27 +326,26 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
         tmp = QC_check.CHKPulse(ppk)
         log.chkflag["Pulse_SE"]["PPK"].append(tmp[0])
         log.badlist["Pulse_SE"]["PPK"].append(tmp[1])
-        log.report_log07[femb_id]["Pulse_SE PPK chk_status"] = tmp[0]
-        log.report_log07[femb_id]["Pulse_SE PPK err_status"] = tmp[1]
+
 
         tmp = QC_check.CHKPulse(npk)
         log.chkflag["Pulse_SE"]["NPK"].append(tmp[0])
         log.badlist["Pulse_SE"]["NPK"].append(tmp[1])
-        log.report_log07[femb_id]["Pulse_SE NPK chk_status"] = tmp[0]
-        log.report_log07[femb_id]["Pulse_SE NPK err_status"] = tmp[1]
+
 
         tmp = QC_check.CHKPulse(bl)
         log.chkflag["Pulse_SE"]["BL"].append(tmp[0])
         log.badlist["Pulse_SE"]["BL"].append(tmp[1])
-        log.report_log07[femb_id]["Pulse_SE BL chk_status"] = tmp[0]
-        log.report_log07[femb_id]["Pulse_SE BL err_status"] = tmp[1]
 
-        if (log.report_log07[femb_id]["Pulse_SE PPK chk_status"] == False) and (
-                log.report_log07[femb_id]["Pulse_SE NPK chk_status"] == False) and (
-                log.report_log07[femb_id]["Pulse_SE BL chk_status"] == False):
+
+        if (log.chkflag["Pulse_SE"]["PPK"] == False) and log.chkflag["Pulse_SE"]["NPK"] == False and (log.chkflag["Pulse_SE"]["BL"] == False):
             log.report_log07[femb_id]["Result"] = True
         else:
+            log.report_log07[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE"]["PPK"]
+            log.report_log07[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE"]["NPK"]
+            log.report_log07[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE"]["BL"]
             log.report_log07[femb_id]["Result"] = False
+
 
 #   item08  DIFF pulse data
 def DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname):
@@ -355,11 +414,45 @@ def monitoring_path(fembs, snc, sg0, sg1, datadir, save):
 #   Data Analysis
 def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     nchips = range(8)
-    qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
-    log.report_log10["ITEM"] = "10 FEMB monitoring Path"
+    #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
+    log.report_log11["ITEM"] = "11 FEMB monitoring Path"
+    fadc = 1/(2**14)*2048
+    fe_t = []
+    fe_bgp = []
+    vcmi = []
+    vcmo = []
+    vrefp = []
+    vrefn = []
+    vssa = []
+    for nfemb in fembs:
+
+        mon_dic = {'ASIC#': [], 'FE T': [], 'FE BGP': [], 'ADC VCMI': [], 'ADC VCMO': [], 'ADC VREFP': [],
+                   'ADC VREFN': [], 'ADC VSSA': []}
+
+        for i in nchips:  # 8 chips per board
+
+            mon_dic['ASIC#'].append(i)
+            fe_t[i] = round(mon_temps[f'chip{i}'][0][nfemb] * fadc, 1)
+            fe_bgp[i] = round(mon_refs[f'chip{i}'][0][nfemb] * fadc, 1)
+            vcmi[i] = round(mon_adcs[f'chip{i}']["VCMI"][1][0][nfemb] * fadc, 1)
+            vcmo[i] = round(mon_adcs[f'chip{i}']["VCMO"][1][0][nfemb] * fadc, 1)
+            vrefp[i] = round(mon_adcs[f'chip{i}']["VREFP"][1][0][nfemb] * fadc, 1)
+            vrefn[i] = round(mon_adcs[f'chip{i}']["VREFN"][1][0][nfemb] * fadc, 1)
+            vssa[i] = round(mon_adcs[f'chip{i}']["VSSA"][1][0][nfemb] * fadc, 1)
+
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-        log.report_log10[femb_id]["Result"] = False
+        log.report_log11[femb_id]["Result"] = False
+
+        log.report_log11[femb_id]["ASIC #"] = " 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 "
+        log.report_log11[femb_id]["FE T"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_t[0], fe_t[1], fe_t[2], fe_t[3], fe_t[4], fe_t[5], fe_t[6], fe_t[7])
+        log.report_log11[femb_id]["FE BGP"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_bgp[0], fe_bgp[1], fe_bgp[2], fe_bgp[3], fe_bgp[4], fe_bgp[5], fe_bgp[6], fe_bgp[7])
+        log.report_log11[femb_id]["VCMI"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmi[0], vcmi[1], vcmi[2], vcmi[3], vcmi[4], vcmi[5], vcmi[6], vcmi[7])
+        log.report_log11[femb_id]["VCMO"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmo[0], vcmo[1], vcmo[2], vcmo[3], vcmo[4], vcmo[5], vcmo[6], vcmo[7])
+        log.report_log11[femb_id]["VREFP"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefp[0], vrefp[1], vrefp[2], vrefp[3], vrefp[4], vrefp[5], vrefp[6], vrefp[7])
+        log.report_log11[femb_id]["VREFN"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefn[0], vrefn[1], vrefn[2], vrefn[3], vrefn[4], vrefn[5], vrefn[6], vrefn[7])
+        log.report_log11[femb_id]["VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vssa[0], vssa[1], vssa[2], vssa[3], vssa[4], vssa[5], vssa[6], vssa[7])
+
         tmp = QC_check.CHKFET(mon_temps, fembs[ifemb], nchips, env)
         log.chkflag["MON_T"].append(tmp[0])
         log.badlist["MON_T"].append(tmp[1])

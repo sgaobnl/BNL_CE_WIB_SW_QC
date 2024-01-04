@@ -9,8 +9,11 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "VALUE"):
     keys = list(dictionary.keys())
     values = list(dictionary.values())
 
-    # 构建表格头部
-    table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
+    if VALUE == "PWRVALUE":
+        # 构建表格头部
+        table = "| {} | {} |\n| --- | --- | --- | --- | --- |\n".format(KEY, " | | | ")
+    else:
+        table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
 
     # 构建表格内容
     for key, value in zip(keys, values):
@@ -39,10 +42,10 @@ def final_report(datareport, fembs, fembNo):
         log.final_status[femb_id]["item3"] = log.report_log03[femb_id]["Result"]
         log.final_status[femb_id]["item4"] = log.report_log04[femb_id]["Result"]
         log.final_status[femb_id]["item5"] = log.report_log05[femb_id]["Result"]
-        #log.final_status[femb_id]["item5"] = log.report_log06[femb_id]["Result"]
-        log.final_status[femb_id]["item5"] = log.report_log07[femb_id]["Result"]
-        log.final_status[femb_id]["item5"] = log.report_log08[femb_id]["Result"]
-        #log.final_status[femb_id]["item5"] = log.report_log09[femb_id]["Result"]
+        #log.final_status[femb_id]["item6"] = log.report_log06[femb_id]["Result"]
+        log.final_status[femb_id]["item7"] = log.report_log07[femb_id]["Result"]
+        log.final_status[femb_id]["item8"] = log.report_log08[femb_id]["Result"]
+        #log.final_status[femb_id]["item9"] = log.report_log09[femb_id]["Result"]
 
         all_true[femb_id] = all(value for value in log.final_status[femb_id].values())
 
@@ -59,11 +62,11 @@ def final_report(datareport, fembs, fembNo):
         issue_note = ""
         if all_true[femb_id]:
             pass
-            summary = "FEMB ID {}\t PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb])
+            summary = "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb])
             note = "### See the Report"
         else:
             print(femb_id)
-            summary = "femb id {}\t faild\t the assembly checkout".format(fembNo['femb%d' % ifemb])
+            summary = "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb])
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict["ITEM"])
@@ -78,10 +81,12 @@ def final_report(datareport, fembs, fembNo):
         fpmd = datareport[ifemb] + 'report_FEMB_{}.md'.format(fembNo['femb%d' % ifemb])
 
         with open(fpmd, 'w', encoding = "utf-8") as file:
-            file.write('# FINAL REPORT')
+            # file.write('')
             file.write('\n')
             file.write('\n')
             file.write('# ' + summary + '\n')
+            file.write('### ' + "Configuration:" + '\n')
+            file.write('### ' + "    14 mV/fC;   2 us;  200 mV; SE, DIFF;" + '\n')
             file.write('\n')
             file.write('\n')
             file.write(note + '\n')
@@ -96,9 +101,9 @@ def final_report(datareport, fembs, fembNo):
 
 # 02        Print <Initial test Result>
             if (log.report_log02[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
-                Head02 = '## ' + '<span style="color:blue;">' + 'PART 02 Initial Test' + '| Pass' + '</span>'  + '\n'
+                Head02 = '## ' + '<span style="color:blue;">' + 'PART 02 Initial Test' + '    |    < Pass >' + '</span>'  + '\n'
             else:
-                Head02 = '## ' + '<span style="color:red;">' + 'PART 02 Initial Test' + '| Fail' + '</span>' + '\n'
+                Head02 = '## ' + '<span style="color:red;">' + 'PART 02 Initial Test' + ' | Fail' + '</span>' + '\n'
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log02["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log02[femb_id], KEY = "Initial Current Measurement", VALUE = "VALUE")
@@ -107,37 +112,38 @@ def final_report(datareport, fembs, fembNo):
             file.write('#### ' + str(log.report_log03["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log03[femb_id], KEY = "Initial Register Check", VALUE = "VALUE")
             file.write(info + '\n')
-            print(info)
-            input()
 
-            file.write('## ' + str(log.report_log04["ITEM"]) + '\n')
-            file.write('#### ' + 'Result:    ' + str(log.report_log04[femb_id]["Result"]) + '\n\n')
-            for key, value in log.report_log04[femb_id].items():
-                file.write('#### ' + f"{key}: {value}\n")
-            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)")
-            file.write('\n')
+# 03        Print <SE OFF RMS, PED, Pulse, Power Current, Power Rail>
+            file.write('## ' + 'PART 03 SE Pulse Measurement' + '\n')
+            file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
+            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Pulse Measurement", VALUE = "VALUE")
+            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n")
+            file.write(info + '\n')
 
-            file.write('## ' + str(log.report_log05["ITEM"]) + '\n')
-            file.write('#### ' + 'Result:    ' + str(log.report_log05[femb_id]["Result"]) + '\n\n')
-            for key, value in log.report_log05[femb_id].items():
-                file.write('#### ' + f"{key}: {value}\n")
-            file.write('\n')
+            file.write('#### ' + str(log.report_log05["ITEM"]) + '\n')
+            info = dict_to_markdown_table(log.report_log05[femb_id], KEY = "SE Current Measurement", VALUE = "PWRVALUE")
+            file.write(info + '\n')
+
 
             file.write('## ' + str(log.report_log06["ITEM"]) + '\n')
-            file.write('#### ' + 'Result:    ' + str(log.report_log06[femb_id]["Result"]) + '\n\n')
-            for key, value in log.report_log06[femb_id].items():
-                file.write('#### ' + f"{key}: {value}\n")
-            file.write("![ped](./MON_PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.png)")
-            file.write('\n')
+            info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE Power Rail", VALUE = "PRail_VALUE")
+            file.write(info + '\n')
 
 
             file.write('## ' + str(log.report_log07["ITEM"]) + '\n')
-            file.write('#### ' + 'Result:    ' + str(log.report_log07[femb_id]["Result"]) + '\n\n')
-            for key, value in log.report_log07[femb_id].items():
-                file.write('#### ' + f"{key}: {value}\n")
-            file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)")
-            file.write('\n')
+            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "3.4 SE Pulse Response", VALUE = "VALUE")
+            file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n")
+            file.write(info + '\n')
 
+
+
+            # file.write('## ' + str(log.report_log07["ITEM"]) + '\n')
+            # file.write('#### ' + 'Result:    ' + str(log.report_log07[femb_id]["Result"]) + '\n\n')
+            # for key, value in log.report_log07[femb_id].items():
+            #     file.write('#### ' + f"{key}: {value}\n")
+            # file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)")
+            # file.write('\n')
+# 04        Print <DIFF RMS, PED, Pulse, Power Current, Power Rail>
             file.write('## ' + str(log.report_log08["ITEM"]) + '\n')
             file.write('#### ' + 'Result:    ' + str(log.report_log08[femb_id]["Result"]) + '\n\n')
             for key, value in log.report_log08[femb_id].items():

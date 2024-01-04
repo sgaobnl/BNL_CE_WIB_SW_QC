@@ -173,7 +173,6 @@ class ana_tools:
         for ich in range(128):
             global_ch = nfemb*128+ich
             peddata=np.empty(0)
-    
             npulse=0
             first = True
             allpls=np.empty(0)
@@ -232,22 +231,26 @@ class ana_tools:
         fp_fig = fp+"ped_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close(fig)
-    
+
         fp_bin = fp+"RMS_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
              pickle.dump( [ped, rms], fn)
-    
+
         return ped,rms
 
     def GetPeaks(self, data,  nfemb, fp, fname, funcfit=False, shapetime=2, period=500):
-    
+
         nevent = len(data)
-    
+
         ppk_val=[]
         npk_val=[]
         bl_val=[]
         bl_rms = []
-    #    fig,ax = plt.subplots(1,2,figsize=(12,4))
+
+        rms = []
+        ped = []
+
+        # fig,ax = plt.subplots(1,2,figsize=(12,4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -262,12 +265,17 @@ class ana_tools:
             allpls2 = np.zeros(period)
             npulse=0
             hasError=False
+            pulse = []
+            pulse2 = []
+
             for itr in range(nevent):
                 evtdata = np.array(data[itr][nfemb][ich])
                 tstart = data[itr][4]//0x20
                 for tt in range(int(period-(tstart%period)), len(evtdata)-period-offset2-1, period):
                     allpls = allpls + evtdata[tt:tt+period]
+                    pulse.extend(evtdata[tt:tt+period])
                     allpls2 = allpls2 + evtdata[tt + offset2:tt+period + offset2]
+                    pulse2.extend(evtdata[tt + offset2:tt+period + offset2])
                     npulse = npulse+1
 
             apulse = allpls/npulse
@@ -277,61 +285,84 @@ class ana_tools:
             maxpos = np.argmax(apulse)
 
             data_type = apulse.dtype
+            plt.subplot(2, 2, 1)
             if maxpos>=pulseoffset and maxpos<len(apulse) +pulseoffset -pulrange:
-                plt.subplot(3, 1, 1)
+
                 plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
                 #baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
-                baseline = np.concatenate((apulse[:maxpos-20], apulse[maxpos+80:len(apulse)]))
-            if maxpos<pulseoffset:
-                plt.subplot(3, 1, 1)
-                plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
-                baseline = apulse[maxpos+80:maxpos+500-100]
-            if maxpos>=len(apulse) +pulseoffset -pulrange:
-                plt.subplot(3, 1, 1)
-                plt.plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
-                baseline = apulse[80:maxpos-20]
+                baseline = pulse[:maxpos-20]#, evtdata[maxpos+80:len(apulse)], evtdata[period:maxpos-20 + period], evtdata[maxpos+80 + period:len(apulse) + period]))
+                baseline.extend(pulse[maxpos+80:len(apulse)])
+                baseline.extend(pulse[period:maxpos-20 + period])
+                # baseline.extend(pulse[maxpos+80 + period:len(apulse) + period])
 
-            bbl_rms = np.std(baseline)
-            bbl          = np.mean(baseline)
+            if maxpos<pulseoffset:
+                plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
+                baseline = pulse[maxpos+80:maxpos+500-100]# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
+                baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
+                # baseline = evtdata[maxpos+80:maxpos+500-100]# + allpls2[maxpos+80 + period:maxpos+500-100 + period]
+
+            if maxpos>=len(apulse) +pulseoffset -pulrange:
+                plt.plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
+                baseline = pulse[80:maxpos-20]# + evtdata[80 + period + maxpos-20 + period]
+                # baseline.extend(pulse[80 + period + maxpos-20 + period])# + evtdata[80 + period + maxpos-20 + period]
+                # baseline = evtdata[80:maxpos-20]# + allpls2[80 + period + maxpos-20 + period]
+
+            pulse_rms = np.std(baseline)
+            pulse_ped = np.mean(baseline)
 
             if funcfit:
                 popt = FitFunc(apulse, shapetime, makeplot=False)
                 a_xx = np.array(range(20))*0.5
                 a_yy = ResFunc(a_xx, popt[0],popt[1],popt[2],popt[3])
                 pmax = np.amax(a_yy)
-      
-            # if maxpos>100:
-            #     bbl = np.mean(apulse[:maxpos-50])
-            # else:
-            #     bbl = np.mean(apulse[400:])
-          
+
+            if maxpos>100:
+                bbl = np.mean(apulse[:maxpos-50])
+            else:
+                bbl = np.mean(apulse[400:])
+
             pmin = np.amin(apulse)
 
             ppk_val.append(pmax)
             npk_val.append(pmin)
-            bl_rms.append(bbl_rms)
+            # bl_rms.append(bbl_rms)
             bl_val.append(bbl)
-        
-        # ax[0].set_title(fname)
-        # ax[0].set_xlabel("ticks")
-        # ax[0].set_ylabel("ADC")
-        plt.subplot(3, 1, 2)
+
+            rms.append(pulse_rms)
+            ped.append(pulse_ped)
+
+        plt.title("Pulse")
+        plt.xlabel("ticks")
+        plt.ylabel("ADC")
+        plt.legend()
+
+        plt.subplot(2 ,2, 2)
         plt.plot(range(128), ppk_val, marker='.',label='pos')
         plt.plot(range(128), npk_val, marker='.',label='neg')
         plt.plot(range(128), bl_val, marker='.',label='ped')
 
-        plt.subplot(3, 1, 3)
-        plt.plot(range(128), bl_rms)
-        # plt.set_title(fname)
-        # plt.set_xlabel("chan")
-        # plt.set_ylabel("ADC")
-        # plt.legend()
+        #pl1.plot(range(128), bl_rms)
+        plt.title("ppk,bbl, npk")
+        plt.xlabel("chan")
+        plt.ylabel("ADC")
+        plt.legend()
+
+        plt.subplot(2, 2, 3)
+        plt.plot(range(128), ped, marker='.',label='Pedestal')
+        plt.title("PED")
+        plt.xlabel("chan")
+        plt.ylabel("ped")
+
+        plt.subplot(2, 2, 4)
+        plt.plot(range(128), rms, marker='.',label='RMS')
+        plt.title("RMS")
+        plt.xlabel("chan")
+        plt.ylabel("RMS")
+
         fp_fig = fp+"pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
-
-
         plt.close()
-   
+
         fp_bin = fp+"Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
              pickle.dump([ppk_val,npk_val,bl_val], fn) 

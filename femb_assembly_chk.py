@@ -173,7 +173,7 @@ datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
 ################ 04 Measure RMS at 200mV, 14mV/fC, 2us ###################
 #   report in log04
 print("Take RMS data")
-log.report_log04["ITEM"] = "04 Measure RMS at 200mV, 14mV/fC, 2us"
+log.report_log04["ITEM"] = "3.1 Measure RMS at 200mV, 14mV/fC, 2us"
 fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
 snc = 1 # 200 mV
 sg0 = 0
@@ -208,7 +208,7 @@ if save:
 ################ Measure FEMB currents 2 ####################
 print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
-log.report_log05['ITEM'] = "05 FEMB SE current measurement 2"
+log.report_log05['ITEM'] = "3.2 SE Current Measurement"   #05
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
@@ -236,15 +236,15 @@ for ifemb in fembs:
     if hasERROR:
         print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
         log.report_log05[femb_id]["Result"] = False
-        log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
+        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
     else:
         print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
         log.report_log05[femb_id]["Result"] = True
-        log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} Pass current #1 check\n".format(fembNo['femb%d' % ifemb])
-    log.report_log05[femb_id]["FC1_BIAS_current_2"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
-    log.report_log05[femb_id]["FC1_LArASIC_current_2"] = "LArASIC current: %f (default range: <0.05A)\n" % fe_i
-    log.report_log05[femb_id]["FC1_COLDATA_current_2"] = "COLDATA current: %f (default range: <0.05A)\n" % cd_i
-    log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f (default range: <0.05A)\n" % adc_i
+        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} Pass current #1 check\n".format(fembNo['femb%d' % ifemb])
+    # log.report_log05[femb_id]["FC1_BIAS_current_2"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
+    # log.report_log05[femb_id]["FC1_LArASIC_current_2"] = "LArASIC current: %f  (default range: (0.35A, 0.55A))\n" % fe_i
+    # log.report_log05[femb_id]["FC1_COLDATA_current_2"] = "COLDATA current: %f  (default range: (0.15A, 0.35A))\n" % cd_i
+    # log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f  (default range: (1.35A, 1.85A))\n" % adc_i
 
 
 #   power data save
@@ -313,7 +313,7 @@ print("Take differential pulse data")
 fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
 chk.femb_cd_rst()
 cfg_paras_rec = []
-log.report_log08["ITEM"] = "08 Measure differential pulse at 200mV, 14mV/fC, 2us"
+log.report_log08["ITEM"] = "4.1 Measure differential pulse at 200mV, 14mV/fC, 2us"
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
     chk.adcs_paras[i][8]=1   # enable  auto
@@ -337,11 +337,63 @@ if save:
 #   data analysis
 a_func.DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname)
 
+
+#####   6   current measure #####
+print("Check DIFF current")
+pwr_meas3 = chk.get_sensors()
+log.report_log09['ITEM'] = "4.2 SE Current Measurement"   #05
+for ifemb in fembs:
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+    bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)
+    fe_i = round(pwr_meas2['FEMB%d_DC2DC0_I'%ifemb],3)
+    cd_i = round(pwr_meas2['FEMB%d_DC2DC1_I'%ifemb],3)
+    adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
+
+    hasERROR = False
+    if bias_i>0.15 or bias_i<-0.02:
+       print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i))
+       hasERROR = True
+
+    if fe_i>0.55 or fe_i<0.35:
+       print("ERROR: FEMB{} LArASIC current {} out of range (0.35A,0.55A)".format(ifemb,fe_i))
+       hasERROR = True
+
+    if cd_i>0.35 or cd_i<0.15:
+       print("ERROR: FEMB{} COLDATA current {} out of range (0.15A,0.35A)".format(ifemb,cd_i))
+       hasERROR = True
+
+    if adc_i>1.85 or adc_i<1.35:
+       print("ERROR: FEMB{} ColdADC current {} out of range (1.35A,1.85A)".format(ifemb,adc_i))
+       hasERROR = True
+
+    if hasERROR:
+        print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
+        log.report_log09[femb_id]["Result"] = False
+        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
+    else:
+        print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
+        log.report_log09[femb_id]["Result"] = True
+
+#   power data save
+if save:
+    fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
+    with open(fp, 'wb') as fn:
+        pickle.dump([pwr_meas3, fembs], fn)
+
+
+#   power analysis
+pwr_meas=pwr_meas3
+a_func.power_ana_diff(fembs, fembNo, datareport, pwr_meas, env)
+
+
+
 ######   6   DIFF monitor power rails   ######
-log.report_log09["ITEM"] = "09 FEMB power rail"
+log.report_log10["ITEM"] = "4.3 FEMB power rail"
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport, fembNo)
-log.report_log09.update(log.power_rail_report_log)
+log.report_log10.update(log.power_rail_report_log)
+
+
 
 ######  7   Take monitoring data #######
 #   initial ColdADC, COLDATA
