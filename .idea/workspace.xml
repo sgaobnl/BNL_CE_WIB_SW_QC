@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_function.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/assembly_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_log.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/assembly_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quick_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
