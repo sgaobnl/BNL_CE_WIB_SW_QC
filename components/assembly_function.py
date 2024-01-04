@@ -424,23 +424,18 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     vrefp = []
     vrefn = []
     vssa = []
-    for nfemb in fembs:
-
-        mon_dic = {'ASIC#': [], 'FE T': [], 'FE BGP': [], 'ADC VCMI': [], 'ADC VCMO': [], 'ADC VREFP': [],
-                   'ADC VREFN': [], 'ADC VSSA': []}
+    for ifemb in fembs:
 
         for i in nchips:  # 8 chips per board
+            fe_t[i] = round(mon_temps[f'chip{i}'][0][ifemb] * fadc, 1)
+            fe_bgp[i] = round(mon_refs[f'chip{i}'][0][ifemb] * fadc, 1)
+            vcmi[i] = round(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc, 1)
+            vcmo[i] = round(mon_adcs[f'chip{i}']["VCMO"][1][0][ifemb] * fadc, 1)
+            vrefp[i] = round(mon_adcs[f'chip{i}']["VREFP"][1][0][ifemb] * fadc, 1)
+            vrefn[i] = round(mon_adcs[f'chip{i}']["VREFN"][1][0][ifemb] * fadc, 1)
+            vssa[i] = round(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc, 1)
 
-            mon_dic['ASIC#'].append(i)
-            fe_t[i] = round(mon_temps[f'chip{i}'][0][nfemb] * fadc, 1)
-            fe_bgp[i] = round(mon_refs[f'chip{i}'][0][nfemb] * fadc, 1)
-            vcmi[i] = round(mon_adcs[f'chip{i}']["VCMI"][1][0][nfemb] * fadc, 1)
-            vcmo[i] = round(mon_adcs[f'chip{i}']["VCMO"][1][0][nfemb] * fadc, 1)
-            vrefp[i] = round(mon_adcs[f'chip{i}']["VREFP"][1][0][nfemb] * fadc, 1)
-            vrefn[i] = round(mon_adcs[f'chip{i}']["VREFN"][1][0][nfemb] * fadc, 1)
-            vssa[i] = round(mon_adcs[f'chip{i}']["VSSA"][1][0][nfemb] * fadc, 1)
-
-    for ifemb in range(len(fembs)):
+    # for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         log.report_log11[femb_id]["Result"] = False
 

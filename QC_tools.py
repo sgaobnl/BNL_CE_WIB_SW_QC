@@ -291,14 +291,14 @@ class ana_tools:
                 plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
                 #baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
                 baseline = pulse[:maxpos-20]#, evtdata[maxpos+80:len(apulse)], evtdata[period:maxpos-20 + period], evtdata[maxpos+80 + period:len(apulse) + period]))
-                baseline.extend(pulse[maxpos+80:len(apulse)])
-                baseline.extend(pulse[period:maxpos-20 + period])
+                # baseline.extend(pulse[maxpos+80:len(apulse)])
+                # baseline.extend(pulse[period:maxpos-20 + period])
                 # baseline.extend(pulse[maxpos+80 + period:len(apulse) + period])
 
             if maxpos<pulseoffset:
                 plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
                 baseline = pulse[maxpos+80:maxpos+500-100]# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
-                baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
+                # baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
                 # baseline = evtdata[maxpos+80:maxpos+500-100]# + allpls2[maxpos+80 + period:maxpos+500-100 + period]
 
             if maxpos>=len(apulse) +pulseoffset -pulrange:
