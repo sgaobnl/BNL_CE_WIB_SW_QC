@@ -16,9 +16,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 from PIL import Image
-import components.assembly_function as a_func
+import QC_components.qc_a_function as a_func
+import QC_components.qc_log as log
+import QC_components.All_Report as a_repo
 
 class QC_reports:
+
 
       def __init__(self, fdir, fembs=[]):
 
@@ -32,9 +35,9 @@ class QC_reports:
           fp = self.datadir+"logs_env.bin"
           with open(fp, 'rb') as fn:
                logs = pickle.load(fn)
-         
+          log.report_log00 = dict(logs)
           logs["datadir"]=self.datadir
-          self.logs=logs
+          self.logs= logs
 
           self.fembsID={}
 
@@ -231,73 +234,75 @@ class QC_reports:
           # pdf.output(outfile, "F")
          
       def PWR_consumption_report(self):
-          
+          qc = ana_tools()
           self.CreateDIR("PWR_Meas")
           datadir = self.datadir+"PWR_Meas/"
 
-          qc=ana_tools()
+#     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
 
+#     SE Power Measurement      Power
           f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
-               pwr_meas = pickle.load(fn)[1]
+              pwr_meas = pickle.load(fn)[1]
+          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
+          log.report_log01_11.update(se_pwr)
 
-
-
+#     SE Pulse Measurement      Pulse
           f_pl = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
-
           pldata = qc.data_decode(rawdata, self.fembs)
+          se_pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_200mVBL_14_0mVfC_2_0us"))
+          log.report_log01_12.update(se_pulse)
 
-          for ifemb in self.fembs:
-              fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_SE_200mVBL_14_0mVfC_2_0us_pwr_meas"
-              qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
+#     SE Power Rail             Rail
+          power_rail_se = dict(a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID))
+          log.report_log01_13.update(power_rail_se)
 
-              fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_200mVBL_14_0mVfC_2_0us")
 
-          f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-          with open(f_pwr, 'rb') as fn:
-               pwr_meas = pickle.load(fn)[1]
 
-          f_pl = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
-          with open(f_pl, 'rb') as fn:
-               rawdata = pickle.load(fn)[0]
-### 09 power rail
-          power_rail_se = a_func.monitor_power_rail_analysis("SE", datadir, fp, ifemb)
-          power_rail_seon = a_func.monitor_power_rail_analysis("SE_on", datadir, fp, ifemb)
-          power_rail_DIFF = a_func.monitor_power_rail_analysis("DIFF", datadir, fp, ifemb)
-
-          pldata = qc.data_decode(rawdata, self.fembs)
-
-          for ifemb in self.fembs:
-              fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
-              qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
-
-              fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
-
+#     SEDC Power Measurement    Power
           f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
                pwr_meas = pickle.load(fn)[1]
+          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
+          log.report_log01_21.update(se_pwr)
 
+#     SEDC Pulse Measurement      Pulse
           f_pl = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
+          pldata = qc.data_decode(rawdata, self.fembs)
+          se_pulse = dict(
+              a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us"))
+          log.report_log01_22.update(se_pulse)
 
-          pldata= qc.data_decode(rawdata, self.fembs)
+#     SE Power Rail             Rail
+          power_rail_seon = a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID)
+          log.report_log01_23.update(power_rail_se)
 
-          for ifemb in self.fembs:
-              fp_pwr = self.savedir[ifemb] + "PWR_Meas/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
-              qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
 
-              fp = self.savedir[ifemb] + "PWR_Meas/"
-              qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
 
-          for ifemb in self.fembs:
-              fdir = self.savedir[ifemb] + "PWR_Meas/"
-              fembid = int(self.fembsID[f'femb{ifemb}'])
-              self.GEN_PWR_PDF(fdir, fembid)
+#     DIFF Power Measurement    Power
+          f_pwr = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+          with open(f_pwr, 'rb') as fn:
+              pwr_meas = pickle.load(fn)[1]
+          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
+          log.report_log01_31.update(se_pwr)
+
+#     DIFF Pulse Measurement      Pulse
+          f_pl = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+          with open(f_pl, 'rb') as fn:
+              rawdata = pickle.load(fn)[0]
+          pldata = qc.data_decode(rawdata, self.fembs)
+          diff_pulse = dict(
+              a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us"))
+          log.report_log01_32.update(diff_pulse)
+
+#     DIFF Power Rail
+          power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID)
+          log.report_log01_33.update(power_rail_diff)
+
 
       def PWR_cycle_report(self):
 
@@ -367,18 +372,19 @@ class QC_reports:
               fembid = int(self.fembsID[f'femb{ifemb}'])
               self.GEN_PWR_PDF(fdir, fembid)
 
-      def CHKPULSE(self, fdir):
+#     03 04    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
+      def LCCHKPULSE(self, fdir):
 
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
-
+          log_dict = log.report_log3
           qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          i = 0
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
               #print("analyze file: %s"%afile)
-
               rawdata = raw[0]
               pwr_meas = raw[1]
 
@@ -388,13 +394,59 @@ class QC_reports:
                   fname = afile.split("\\")[-1][:-4]
               else:
                   fname = afile.split("/")[-1][:-4]
-              for ifemb in self.fembs:
-                  fp = self.savedir[ifemb] + fdir+"/"
-                  if 'vdac' in fname:
-                      qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-                  else:
-                      qc.GetPeaks(pldata, ifemb, fp, fname)
-          self.Gather_PNG_PDF(fp)
+              # for ifemb in self.fembs:
+              #     fp = self.savedir[ifemb] + fdir+"/"
+              #     if 'vdac' in fname:
+              #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+              #     else:
+              #         qc.GetPeaks(pldata, ifemb, fp, fname)
+
+              #====
+              pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
+              log_dict[i].update(pulse)
+              i = i + 1
+          #self.Gather_PNG_PDF(fp)
+
+
+# 04 pulse check
+      def CHKPULSE(self, fdir):
+
+          self.CreateDIR(fdir)
+          datadir = self.datadir+fdir+"/"
+          if fdir == "Leakage_Current":
+                log_dict = log.report_log3
+          # else:
+          #       log_dict = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
+
+          qc=ana_tools()
+          files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          i = 0
+          for afile in files:
+              with open(afile, 'rb') as fn:
+                   raw = pickle.load(fn)
+              #print("analyze file: %s"%afile)
+              rawdata = raw[0]
+              pwr_meas = raw[1]
+
+              pldata = qc.data_decode(rawdata, self.fembs)
+
+              if '\\' in afile:
+                  fname = afile.split("\\")[-1][:-4]
+              else:
+                  fname = afile.split("/")[-1][:-4]
+              # for ifemb in self.fembs:
+              #     fp = self.savedir[ifemb] + fdir+"/"
+              #     if 'vdac' in fname:
+              #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+              #     else:
+              #         qc.GetPeaks(pldata, ifemb, fp, fname)
+
+              #====
+              pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
+              log_dict[i].update(pulse)
+              i = i + 1
+          #self.Gather_PNG_PDF(fp)
+          a_repo.final_report(self.savedir, self.fembs, self.fembsID)
 
       def RMS_report(self):
 
@@ -439,12 +491,22 @@ class QC_reports:
           mon_900bls_sdf0=raw[5]
 
           qc=ana_tools()
-          qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap")
-          qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature")
-          qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1")
-          qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0")
-          qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1")
-          qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0")
+          bandgap = qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap", self.fembsID)
+          log.report_log10_01.update(bandgap)
+          temp = qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature", self.fembsID)
+          log.report_log10_02.update(temp)
+          sdf1_200 = qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1", self.fembsID)
+          log.report_log10_03.update(sdf1_200)
+          sdf0_200 = qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0", self.fembsID)
+          log.report_log10_04.update(sdf0_200)
+          sdf1_900 = qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1", self.fembsID)
+          log.report_log10_05.update(sdf1_900)
+          sdf1_900 = qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0", self.fembsID)
+          log.report_log10_06.update(sdf1_900)
+
+
+      def report(self):
+          a_repo.final_report(self.savedir, self.fembs, self.fembsID)
 
       def FE_DAC_MON_report(self):
 
@@ -457,15 +519,24 @@ class QC_reports:
           print("analyze file: %s"%fp)
 
           mon_sgp1=raw[0]
+          # print(mon_sgp1)
           mon_14mVfC=raw[1]
           mon_7_8mVfC=raw[2]
           mon_25mVfC=raw[3]
 
-          qc=ana_tools()
-          qc.PlotMonDAC(self.fembs, mon_sgp1, self.savedir, "MON_FE", "LArASIC_DAC_sgp1")
-          qc.PlotMonDAC(self.fembs, mon_14mVfC, self.savedir, "MON_FE", "LArASIC_DAC_14mVfC")
-          qc.PlotMonDAC(self.fembs, mon_7_8mVfC, self.savedir, "MON_FE", "LArASIC_DAC_7_8mVfC")
-          qc.PlotMonDAC(self.fembs, mon_25mVfC, self.savedir, "MON_FE", "LArASIC_DAC_25mVfC")
+          #mon_dict = {'dict1' : mon_sgp1}
+
+          mon_dict = {'LArASIC_DAC_sgp1': mon_sgp1, 'LArASIC_DAC_14mVfC': mon_14mVfC, 'LArASIC_DAC_7_8mVfC': mon_7_8mVfC, 'LArASIC_DAC_25mVfC': mon_25mVfC}
+          qc = ana_tools()
+          #qc.plotDACMon(self.fembs, mon_dic, self.savedir, "MON_FE", "LArASIC_DAC_sgp1")
+          #
+          chip_inl = qc.PlotMonDAC(self.fembs, mon_dict, self.savedir, "MON_FE", self.fembsID)
+          log.report_log11_01.update(chip_inl)
+          print(log.report_log11_01)
+
+          # qc.PlotMonDAC(self.fembs, mon_14mVfC, self.savedir, "MON_FE", "LArASIC_DAC_14mVfC")
+          # qc.PlotMonDAC(self.fembs, mon_7_8mVfC, self.savedir, "MON_FE", "LArASIC_DAC_7_8mVfC")
+          # qc.PlotMonDAC(self.fembs, mon_25mVfC, self.savedir, "MON_FE", "LArASIC_DAC_25mVfC")
 
       def ColdADC_DAC_MON_report(self):
 
@@ -689,23 +760,19 @@ class QC_reports:
                 rmsdata = raw[0]
                 fembs = raw[2]
 
-                PLOTDIR=datadir
-                print(PLOTDIR)
-
-
                 qc_tools = ana_tools()
 
                 #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
                 pldata = qc_tools.data_decode(rmsdata, fembs)
-                pldata = np.array(pldata)
+                # pldata = np.array(pldata)
 
                 if '\\' in afile:
                     fname = afile.split("\\")[-1][:-4]
                 else:
                     fname = afile.split("/")[-1][:-4]
 
-                for ifemb in fembs:
-                    fp = PLOTDIR
+                for ifemb in self.fembs:
+                    fp = self.savedir[ifemb] + fdir+"/"
                     ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, fname)
 
 

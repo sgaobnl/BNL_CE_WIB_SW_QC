@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import pickle
 from scipy.optimize import curve_fit
 import pandas as pd
+import numpy as np
+from scipy.stats import linregress
+import matplotlib.pyplot as plt
+from collections import defaultdict
 
 def ResFunc(x, par0, par1, par2, par3):
 
@@ -291,20 +295,20 @@ class ana_tools:
                 plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
                 #baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
                 baseline = pulse[:maxpos-20]#, evtdata[maxpos+80:len(apulse)], evtdata[period:maxpos-20 + period], evtdata[maxpos+80 + period:len(apulse) + period]))
-                # baseline.extend(pulse[maxpos+80:len(apulse)])
+                baseline.extend(pulse[500:maxpos-20+500])
                 # baseline.extend(pulse[period:maxpos-20 + period])
                 # baseline.extend(pulse[maxpos+80 + period:len(apulse) + period])
 
             if maxpos<pulseoffset:
                 plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
                 baseline = pulse[maxpos+80:maxpos+500-100]# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
-                # baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
+                baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
                 # baseline = evtdata[maxpos+80:maxpos+500-100]# + allpls2[maxpos+80 + period:maxpos+500-100 + period]
 
             if maxpos>=len(apulse) +pulseoffset -pulrange:
                 plt.plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
                 baseline = pulse[80:maxpos-20]# + evtdata[80 + period + maxpos-20 + period]
-                # baseline.extend(pulse[80 + period + maxpos-20 + period])# + evtdata[80 + period + maxpos-20 + period]
+                baseline.extend(pulse[80 + period : maxpos-20 + period])# + evtdata[80 + period + maxpos-20 + period]
                 # baseline = evtdata[80:maxpos-20]# + allpls2[80 + period + maxpos-20 + period]
 
             pulse_rms = np.std(baseline)
@@ -331,10 +335,12 @@ class ana_tools:
             rms.append(pulse_rms)
             ped.append(pulse_ped)
 
+        rms_mean = np.mean(rms)
+
         plt.title("Pulse")
+        plt.ylim(0, 16384)
         plt.xlabel("ticks")
         plt.ylabel("ADC")
-        plt.legend()
 
         plt.subplot(2 ,2, 2)
         plt.plot(range(128), ppk_val, marker='.',label='pos')
@@ -343,12 +349,13 @@ class ana_tools:
 
         #pl1.plot(range(128), bl_rms)
         plt.title("ppk,bbl, npk")
+        plt.ylim(0, 16384)
         plt.xlabel("chan")
         plt.ylabel("ADC")
-        plt.legend()
 
         plt.subplot(2, 2, 3)
         plt.plot(range(128), ped, marker='.',label='Pedestal')
+        plt.ylim(0, 16384)
         plt.title("PED")
         plt.xlabel("chan")
         plt.ylabel("ped")
@@ -356,6 +363,7 @@ class ana_tools:
         plt.subplot(2, 2, 4)
         plt.plot(range(128), rms, marker='.',label='RMS')
         plt.title("RMS")
+        plt.ylim(rms_mean-5, rms_mean+5)
         plt.xlabel("chan")
         plt.ylabel("RMS")
 
@@ -557,11 +565,11 @@ class ana_tools:
                fig1.savefig(newfp)
                plt.close(fig1)
 
-    def PlotMon(self, fembs, mon_dic, savedir, fdir, fname):
-
+    def PlotMon(self, fembs, mon_dic, savedir, fdir, fname, fembNo):
+        issue_log = defaultdict(dict)
         for nfemb in fembs:
             mon_list=[]
-
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
             for key,mon_data in mon_dic.items():
                 chip_list=[]
                 sps = len(mon_data)
@@ -580,44 +588,102 @@ class ana_tools:
 
             fig,ax = plt.subplots(figsize=(6,4))
             xx=range(len(mon_dic))
+            mon_mean = np.mean(mon_list)
+            mon_std = np.std(mon_list)
+            i = 0
+            issue_log[femb_id]["Result"] = True
+            for data in mon_list:
+                i = i + 1
+                if data > (mon_mean + 20) or data < (mon_mean -20):
+                    issue_log[femb_id]["{}_C{}".format(fname, i)] = data
+                    issue_log[femb_id]["Result"] = False
             ax.plot(xx, mon_list, marker='.')
             ax.set_ylabel(fname)
             fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
             fig.savefig(fp)
             plt.close(fig)
+        print(issue_log)
+        return issue_log
 
-    def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fname):
-
+    def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fembNo):
+        issue_inl = defaultdict(dict)
         for nfemb in fembs:
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
+            fig, ax = plt.subplots(figsize=(10, 8))
+            for main_key, sub_dict in mon_dic.items():
+                for key,mon_list in sub_dict.items():
+                    data_list=[]
+                    dac_list = mon_list[1]
+                    print(dac_list)
+                    mon_data = mon_list[0]
+                    print(len(mon_data))
+                    sps = mon_data[0][3]
+                    for i in range(len(dac_list)):
+                        sps_list=[]
+                        for j in range(sps):
+                            a_mon = mon_data[i][4][j][nfemb]
+                            sps_list.append(a_mon)
 
-            fig,ax = plt.subplots(figsize=(10,8))
+                        if sps>1:
+                           sps_list = np.array(sps_list)
+                           mon_mean = np.mean(sps_list)
+                        else:
+                           mon_mean = sps_list[0]
 
-            for key,mon_list in mon_dic.items(): 
-                data_list=[]
-                dac_list = mon_list[1]
-                mon_data = mon_list[0]
-                sps = len(mon_data[0])
+                        data_list.append(mon_mean*self.fadc)
+                    plt.plot(dac_list, data_list, marker='.')
 
-                for i in range(len(dac_list)):
-                    sps_list=[]
-                    for j in range(sps):
-                        a_mon = mon_data[i][4][j][nfemb]
-                        sps_list.append(a_mon)
-
-                    if sps>1:
-                       sps_list = np.array(sps_list)
-                       mon_mean = np.mean(sps_list)
-                    else:
-                       mon_mean = sps_list[0]
-
-                    data_list.append(mon_mean*self.fadc)
-
-                ax.plot(dac_list, data_list, marker='.',label=key)
-            ax.set_ylabel(fname)
-            ax.legend()
-            fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+                    #   INL judgement
+                    x_data = np.arange(0, 62)
+                    y_data = np.array(data_list[0:62])
+                    coefficients = np.polyfit(x_data, y_data, deg=1)
+                    fit_function = np.poly1d(coefficients)
+                    fit_y = fit_function(x_data)
+                    inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
+                    issue_inl[femb_id]["Result"] = True
+                    if inl > 1:
+                        issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
+                        issue_inl[femb_id]["Result"] = False
+                        print(issue_inl)
+                        print(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
+                        input()
+            fp = savedir[nfemb] + fdir + "/mon_{}.png".format(main_key)
             plt.savefig(fp)
             plt.close(fig)
+        return issue_inl
+
+    # def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fname):
+    #
+    #     for nfemb in fembs:
+    #
+    #         fig,ax = plt.subplots(figsize=(10,8))
+    #
+    #         for key,mon_list in mon_dic.items():
+    #             data_list=[]
+    #             dac_list = mon_list[1]
+    #             mon_data = mon_list[0]
+    #             sps = len(mon_data[0])
+    #
+    #             for i in range(len(dac_list)):
+    #                 sps_list=[]
+    #                 for j in range(sps):
+    #                     a_mon = mon_data[i][4][j][nfemb]
+    #                     sps_list.append(a_mon)
+    #
+    #                 if sps>1:
+    #                    sps_list = np.array(sps_list)
+    #                    mon_mean = np.mean(sps_list)
+    #                 else:
+    #                    mon_mean = sps_list[0]
+    #
+    #                 data_list.append(mon_mean*self.fadc)
+    #
+    #             ax.plot(dac_list, data_list, marker='.',label=key)
+    #         ax.set_ylabel(fname)
+    #         ax.legend()
+    #         fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+    #         plt.savefig(fp)
+    #         plt.close(fig)
 
     def PlotADCMon(self, fembs, mon_list, savedir, fdir):
 

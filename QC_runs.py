@@ -7,6 +7,7 @@ import copy
 import os
 import time, datetime, random, statistics
 import components.assembly_function as a_func
+import QC_components.qc_log as log
 #import TestPattern_chk as PLL_TP
 
 class QC_Runs:
@@ -50,7 +51,7 @@ class QC_Runs:
 
         self.logs['femb id']=self.fembNo
         self.logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-
+        log.report_log00 = self.logs    ### report
         ####### Create data saving directory #######
 
         save_dir = "./QC/"
@@ -80,6 +81,7 @@ class QC_Runs:
         fp = self.save_dir + "logs_env.bin"
         with open(fp, 'wb') as fn:
              pickle.dump(self.logs, fn)
+
 
         self.chk=None   # WIB pointer
 
@@ -114,7 +116,7 @@ class QC_Runs:
 
         return pwr_sts
 
-    def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0,  pwr_flg=True, swdac=1, adc_sync_pat=False):
+    def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0,  pwr_flg=True, swdac=1, adc_sync_pat=False, bypass = False):
          
         cfg_paras_rec = []
         ext_cali_flg = False 
@@ -138,7 +140,10 @@ class QC_Runs:
             if adc_sync_pat:
                 self.chk.adc_flg[femb_id] = True 
                 for i in range(8):
-                    self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x10
+                    if bypass:
+                        self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x20
+                    else:
+                        self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x10
 
             #if self.autocali_flg not True:
             #    self.chk.adc_flg[femb_id] = True 
@@ -586,20 +591,19 @@ class QC_Runs:
 
         self.chk.femb_cd_rst()
         self.sample_N = 10
-        for i in range(8):
-            self.chk.adcs_paras[i][1] = 0x30    # adc_sync_mode = 1 + adc_test_mode = 1, bypass SHA
         fp = datadir + "ADC_SYNC_PAT_noSHA_SE.bin"
-        self.take_data(fp=fp, adc_sync_pat=True)
+        self.take_data(fp=fp, adc_sync_pat=True, bypass = True)
 
-        self.chk.femb_cd_rst()
-        self.sample_N = 10
-        for i in range(8):
-            self.chk.adcs_paras[i][1] = 0x30    # adc_sync_mode = 1 + adc_test_mode = 1, bypass SHA
-        fp = datadir + "ADC_SYNC_PAT_noSHA_DIFF.bin"
-        self.take_data(fp=fp, sdd = 1, adc_sync_pat=True)
+        # self.chk.femb_cd_rst()
+        # self.sample_N = 10
+        # for i in range(8):
+        #     self.chk.adcs_paras[i][1] = 0x30    # adc_sync_mode = 1 + adc_test_mode = 1, bypass SHA
+        # fp = datadir + "ADC_SYNC_PAT_noSHA_DIFF.bin"
+        # self.take_data(fp=fp, sdd = 1, adc_sync_pat=True)
 
 
     def femb_test_pattern_pll(self):
+        self.chk = WIB_CFGS()
         datadir = self.save_dir + "PLL_PAT/"
         try:
             os.makedirs(datadir)
@@ -612,14 +616,14 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0  # 14mV/fC
         st0 = 1;        st1 = 1  # 2us
 
-        for i in range(0x1C, 0x3F):
+        for i in range(0x1C, 0x33):
             self.chk.pll = i
             print("PLL value = ", end="");  print(hex(i), end=" "); print("Take TestPattern data")
             self.chk.femb_cd_rst()
             cfg_paras_rec = []
             for femb_id in self.fembs:
-                for i in range(8):
-                    self.chk.adcs_paras[i][8] = 0x02  # set autocali = 2 and PLL mode
+                for j in range(8):
+                    self.chk.adcs_paras[j][8] = 0x02  # set autocali = 2 and PLL mode
                 self.chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00)
                 adac_pls_en = 0
                 cfg_paras_rec.append((femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en))
@@ -628,14 +632,15 @@ class QC_Runs:
             self.chk.data_align(self.fembs)
             time.sleep(0.5)
 
-            rms_rawdata = self.chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0)  # returns list of size 1
-
+            rms_rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=1, trig_cmd=0)  # returns list of size 1
+            print(i)
             file_name = "Raw_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL", "14_0mVfC", "2_0us", 0x00, hex(i))
+            print(hex(i))
             # begin
-            if save:
-                fp = datadir + file_name
-                with open(fp, 'wb') as fn:
-                    pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
+            fp = datadir + file_name
+            print(fp)
+            with open(fp, 'wb') as fn:
+                pickle.dump( [rms_rawdata, cfg_paras_rec, self.fembs], fn)
 
             # with open('./TestPattern/rms.dat', 'w') as f:
             #     for data in rms_rawdata:
@@ -906,17 +911,17 @@ class QC_Runs:
 
         print ("monitor LArASIC DAC 7.8 mV/fC")
         mon_fedacs_7_8mVfC = {}
-        vdacs=range(0,64,8)
+        vdacs=range(64)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=1, vdacs=vdacs, sps=sps)
             mon_fedacs_7_8mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
                 
         print ("monitor LArASIC DAC 25 mV/fC")
         mon_fedacs_25mVfC = {}
-        vdacs=range(0,64,8)
+        vdacs=range(64)
         for mon_chip in range(chips):
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=vdacs, sps=sps)
-            mon_fedacs_25mVfC["CHIP%d"%( mon_chip)] = [adcrst, vdacs]
+            mon_fedacs_25mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
                 
         fp = datadir + "LArASIC_mon_DAC.bin"
         with open(fp, 'wb') as fn:
@@ -933,7 +938,7 @@ class QC_Runs:
 
         self.chk.femb_cd_rst()
 
-        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi 
+        self.chk.adcs_paras = copy.deepcopy([ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi
                        [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
@@ -942,7 +947,7 @@ class QC_Runs:
                        [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                        [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                     ]
+                     ])
 
 
         print ("monitor LArASIC-ColdADC reference (default)")
@@ -961,6 +966,7 @@ class QC_Runs:
 
             mondata = self.chk.wib_adc_mon(femb_ids=self.fembs, sps=sps)
             mon_adc.append([vset[i], mondata])
+            print(self.chk.adcs_paras[2][4])
                 
         fp = datadir + "LArASIC_ColdADC_mon.bin"
         with open(fp, 'wb') as fn:

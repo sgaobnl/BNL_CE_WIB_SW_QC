@@ -324,27 +324,38 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
         #      pickle.dump([ppk,npk,bl], fn)
 
         tmp = QC_check.CHKPulse(ppk)
-        log.chkflag["Pulse_SE"]["PPK"].append(tmp[0])
-        log.badlist["Pulse_SE"]["PPK"].append(tmp[1])
+        td = 1
+        print(123)
+        print(tmp[0])
+        print(456)
+        print(tmp[1])
+        log.chkflag["Pulse_SE"]["PPK"]=(tmp[0])
+        print(789)
+        print(log.chkflag["Pulse_SE"]["PPK"])
+        log.badlist["Pulse_SE"]["PPK"]=(tmp[1])
 
-
+        td = 2
         tmp = QC_check.CHKPulse(npk)
-        log.chkflag["Pulse_SE"]["NPK"].append(tmp[0])
-        log.badlist["Pulse_SE"]["NPK"].append(tmp[1])
+        log.chkflag["Pulse_SE"]["NPK"]=(tmp[0])
+        log.badlist["Pulse_SE"]["NPK"]=(tmp[1])
 
-
+        td = 3
         tmp = QC_check.CHKPulse(bl)
-        log.chkflag["Pulse_SE"]["BL"].append(tmp[0])
-        log.badlist["Pulse_SE"]["BL"].append(tmp[1])
+        log.chkflag["Pulse_SE"]["BL"]=(tmp[0])
+        log.badlist["Pulse_SE"]["BL"]=(tmp[1])
 
 
-        if (log.chkflag["Pulse_SE"]["PPK"] == False) and log.chkflag["Pulse_SE"]["NPK"] == False and (log.chkflag["Pulse_SE"]["BL"] == False):
+        if (log.chkflag["Pulse_SE"]["PPK"] == False) and (log.chkflag["Pulse_SE"]["NPK"] == False) and (log.chkflag["Pulse_SE"]["BL"] == False):
             log.report_log07[femb_id]["Result"] = True
         else:
             log.report_log07[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE"]["PPK"]
             log.report_log07[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE"]["NPK"]
             log.report_log07[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE"]["BL"]
             log.report_log07[femb_id]["Result"] = False
+            print(log.chkflag["Pulse_SE"]["PPK"])
+            print(log.chkflag["Pulse_SE"]["NPK"])
+            print(log.chkflag["Pulse_SE"]["BL"])
+            input()
 
 
 #   item08  DIFF pulse data
@@ -417,15 +428,10 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
     log.report_log11["ITEM"] = "11 FEMB monitoring Path"
     fadc = 1/(2**14)*2048
-    fe_t = []
-    fe_bgp = []
-    vcmi = []
-    vcmo = []
-    vrefp = []
-    vrefn = []
-    vssa = []
+    fe_t = [None] * 8;    fe_bgp = [None] * 8;    vcmi = [None] * 8;    vcmo = [None] * 8
+    vrefp = [None] * 8;    vrefn = [None] * 8;    vssa = [None] * 8
     for ifemb in fembs:
-
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
         for i in nchips:  # 8 chips per board
             fe_t[i] = round(mon_temps[f'chip{i}'][0][ifemb] * fadc, 1)
             fe_bgp[i] = round(mon_refs[f'chip{i}'][0][ifemb] * fadc, 1)
@@ -436,7 +442,6 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
             vssa[i] = round(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc, 1)
 
     # for ifemb in range(len(fembs)):
-        femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         log.report_log11[femb_id]["Result"] = False
 
         log.report_log11[femb_id]["ASIC #"] = " 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 "
@@ -447,7 +452,7 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
         log.report_log11[femb_id]["VREFP"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefp[0], vrefp[1], vrefp[2], vrefp[3], vrefp[4], vrefp[5], vrefp[6], vrefp[7])
         log.report_log11[femb_id]["VREFN"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefn[0], vrefn[1], vrefn[2], vrefn[3], vrefn[4], vrefn[5], vrefn[6], vrefn[7])
         log.report_log11[femb_id]["VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vssa[0], vssa[1], vssa[2], vssa[3], vssa[4], vssa[5], vssa[6], vssa[7])
-
+    for ifemb in range(len(fembs)):
         tmp = QC_check.CHKFET(mon_temps, fembs[ifemb], nchips, env)
         log.chkflag["MON_T"].append(tmp[0])
         log.badlist["MON_T"].append(tmp[1])

@@ -2,6 +2,8 @@ import sys
 from QC_report import QC_reports
 import argparse
 import time
+import QC_components.All_Report as a_repo
+import Path as newpath
 
 ag = argparse.ArgumentParser()
 ag.add_argument("folder", help="data folder", type=str)
@@ -29,7 +31,7 @@ for tm in tasks:
        rp.PWR_cycle_report()
        
     if tm==3:
-       rp.CHKPULSE("Leakage_Current")
+       rp.LCCHKPULSE("Leakage_Current")
        
     if tm==4:
        rp.CHKPULSE("CHK")
@@ -68,7 +70,7 @@ for tm in tasks:
        rp.femb_adc_sync_pat_report("ADC_SYNC_PAT")
 
     if tm==16:
-       rp.PLL_scan_report("PLL_SCAN")
+       rp.PLL_scan_report("PLL_PAT")
 
     if tm==17:
        #rp.CHK_report()
@@ -79,7 +81,7 @@ for tm in tasks:
            rp.temp_report(test = 0)
            print(0)
 
-
+rp.report()
     # if tm==13:
     #    rp.CHK_report()
 

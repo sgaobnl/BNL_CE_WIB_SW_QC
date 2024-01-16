@@ -4,7 +4,7 @@ import subprocess
 
 #================   Final Report    ===================================
 
-def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "VALUE"):
+def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
     # 获取字典的键和值
     keys = list(dictionary.keys())
     values = list(dictionary.values())
@@ -12,12 +12,16 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "VALUE"):
     if VALUE == "PWRVALUE":
         # 构建表格头部
         table = "| {} | {} |\n| --- | --- | --- | --- | --- |\n".format(KEY, " | | | ")
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
+    elif VALUE == "Horizontal":
+        table = '|' + '|'.join(dictionary.keys()) + '|' + '\n'
+        table += '|' + '|'.join(['---' for _ in dictionary.keys()]) + '|' + '\n'
+        table += '|' + '|'.join(str(dictionary[key]) for key in dictionary.keys()) + '|' + '\n'
     else:
         table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
-
-    # 构建表格内容
-    for key, value in zip(keys, values):
-        table += f"| {key} | {value} |\n"
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
 
     return table
 
@@ -95,8 +99,7 @@ def final_report(datareport, fembs, fembNo):
 
 # 01        Print <Input Information>
             file.write('## PART 01 INPUT INFORMATION' + '\n')
-            # file.write('## ' + str(log.report_log01["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log01["Detail"])
+            info = dict_to_markdown_table(log.report_log01["Detail"], VALUE = "Horizontal")
             file.write(info + '\n')
 
 # 02        Print <Initial test Result>
@@ -117,7 +120,7 @@ def final_report(datareport, fembs, fembNo):
             file.write('## ' + 'PART 03 SE Pulse Measurement' + '\n')
             file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Pulse Measurement", VALUE = "VALUE")
-            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n")
+            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
             file.write(info + '\n')
 
             file.write('#### ' + str(log.report_log05["ITEM"]) + '\n')
@@ -126,13 +129,13 @@ def final_report(datareport, fembs, fembNo):
 
 
             file.write('## ' + str(log.report_log06["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE Power Rail", VALUE = "PRail_VALUE")
+            info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE Power Rail", VALUE = "Horizontal")
             file.write(info + '\n')
 
 
             file.write('## ' + str(log.report_log07["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "3.4 SE Pulse Response", VALUE = "VALUE")
-            file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n")
+            file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n\n")
             file.write(info + '\n')
 
 
@@ -161,6 +164,11 @@ def final_report(datareport, fembs, fembNo):
             file.write('## ' + str(log.report_log10["ITEM"]) + '\n')
             file.write('#### ' + 'Result:    ' + str(log.report_log10[femb_id]["Result"]) + '\n\n')
             for key, value in log.report_log10[femb_id].items():
+                file.write('#### ' + f"{key}: {value}\n")
+
+            file.write('## ' + str(log.report_log11["ITEM"]) + '\n')
+            file.write('#### ' + 'Result:    ' + str(log.report_log11[femb_id]["Result"]) + '\n\n')
+            for key, value in log.report_log11[femb_id].items():
                 file.write('#### ' + f"{key}: {value}\n")
             #file.write("![ped](./MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png)")
             file.write('\n')

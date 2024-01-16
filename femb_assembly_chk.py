@@ -123,18 +123,18 @@ for ifemb in fembs:
         fembs_remove.append(ifemb)
         fembNo.pop('femb%d' % ifemb)
         chk.femb_powering_single(ifemb, 'off')
-        log.report_log02[femb_id]["FC1_BIAS_current_1"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
-        log.report_log02[femb_id]["FC1_LArASIC_current_1"] = "LArASIC current: %f (default range: (0.3A, 0.6A))\n" % fe_i
-        log.report_log02[femb_id]["FC1_COLDATA_current_1"] = "COLDATA current: %f (default range: (0.1A, 0.3A))\n" % cd_i
-        log.report_log02[femb_id]["FC1_ColdADC_current_1"] = "ColdADC current: %f (default range: (1.2A, 1.9A))\n" % adc_i
+        log.report_log02[femb_id]["FC1_BIAS_current"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
+        log.report_log02[femb_id]["FC1_LArASIC_current"] = " %f (default range: (0.3A, 0.6A))\n" % fe_i
+        log.report_log02[femb_id]["FC1_COLDATA_current"] = " %f (default range: (0.1A, 0.3A))\n" % cd_i
+        log.report_log02[femb_id]["FC1_ColdADC_current"] = " %f (default range: (1.2A, 1.9A))\n" % adc_i
         log.report_log02[femb_id]["Result"] = False
     else:
         print("FEMB ID {} Pass current check".format(fembNo['femb%d'%ifemb]))
-        log.report_log02[femb_id]['check_status'] = "FEMB Pass current #1 check\n"
-        log.report_log02[femb_id]["FC1_BIAS_current_1"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
-        log.report_log02[femb_id]["FC1_LArASIC_current_1"] = "LArASIC current: %f (default range: (0.3A, 0.6A))\n" % fe_i
-        log.report_log02[femb_id]["FC1_COLDATA_current_1"] = "COLDATA current: %f (default range: (0.1A, 0.3A))\n" % cd_i
-        log.report_log02[femb_id]["FC1_ColdADC_current_1"] = "ColdADC current: %f (default range: (1.2A, 1.9A))\n" % adc_i
+        log.report_log02[femb_id]['check_status'] = "FEMB Pass the #1 current measurement\n"
+        log.report_log02[femb_id]["FC1_BIAS_current"] = " %f \n" % bias_i
+        log.report_log02[femb_id]["FC1_LArASIC_current"] = " %f \n" % fe_i
+        log.report_log02[femb_id]["FC1_COLDATA_current"] = " %f \n" % cd_i
+        log.report_log02[femb_id]["FC1_ColdADC_current"] = " %f \n" % adc_i
         log.report_log02[femb_id]["Result"] = True
 
 for femb_id in fembs_remove:
