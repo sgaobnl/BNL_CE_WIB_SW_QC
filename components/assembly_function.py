@@ -271,11 +271,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, result = False):
     # the | is used in Markdown table
     log.tmp_log[femb_id]["Result"] = result
     log.tmp_log[femb_id]["Measure Object"] = "BIAS | LArASIC | ColdDATA | ColdADC"
-<<<<<<< Updated upstream
     log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3.5 "
-=======
-    log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3 "
->>>>>>> Stashed changes
     log.tmp_log[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
     log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(abs(bias_i), LArASIC_i, COLDATA_i, ColdADC_i)
     log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
