@@ -204,37 +204,38 @@ class ana_tools:
         fe_rms_med = np.median(rms)
         fe_ped_med = np.median(ped)
 
-        fig,ax = plt.subplots(figsize=(6,4))
-        ax.plot(range(128), rms, marker='.')
-        ax.set_title(fname)
-        ax.set_xlabel("chan")
-        ax.set_ylabel("rms")
+        plt.figure(figsize=(12, 4))
+        plt.subplot(1, 2, 2)
+        plt.plot(range(128), rms, marker='o', linestyle = '-', alpha = 0.7, label='pos')
+        plt.title(fname, fontsize = 14)
+        plt.xlabel("Channel", fontsize = 14)
+        plt.ylabel("Root Mean Square", fontsize = 14)
         x_sticks = range(0, 129, 16)
-        ax.set_xticks(x_sticks)
-        ax.grid(axis='x')
+        plt.xticks(x_sticks)
+        plt.grid(axis='x')
         if (rms_max < (fe_rms_med + 5)) and (rms_min > (fe_rms_med - 5)):
-            ax.set_ylim(fe_rms_med - 5, fe_rms_med + 5)
+            plt.ylim(fe_rms_med - 5, fe_rms_med + 5)
         else:
-            ax.grid(axis='y')
-        fp_fig = fp+"rms_{}.png".format(fname)
-        plt.savefig(fp_fig)
-        plt.close(fig)
+            plt.grid(axis='y')
+        # fp_fig = fp+"rms_{}.png".format(fname)
+        # plt.savefig(fp_fig)
+        # plt.close()
 
-        fig,ax = plt.subplots(figsize=(6,4))
-        ax.plot(range(128), ped, marker='.')
-        ax.set_title(fname)
-        ax.set_xlabel("chan")
-        ax.set_ylabel("ped")
+        plt.subplot(1, 2, 1)
+        plt.plot(range(128), ped, marker='.', linestyle = '-', alpha = 0.7, label='pos')
+        plt.title(fname, fontsize = 14)
+        plt.xlabel("Channel", fontsize = 14)
+        plt.ylabel("Pedestal", fontsize = 14)
         x_sticks = range(0, 129, 16)
-        ax.set_xticks(x_sticks)
-        ax.grid(axis = 'x')
+        plt.xticks(x_sticks)
+        plt.grid(axis = 'x')
         if (ped_max < (fe_ped_med + 500)) and (ped_min > (fe_ped_med - 500)):
-            ax.set_ylim(fe_ped_med - 500, fe_ped_med + 500)
+            plt.ylim(fe_ped_med - 500, fe_ped_med + 500)
         else:
-            ax.grid(axis = 'y')
+            plt.grid(axis = 'y')
         fp_fig = fp+"ped_{}.png".format(fname)
         plt.savefig(fp_fig)
-        plt.close(fig)
+        plt.close()
 
         fp_bin = fp+"RMS_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
@@ -249,12 +250,15 @@ class ana_tools:
         ppk_val=[]
         npk_val=[]
         bl_val=[]
+        ppk = []
+        npk = []
+        bl = []
         bl_rms = []
 
         rms = []
         ped = []
 
-        # fig,ax = plt.subplots(1,2,figsize=(12,4))
+        plt.figure(figsize = (16, 4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -289,7 +293,7 @@ class ana_tools:
             maxpos = np.argmax(apulse)
 
             data_type = apulse.dtype
-            plt.subplot(2, 2, 1)
+            plt.subplot(1, 3, 1)
             if maxpos>=pulseoffset and maxpos<len(apulse) +pulseoffset -pulrange:
 
                 plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
@@ -328,44 +332,61 @@ class ana_tools:
             pmin = np.amin(apulse)
 
             ppk_val.append(pmax)
+            ppk.append(pmax-bbl)
             npk_val.append(pmin)
+            npk.append(pmin-bbl)
             # bl_rms.append(bbl_rms)
             bl_val.append(bbl)
+            bl.append(bbl - bbl)
 
             rms.append(pulse_rms)
             ped.append(pulse_ped)
 
         rms_mean = np.mean(rms)
 
-        plt.title("Pulse")
-        plt.ylim(0, 16384)
-        plt.xlabel("ticks")
-        plt.ylabel("ADC")
+        bottom = -1000
+        plt.title("128-CH Pulse Response Overlap", fontsize = 14)
+        plt.ylim(bottom, 16384+bottom)
+        plt.xlabel("Sample Points", fontsize = 14)
+        plt.ylabel("ADC count", fontsize = 14)
 
-        plt.subplot(2 ,2, 2)
-        plt.plot(range(128), ppk_val, marker='.',label='pos')
-        plt.plot(range(128), npk_val, marker='.',label='neg')
-        plt.plot(range(128), bl_val, marker='.',label='ped')
+        plt.subplot(1 ,3, 2)
+        plt.plot(range(128), ppk_val, marker='|', linestyle = '-', alpha = 0.7, label='pos', color = 'blue')
+        plt.plot(range(128), bl_val, marker='|', linestyle = '-', alpha = 0.9, label='ped', color = '0.3')
+        plt.plot(range(128), npk_val, marker='|', linestyle = '-', alpha = 0.7, label='neg', color = 'orange')
+        plt.grid(axis = 'x', color='gray', linestyle='--', alpha = 0.7)
 
         #pl1.plot(range(128), bl_rms)
-        plt.title("ppk,bbl, npk")
-        plt.ylim(0, 16384)
-        plt.xlabel("chan")
-        plt.ylabel("ADC")
+        plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize = 14)
+        plt.ylim(bottom, 16384+bottom)
+        plt.xlabel("chan", fontsize = 14)
+        plt.xticks(np.arange(0, 129, 16))
+        plt.ylabel("ADC count", fontsize = 14)
+        plt.legend()
 
-        plt.subplot(2, 2, 3)
-        plt.plot(range(128), ped, marker='.',label='Pedestal')
-        plt.ylim(0, 16384)
-        plt.title("PED")
-        plt.xlabel("chan")
-        plt.ylabel("ped")
+        # plt.subplot(1, 4, 3)
+        # plt.plot(range(128), ped, marker='.', linestyle = '-', alpha = 0.5, label='Pedestal')
+        # if np.mean(ped) < 5000:
+        #     plt.ylim(bottom, 5000 + bottom)
+        # else:
+        #     plt.ylim(bottom, 10000)
+        # plt.title("Pedestal Distribution", fontsize = 14)
+        # plt.xlabel("chan", fontsize = 14)
+        # plt.xticks(np.arange(0, 129, 16))
+        # plt.ylabel("Pedestal", fontsize = 14)
+        # plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
+        # plt.legend()
 
-        plt.subplot(2, 2, 4)
-        plt.plot(range(128), rms, marker='.',label='RMS')
-        plt.title("RMS")
+        plt.subplot(1, 3, 3)
+        plt.plot(range(128), rms, marker='o', linestyle = '-', alpha = 0.5, label='RMS')
+        plt.title("RMS Distribution", fontsize = 14)
         plt.ylim(rms_mean-5, rms_mean+5)
-        plt.xlabel("chan")
-        plt.ylabel("RMS")
+        plt.xlabel("chan", fontsize = 14)
+        plt.xticks(np.arange(0, 129, 16))
+        plt.ylabel("RMS", fontsize = 14)
+        plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
+
+        plt.legend()
 
         fp_fig = fp+"pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
@@ -373,8 +394,10 @@ class ana_tools:
 
         fp_bin = fp+"Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
-             pickle.dump([ppk_val,npk_val,bl_val], fn) 
-        return ppk_val,npk_val,bl_val    
+             pickle.dump([ppk_val,npk_val,bl_val], fn)
+
+
+        return ppk,npk,bl
 
 
 #

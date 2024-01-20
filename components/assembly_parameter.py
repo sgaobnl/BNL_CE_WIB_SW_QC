@@ -11,7 +11,7 @@ def para(env):
 
 voltage_FE      = 3.0
 voltage_COLDATA = 3.0
-voltage_ColdADC = 3.0
+voltage_ColdADC = 3.5
 
 #chip current reference
 if D==0:

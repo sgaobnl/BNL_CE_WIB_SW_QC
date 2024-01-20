@@ -1,4 +1,11 @@
 import numpy as np
+
+#   current measurement parameter
+bias_low = 4.2; bias_high = 5.1;    bias_i_high = 0.05
+fe_v_low = 2.9; fe_v_high = 3;      fe_i_low = 0.35;    fe_i_high = 0.55
+bias_low = 4.2; bias_high = 5.1
+bias_low = 4.2; bias_high = 5.1
+
 def CHKPWR(data, nfemb, env):
 
     BAD = False  
@@ -16,17 +23,17 @@ def CHKPWR(data, nfemb, env):
     adc_v = data['FEMB%d_DC2DC2_V'%nfemb]
     adc_i = data['FEMB%d_DC2DC2_I'%nfemb]
 
-    if bias_v>5 or bias_v<4.95:
+    if bias_v>bias_high or bias_v<bias_low:
        BAD = True 
        bad_list.append("bias voltage")
-    if abs(bias_i)>0.05:
+    if abs(bias_i)>bias_i_high:
        BAD = True
        bad_list.append("bias current")
 
-    if fe_v>3 or fe_v<2.9:
+    if fe_v>fe_v_high or fe_v<fe_v_low:
        BAD = True 
        bad_list.append("LArASIC voltage")
-    if fe_i>0.55 or fe_i<0.35:
+    if fe_i>fe_i_high or fe_i<fe_i_low:
        BAD = True 
        bad_list.append("LArASIC current")
 

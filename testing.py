@@ -68,8 +68,7 @@ while True:
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )
-    print("XXXXXXXXXXXXXX")
-    #break
+    break
 
 chk.data_align(fembs)
 

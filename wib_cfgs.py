@@ -760,13 +760,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         while prg_flg:
             for femb_id in fembs:
                 self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
-            # time.sleep(0.001)
+            time.sleep(0.001)
             for femb_id in fembs:
                 self.femb_cd_fc_act(femb_id, act_cmd="prm_larasics")
-            time.sleep(0.001)
+            time.sleep(0.005)
             for femb_id in fembs:
                 self.femb_cd_fc_act(femb_id, act_cmd="save_status")
-            time.sleep(0.001)
+            time.sleep(0.002)
 
             for femb_id in fembs:
                 sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
@@ -1007,7 +1007,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.001)
+                time.sleep(0.01)
                 pass
             adcss = []
             self.wib_mon_adcs() #get rid of previous result

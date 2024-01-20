@@ -5,19 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/QC_components/All_Report.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/QC_components/qc_a_function.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/QC_components/qc_log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dreport_FEMB_1.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_report0.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_report_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report_all.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_runs.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_runs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QC_top.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_top.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_tools_bp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/a.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_function.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/assembly_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/assembly_parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_parameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fe_asic_reg_mapping.py" beforeDir="false" afterPath="$PROJECT_DIR$/fe_asic_reg_mapping.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/femb_assembly_chk_bp2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/llc.py" beforeDir="false" afterPath="$PROJECT_DIR$/llc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/quick_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rd_demo_raw_hermes.py" beforeDir="false" afterPath="$PROJECT_DIR$/rd_demo_raw_hermes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wib_cfgs.py" beforeDir="false" afterPath="$PROJECT_DIR$/wib_cfgs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,41 +103,5 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
-          <line>160</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
-          <line>293</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
-          <line>175</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/ana_femb_assembly_chk.py</url>
-          <line>10</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/QC_tools.py</url>
-          <line>513</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/QC_check.py</url>
-          <line>125</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

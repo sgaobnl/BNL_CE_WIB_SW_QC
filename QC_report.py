@@ -403,7 +403,7 @@ class QC_reports:
 
               #====
               pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
-              log_dict[i].update(pulse)
+              log.report_log3[i].update(pulse)
               i = i + 1
           #self.Gather_PNG_PDF(fp)
 
@@ -413,8 +413,7 @@ class QC_reports:
 
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
-          if fdir == "Leakage_Current":
-                log_dict = log.report_log3
+          log.report_log4
           # else:
           #       log_dict = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
 
@@ -428,25 +427,27 @@ class QC_reports:
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              pldata = qc.data_decode(rawdata, self.fembs)
+              if "_SE_" in afile:
 
-              if '\\' in afile:
-                  fname = afile.split("\\")[-1][:-4]
-              else:
-                  fname = afile.split("/")[-1][:-4]
-              # for ifemb in self.fembs:
-              #     fp = self.savedir[ifemb] + fdir+"/"
-              #     if 'vdac' in fname:
-              #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-              #     else:
-              #         qc.GetPeaks(pldata, ifemb, fp, fname)
+                pldata = qc.data_decode(rawdata, self.fembs)
 
-              #====
-              pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
-              log_dict[i].update(pulse)
-              i = i + 1
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+                # for ifemb in self.fembs:
+                #     fp = self.savedir[ifemb] + fdir+"/"
+                #     if 'vdac' in fname:
+                #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+                #     else:
+                #         qc.GetPeaks(pldata, ifemb, fp, fname)
+
+                #====
+                pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
+                log.report_log4[i].update(pulse)
+                i = i + 1
           #self.Gather_PNG_PDF(fp)
-          a_repo.final_report(self.savedir, self.fembs, self.fembsID)
+
 
       def RMS_report(self):
 

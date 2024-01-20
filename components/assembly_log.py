@@ -26,3 +26,8 @@ report_log11 = defaultdict(dict)    # Monitor path
 final_status = defaultdict(dict)
 
 power_rail_report_log = defaultdict(dict)
+
+
+chkflag = defaultdict(dict)    # input information
+badlist = defaultdict(dict)    # input information
+tmp_log = defaultdict(dict)

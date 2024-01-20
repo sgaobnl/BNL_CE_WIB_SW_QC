@@ -36,7 +36,9 @@ else:
     sample_N = 1
     fembs = [int(a) for a in sys.argv[1:]]
 
-####### Input test information #######
+###########################################
+#      PART 01 Input test information     #
+###########################################
 if save:
     logs={}
     tester=input("please input your name:  ")
@@ -62,7 +64,7 @@ if save:
     fembNo={}
     for i in fembs:
         fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
-    
+    logs['FEMB ID'] = fembNo
     #logs['femb id']=fembNo
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
@@ -77,7 +79,11 @@ t1 = time.time()
 log.report_log01["ITEM"] = "01 Initial Information"
 log.report_log01["Detail"] = logs
 
-################## Power on FEMBs and check currents ##################
+
+
+###########################################
+#      PART 02 Initial Power Measurement  #
+###########################################
 chk = WIB_CFGS()
 chk.wib_fw()
 
@@ -89,9 +95,10 @@ fembs_remove = []
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
 
-#   current measurement
+#####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
 pwr_meas1 = chk.get_sensors()
+result = False
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i  =   round(pwr_meas1['FEMB%d_BIAS_I'%ifemb],3)
@@ -120,22 +127,19 @@ for ifemb in fembs:
         print("FEMB ID {} Faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
         log.report_log02[femb_id]['check_status'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d' % ifemb])
         # fembs.remove(ifemb)
+
+        #== I need to know how to merge the different dictionary, like the log here merge the log in induced function
         fembs_remove.append(ifemb)
         fembNo.pop('femb%d' % ifemb)
         chk.femb_powering_single(ifemb, 'off')
-        log.report_log02[femb_id]["FC1_BIAS_current"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
-        log.report_log02[femb_id]["FC1_LArASIC_current"] = " %f (default range: (0.3A, 0.6A))\n" % fe_i
-        log.report_log02[femb_id]["FC1_COLDATA_current"] = " %f (default range: (0.1A, 0.3A))\n" % cd_i
-        log.report_log02[femb_id]["FC1_ColdADC_current"] = " %f (default range: (1.2A, 1.9A))\n" % adc_i
-        log.report_log02[femb_id]["Result"] = False
+        result = False
     else:
         print("FEMB ID {} Pass current check".format(fembNo['femb%d'%ifemb]))
-        log.report_log02[femb_id]['check_status'] = "FEMB Pass the #1 current measurement\n"
-        log.report_log02[femb_id]["FC1_BIAS_current"] = " %f \n" % bias_i
-        log.report_log02[femb_id]["FC1_LArASIC_current"] = " %f \n" % fe_i
-        log.report_log02[femb_id]["FC1_COLDATA_current"] = " %f \n" % cd_i
-        log.report_log02[femb_id]["FC1_ColdADC_current"] = " %f \n" % adc_i
-        log.report_log02[femb_id]["Result"] = True
+        result = True
+for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+    pwr1 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas1, env, result))
+    log.report_log02.update(pwr1)
 
 for femb_id in fembs_remove:
     fembs.remove(femb_id)
@@ -146,7 +150,7 @@ if len(fembs) == 0:
 
 chk.femb_powering(fembs)    #   close the FEMB channel without link
 
-################# check the default COLDATA and COLDADC register ##################
+##### 2.2 check the default COLDATA and COLDADC register ##################
 #   report in log03
 if True:
     print("Check FEMB registers")
@@ -167,10 +171,12 @@ if len(fembs) == 0:
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
 
+############################################
+#      PART 03 SE Performance Measurement  #
+############################################
 #   create report dir
 datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
-
-################ 04 Measure RMS at 200mV, 14mV/fC, 2us ###################
+##### 3.1 Measure RMS at 200mV, 14mV/fC, 2us ###################
 #   report in log04
 print("Take RMS data")
 log.report_log04["ITEM"] = "3.1 Measure RMS at 200mV, 14mV/fC, 2us"
@@ -196,7 +202,7 @@ time.sleep(1)
 # data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
-# data analysis ========================
+# report: data analysis ========================
 a_func.rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname)
 
 #   save data ==========================
@@ -208,7 +214,9 @@ if save:
 ################ Measure FEMB currents 2 ####################
 print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
-log.report_log05['ITEM'] = "3.2 SE Current Measurement"   #05
+result = False
+#####   3.2  SE interface current measure #####
+log.report_log05['ITEM'] = "3.2 SE interface Current Measurement"   #05
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
@@ -235,17 +243,20 @@ for ifemb in fembs:
 
     if hasERROR:
         print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-        log.report_log05[femb_id]["Result"] = False
+        result = False
         # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
     else:
         print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
-        log.report_log05[femb_id]["Result"] = True
+        result = True
         # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} Pass current #1 check\n".format(fembNo['femb%d' % ifemb])
     # log.report_log05[femb_id]["FC1_BIAS_current_2"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
     # log.report_log05[femb_id]["FC1_LArASIC_current_2"] = "LArASIC current: %f  (default range: (0.35A, 0.55A))\n" % fe_i
     # log.report_log05[femb_id]["FC1_COLDATA_current_2"] = "COLDATA current: %f  (default range: (0.15A, 0.35A))\n" % cd_i
     # log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f  (default range: (1.35A, 1.85A))\n" % adc_i
-
+for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+    pwr2 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas2, env, result))
+    log.report_log05.update(pwr2)
 
 #   power data save
 if save:
@@ -255,12 +266,12 @@ if save:
 
 
 #   power analysis
-pwr_meas=pwr_meas2
-a_func.power_ana(fembs, fembNo, datareport, pwr_meas, env)
+
+
 #for ifemb in fembs:
 
 ################# monitoring power rails ###################
-log.report_log06["ITEM"] = "06 FEMB power rail"
+log.report_log06["ITEM"] = "3.3 SE Interface power rail"
 power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport, fembNo)
 log.report_log06.update(log.power_rail_report_log)
@@ -271,7 +282,7 @@ fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
 snc = 0 # 900 mV
 sg0 = 0; sg1 = 0 # 14mV/fC
 st0 = 1; st1 = 1 # 2us
-log.report_log07["ITEM"] = "07 single-ended pulse at 900mV 14mV/fC 2us"
+log.report_log07["ITEM"] = "3.4 SE Interface Pulse at 900mV 14mV/fC 2us"
 #   initial configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
@@ -313,7 +324,7 @@ print("Take differential pulse data")
 fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
 chk.femb_cd_rst()
 cfg_paras_rec = []
-log.report_log08["ITEM"] = "4.1 Measure differential pulse at 200mV, 14mV/fC, 2us"
+log.report_log08["ITEM"] = "4.1 DIFF Pulse Measurement at 900mV, 14mV/fC, 2us"
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
     chk.adcs_paras[i][8]=1   # enable  auto
@@ -338,10 +349,11 @@ if save:
 a_func.DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname)
 
 
-#####   6   current measure #####
+#####   4.2  DIFF interface current measure #####
 print("Check DIFF current")
 pwr_meas3 = chk.get_sensors()
-log.report_log09['ITEM'] = "4.2 SE Current Measurement"   #05
+log.report_log09['ITEM'] = "4.2 DIFF interface Current Measurement"   #05
+result = False
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)
@@ -368,27 +380,31 @@ for ifemb in fembs:
 
     if hasERROR:
         print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
-        log.report_log09[femb_id]["Result"] = False
+        result = False
         # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
     else:
         print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
-        log.report_log09[femb_id]["Result"] = True
+        result = True
 
+for ifemb in range(len(fembs)):
+    femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+    pwr3 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas3, env, result))
+    log.report_log09.update(pwr3)
 #   power data save
 if save:
     fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump([pwr_meas3, fembs], fn)
-
+#####   ====================== #####
 
 #   power analysis
-pwr_meas=pwr_meas3
-a_func.power_ana_diff(fembs, fembNo, datareport, pwr_meas, env)
+# pwr_meas=pwr_meas3
+# a_func.power_ana_diff(fembs, fembNo, datareport, pwr_meas, env)
 
 
 
 ######   6   DIFF monitor power rails   ######
-log.report_log10["ITEM"] = "4.3 FEMB power rail"
+log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport, fembNo)
 log.report_log10.update(log.power_rail_report_log)
@@ -402,96 +418,6 @@ chk.femb_cd_rst()
 mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
 #   data analysis
 a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env)
-
-#   Generate Report
-# a_func.generate_report()
-###### Generate Report ######
-# for ifemb in fembs:
-# for ifemb in range(len(fembs)):
-#     femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-#     chk_result = []
-#     err_messg = []
-#     chk_result.append(("Measurement", "Result"))
-#
-#     print("tb", end = " ")
-#     tb1 = time.time()
-#     # print(tb1-tb)
-#
-#     if log.chkflag["PWR"][ifemb] == False:
-#         chk_result.append(("Power Measurement", "Pass"))
-#     else:
-#         chk_result.append(("Power Measurement", "Fail"))
-#         err_messg.append(("Power Measurement: ", log.badlist["PWR"][ifemb]))
-#
-#     print("tb", end=" ")
-#     tb2 = time.time()
-#     print(tb2 - tb1)
-#
-#     if log.chkflag["MON_T"][ifemb] == False:
-#         chk_result.append(("Temperature", "Pass"))
-#     else:
-#         chk_result.append(("Temperature", "Fail"))
-#         err_messg.append(("Temperature issued chips: ", log.badlist["MON_T"][ifemb]))
-#
-#     if log.chkflag["MON_BGP"][ifemb] == False:
-#         chk_result.append(("BGP", "Pass"))
-#     else:
-#         chk_result.append(("BGP", "Fail"))
-#         err_messg.append(("BGP issued chips: ", log.badlist["MON_BGP"][ifemb]))
-#
-#     if log.chkflag["RMS"][ifemb] == False:
-#         chk_result.append(("RMS", "Pass"))
-#     else:
-#         chk_result.append(("RMS", "Fail"))
-#         err_messg.append(("RMS issued channels: ", log.badlist["RMS"][ifemb][0]))
-#         if log.badlist["RMS"][ifemb][1]:
-#             err_messg.append(("RMS issued chips: ", log.badlist["RMS"][ifemb][1]))
-#
-#     if log.chkflag["BL"][ifemb] == False:
-#         chk_result.append(("200mV Baseline", "Pass"))
-#     else:
-#         chk_result.append(("200mV Baseline", "Fail"))
-#         err_messg.append(("200mV BL issued channels: ", log.badlist["BL"][ifemb][0]))
-#         if log.badlist["BL"][ifemb][1]:
-#             err_messg.append(("200mV BL issued chips: ", log.badlist["BL"][ifemb][1]))
-#     print("tc", end=" ")
-#     tc = time.time()
-#     print(tc-tb2)
-#     tmp_key = ["Pulse_SE", "Pulse_DIFF"]
-#     for ikey in tmp_key:
-#         if log.chkflag[ikey]["PPK"][ifemb] == False and log.chkflag[ikey]["NPK"][ifemb] == False and log.chkflag[ikey]["BL"][
-#             ifemb] == False:
-#             chk_result.append((ikey, "Pass"))
-#         else:
-#             chk_result.append((ikey, "Fail"))
-#             if log.chkflag[ikey]["PPK"][ifemb] == True:
-#                 err_messg.append(("%s positive peak issued channels: " % ikey, log.badlist[ikey]["PPK"][ifemb][0]))
-#                 if log.badlist[ikey]["PPK"][ifemb][1]:
-#                     err_messg.append(("%s positive peak issued chips: " % ikey, log.badlist[ikey]["PPK"][ifemb][1]))
-#
-#             if log.chkflag[ikey]["NPK"][ifemb] == True:
-#                 err_messg.append(("%s negative peak issued channels: " % ikey, log.badlist[ikey]["NPK"][ifemb][0]))
-#                 if log.badlist[ikey]["NPK"][ifemb][1]:
-#                     err_messg.append(("%s negative peak issued chips: " % ikey, log.badlist[ikey]["NPK"][ifemb][1]))
-#
-#             if log.chkflag[ikey]["BL"][ifemb] == True:
-#                 err_messg.append(("%s baseline issued channels: " % ikey, log.badlist[ikey]["BL"][ifemb][0]))
-#                 if log.badlist[ikey]["BL"][ifemb][1]:
-#                     err_messg.append(("%s baseline issued chips: " % ikey, log.badlist[ikey]["BL"][ifemb][1]))
-#
-#     len1 = len(chk_result)
-#     tmpkey = ["VCMI", "VCMO", "VREFP", "VREFN", "VSSA"]
-#     for ikey in tmpkey:
-#         if log.chkflag["MON_ADC"][ikey][ifemb] == True:
-#             len2 = len(chk_result)
-#             if len2 == len1:
-#                 chk_result.append(("ADC Monitoring", "Fail"))
-#             err_messg.append(("ADC MON %s issued chips: " % ikey, log.badlist["MON_ADC"][ikey][ifemb]))
-#
-#     len2 = len(chk_result)
-#     if len2 == len1:
-#         chk_result.append(("ADC Monitoring", "Pass"))
-
 
 #================   Final Report    ===================================
 a_repo.final_report(datareport, fembs, fembNo)
