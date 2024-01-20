@@ -1,4 +1,4 @@
-from llc import LLC
+from llc_back import LLC
 from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 from wib_cfgs import WIB_CFGS
 from spymemory_decode import wib_spy_dec_syn

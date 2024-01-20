@@ -1,4 +1,4 @@
-from llc import LLC
+from llc_back import LLC
 from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 import copy
 from datetime import datetime

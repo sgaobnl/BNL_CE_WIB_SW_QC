@@ -182,57 +182,6 @@ class QC_reports:
 
           c.save()
 
-
-
-
-          # pdf = FPDF(orientation='P', unit='mm', format='Letter')
-          # pdf.alias_nb_pages()
-          # pdf.add_page()
-          # #pdf.set_auto_page_break(False,0)
-          # images = sorted(glob.glob(fdir + "*.png"), key=os.path.getmtime)
-          # nn = 0
-          # for im in images:
-          #     if '\\' in im:
-          #         im_name = im.split("\\")[-1][4:-13]
-          #     else:
-          #         im_name = im.split("/")[-1][4:-13]
-          #     pdf.set_font('Times', 'B', 14)
-          #     if nn < 4:
-          #         pdf.text(55, 45 + 50 * nn, im_name)
-          #         pdf.image(im, 0, 47 + nn * 50, 160, 40)
-          #     else:
-          #         if nn % 4 == 0:
-          #             pdf.add_page()
-          #         pdf.text(55, 45 + 50 * nn, im_name)
-          #         pdf.image(im, 0, 47 + nn * 50, 160, 40)
-          #     nn = nn + 1
-
-          # pdf.alias_nb_pages()
-          # pdf.add_page()
-          #
-          # chk_images = sorted(glob.glob(fdir + "pulse_*.png"), key=os.path.getmtime)
-          # nn = 0
-          # for im in chk_images:
-          #     if '\\' in im:
-          #         im_name = im.split("\\")[-1][6:-4]
-          #     else:
-          #         im_name = im.split("/")[-1][6:-4]
-          #
-          #     pdf.set_font('Times', 'B', 14)
-          #     if nn < 3:
-          #         pdf.text(55, 10 + nn * 80, im_name)
-          #         pdf.image(im, 0, 12 + nn * 80, 220, 70)
-          #     else:
-          #         if nn % 3 == 0:
-          #             pdf.alias_nb_pages()
-          #             pdf.add_page()
-          #         pdf.text(55, 10 + (nn - 3) * 80, im_name)
-          #         pdf.image(im, 0, 12 + (nn - 3) * 80, 220, 70)
-          #     nn = nn + 1
-
-          # outfile = fdir + 'report.pdf'
-          # pdf.output(outfile, "F")
-         
       def PWR_consumption_report(self):
           qc = ana_tools()
           self.CreateDIR("PWR_Meas")
@@ -273,13 +222,12 @@ class QC_reports:
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
           pldata = qc.data_decode(rawdata, self.fembs)
-          se_pulse = dict(
-              a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us"))
+          se_pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us"))
           log.report_log01_22.update(se_pulse)
 
 #     SE Power Rail             Rail
-          power_rail_seon = a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID)
-          log.report_log01_23.update(power_rail_se)
+          power_rail_seon = dict(a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID))
+          log.report_log01_23.update(power_rail_seon)
 
 
 
@@ -300,7 +248,7 @@ class QC_reports:
           log.report_log01_32.update(diff_pulse)
 
 #     DIFF Power Rail
-          power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID)
+          power_rail_diff = dict(a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID))
           log.report_log01_33.update(power_rail_diff)
 
 

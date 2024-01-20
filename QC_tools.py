@@ -258,7 +258,11 @@ class ana_tools:
         rms = []
         ped = []
 
+<<<<<<< Updated upstream
         plt.figure(figsize = (16, 4))
+=======
+        plt.figure(figsize = (24, 4))
+>>>>>>> Stashed changes
         offset2 = 120
         if period == 500:
             pulrange = 120

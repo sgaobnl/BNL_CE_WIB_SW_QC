@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d01f235-97ba-4678-91d2-fb388afdf0f1" name="Changes" comment="">
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -17,16 +18,32 @@
       <change beforePath="$PROJECT_DIR$/QC_tools_bp.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/a.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ana_femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/ana_femb_assembly_chk.py" afterDir="false" />
+=======
+      <change afterPath="$PROJECT_DIR$/llc_back.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_components/All_Report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_components/All_Report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_components/qc_a_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_components/qc_a_function.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_components/qc_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_components/qc_log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QC_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/QC_tools.py" afterDir="false" />
+>>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/components/assembly_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_function.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_log.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_log.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_parameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/assembly_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/assembly_report.py" afterDir="false" />
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/fe_asic_reg_mapping.py" beforeDir="false" afterPath="$PROJECT_DIR$/fe_asic_reg_mapping.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/femb_assembly_chk_bp2.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/llc.py" beforeDir="false" afterPath="$PROJECT_DIR$/llc.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output.md" beforeDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/dat_cfg.py" beforeDir="false" afterPath="$PROJECT_DIR$/dat_cfg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/femb_assembly_chk.py" beforeDir="false" afterPath="$PROJECT_DIR$/femb_assembly_chk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/llc.py" beforeDir="false" afterPath="$PROJECT_DIR$/llc.py" afterDir="false" />
+>>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/quick_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/quick_script.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rd_demo_raw_hermes.py" beforeDir="false" afterPath="$PROJECT_DIR$/rd_demo_raw_hermes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.md" beforeDir="false" />
@@ -40,7 +57,7 @@
   </component>
   <component name="ExportToHTMLSettings">
     <option name="printScope" value="1" />
-    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/exportToHTML" />
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../../../aaaaa/" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -69,21 +86,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;DAT__FEMB__new&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/GitHub/DAT_QC_HERMES/BNL_CE_WIB_SW_QC&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CodeWithMe&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "DAT__FEMB__new",
+    "last_opened_file_path": "D:/GitHub/DAT_QC_HERMES/BNL_CE_WIB_SW_QC",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\GitHub\DAT_QC_HERMES\BNL_CE_WIB_SW_QC" />
+      <recent name="D:\A0-FEMB_test_script_improvement\T3_QC_Performance_TEST\AQC_REPORTS_T3\FEMB5_RT_0pF_R002" />
       <recent name="D:\GitHub\DAT_QC_HERMES\BNL_CE_WIB_SW_QC\components" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -104,4 +122,43 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
+<<<<<<< Updated upstream
+=======
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
+          <line>160</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
+          <line>293</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dunedaq_decode.py</url>
+          <line>175</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ana_femb_assembly_chk.py</url>
+          <line>10</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/QC_tools.py</url>
+          <line>536</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/QC_check.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+>>>>>>> Stashed changes
 </project>

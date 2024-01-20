@@ -51,7 +51,8 @@ def final_report(datareport, fembs, fembNo):
             # file.write('')
             file.write('\n')
             file.write('\n')
-
+# Title     FEMB ID
+            file.write('# Quality Control for < ' + (femb_id) + ' >\n')
 # 00        Print <Input Information>
             file.write('## INPUT INFORMATION' + '\n')
             info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
@@ -104,29 +105,30 @@ def final_report(datareport, fembs, fembNo):
 # 03        print <Leakage Current>
             file.write('## ITEM 03 Leakage Current' + '\n')
             file.write("------\n")
-            # 03_01 500 pA
-            file.write('### Pulse LC 500 pA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_01[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA.png)".format(log.item3) + "\n")
 
-            # 03_02 100 pA
+            # 03_01 100 pA
             file.write('### Pulse LC 100 pA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_02[femb_id])
+            info = dict_to_markdown_table(log.report_log03_02[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
             file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA.png)".format(log.item3) + "\n")
 
-            # 03_03 5 nA
-            file.write('### Pulse LC 5 nA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_03[femb_id])
+            # 03_02 500 pA
+            file.write('### Pulse LC 500 pA' + '\n')
+            info = dict_to_markdown_table(log.report_log03_01[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA.png)".format(log.item3) + "\n")
+            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA.png)".format(log.item3) + "\n")
 
-            # 03_04 1 nA
+            # 03_03 1 nA
             file.write('### Pulse LC 1 nA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_04[femb_id])
+            info = dict_to_markdown_table(log.report_log03_04[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
             file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA.png)".format(log.item3) + "\n")
+
+            # 03_04 5 nA
+            file.write('### Pulse LC 5 nA' + '\n')
+            info = dict_to_markdown_table(log.report_log03_03[femb_id], VALUE="Horizontal")
+            file.write(info + '\n')
+            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA.png)".format(log.item3) + "\n")
 
 
 

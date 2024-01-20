@@ -81,7 +81,7 @@ def power_ana(fembs, fembNo, pwr_meas, env):
         log.tmp_log[femb_id]["name"] = "BIAS | LArASIC | ColdDATA | ColdADC"
         log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3.5 "
         log.tmp_log[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
-        log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, COLDATA_i, ColdADC_i)
+        log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(abs(bias_i), LArASIC_i, COLDATA_i, ColdADC_i)
         log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
 
         # log.report_log05[femb_id]["Power check status"] = tmp[0]
@@ -94,28 +94,31 @@ def power_ana(fembs, fembNo, pwr_meas, env):
 
 
 
-def pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname, doc = "PWR_Meas/"):
+def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/"):
     log.tmp_log.clear()
     log.chkflag.clear()
     log.badlist.clear()
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-        report_addr = datareport[fembs[ifemb]] + doc
+        report_addr = ReportDir[fembs[ifemb]] + doc
         print(report_addr)
         ppk, npk, bl = qc_tools.GetPeaks(pls_rawdata, fembs[ifemb], report_addr, fname, funcfit=False)
-        # outfp = datareport[fembs[ifemb]] + "pulse_{}.bin".format(fname)
-        # with open(outfp, 'wb') as fn:
-        #      pickle.dump([ppk,npk,bl], fn)
 
         tmp = QC_check.CHKPulse(ppk)
+        ppk_mean = np.mean(ppk)
+        npk_mean = np.mean(npk)
+        bbl_mean = np.mean(bl)
+
+        log.tmp_log[femb_id]["npk_mean"] = np.round(npk_mean, 2)
+        log.tmp_log[femb_id]["bbl_mean"] = np.round(bbl_mean, 2)
+        log.tmp_log[femb_id]["ppk_mean"] = np.round(ppk_mean, 2)
+
         log.chkflag[femb_id]["Pulse_SE_PPK"]=tmp[0]
         log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
-
 
         tmp = QC_check.CHKPulse(npk)
         log.chkflag[femb_id]["Pulse_SE_NPK"]=(tmp[0])
         log.badlist[femb_id]["Pulse_SE_NPK"]=(tmp[1])
-
 
         tmp = QC_check.CHKPulse(bl)
         log.chkflag[femb_id]["Pulse_SE_BL"]=(tmp[0])
@@ -127,4 +130,5 @@ def pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname, doc = "PWR_Meas/"):
             log.tmp_log[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE"]["NPK"]
             log.tmp_log[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE"]["BL"]
             log.tmp_log[femb_id]["Result"] = False
+
     return log.tmp_log
