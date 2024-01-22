@@ -46,13 +46,16 @@ def final_report(datareport, fembs, fembNo):
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
 
-        log.final_status[femb_id]["item2"] = log.report_log02[femb_id]["Result"]
+        log.final_status[femb_id]["item2"] = log.report_log021[femb_id]["Result"]
         log.final_status[femb_id]["item3"] = log.report_log03[femb_id]["Result"]
         log.final_status[femb_id]["item4"] = log.report_log04[femb_id]["Result"]
-        log.final_status[femb_id]["item5"] = log.report_log05[femb_id]["Result"]
-        #log.final_status[femb_id]["item6"] = log.report_log06[femb_id]["Result"]
+        log.final_status[femb_id]["item5"] = log.report_log051[femb_id]["Result"]
+        log.final_status[femb_id]["item6"] = log.report_log061[femb_id]["Result"]
         log.final_status[femb_id]["item7"] = log.report_log07[femb_id]["Result"]
         log.final_status[femb_id]["item8"] = log.report_log08[femb_id]["Result"]
+        log.final_status[femb_id]["item8"] = log.report_log091[femb_id]["Result"]
+        log.final_status[femb_id]["item8"] = log.report_log101[femb_id]["Result"]
+        log.final_status[femb_id]["Monitor_Path"] = log.report_log111[femb_id]["Result"]
         #log.final_status[femb_id]["item9"] = log.report_log09[femb_id]["Result"]
 
         all_true[femb_id] = all(value for value in log.final_status[femb_id].values())
@@ -64,9 +67,19 @@ def final_report(datareport, fembs, fembNo):
     print("\n\n")
     print("Detail for Issues")
 
+    # print(log.report_log021)
+    # print(log.report_log03)
+    # print(log.report_log04)
+    # print(log.report_log051)
+    # print(log.report_log061)
+    # print(log.report_log07)
+    # print(log.report_log08)
+    # print(log.report_log091)
+    # print(log.report_log001)
+    # print(log.report_log111)
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-        dict_list = [log.report_log02, log.report_log03, log.report_log04, log.report_log05, log.report_log06, log.report_log07, log.report_log08, log.report_log09]
+        dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log061, log.report_log07, log.report_log08, log.report_log091, log.report_log101, log.report_log111]
         issue_note = ""
         if all_true[femb_id]:
             pass
@@ -75,16 +88,12 @@ def final_report(datareport, fembs, fembNo):
         else:
             print(femb_id)
             summary = "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb])
+            print(dict_list)
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
-                    print(dict["ITEM"])
-                    issue_note += dict["ITEM"]
-                    for key, value in dict[femb_id].items():
-                        print(f"{key}: {value}")
-                        issue_note += f"{key}: {value}"
-            note = "### Here is the issue: \n" + str(issue_note)
-
-
+                    print(dict[femb_id])
+                    issue_note += "{} \n".format(dict[femb_id])
+            note = "### Here is the issue: \n" + str(issue_note) + "\n"
 
         fpmd = datareport[ifemb] + 'report_FEMB_{}.md'.format(fembNo['femb%d' % ifemb])
 
@@ -113,7 +122,7 @@ def final_report(datareport, fembs, fembNo):
             file.write('\n');            file.write('------');            file.write('\n')
 
 # 02        Print <Initial test Result>
-            if (log.report_log02[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
+            if (log.report_log021[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
                 Head02 = '### ' + '<span style="color: green;">' + 'PART 02 Initial Test' + '    < Pass >' + '</span>'  + '\n'
             else:
                 Head02 = '### ' + '<span style="color: red;">' + 'PART 02 Initial Test' + ' | Fail' + '</span>' + '\n'
@@ -127,13 +136,13 @@ def final_report(datareport, fembs, fembNo):
             file.write(info + '\n')
 
 # 03        Print <SE OFF RMS, PED, Pulse, Power Current, Power Rail>
-            if (log.report_log03[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
+            if (log.report_log04[femb_id]["Result"] == True) and (log.report_log051[femb_id]["Result"] == True) and (log.report_log061[femb_id]["Result"] == True):
                 Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
                 Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE Interface Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Pulse Measurement", VALUE = "VALUE")
+            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Noise Measurement", VALUE = "VALUE")
             file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
             file.write(info + '\n')
             # "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" +
@@ -148,7 +157,7 @@ def final_report(datareport, fembs, fembNo):
 
 
             file.write('#### ' + str(log.report_log07["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "Pulse Response", VALUE = "VALUE")
+            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "SE Pulse Response", VALUE = "VALUE")
             file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n\n")
             file.write(info + '\n')
 
@@ -161,7 +170,7 @@ def final_report(datareport, fembs, fembNo):
             # file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)")
             # file.write('\n')
 # 04        Print <DIFF RMS, PED, Pulse, Power Current, Power Rail>
-            if (log.report_log09[femb_id]["Result"] == True) and (log.report_log09[femb_id]["Result"] == True):
+            if (log.report_log08[femb_id]["Result"] == True) and (log.report_log091[femb_id]["Result"] == True) and (log.report_log101[femb_id]["Result"] == True):
                 Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
                 Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Interface Measurement' + ' | Fail' + '</span>' + '\n'
@@ -191,17 +200,14 @@ def final_report(datareport, fembs, fembNo):
             info = dict_to_markdown_table(log.report_log10[femb_id], KEY = "4.3 DIFF Power Rail", VALUE = "Horizontal")
             file.write(info + '\n')
 
-            if (log.report_log11["Result"] == True):
+# 05        PART 05 Monitoring Path Measurement
+            if (log.report_log111[femb_id]["Result"] == True):
                 Head05 = '## ' + '<span style="color: green;">' + 'PART 05 Monitoring Path Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
                 Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Path Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head05 + '\n')
 
             file.write('## ' + str(log.report_log11["ITEM"]) + '\n')
-            # file.write('#### ' + 'Result:    ' + str(log.report_log11[femb_id]["Result"]) + '\n\n')
-            # for key, value in log.report_log11[femb_id].items():
-            #     file.write('#### ' + f"{key}: {value}\n")
-            #file.write("![ped](./MON_PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.png)")
             info = dict_to_markdown_table(log.report_log11[femb_id], KEY = "Monitor Path", VALUE = "MonPath")
             file.write(info + '\n')
             file.write('\n')

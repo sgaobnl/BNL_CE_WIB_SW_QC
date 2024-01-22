@@ -431,11 +431,6 @@ class LLC():
             v = self.wib.read_ltc2991(bus, 0x4E, False, i) 
             bus2_ltc2991_4e_vs.append(v)
         time.sleep(0.1)
-        print(bus2_ltc2991_49_vs)
-        print(bus2_ltc2991_4a_vs)
-        print(bus2_ltc2991_4b_vs)
-        print(bus2_ltc2991_4e_vs)
-        input()
         power_meas["FEMB0_BIAS_V"]   =  bus2_ltc2991_4e_vs[1]
         power_meas["FEMB0_BIAS_I"]   = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1])/0.1
         power_meas["FEMB0_DC2DC0_V"] =  bus2_ltc2991_48_vs[1]

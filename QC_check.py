@@ -44,7 +44,7 @@ def CHKPWR(data, nfemb, env):
        BAD = True 
        bad_list.append("COLDATA current")
 
-    if adc_v>3.1 or adc_v<2.80:
+    if adc_v>3.6 or adc_v<3.30:
        BAD = True 
        bad_list.append("ColdADC voltage")
     if adc_i>1.95 or adc_i<1.35:

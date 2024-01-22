@@ -125,7 +125,7 @@ for ifemb in fembs:
 
     if hasERROR:
         print("FEMB ID {} Faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
-        log.report_log02[femb_id]['check_status'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d' % ifemb])
+        log.report_log02[femb_id]['Part 2 Power Error List'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d' % ifemb])
         # fembs.remove(ifemb)
 
         #== I need to know how to merge the different dictionary, like the log here merge the log in induced function
@@ -138,8 +138,13 @@ for ifemb in fembs:
         result = True
 for ifemb in range(len(fembs)):
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-    pwr1 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas1, env, result))
+    initial_power = a_func.power_ana(fembs, ifemb, femb_id, pwr_meas1, env)
+    pwr1 = dict(log.tmp_log)
+    check1 = dict(log.check_log)
     log.report_log02.update(pwr1)
+    log.report_log021.update(check1)
+
+
 
 for femb_id in fembs_remove:
     fembs.remove(femb_id)
@@ -179,7 +184,7 @@ datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
 ##### 3.1 Measure RMS at 200mV, 14mV/fC, 2us ###################
 #   report in log04
 print("Take RMS data")
-log.report_log04["ITEM"] = "3.1 Measure RMS at 200mV, 14mV/fC, 2us"
+log.report_log04["ITEM"] = "3.1 Measure RMS at 200mV, 14mV/fC, 2us, DAC = 0x00"
 fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
 snc = 1 # 200 mV
 sg0 = 0
@@ -195,7 +200,7 @@ for i in range(8):
 for femb_id in fembs:
     chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
     adac_pls_en = 0
-    cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
+    cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en))
     chk.femb_cfg(femb_id, adac_pls_en )
 chk.data_align(fembs)
 time.sleep(1)
@@ -255,8 +260,11 @@ for ifemb in fembs:
     # log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f  (default range: (1.35A, 1.85A))\n" % adc_i
 for ifemb in range(len(fembs)):
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-    pwr2 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas2, env, result))
+    se_power = a_func.power_ana(fembs, ifemb, femb_id, pwr_meas2, env)
+    pwr2 = dict(log.tmp_log)
+    check2 = dict(log.check_log)
     log.report_log05.update(pwr2)
+    log.report_log051.update(check2)
 
 #   power data save
 if save:
@@ -274,7 +282,9 @@ if save:
 log.report_log06["ITEM"] = "3.3 SE Interface power rail"
 power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport, fembNo)
-log.report_log06.update(log.power_rail_report_log)
+log06 = dict(log.power_rail_report_log)
+log.report_log06.update(log06)
+log.report_log061 = dict(log.check_log)
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
@@ -307,6 +317,10 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
+
+##############################################
+#      PART 04 DIFF Performance Measurement  #
+##############################################
 
 ############ Take pulse data 900mV 14mV/fC 2us (DIFF) ##################
 #   take pulse structure:
@@ -388,8 +402,12 @@ for ifemb in fembs:
 
 for ifemb in range(len(fembs)):
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-    pwr3 = dict(a_func.power_ana(fembs, ifemb, femb_id, pwr_meas3, env, result))
+    diff_power = a_func.power_ana(fembs, ifemb, femb_id, pwr_meas3, env)
+    pwr3 = dict(log.tmp_log)
+    check3 = dict(log.check_log)
     log.report_log09.update(pwr3)
+    log.report_log091.update(check3)
+
 #   power data save
 if save:
     fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
@@ -397,26 +415,25 @@ if save:
         pickle.dump([pwr_meas3, fembs], fn)
 #####   ====================== #####
 
-#   power analysis
-# pwr_meas=pwr_meas3
-# a_func.power_ana_diff(fembs, fembNo, datareport, pwr_meas, env)
-
-
 
 ######   6   DIFF monitor power rails   ######
 log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport, fembNo)
-log.report_log10.update(log.power_rail_report_log)
+log10 = dict(log.power_rail_report_log)
+log.report_log10.update(log10)
+log.report_log101 = dict(log.check_log)
 
-
-
-######  7   Take monitoring data #######
+##################################
+#      PART 05 Monitor Path      #
+##################################
+###### Take monitoring data ######
 #   initial ColdADC, COLDATA
 chk.femb_cd_rst()
-#   data acquisition
+#   Data Acquisition
 mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
-#   data analysis
+#   Data Process
+#   Parameter Comparison
 a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env)
 
 #================   Final Report    ===================================

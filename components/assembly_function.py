@@ -137,6 +137,16 @@ def monitor_power_rail(interface, fembs, datadir, save = False):
     return vold
 
 def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
+    log.tmp_log.clear()
+    log.check_log.clear()
+    # parameter
+    gnd_ref = 100; gnd_err = 100
+    adc_p_ref = 2245; adc_p_err = 100
+    CDVDDA_ref = 1187; CDVDDA_err = 100
+    CDVDDIO_ref = 2236; CDVDDIO_err = 100
+    ACCVDD1P2_ref = 1097; ACCVDD1P2_err = 100
+    FE_ref = 1797; FE_err = 200
+
     fsub = "MON_PWR_" + interface + "_200mVBL_14_0mVfC_2_0us_0x00.bin"
     fpwr = datadir + fsub
     with open(fpwr, 'rb') as fn:
@@ -158,17 +168,62 @@ def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
             vfstd = np.std(vf)
             mvold[key] = [vfm, vfstd]
 
+#   print value into table and also highlight the issue value while check them out
         mvvold = {}
+        check = True
+        check_list = []
         for key in vkeys:
             if "GND" in key:
-                mvvold[key] = "{}".format(abs(int(mvold[key][0] * LSB * 1000)))
+                voltage_temp = abs(int(mvold[key][0] * LSB * 1000))
+                if abs(voltage_temp - gnd_ref) < gnd_err :
+                    mvvold[key] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key] = "<span style = 'color:red;'> {} </span>".format(abs(int(mvold[key][0] * LSB * 1000)))
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key, voltage_temp))
             elif "HALF" in key:
-                mvvold[key.replace("_HALF", "")] = "{}".format(abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 2 * 1000)))
+                voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 2 * 1000))
+                if abs(voltage_temp - adc_p_ref) < adc_p_err :
+                    mvvold[key.replace("_HALF", "")] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key.replace("_HALF", "")] = "<span style = 'color:red;'> {} </span>".format(voltage_temp)
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key.replace("_HALF", ""), voltage_temp))
+            elif "CDVDDA" in key:
+                voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                if abs(voltage_temp - CDVDDA_ref) < CDVDDA_err :
+                    mvvold[key] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key] = "<span style = 'color:red;'> {} </span>".format(voltage_temp)
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key, voltage_temp))
+            elif "CDVDDIO" in key:
+                voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                if abs(voltage_temp - CDVDDIO_ref) < CDVDDIO_err :
+                    mvvold[key] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key] = "<span style = 'color:red;'> {} </span>".format(voltage_temp)
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key, voltage_temp))
+            elif "VDDD1P2" in key:
+                voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                if abs(voltage_temp - ACCVDD1P2_ref) < ACCVDD1P2_err :
+                    mvvold[key] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key] = "<span style = 'color:red;'> {} </span>".format(voltage_temp)
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key, voltage_temp))
             else:
-                mvvold[key] = "{}".format(abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000)))
+                voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                if abs(voltage_temp - FE_ref) < FE_err :
+                    mvvold[key] = "{}".format(voltage_temp)
+                else:
+                    mvvold[key] = "<span style = 'color:red;'> {} </span>".format(voltage_temp)
+                    check = False
+                    check_list.append("Monitor Path {} = {}, issue".format(key, voltage_temp))
         log.power_rail_report_log[femb_id] = mvvold
-        print(log.power_rail_report_log[femb_id])
-        log.power_rail_report_log[femb_id]["Result"] = True
+        log.check_log[femb_id]["Result"] = check
+        log.check_log[femb_id]["Issue List"] = check_list
 
     #qc_tools.PrintVolMON(vfembs, mvvold, reportdir, fsub)
 
@@ -243,43 +298,104 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
 
 
 #   item05  Power analysis
-def power_ana(fembs, ifemb, femb_id, pwr_meas, env, result = False):
+def power_ana(fembs, ifemb, femb_id, pwr_meas, env):
     log.tmp_log.clear()
-    log.chkflag.clear()
-    log.badlist.clear()
+    log.check_log.clear()
 
-    tmp = QC_check.CHKPWR(pwr_meas, fembs[ifemb], env)
-    log.chkflag["PWR"]=(tmp[0])
-    log.badlist["PWR"]=(tmp[1])
+    check = True
+    check_issue = []
+    # parameter
+    bias_v_ref = 5; bias_v_err = 0.5;    bias_i_ref = 0; bias_i_err = 0.1
+    LArASIC_v_ref = 3; LArASIC_v_err = 0.2;    LArASIC_i_ref1 = 0.43; LArASIC_i_ref2 = 0.693; LArASIC_i_err = 0.1
+    COLDATA_v_ref = 3; COLDATA_v_err = 0.2;    COLDATA_i_ref1 = 0.174; COLDATA_i_ref2 = 0.229; COLDATA_i_err = 0.1
+    ColdADC_v_ref = 3.5; ColdADC_v_err = 0.2;  ColdADC_i_ref1 = 1.648;  ColdADC_i_ref2 = 1.709; ColdADC_i_err = 0.1
+    # bias_v i p
+    temp_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
+    if abs(temp_v - bias_v_ref) < bias_v_err:
+        bias_v = "{}".format(temp_v)
+    else:
+        check = False
+        check_issue.append("BIAS_V = {} out of [{} +- {}]\n".format(temp_v, bias_v_ref, bias_v_err))
+        bias_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
+    temp_i = round(pwr_meas['FEMB%d_BIAS_I' % fembs[ifemb]], 3)
+    if abs(temp_i - bias_i_ref) < bias_i_err:
+        bias_i = "{}".format(abs(temp_i))
+    else:
+        check = False
+        check_issue.append("bias_i = {} out of [{} +- {}]\n".format(temp_i, bias_i_ref, bias_i_err))
+        bias_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
+    bias_p = abs(round(temp_v * temp_i, 3))
 
-    bias_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
-    LArASIC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
-    COLDATA_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
-    ColdADC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
+    # LArASIC_v i p
+    temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
+    if abs(temp_v - LArASIC_v_ref) < LArASIC_v_err:
+        LArASIC_v = "{}".format(temp_v)
+    else:
+        check = False
+        check_issue.append("LArASIC_v = {} out of [{} +- {}]\n".format(temp_v, LArASIC_v_ref, LArASIC_v_err))
+        LArASIC_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
+    temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
+    if abs(temp_i - LArASIC_i_ref1) < LArASIC_i_err:
+        LArASIC_i = "{}".format(temp_i)
+    elif(abs(temp_i - LArASIC_i_ref2) < LArASIC_i_err):
+        LArASIC_i = "{}".format(temp_i)
+    else:
+        check = False
+        check_issue.append("LArASIC_i = {} out of [{}/{} +- {}]\n".format(temp_i, LArASIC_i_ref1, LArASIC_i_ref2, LArASIC_i_err))
+        LArASIC_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
+    LArASIC_p = round(temp_v * temp_i, 3)
 
-    bias_i = round(pwr_meas['FEMB%d_BIAS_I'%fembs[ifemb]],3)
-    LArASIC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
-    COLDATA_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
-    ColdADC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
+    # COLDATA_v i p
+    temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
+    if abs(temp_v - COLDATA_v_ref) < COLDATA_v_err:
+        COLDATA_v = "{}".format(temp_v)
+    else:
+        check = False
+        check_issue.append("COLDATA_v = {} out of [{} +- {}]\n".format(temp_v, COLDATA_v_ref, COLDATA_v_err))
+        COLDATA_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
+    temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
+    if abs(temp_i - COLDATA_i_ref1) < COLDATA_i_err:
+        COLDATA_i = "{}".format(temp_i)
+    elif(abs(temp_i - COLDATA_i_ref2) < COLDATA_i_err):
+        COLDATA_i = "{}".format(temp_i)
+    else:
+        check = False
+        check_issue.append("COLDATA_i = {} out of [{}/{} +- {}]\n".format(temp_i, COLDATA_i_ref1, COLDATA_i_ref2, COLDATA_i_err))
+        COLDATA_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
+    COLDATA_p = round(temp_v * temp_i, 3)
 
-    bias_p = abs(round(bias_v * bias_i, 3))
-    LArASIC_p = round(LArASIC_v * LArASIC_i, 3)
-    COLDATA_p = round(COLDATA_v * COLDATA_i, 3)
-    ColdADC_p = round(ColdADC_v * ColdADC_i, 3)
+    # ColdADC_v i p
+    temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
+    if abs(temp_v - ColdADC_v_ref) < ColdADC_v_err:
+        ColdADC_v = "{}".format(temp_v)
+    else:
+        check = False
+        check_issue.append("ColdADC_v = {} out of [{} +- {}]\n".format(temp_v, ColdADC_v_ref, ColdADC_v_err))
+        ColdADC_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
+    temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
+    if abs(temp_i - ColdADC_i_ref1) < ColdADC_i_err:
+        ColdADC_i = "{}".format(temp_i)
+    elif(abs(temp_i - ColdADC_i_ref2) < ColdADC_i_err):
+        ColdADC_i = "{}".format(temp_i)
+    else:
+        check = False
+        check_issue.append("ColdADC_i = {} out of [{}/{} +- {}]\n".format(temp_i, ColdADC_i_ref1, ColdADC_i_ref2, ColdADC_i_err))
+        ColdADC_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
+    ColdADC_p = round(temp_v * temp_i, 3)
+
     total_p = bias_p + LArASIC_p + COLDATA_p + ColdADC_p
 
     # the | is used in Markdown table
-    log.tmp_log[femb_id]["Result"] = result
     log.tmp_log[femb_id]["Measure Object"] = "BIAS | LArASIC | ColdDATA | ColdADC"
     log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3.5 "
     log.tmp_log[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
-    log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(abs(bias_i), LArASIC_i, COLDATA_i, ColdADC_i)
+    log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, COLDATA_i, ColdADC_i)
     log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
+    log.tmp_log[femb_id]["Total Power"] = " {} |  | | ".format(round(total_p, 2))
 
-    # log.report_log05[femb_id]["Power check status"] = tmp[0]
-    log.tmp_log[femb_id]["Power ERROR status"] = "{} | | 'Total Power' | {} ".format(log.badlist["PWR"], total_p)
+    log.check_log[femb_id]["Result"] = check
+    log.check_log[femb_id]["Issue List"] = check_issue
 
-    return log.tmp_log
 
 def power_ana_diff(fembs, fembNo, datareport, pwr_meas, env):
     for ifemb in range(len(fembs)):
@@ -328,22 +444,14 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
         #      pickle.dump([ppk,npk,bl], fn)
 
         tmp = QC_check.CHKPulse(ppk)
-        td = 1
-        print(123)
-        print(tmp[0])
-        print(456)
-        print(tmp[1])
+
         log.chkflag["Pulse_SE"]["PPK"]=(tmp[0])
-        print(789)
-        print(log.chkflag["Pulse_SE"]["PPK"])
         log.badlist["Pulse_SE"]["PPK"]=(tmp[1])
 
-        td = 2
         tmp = QC_check.CHKPulse(npk)
         log.chkflag["Pulse_SE"]["NPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["NPK"]=(tmp[1])
 
-        td = 3
         tmp = QC_check.CHKPulse(bl)
         log.chkflag["Pulse_SE"]["BL"]=(tmp[0])
         log.badlist["Pulse_SE"]["BL"]=(tmp[1])
@@ -416,6 +524,18 @@ def monitoring_path(fembs, snc, sg0, sg1, datadir, save):
 
     return mon_refs, mon_temps, mon_adcs
 
+#   used as backup in voltage comparision
+def single_check(pwr_meas, temp_name, ref, error):
+    check = True
+    check_issue = []
+    temp = round(pwr_meas[temp_name], 3)
+    if (temp - ref) < error:
+        output = "{}".format(temp)
+    else:
+        check = False
+        check_issue = ("{} = {} out of [{}} +- {}}]\n".format(temp_name, temp, ref, error))
+        output = "<span style = 'color':red;'> {} </span>".format(temp)
+    return output, check, check_issue
 #   Data Analysis
 def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     nchips = range(8)
@@ -424,55 +544,98 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     fadc = 1/(2**14)*2048
     fe_t = [None] * 8;    fe_bgp = [None] * 8;    vcmi = [None] * 8;    vcmo = [None] * 8
     vrefp = [None] * 8;    vrefn = [None] * 8;    vssa = [None] * 8
+    check = True
+    check_issue = []
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
         for i in nchips:  # 8 chips per board
-            fe_t[i] = round(mon_temps[f'chip{i}'][0][ifemb] * fadc, 1)
-            fe_bgp[i] = round(mon_refs[f'chip{i}'][0][ifemb] * fadc, 1)
-            vcmi[i] = round(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc, 1)
-            vcmo[i] = round(mon_adcs[f'chip{i}']["VCMO"][1][0][ifemb] * fadc, 1)
-            vrefp[i] = round(mon_adcs[f'chip{i}']["VREFP"][1][0][ifemb] * fadc, 1)
-            vrefn[i] = round(mon_adcs[f'chip{i}']["VREFN"][1][0][ifemb] * fadc, 1)
-            vssa[i] = round(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc, 1)
-        log.report_log11["Result"] = True
+            # include data process and check
+            if env == 'LN':
+                vssa_ref = 100; vssa_err = 100
+                fe_t_ref = 850; fe_t_err = 50
+                fe_bgp_ref = 1150; fe_bgp_err = 50
+                vcmi_ref = 875; vcmi_err = 50
+                vcmo_ref = 1160; vcmo_err = 50
+                vrefp_ref = 1870; vrefp_err = 50
+                vrefn_ref = 440; vrefn_err = 50
+            else:
+                vssa_ref = 100; vssa_err = 100
+                fe_t_ref = 850; fe_t_err = 50
+                fe_bgp_ref = 1150; fe_bgp_err = 50
+                vcmi_ref = 875; vcmi_err = 50
+                vcmo_ref = 1160; vcmo_err = 50
+                vrefp_ref = 1870; vrefp_err = 50
+                vrefn_ref = 440; vrefn_err = 50
+
+            #   vssa
+            vssa_tmp = round(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc, 1)
+            if abs(vssa_tmp - vssa_ref) > vssa_err:
+                check = False
+                check_issue.append("RT vssa_chip{}={}; out of [0 200 mV]\n".format(i, vssa_tmp))
+                vssa[i] = "<span style = 'color:red;'> {} </span>".format(vssa_tmp)
+            else:
+                vssa[i] = "{}".format(vssa_tmp)
+
+            #   fe_t
+            fe_t_tmp = round(mon_temps[f'chip{i}'][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(fe_t_tmp - fe_t_ref) > fe_t_err:
+                check = False
+                check_issue.append("RT fe_t_chip{}={}; out of [790 890 mV]\n".format(i, fe_t_tmp))
+                fe_t[i] = "<span style = 'color:red;'> {} </span>".format(fe_t_tmp)
+            else:
+                fe_t[i] = "{}".format(fe_t_tmp)
+            #   fe_bgp
+            fe_bgp_tmp = round(mon_refs[f'chip{i}'][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(fe_bgp_tmp - fe_bgp_ref) > fe_bgp_err:
+                check = False
+                check_issue.append("RT fe_bgp_chip{}={}; out of [1100 1200 mV]\n".format(i, fe_bgp_tmp))
+                fe_bgp[i] = "<span style = 'color:red;'> {} </span>".format(fe_bgp_tmp)
+            else:
+                fe_bgp[i] = "{}".format(fe_bgp_tmp)
+            #   vcmi
+            vcmi_temp = round(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(vcmi_temp - vcmi_ref) > vcmi_err:
+                check = False
+                check_issue.append("RT vcmi_chip{}={}; out of [825 925 mV]\n".format(i, vcmi_temp))
+                vcmi[i] = "<span style = 'color:red;'> {} </span>".format(vcmi_temp)
+            else:
+                vcmi[i] = "{}".format(vcmi_temp)
+            #   vcmo
+            vcmo_temp = round(mon_adcs[f'chip{i}']["VCMO"][1][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(vcmo_temp - vcmo_ref) > vcmo_err:
+                check = False
+                check_issue.append("RT vcmo_chip{}={}; out of [825 925 mV]\n".format(i, vcmo_temp))
+                vcmo[i] = "<span style = 'color:red;'> {} </span>".format(vcmo_temp)
+            else:
+                vcmo[i] = "{}".format(vcmo_temp)
+            #   vrefp
+            vrefp_temp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(vrefp_temp - vrefp_ref) > vrefp_err:
+                check = False
+                check_issue.append("RT vrefp_chip{}={}; out of [825 925 mV]\n".format(i, vrefp_temp))
+                vrefp[i] = "<span style = 'color:red;'> {} </span>".format(vrefp_temp)
+            else:
+                vrefp[i] = "{}".format(vrefp_temp)
+            #   vrefp
+            vrefn_temp = round(mon_adcs[f'chip{i}']["VREFN"][1][0][ifemb] * fadc - vssa_tmp, 1)
+            if abs(vrefn_temp - vrefn_ref) > vrefn_err:
+                check = False
+                check_issue.append("RT vrefn_chip{}={}; out of [825 925 mV]\n".format(i, vrefn_temp))
+                vrefn[i] = "<span style = 'color:red;'> {} </span>".format(vrefn_temp)
+            else:
+                vrefn[i] = "{}".format(vrefn_temp)
+
+        log.report_log111[femb_id]["Result"] = check
+        log.report_log111[femb_id]["Part 5 Monitor Path Error List"] = check_issue
     # for ifemb in range(len(fembs)):
         log.report_log11[femb_id]["ASIC #"] = " 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 "
-        log.report_log11[femb_id]["FE T"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_t[0], fe_t[1], fe_t[2], fe_t[3], fe_t[4], fe_t[5], fe_t[6], fe_t[7])
-        log.report_log11[femb_id]["FE BGP"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_bgp[0], fe_bgp[1], fe_bgp[2], fe_bgp[3], fe_bgp[4], fe_bgp[5], fe_bgp[6], fe_bgp[7])
-        log.report_log11[femb_id]["VCMI"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmi[0], vcmi[1], vcmi[2], vcmi[3], vcmi[4], vcmi[5], vcmi[6], vcmi[7])
-        log.report_log11[femb_id]["VCMO"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmo[0], vcmo[1], vcmo[2], vcmo[3], vcmo[4], vcmo[5], vcmo[6], vcmo[7])
-        log.report_log11[femb_id]["VREFP"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefp[0], vrefp[1], vrefp[2], vrefp[3], vrefp[4], vrefp[5], vrefp[6], vrefp[7])
-        log.report_log11[femb_id]["VREFN"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefn[0], vrefn[1], vrefn[2], vrefn[3], vrefn[4], vrefn[5], vrefn[6], vrefn[7])
+        log.report_log11[femb_id]["FE T - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_t[0], fe_t[1], fe_t[2], fe_t[3], fe_t[4], fe_t[5], fe_t[6], fe_t[7])
+        log.report_log11[femb_id]["FE BGP - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(fe_bgp[0], fe_bgp[1], fe_bgp[2], fe_bgp[3], fe_bgp[4], fe_bgp[5], fe_bgp[6], fe_bgp[7])
+        log.report_log11[femb_id]["ADC_VCMI - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmi[0], vcmi[1], vcmi[2], vcmi[3], vcmi[4], vcmi[5], vcmi[6], vcmi[7])
+        log.report_log11[femb_id]["ADC_VCMO - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vcmo[0], vcmo[1], vcmo[2], vcmo[3], vcmo[4], vcmo[5], vcmo[6], vcmo[7])
+        log.report_log11[femb_id]["ADC_VREFP - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefp[0], vrefp[1], vrefp[2], vrefp[3], vrefp[4], vrefp[5], vrefp[6], vrefp[7])
+        log.report_log11[femb_id]["ADC_VREFN - VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vrefn[0], vrefn[1], vrefn[2], vrefn[3], vrefn[4], vrefn[5], vrefn[6], vrefn[7])
         log.report_log11[femb_id]["VSSA"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(vssa[0], vssa[1], vssa[2], vssa[3], vssa[4], vssa[5], vssa[6], vssa[7])
-    for ifemb in range(len(fembs)):
-        tmp = QC_check.CHKFET(mon_temps, fembs[ifemb], nchips, env)
-        log.chkflag["MON_T"]=(tmp[0])
-        log.badlist["MON_T"]=(tmp[1])
-
-        tmp = QC_check.CHKFEBGP(mon_refs, fembs[ifemb], nchips, env)
-        log.chkflag["MON_BGP"]=(tmp[0])
-        log.badlist["MON_BGP"]=(tmp[1])
-
-        tmp = QC_check.CHKADC(mon_adcs, fembs[ifemb], nchips, "VCMI", 985, 40, 935, 40, env)
-        log.chkflag["MON_ADC"]["VCMI"]=(tmp[0])
-        log.badlist["MON_ADC"]["VCMI"]=(tmp[1])
-
-        tmp = QC_check.CHKADC(mon_adcs, fembs[ifemb], nchips, "VCMO", 1272, 40, 1232, 40, env)
-        log.chkflag["MON_ADC"]["VCMO"]=(tmp[0])
-        log.badlist["MON_ADC"]["VCMO"]=(tmp[1])
-
-        tmp = QC_check.CHKADC(mon_adcs, fembs[ifemb], nchips, "VREFP", 1988, 40, 1980, 40, env)
-        log.chkflag["MON_ADC"]["VREFP"]=(tmp[0])
-        log.badlist["MON_ADC"]["VREFP"]=(tmp[1])
-
-        tmp = QC_check.CHKADC(mon_adcs, fembs[ifemb], nchips, "VREFN", 550, 40, 482, 40, env)
-        log.chkflag["MON_ADC"]["VREFN"]=(tmp[0])
-        log.badlist["MON_ADC"]["VREFN"]=(tmp[1])
-
-        tmp = QC_check.CHKADC(mon_adcs, fembs[ifemb], nchips, "VSSA", 105, 40, 35, 20, env)
-        log.chkflag["MON_ADC"]["VSSA"]=(tmp[0])
-        log.badlist["MON_ADC"]["VSSA"]=(tmp[1])
-
 
 
 
