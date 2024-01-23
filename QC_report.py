@@ -544,46 +544,28 @@ class QC_reports:
           self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1/")
 
           # datadir = self.datadir+"CALI1/"
-          # print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
-          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list)
-          # qc.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          # self.GenCALIPDF("200mVBL", "4_7mVfC", "2_0us", 0, "CALI1_DIFF/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
-          self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1/")
-
-          # datadir = self.datadir+"CALI1/"
           # print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-          # qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          # self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1_DIFF/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
-          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1_DIFF/")
-
-          datadir = self.datadir+"CALI1/"
-          print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
-          qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
-          qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
-          self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1/")
-
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
+          # self.GenCALIPDF("200mVBL", "7_8mVfC", "2_0us", 0, "CALI1/")
+          #
+          # datadir = self.datadir+"CALI1/"
+          # print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
+          # self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1/")
+          #
           # datadir = self.datadir+"CALI1/"
           # print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
-          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
-          # qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-          # self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1_DIFF/")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
+          # self.GenCALIPDF("200mVBL", "25_0mVfC", "2_0us", 0, "CALI1/")
+
+          # datadir = self.datadir+"CALI1/"
+          # print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
+          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+          # qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+          # self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI1_DIFF/")
 
       def CALI_report_2(self):
 

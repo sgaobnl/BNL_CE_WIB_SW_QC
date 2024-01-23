@@ -1,11 +1,8 @@
 from spymemory_decode import wib_dec
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 from scipy.optimize import curve_fit
-import pandas as pd
+# import pandas as pd
 import numpy as np
-from scipy.stats import linregress
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
@@ -258,7 +255,7 @@ class ana_tools:
         rms = []
         ped = []
 
-        plt.figure(figsize = (16, 4))
+        plt.figure(figsize = (18, 4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -345,7 +342,7 @@ class ana_tools:
         rms_mean = np.mean(rms)
 
         bottom = -1000
-        plt.title("128-CH Pulse Response Overlap", fontsize = 14)
+        plt.title(fname, fontsize = 14) # "128-CH Pulse Response Overlap"
         plt.ylim(bottom, 16384+bottom)
         plt.xlabel("Sample Points", fontsize = 14)
         plt.ylabel("ADC count", fontsize = 14)
@@ -468,125 +465,125 @@ class ana_tools:
 
 
 
-    def PrintPWR(self, pwr_data, nfemb, fp):
-
-        pwr_set=[5,3,3,3.5]
-        pwr_dic={'name':[],'V_set/V':[],'V_meas/V':[],'I_meas/A':[],'P_meas/W':[]}
-        i=0
-        total_p = 0
-
-        pwr_dic['name'] = ['BIAS','LArASIC','ColdDATA','ColdADC']
-        bias_v = round(pwr_data['FEMB%d_BIAS_V'%nfemb],3)
-        bias_i = round(pwr_data['FEMB%d_BIAS_I'%nfemb],3)
-
-        if abs(bias_i)>0.005:
-           print('Warning: FEMB{} Bias current abs({})>0.005'.format(nfemb,bias_i))
-
-        pwr_dic['V_set/V'].append(pwr_set[0])
-        pwr_dic['V_meas/V'].append(bias_v)
-        pwr_dic['I_meas/A'].append(bias_i)
-        pwr_dic['P_meas/W'].append(round(bias_v*bias_i,3))
-        total_p = total_p + round(bias_v*bias_i,3)
-
-        for i in range(3):
-            tmpv = round(pwr_data['FEMB{}_DC2DC{}_V'.format(nfemb,i)],3)
-            tmpi = round(pwr_data['FEMB{}_DC2DC{}_I'.format(nfemb,i)],3)
-            tmpp = round(tmpv*tmpi,3)
-
-            pwr_dic['V_set/V'].append(pwr_set[i+1])
-            pwr_dic['V_meas/V'].append(tmpv)
-            pwr_dic['I_meas/A'].append(tmpi)
-            pwr_dic['P_meas/W'].append(tmpp)
-
-            total_p = total_p + tmpp
-
-        df=pd.DataFrame(data=pwr_dic)
-        fig, ax =plt.subplots(figsize=(10,2))
-        ax.axis('off')
-        table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-        ax.set_title("Power Consumption = {} W".format(round(total_p,3)))
-        table.set_fontsize(14)
-        table.scale(1,2)
-        fig.savefig(fp+".png")
-        plt.close(fig)
-
-
-    def PrintVolMON(self, fembs, mvold, fp, fsub):
-        for nfemb in fembs:
-            mon_dic = mvold
-            df=pd.DataFrame(data=mon_dic)
-            fig, ax =plt.subplots(figsize=(12,1))
-            ax.axis('off')
-            table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-            ax.set_title("Monitoring power rails (#mV) when " + fsub[0:-4])
-            table.auto_set_font_size(False)
-            table.set_fontsize(10)
-            table.scale(1,2)
-            newfp=fp[nfemb]+fsub[0:-4]+".png"
-            plt.tight_layout()
-            fig.savefig(newfp)
-            plt.close(fig)
+    # def PrintPWR(self, pwr_data, nfemb, fp):
+    #
+    #     pwr_set=[5,3,3,3.5]
+    #     pwr_dic={'name':[],'V_set/V':[],'V_meas/V':[],'I_meas/A':[],'P_meas/W':[]}
+    #     i=0
+    #     total_p = 0
+    #
+    #     pwr_dic['name'] = ['BIAS','LArASIC','ColdDATA','ColdADC']
+    #     bias_v = round(pwr_data['FEMB%d_BIAS_V'%nfemb],3)
+    #     bias_i = round(pwr_data['FEMB%d_BIAS_I'%nfemb],3)
+    #
+    #     if abs(bias_i)>0.005:
+    #        print('Warning: FEMB{} Bias current abs({})>0.005'.format(nfemb,bias_i))
+    #
+    #     pwr_dic['V_set/V'].append(pwr_set[0])
+    #     pwr_dic['V_meas/V'].append(bias_v)
+    #     pwr_dic['I_meas/A'].append(bias_i)
+    #     pwr_dic['P_meas/W'].append(round(bias_v*bias_i,3))
+    #     total_p = total_p + round(bias_v*bias_i,3)
+    #
+    #     for i in range(3):
+    #         tmpv = round(pwr_data['FEMB{}_DC2DC{}_V'.format(nfemb,i)],3)
+    #         tmpi = round(pwr_data['FEMB{}_DC2DC{}_I'.format(nfemb,i)],3)
+    #         tmpp = round(tmpv*tmpi,3)
+    #
+    #         pwr_dic['V_set/V'].append(pwr_set[i+1])
+    #         pwr_dic['V_meas/V'].append(tmpv)
+    #         pwr_dic['I_meas/A'].append(tmpi)
+    #         pwr_dic['P_meas/W'].append(tmpp)
+    #
+    #         total_p = total_p + tmpp
+    #
+    #     df=pd.DataFrame(data=pwr_dic)
+    #     fig, ax =plt.subplots(figsize=(10,2))
+    #     ax.axis('off')
+    #     table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+    #     ax.set_title("Power Consumption = {} W".format(round(total_p,3)))
+    #     table.set_fontsize(14)
+    #     table.scale(1,2)
+    #     fig.savefig(fp+".png")
+    #     plt.close(fig)
 
 
-    def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp, makeplot=False):
+    # def PrintVolMON(self, fembs, mvold, fp, fsub):
+    #     for nfemb in fembs:
+    #         mon_dic = mvold
+    #         df=pd.DataFrame(data=mon_dic)
+    #         fig, ax =plt.subplots(figsize=(12,1))
+    #         ax.axis('off')
+    #         table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+    #         ax.set_title("Monitoring power rails (#mV) when " + fsub[0:-4])
+    #         table.auto_set_font_size(False)
+    #         table.set_fontsize(10)
+    #         table.scale(1,2)
+    #         newfp=fp[nfemb]+fsub[0:-4]+".png"
+    #         plt.tight_layout()
+    #         fig.savefig(newfp)
+    #         plt.close(fig)
 
-        for nfemb in fembs:
 
-            mon_dic={'ASIC#':[],'FE T':[],'FE BGP':[],'ADC VCMI':[],'ADC VCMO':[], 'ADC VREFP':[], 'ADC VREFN':[], 'ADC VSSA':[]}
-
-            for i in nchips: # 8 chips per board
-
-                mon_dic['ASIC#'].append(i)
-                fe_t = round(mon_t[f'chip{i}'][0][nfemb]*self.fadc,1)
-                fe_bgp = round(mon_bgp[f'chip{i}'][0][nfemb]*self.fadc,1)
-                mon_dic['FE T'].append(fe_t)
-                mon_dic['FE BGP'].append(fe_bgp)
-
-                vcmi = round(mon_adcs[f'chip{i}']["VCMI"][1][0][nfemb]*self.fadc,1)
-                vcmo = round(mon_adcs[f'chip{i}']["VCMO"][1][0][nfemb]*self.fadc,1)
-                vrefp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][nfemb]*self.fadc,1)
-                vrefn = round(mon_adcs[f'chip{i}']["VREFN"][1][0][nfemb]*self.fadc,1)
-                vssa = round(mon_adcs[f'chip{i}']["VSSA"][1][0][nfemb]*self.fadc,1)
-
-                mon_dic['ADC VCMI'].append(vcmi)
-                mon_dic['ADC VCMO'].append(vcmo)
-                mon_dic['ADC VREFP'].append(vrefp)
-                mon_dic['ADC VREFN'].append(vrefn)
-                mon_dic['ADC VSSA'].append(vssa)
-
-            df=pd.DataFrame(data=mon_dic)
-            fig, ax =plt.subplots(figsize=(10,4.5))
-            ax.axis('off')
-            table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-            ax.set_title("Monitoring path for FE-ADC (#mV)")
-            table.set_fontsize(14)
-            table.scale(1,2.2)
-            newfp=fp[nfemb]+"mon_meas.png"
-            plt.tight_layout()
-            fig.savefig(newfp)
-            plt.close(fig)
-
-            if makeplot:
-               fig1, ax1 =plt.subplots(1,2,figsize=(10,4))
-               ax1[0].plot(nchips, mon_dic['FE T'],marker='.',label='FE T')
-               ax1[0].plot(nchips, mon_dic['FE BGP'],marker='.',label='FE BGP')
-               ax1[0].set_title("Monitoring path for FE (mV)")
-               ax1[0].set_xlabel("nchip")
-               ax1[0].legend()
-
-               ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
-               ax1[1].plot(nchips, mon_dic['ADC VCMO'],marker='.',label='ADC VCMO')
-               ax1[1].plot(nchips, mon_dic['ADC VREFP'],marker='.',label='ADC VREFP')
-               ax1[1].plot(nchips, mon_dic['ADC VREFN'],marker='.',label='ADC VREFN')
-               ax1[1].plot(nchips, mon_dic['ADC VSSA'],marker='.',label='ADC VSSA')
-               ax1[1].set_title("Monitoring path for ADC (mV)")
-               ax1[1].set_xlabel("nchip")
-               ax1[1].legend()
-               plt.tight_layout()
-
-               newfp=fp[nfemb]+"mon_meas_plot.png"
-               fig1.savefig(newfp)
-               plt.close(fig1)
+    # def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp, makeplot=False):
+    #
+    #     for nfemb in fembs:
+    #
+    #         mon_dic={'ASIC#':[],'FE T':[],'FE BGP':[],'ADC VCMI':[],'ADC VCMO':[], 'ADC VREFP':[], 'ADC VREFN':[], 'ADC VSSA':[]}
+    #
+    #         for i in nchips: # 8 chips per board
+    #
+    #             mon_dic['ASIC#'].append(i)
+    #             fe_t = round(mon_t[f'chip{i}'][0][nfemb]*self.fadc,1)
+    #             fe_bgp = round(mon_bgp[f'chip{i}'][0][nfemb]*self.fadc,1)
+    #             mon_dic['FE T'].append(fe_t)
+    #             mon_dic['FE BGP'].append(fe_bgp)
+    #
+    #             vcmi = round(mon_adcs[f'chip{i}']["VCMI"][1][0][nfemb]*self.fadc,1)
+    #             vcmo = round(mon_adcs[f'chip{i}']["VCMO"][1][0][nfemb]*self.fadc,1)
+    #             vrefp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][nfemb]*self.fadc,1)
+    #             vrefn = round(mon_adcs[f'chip{i}']["VREFN"][1][0][nfemb]*self.fadc,1)
+    #             vssa = round(mon_adcs[f'chip{i}']["VSSA"][1][0][nfemb]*self.fadc,1)
+    #
+    #             mon_dic['ADC VCMI'].append(vcmi)
+    #             mon_dic['ADC VCMO'].append(vcmo)
+    #             mon_dic['ADC VREFP'].append(vrefp)
+    #             mon_dic['ADC VREFN'].append(vrefn)
+    #             mon_dic['ADC VSSA'].append(vssa)
+    #
+    #         df=pd.DataFrame(data=mon_dic)
+    #         fig, ax =plt.subplots(figsize=(10,4.5))
+    #         ax.axis('off')
+    #         table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+    #         ax.set_title("Monitoring path for FE-ADC (#mV)")
+    #         table.set_fontsize(14)
+    #         table.scale(1,2.2)
+    #         newfp=fp[nfemb]+"mon_meas.png"
+    #         plt.tight_layout()
+    #         fig.savefig(newfp)
+    #         plt.close(fig)
+    #
+    #         if makeplot:
+    #            fig1, ax1 =plt.subplots(1,2,figsize=(10,4))
+    #            ax1[0].plot(nchips, mon_dic['FE T'],marker='.',label='FE T')
+    #            ax1[0].plot(nchips, mon_dic['FE BGP'],marker='.',label='FE BGP')
+    #            ax1[0].set_title("Monitoring path for FE (mV)")
+    #            ax1[0].set_xlabel("nchip")
+    #            ax1[0].legend()
+    #
+    #            ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
+    #            ax1[1].plot(nchips, mon_dic['ADC VCMO'],marker='.',label='ADC VCMO')
+    #            ax1[1].plot(nchips, mon_dic['ADC VREFP'],marker='.',label='ADC VREFP')
+    #            ax1[1].plot(nchips, mon_dic['ADC VREFN'],marker='.',label='ADC VREFN')
+    #            ax1[1].plot(nchips, mon_dic['ADC VSSA'],marker='.',label='ADC VSSA')
+    #            ax1[1].set_title("Monitoring path for ADC (mV)")
+    #            ax1[1].set_xlabel("nchip")
+    #            ax1[1].legend()
+    #            plt.tight_layout()
+    #
+    #            newfp=fp[nfemb]+"mon_meas_plot.png"
+    #            fig1.savefig(newfp)
+    #            plt.close(fig1)
 
     def PlotMon(self, fembs, mon_dic, savedir, fdir, fname, fembNo):
         issue_log = defaultdict(dict)
@@ -947,7 +944,6 @@ class ana_tools:
 
             rawdata = raw[0]
             pwr_meas = raw[1]
-
             wibdata = self.data_decode(rawdata, fembs)
             pldata = wibdata
             #tmst = np.array(tmst)

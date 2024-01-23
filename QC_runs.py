@@ -658,7 +658,7 @@ class QC_Runs:
             return 
 
         snc = 1 # 200 mV BL
-        sgs = self.sgs
+        sgs = self.sgs      # self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
         st0 = 1
         st1 = 1 # 2 us
         sts = 1
