@@ -271,13 +271,62 @@ class DAT_CFGS(WIB_CFGS):
 #            print (onekey, adcs_pwr_info[onekey])
         return adcs_pwr_info
 
-    def cd_pwr_meas(self):
+    def dat_cd_pwr_meas(self):
         cd_list = ["CD0-0x3", "CD1-0x2"]
         addrs = [0x40, 0x41, 0x43, 0x45, 0x44]
         pwrrails = ["CD_VDDA", "FE_VDDA", "CD_VDDCORE", "CD_VDDD", "CD_VDDIO"]
         cds_pwr_info = self.cd_pwr_info(asic_list=cd_list, dat_addrs=addrs, pwrrails=pwrrails)
         return cds_pwr_info
 
+    def dat_cd_hard_reset(self, femb_id):
+        rdv = self.cdpeek(femb_id, 0xC, 0, self.DAT_CD_CONFIG) 
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x30|rdv) #CD0
+        time.sleep(0.001)
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0xCF&rdv) #CD0
+        time.sleep(0.01)
+
+  #  def cd_dftreg_chk(self):
+
+    def dat_cd_gpio_chk(self, femb_id):
+        #set GPIO as output
+        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=0x1f) #CD0
+        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x27, wrdata=0x1f) #CD1
+        datad = {}
+        cd0 = []
+        cd1 = []
+        for wrv in range(32):
+            wrv0 = wrv&0x1f
+            wrv1 = (wrv+1)&0x1f
+            self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x26, wrdata=wrv0)
+            self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x26, wrdata=wrv1)
+            cd0rdv = self.cdpeek(femb_id, 0xC, 0, 0x3) 
+            cd1rdv = self.cdpeek(femb_id, 0xC, 0, 0x2) 
+            if (wrv0 != cd0rdv):
+                cd0.append([wrv0 ,cd0rdv])
+                #print ("Error0", wrv0 ,cd0rdv)
+            if (wrv1 != cd1rdv):
+                cd1.append([wrv1 ,cd1rdv])
+                #print ("Error1", wrv1 ,cd1rdv)
+        if (len(cd0) == 0):
+            print ("COLDATA with Addr0x03 pass GPIO check")
+            datad["CD0_Addr3_GPIO"] = [femb_id,  "PASS"]
+        else:
+            datad["CD0_Addr2_GPIO"] = [femb_id,  "FAIL", cd0]
+        if (len(cd1) == 0):
+            print ("COLDATA with Addr0x02 pass GPIO check")
+            datad["CD1_Addr2_GPIO"] = [femb_id,  "PASS"]
+        else:
+            datad["CD1_Addr2_GPIO"] = [femb_id,  "FAIL", cd1]
+        return datad
+
+    def dat_cd_order_swap(self, femb_id):
+        #U1 (left) as primary
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
+#perform FEMB configuration, check ADC pattern data
+
+        #U2 (right) as primary
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x01) 
+#perform FEMB configuration, check ADC pattern data
 
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
         self.dat_fpga_reset()
@@ -382,7 +431,7 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
-    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xDF, vrefn=0x33, vcmo=0x89, vcmi=0x67, autocali=1):
+    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xE8, vrefn=0x18, vcmo=0x90, vcmi=0x60, autocali=1):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
@@ -414,16 +463,19 @@ class DAT_CFGS(WIB_CFGS):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
-            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                                [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                              ]
+#            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#                                [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                              ]
+            for i in range(8):
+                self.adcs_paras[i][2] = sdd
+
             self.set_fe_reset()
             if chn >=128: #configurate all channels
                 self.set_fe_board(sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
@@ -469,16 +521,18 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
             if self.sddflg != sdd :
-                self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                                    [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                    [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                                  ]
+                for i in range(8):
+                    self.adcs_paras[i][2] = sdd
+#                self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#                                    [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                    [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                                  ]
 
                 self.femb_adc_cfg(femb_id=femb_id)
                 self.sddflg = sdd 
@@ -635,14 +689,18 @@ class DAT_CFGS(WIB_CFGS):
                     #pass
         return datad
 
-    def dat_coldadc_cali_cs(self):
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
+    def dat_coldadc_cali_cs(self,  mode="SE", chsenl=0x0000):
+        if "DIFF" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
+        else:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x03)
+
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
         # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x00)
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x00)
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
+
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
+
 
     def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
         if (efuseid < 0) :
@@ -689,13 +747,14 @@ class DAT_CFGS(WIB_CFGS):
                 print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
                 break
 
-    def dat_coldadc_ext(self, ext_source="DAT_P6"):
-        #DAC ADC N to 0V
-        #make sure ADCs are hooked to P6/P7
-        # ##Set ADC_P_TST_CSABC to 2, set ADC_N_TST_CSABC to 0  [Set ADC_P_TST_SEL to 0 | (0 << 4)]
+    def dat_coldadc_ext(self, ext_source="DAT_P6", chsenl=0x0000):
+        ##DAC ADC N to 0V
+        ##make sure ADCs are hooked to P6/P7
+        ## ##Set ADC_P_TST_CSABC to 2, set ADC_N_TST_CSABC to 0  [Set ADC_P_TST_SEL to 0 | (0 << 4)]
 
         if "P6" in ext_source:
-            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND #SE
+            #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x22) #N tie to GND #DIFF
         elif "WIB" in ext_source:
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01) #N tie to GND
 
@@ -703,8 +762,18 @@ class DAT_CFGS(WIB_CFGS):
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
 
         # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0x00)
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0x00)
+        #high(default) connects ADC to FE, low connects ADC to other sources
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
+
+
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x00) #N tie to GND #SE
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 1)
+
+        ## ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xff)
+
 
 
     def dat_fpga_reset(self):
@@ -781,16 +850,20 @@ class DAT_CFGS(WIB_CFGS):
     def dat_fe_mons(self, mon_type=0x1f ):
         #measure VBGR/Temperature through Monitoring pin
         femb_id = self.fembs[0]
-        self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-                          ]
+
+        for i in range(8):
+            self.adcs_paras[i][8] = 0 # disable autocali 
+#        self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+#                          ]
+
         mux_cs=5
         mux_name = self.mon_fe_cs[mux_cs]
         self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xFF)    

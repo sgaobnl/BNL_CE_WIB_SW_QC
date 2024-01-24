@@ -2,6 +2,7 @@ import struct, os, sys
 import time, datetime
 import pickle
 import ctypes
+import struct
 
 from wib_cfgs import WIB_CFGS
 
@@ -45,7 +46,6 @@ def histbuf_trig(fembs,num_samples=1639000):
     hist_data = []
 
     #chs = 128
-    #chs = [1]
     chs = []
     for femb in fembs:
         for ch in range(128):
@@ -54,7 +54,8 @@ def histbuf_trig(fembs,num_samples=1639000):
     start = time.time()
     #for ch in range(chs):   
     t0 = time.time_ns()
-    for ch in chs:    
+    #for ch in chs:    
+    for ch in [1]:    
         #indicate which channel is to be analyzed
         self.poke(0xA00C0078, ch)
         
@@ -85,7 +86,7 @@ def histbuf_trig(fembs,num_samples=1639000):
 #    self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
     
     #Set P12 LEMO output to 10mhz clock
-    self.poke(0xA00C0078, 0x0)
+#    self.poke(0xA00C0078, 0x0)
     
     return hist_data
     
