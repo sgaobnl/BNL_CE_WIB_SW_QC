@@ -10,43 +10,25 @@ dat =  DAT_CFGS()
 dat.fembs = [0]
 
 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-cfg_info = dat.dat_adc_qc_cfg(diff_en=0, autocali=1)
-
-#dat.dat_coldadc_ext(ext_source ="P6")
-dat.dat_coldadc_cali_cs(chsenl=0xFFFE)
-
-dat.dat_set_dac(0000, adc=0) #set ADC_P to 0 V
-dat.dat_set_dac(0000, adc=1) #set ADC_N to 0 V
-
-for dac in range(0x0,0xFFFF,0x1000):
-    dat.dat_set_dac(val=dac, adc=0) #set ADC_P to 0 V
-    print (dat.poke(0xA00C0078, 0))
-    input ()
-
-        
-#        chds = []
-#        for ch in range(0,128,16):
-#            dat.poke(0xA00C0078, ch)
-#            tmpd = []
-#            for i in range(20):    
-#                tmp = (dat.peek(0xA00C00F0) & ~(0x3ff))>>10
-#                tmpd.append(tmp)
-#                time.sleep(0.01)
-#            chds.append(int(np.mean(tmpd)))
-#        print (chds)
-#        tmr = input ("input:")
-#        if "b" in tmr:
-#            break
+cfg_info = dat.dat_adc_qc_cfg()
+dat.dat_coldadc_cali_cs()
+dat.dat_set_dac(0, adc=1) #set ADC_N to 0 V
 
 #fdir = "./tmp_data/"
-#rawdata =  dat.dat_adc_qc_acq(1)
-#datad = {}
-#datad["TRI"] = rawdata 
-#fp = fdir + "LN_QC_ramp.bin"
-#with open(fp, 'wb') as fn:
-#    pickle.dump(datad, fn)
-
-
+#for tmp in range(65):
+#    if tmp%10 == 0:
+#        input ("transfer data")
+#    datad = {}
+#    for valint in range(tmp*1000,(tmp+1)*1000, 1):
+#        if valint%100==0:
+#            print (valint)
+#        dat.dat_set_dac(val=valint, adc=0)
+#        rawdata =  dat.dat_adc_qc_acq(1)
+#        datad["DAC%06d"%valint] = rawdata 
+#    fp = fdir + "QC_ColdADC%06d.bin"%tmp
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#
 
 
 

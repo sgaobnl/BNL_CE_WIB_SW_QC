@@ -643,7 +643,7 @@ class DAT_CFGS(WIB_CFGS):
                     c2 = True
                 else:
                     c2 = False
-                if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
+                if (chmax > 8000) & (chped < 2000) & (chped > 200) & (chmin<100) & c1 & c2:
                     pass
                 else:
                     initchk_flg = False 

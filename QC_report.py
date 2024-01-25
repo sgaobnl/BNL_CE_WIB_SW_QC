@@ -16,8 +16,7 @@ class QC_reports:
       def __init__(self, fdir, fembs=[]):
 
           savedir = "./QC_reports/"
-          #self.datadir = "./tmp_data/"+fdir+"/"
-          self.datadir = "D:/Downloads/"+fdir+"/"
+          self.datadir = "./tmp_data/"+fdir+"/"
 
 #          savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
 #          self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"

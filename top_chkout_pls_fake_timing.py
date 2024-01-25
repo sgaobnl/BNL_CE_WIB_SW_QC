@@ -63,7 +63,8 @@ if True:
         adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
-        chk.femb_cfg(femb_id, adac_pls_en )
+        if True:
+            chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
 

@@ -2,7 +2,6 @@ import struct, os, sys
 import time, datetime
 import pickle
 import ctypes
-import struct
 
 from wib_cfgs import WIB_CFGS
 
@@ -86,7 +85,7 @@ def histbuf_trig(fembs,num_samples=1639000):
 #    self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
     
     #Set P12 LEMO output to 10mhz clock
-#    self.poke(0xA00C0078, 0x0)
+    self.poke(0xA00C0078, 0x0)
     
     return hist_data
     

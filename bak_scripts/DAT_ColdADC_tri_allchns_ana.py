@@ -7,7 +7,7 @@ import time, datetime, random, statistics
 from spymemory_decode import wib_dec
 
 fdir = "./tmp_data/"
-fp = fdir + "LN_QC_ramp" + ".bin"
+fp = fdir + "LN_QC_se" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)
 

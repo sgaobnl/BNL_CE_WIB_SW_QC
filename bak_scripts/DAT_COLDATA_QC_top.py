@@ -148,26 +148,40 @@ if 0 in tms:
     tt.append(time.time())
     print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
 
+
 if 1 in tms:
-    print ("FE power consumption measurement starts...")
+    print ("COLDATA basic functionlity checkout...")
     datad = {}
     datad['logs'] = logs
-    for snc in [0, 1]:
-        for sdd in [0, 1]:
-            for sdf in [0, 1]:
-                if (sdd == 1) and (sdf==1):
-                    continue
-                else:
-                    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
-                    rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=snc, sdd=sdd, sdf=sdf ) 
-                    pwr_meas = dat.fe_pwr_meas()
-                    datad["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
-    
-    fp = fdir + "QC_PWR" + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump(datad, fn)
-    tt.append(time.time())
-    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+
+    print ("COLDATA hard reset check")
+    dat.dat_cd_hard_reset(femb_id = dat.fembs[0])
+    time.sleep(1)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
+    datad["Post-Hard_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+
+    print ("COLDATA fast reset check")
+    dat.femb_cd_rst()
+    time.sleep(1)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
+    datad["FAST_CMD_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+
+    print ("COLDATA GPIO check")
+    dat.dat_cd_gpio_chk(femb_id = dat.fembs[0])
+
+
+if 2 in tms:
+    print ("COLDATA Primary/Secondary Swap check")
+
+#    fp = fdir + "QC_PWR" + ".bin"
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#    tt.append(time.time())
+#    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("debugging...")
+    exit()
 
 if 2 in tms:
     print ("FE check response measurement starts...")

@@ -126,7 +126,7 @@ if 0 in tms:
     datad["FE_PWRON"] = fes_pwr_info
     adcs_pwr_info = dat.adc_pwr_meas()
     datad["ADC_PWRON"] = adcs_pwr_info
-    cds_pwr_info = dat.cd_pwr_meas()
+    cds_pwr_info = dat.dat_cd_pwr_meas()
     datad["CD_PWRON"] = cds_pwr_info
     dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
     chkdata = dat.dat_asic_chk()
@@ -305,7 +305,7 @@ if 4 in tms:
     
         fes_pwr_info = dat.fe_pwr_meas()
         adcs_pwr_info = dat.adc_pwr_meas()
-        cds_pwr_info = dat.cd_pwr_meas()
+        cds_pwr_info = dat.dat_cd_pwr_meas()
     
         datad["PwrCycle_%d"%cseti] = [dat.fembs, rawdata[0], rawdata[1], fes_pwr_info, adcs_pwr_info, cds_pwr_info]
     

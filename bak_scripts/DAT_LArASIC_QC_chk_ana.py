@@ -6,7 +6,7 @@ import copy
 import time, datetime, random, statistics    
 from spymemory_decode import wib_dec
 
-fdir = "./tmp_data/FE_103000001_103000002_103000003_103000004_103000005_103000006_103000007_103000008/"
+fdir = "./tmp_data/FE_00000000_00000001_00000002_00000003_00000004_00000005_00000006_00000007/"
 fp = fdir + "QC_CHKRES" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)

@@ -37,6 +37,7 @@ time.sleep(1)
 #reset all FEMBs on WIB
 chk.wib_femb_link_en(fembs)
 
+i = 0
 while True:
     chk.femb_cd_rst()
     
@@ -46,16 +47,16 @@ while True:
     #Configur Coldata, ColdADC, and LArASIC parameters. 
     #Here Coldata uses default setting in the script (not the ASIC default register values)
     #ColdADC configuraiton
-        sdd = 1
+        sdd = 0
         chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                            [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
-                            [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 1],
+                            [0x4, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe4 
+                            [0x5, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe5
+                            [0x6, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe6
+                            [0x7, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe7
+                            [0x8, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe0
+                            [0x9, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe1
+                            [0xA, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe2
+                            [0xB, 0x28, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],#fe3
                           ]
     
     #LArASIC register configuration
@@ -63,18 +64,19 @@ while True:
         kk=0
         k0 = kk%2
         k1 = kk//2
-        chk.set_fe_board(sts=0, snc=1,sg0=0, sg1=0, st0=1, st1=1, swdac=1, slk1=k1, slk0=k0, sdd=sdd, sdf=0, dac=0x20 )
-        adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
+        chk.set_fe_board(sts=1, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, slk1=k1, slk0=k0, sdd=sdd, sdf=0, dac=0x00 )
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
-    #step 3
+    #step 1
         chk.femb_cfg(femb_id, adac_pls_en )
-    break
+        #chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+    #break
+    i = i + 1
+    print ("XXXXXXXXXXX", i)
 
 chk.data_align(fembs)
 
-time.sleep(0.5)
-exit()
-
+time.sleep(3)
 ####################FEMBs Data taking################################
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 

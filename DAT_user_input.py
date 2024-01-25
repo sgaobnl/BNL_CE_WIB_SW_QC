@@ -21,9 +21,8 @@ import argparse
 def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False ):
 
     logs={}
-    logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+    #logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
     tester=input("\033[92m Please input your name:   \033[0m")
-    logs['tester']=tester
 
     
     if infile_mode:
@@ -31,26 +30,136 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
 
             logs={}
             logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+            logs['tester']=tester
             index_f = "./asic_info.csv"
 
             with open(index_f, 'r') as fp:
-                print (index_f)
+                #print (index_f)
                 for cl in fp:
                     tmp = cl.split(",")
                     tmp = tmp[:-1]
                     if "tester" not in tmp[0]:
-                        print (cl)
+                        #print (cl)
                         logs[tmp[0]] = tmp[1]
 
             if itemized_flg:
                 csvfile = 'Y'
             else:
+                print ("Tester:    :     ", logs['tester'])
+                print ("Test Site  :     ", logs['testsite'])
+                print ("Enviroment :     ", logs['env'])
+                print ("DAT SN     :     ", logs['DAT_SN'])
+                print ("DAT_on_WIB_slot: ", logs['DAT_on_WIB_slot'])
+                print ("DUT        :     ", logs['DUT'])
+                if "CD" in logs['DUT']:
+                    print ("\033[92m COLDATA0  : {} \033[0m".format(logs['CD0']))
+                    print ("\033[92m COLDATA1  : {} \033[0m".format(logs['CD1']))
+                elif "ADC" in logs['DUT']:
+                    print ("\033[92m ColdADC0  : {} \033[0m".format(logs['ADC0']))
+                    print ("\033[92m ColdADC1  : {} \033[0m".format(logs['ADC1']))
+                    print ("\033[92m ColdADC2  : {} \033[0m".format(logs['ADC2']))
+                    print ("\033[92m ColdADC3  : {} \033[0m".format(logs['ADC3']))
+                    print ("\033[92m ColdADC4  : {} \033[0m".format(logs['ADC4']))
+                    print ("\033[92m ColdADC5  : {} \033[0m".format(logs['ADC5']))
+                    print ("\033[92m ColdADC6  : {} \033[0m".format(logs['ADC6']))
+                    print ("\033[92m ColdADC7  : {} \033[0m".format(logs['ADC7']))
+                elif "FE" in logs['DUT']:
+                    print ("\033[92m LArASIC0  : {} \033[0m".format(logs['FE0']))
+                    print ("\033[92m LArASIC2  : {} \033[0m".format(logs['FE1']))
+                    print ("\033[92m LArASIC2  : {} \033[0m".format(logs['FE2']))
+                    print ("\033[92m LArASIC3  : {} \033[0m".format(logs['FE3']))
+                    print ("\033[92m LArASIC4  : {} \033[0m".format(logs['FE4']))
+                    print ("\033[92m LArASIC5  : {} \033[0m".format(logs['FE5']))
+                    print ("\033[92m LArASIC6  : {} \033[0m".format(logs['FE6']))
+                    print ("\033[92m LArASIC7  : {} \033[0m".format(logs['FE7']))
                 csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:
                 input ("click ENTER after you modify and save asic_info.csv.")
                 continue
+
+            cd_id = {}
+            re_flg = False
+            for cd in range(2):
+                dkey = "CD%d"%cd
+                cdstr=logs[dkey]
+                if (len(cdstr) == 9) :
+                    cdexist_flg = False
+                    cdks = list(cd_id.keys())
+                    for cdk in cdks:
+                        cdexist = cd_id[cdk]
+                        if (cdstr[4] == ("-")) :
+                            if (cdstr[0:4] in cdexist)  and (cdstr[5:] in cdexist):
+                                cdexist_flg = True
+                        else:
+                            if (cdstr == cdexist):
+                                cdexist_flg = True
+                            
+                    if cdexist_flg:
+                        print ("\033[93m COLDATA Serial number exists, please correct \033[0m") 
+                        re_flg = True
+                        break
+                    elif cdstr[4] == ("-")  :
+                        try: 
+                            cdbatch = int(cdstr[0:4])
+                            cdsn = int(cdstr[5:])
+                            cd_id['CD{}'.format(cd)] = cdstr[0:4]+cdstr[4:]
+                        except ValueError:
+                            print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+                            re_flg = True
+                            break
+                    else:
+                        print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+                        re_flg = True
+                        break
+                else:
+                    print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+                    re_flg = True
+                    break
+            if re_flg:
+                break
+
+            adc_id = {}
+            re_flg = False
+            for adc in range(8):
+                dkey = "ADC%d"%adc
+                adcstr=logs[dkey]
+                if (len(adcstr) == 10) :
+                    adcexist_flg = False
+                    adcks = list(adc_id.keys())
+                    for adck in adcks:
+                        adcexist = adc_id[adck]
+                        if (adcstr[5] == ("-")) :
+                            if (adcstr[0:4] in adcexist)  and (adcstr[5:] in adcexist):
+                                adcexist_flg = True
+                        else:
+                            if (adcstr == adcexist):
+                                adcexist_flg = True
+                            
+                    if adcexist_flg:
+                        print ("\033[93m ColdADC Serial number exists, please correct \033[0m") 
+                        re_flg = True
+                        break
+                    elif adcstr[4] == ("-")  :
+                        try: 
+                            adcbatch = int(adcstr[0:4])
+                            adcsn = int(adcstr[5:])
+                            adc_id['ADC{}'.format(adc)] = adcstr[0:4]+adcstr[5:]
+                        except ValueError:
+                            print ("\033[93m ColdADC Serial number is not in right format (XXXX-XXXXX), please correct\033[0m") 
+                            re_flg = True
+                            break
+                    else:
+                        print ("\033[93m ColdADC Serial number is not in right format (XXXX-XXXXX), please correct\033[0m") 
+                        re_flg = True
+                        break
+                else:
+                    print ("\033[93m ColdADC Serial number is not in right format (XXXX-XXXXX), please correct\033[0m") 
+                    re_flg = True
+                    break
+            if re_flg:
+                break
 
             fe_id = {}
             re_flg = False
@@ -193,11 +302,12 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
         else:
             print ("Please close the covers and continue...")
             exit()
-    
-    fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
+    if "CD" in logs['DUT']:
+        fsubdir = "CD_{}_{}".format(cd_id['CD0'],cd_id['CD1']) 
+    elif "ADC" in logs['DUT']:
+        fsubdir = "ADC_{}_{}_{}_{}_{}_{}_{}_{}".format(adc_id['ADC0'],adc_id['ADC1'], adc_id['ADC2'], adc_id['ADC3'], adc_id['ADC4'], adc_id['ADC5'], adc_id['ADC6'], adc_id['ADC7']) 
+    elif "FE" in logs['DUT']:
+        fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
     fdir = froot + fsubdir + "/"
-    #print (fdir)
-
-    #tms=[0,1,2,3,4,5,6,7,8,9,10]
 
     return logs,  fdir
