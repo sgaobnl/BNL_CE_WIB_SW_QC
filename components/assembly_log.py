@@ -39,3 +39,5 @@ badlist = defaultdict(dict)    # input information
 
 tmp_log = defaultdict(dict)
 check_log = defaultdict(dict)
+
+channel0_pulse = defaultdict(dict)

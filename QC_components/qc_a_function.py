@@ -126,9 +126,18 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/"):
         if (log.chkflag[femb_id]["Pulse_SE_PPK"] == False) and log.chkflag[femb_id]["Pulse_SE_NPK"] == False and (log.chkflag[femb_id]["Pulse_SE_BL"] == False):
             log.tmp_log[femb_id]["Result"] = True
         else:
-            log.tmp_log[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE"]["PPK"]
-            log.tmp_log[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE"]["NPK"]
-            log.tmp_log[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE"]["BL"]
+            log.tmp_log[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE_PPK"]
+            log.tmp_log[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE_NPK"]
+            log.tmp_log[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE_BL"]
             log.tmp_log[femb_id]["Result"] = False
 
     return log.tmp_log
+
+
+
+
+
+
+#   RMS analysis
+def rms_table():
+    a = 1

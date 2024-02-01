@@ -350,7 +350,7 @@ class QC_reports:
               #         qc.GetPeaks(pldata, ifemb, fp, fname)
 
               #====
-              pulse = dict(qc.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
+              pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
               log.report_log3[i].update(pulse)
               i = i + 1
           #self.Gather_PNG_PDF(fp)
@@ -401,7 +401,6 @@ class QC_reports:
 
           self.CreateDIR("RMS")
           datadir = self.datadir+"RMS/"
-          section_status = True
 
           datafiles = sorted(glob.glob(datadir+"RMS*.bin"), key=os.path.getmtime)
           for afile in datafiles:
@@ -411,119 +410,34 @@ class QC_reports:
 
               rawdata=raw[0]
               if '\\' in afile:
-                  fname = afile.split("\\")[-1][4:-9]
+                  fname = afile.split("\\")[-1][7:-9]
               else:
-                  fname = afile.split("/")[-1][4:-9]
+                  fname = afile.split("/")[-1][7:-9]
+
               qc=ana_tools()
               pldata = qc.data_decode(rawdata, self.fembs)
+
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb]+"RMS/"
                   ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
-                  tmp = QC_check.CHKPulse(ped, 7)
                   log.chkflag["BL"] = (tmp[0])
                   log.badlist["BL"] = (tmp[1])
                   ped_err_flag = tmp[0]
-                  baseline_err_content = tmp[1]
+                  baseline_err_status = tmp[1]
                   log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
                   tmp = QC_check.CHKPulse(rms, 5)
                   log.chkflag["RMS"] = (tmp[0])
                   log.badlist["RMS"] = (tmp[1])
                   rms_err_flag = tmp[0]
-                  rms_err_content = tmp[1]
+                  rms_err_status = tmp[1]
                   log.tmp_log[ifemb]["RMS 128-CH std"] = tmp[2]
                   if (ped_err_flag == False) and (rms_err_flag == False):
-                      log.report_log05_result[ifemb][fname] = True
+                      log.tmp_log[ifemb]["Result"] = True
                   else:
-                      log.report_log054_pedestal_issue[ifemb]["baseline err_content"] = baseline_err_content
-                      log.report_log055_rms_issue[ifemb]["RMS err_content"] = rms_err_content
-                      section_status = False
-                      log.report_log05_result[ifemb][fname] = False
-                  log.report_log052_pedestal[ifemb][fname] = ped
-                  log.report_log053_rms[ifemb][fname] = rms
-
-          a_func.rms_table()
-
-          for ifemb in self.fembs:
-              plt.figure(figsize=(20, 4))
-              plt.subplot(1, 4, 1)
-              x_sticks = range(0, 129, 16)
-              for key in log.report_log053_rms[ifemb]:
-                  if "SE_200" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("SE OFF RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("SE OFF 200 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 4, 2)
-              for key in log.report_log053_rms[ifemb]:
-                  if "SEON_200" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("SEON RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("SE ON 200 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 4, 3)
-              for key in log.report_log053_rms[ifemb]:
-                  if "SELC_200" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("SELC RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("SE Leakage Current 200 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 4, 4)
-              for key in log.report_log053_rms[ifemb]:
-                  if "DIFF_200" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("DIFF RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("DIFF 200 mV RMS Distribution", fontsize=12)
-              plt.savefig(fp + '200mV_All_Configuration.png')
-              plt.close()
-
-
-              plt.figure(figsize=(15, 4))
-              plt.subplot(1, 3, 1)
-              x_sticks = range(0, 129, 16)
-              for key in log.report_log053_rms[ifemb]:
-                  if "SE_900" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("SE OFF RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("SE OFF 900 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 3, 2)
-              for key in log.report_log053_rms[ifemb]:
-                  if "SEON_900" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("SEON RMS", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("SE ON 900 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 3, 3)
-              for key in log.report_log053_rms[ifemb]:
-                  if "DIFF_900" in key:
-                      plt.plot(range(128), log.report_log053_rms[ifemb][key], linestyle='-', alpha=0.7)
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("DIFF RMD", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.title("DIFF 900 mV RMS Distribution", fontsize=12)
-              plt.savefig(fp + '900mV_All_Configuration.png')
-              plt.close()
+                      log.tmp_log[ifemb]["baseline err_status"] = baseline_err_status
+                      log.tmp_log[ifemb]["RMS err_status"] = rms_err_status
+                      log.tmp_log[ifemb]["Result"] = False
           self.Gather_PNG_PDF(fp)
-          return section_status
          
       def FE_MON_report(self):
 
@@ -543,55 +457,18 @@ class QC_reports:
           mon_900bls_sdf0=raw[5]
 
           qc=ana_tools()
-          bandgap, log.mon_pulse["bandgap"] = qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap", self.fembsID)
-          temp, log.mon_pulse["temperature"] = qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature", self.fembsID)
-          sdf1_200, log.mon_pulse["200mVBL_sdf1"] = qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1", self.fembsID)
-          sdf0_200, log.mon_pulse["200mVBL_sdf0"] = qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0", self.fembsID)
-          sdf1_900, log.mon_pulse["900mVBL_sdf1"] = qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1", self.fembsID)
-          sdf0_900, log.mon_pulse["900mVBL_sdf0"] = qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0", self.fembsID)
-          for ifemb in self.fembs:
-              report_dir = self.savedir[ifemb] + "MON_FE/"
-              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-              log.report_log10_01[femb_id]["bandgap"] = bandgap[femb_id]
-              log.report_log10_01[femb_id]["temperature"] = temp[femb_id]
-              log.report_log10_01[femb_id]["200mVBL_sdf1"] = temp[femb_id]
-              log.report_log10_01[femb_id]["200mVBL_sdf0"] = temp[femb_id]
-              log.report_log10_01[femb_id]["900mVBL_sdf1"] = temp[femb_id]
-              log.report_log10_01[femb_id]["900mVBL_sdf0"] = temp[femb_id]
-              plt.figure(figsize=(15, 4))
-              plt.subplot(1, 3, 1)
-              plt.plot(range(8), log.mon_pulse["bandgap"][femb_id], marker='o', linestyle='-', alpha=0.7, label = 'Bandgap')
-              plt.plot(range(8), log.mon_pulse["temperature"][femb_id], marker='o', linestyle='-', alpha=0.7, label = 'temperature')
-              plt.xlabel("Chip", fontsize=12)
-              plt.ylabel("ADC", fontsize=12)
-              plt.grid(axis='x')
-              plt.legend()
-              plt.title("SE OFF 200 mV RMS Distribution", fontsize=12)
-
-              plt.subplot(1, 3, 2)
-              x_sticks = range(0, 129, 16)
-              plt.plot(range(128), log.mon_pulse["200mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf0')
-              plt.plot(range(128), log.mon_pulse["900mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf0')
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("ADC", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.legend()
-              plt.title("200mVBL_900mVBL_sdf0", fontsize=12)
-
-              plt.subplot(1, 3, 3)
-              x_sticks = range(0, 129, 16)
-              plt.plot(range(128), log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf1')
-              plt.plot(range(128), log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf1')
-              plt.xlabel("Channel", fontsize=12)
-              plt.ylabel("ADC", fontsize=12)
-              plt.xticks(x_sticks)
-              plt.grid(axis='x')
-              plt.legend()
-              plt.title("200mVBL_900mVBL_sdf1", fontsize=12)
-              plt.savefig(report_dir + 'FE_Mon.png')
-              plt.close()
-
+          bandgap = qc.PlotMon(self.fembs, mon_BDG, self.savedir, "MON_FE", "bandgap", self.fembsID)
+          log.report_log10_01.update(bandgap)
+          temp = qc.PlotMon(self.fembs, mon_TEMP, self.savedir, "MON_FE", "temperature", self.fembsID)
+          log.report_log10_02.update(temp)
+          sdf1_200 = qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1", self.fembsID)
+          log.report_log10_03.update(sdf1_200)
+          sdf0_200 = qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0", self.fembsID)
+          log.report_log10_04.update(sdf0_200)
+          sdf1_900 = qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1", self.fembsID)
+          log.report_log10_05.update(sdf1_900)
+          sdf1_900 = qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0", self.fembsID)
+          log.report_log10_06.update(sdf1_900)
 
 
       def report(self):
@@ -709,23 +586,19 @@ class QC_reports:
           dac_list = range(0,64,2)
 
           self.CreateDIR("CALI2")
-          # datadir = self.datadir+"CALI2/"
-          # print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
-          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
-          # qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
           datadir = self.datadir+"CALI2/"
           print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
+          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2/")
 
           self.CreateDIR("CALI2_DIFF")
           datadir = self.datadir+"CALI2/"
           print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
-          # qc.GetGain(self.fembs, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
-          # qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
-          # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2_DIFF/")
           qc.GetGain(self.fembs, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
           qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
+          self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2_DIFF/")
+
       def CALI_report_3(self):
 
           qc=ana_tools()
@@ -818,13 +691,11 @@ class QC_reports:
                   else:
                       qc.GetPeaks(pldata, ifemb, fp, fname)
 
-#   16  PLL SCAN
       def PLL_scan_report(self, fdir):
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
           qc = ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-          check = True
           for afile in files:
                 with open(afile, 'rb') as fn:
                     raw = pickle.load(fn)
@@ -833,8 +704,10 @@ class QC_reports:
                 rmsdata = raw[0]
                 fembs = raw[2]
 
+                qc_tools = ana_tools()
+
                 #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
-                pldata = qc.data_decode(rmsdata, fembs)
+                pldata = qc_tools.data_decode(rmsdata, fembs)
                 # pldata = np.array(pldata)
 
                 if '\\' in afile:
@@ -844,12 +717,7 @@ class QC_reports:
 
                 for ifemb in self.fembs:
                     fp = self.savedir[ifemb] + fdir+"/"
-                    ped,rms=qc.GetRMS(pldata, ifemb, fp, fname)
-                    if rms != 0:
-                        check = False
-                    if (ped != 0x55AA) and (ped != 0xAA55):
-                        check = False
-          return check
+                    ped,rms=qc_tools.GetRMS(pldata, ifemb, fp, fname)
 
 
 

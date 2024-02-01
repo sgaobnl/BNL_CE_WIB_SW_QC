@@ -1,10 +1,11 @@
 from spymemory_decode import wib_dec
 import pickle
 from scipy.optimize import curve_fit
-# import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import QC_components.qc_log as log
+import QC_check as QC_check
 
 def ResFunc(x, par0, par1, par2, par3):
 
@@ -78,88 +79,42 @@ class ana_tools:
     def data_decode(self,raw,fembs):
         wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True)
         return wibdata
-#        sss=[]
-#        ttt=[]
-#   
-###        for i in range(nevent):
-#            wib_data = wib_dec(raw[i], fembs)
-#            data = raw[i][0]
-#            buf_end_addr = raw[i][1]
-#            trigger_rec_ticks = raw[i][2]
-#            if raw[i][3] != 0:
-#                trigmode = 'HW';
-#            else:
-#                trigmode = 'SW';
-#    
-#            buf0 = data[0]
-#            buf1 = data[1]
-#    
-#            wib_data = wib_dec(data, trigmode, buf_end_addr, trigger_rec_ticks, fembs)
-#    
-#            if (0 in fembs) or (1 in fembs):
-#                nsamples0 = len(wib_data[0])
-#            else:
-#                nsamples0 = -1
-#            if (2 in fembs) or (3 in fembs):
-#                nsamples1 = len(wib_data[1])
-#            else:
-#                nsamples1 = -1
-#            if (nsamples0 > 0) and (nsamples1 > 0):
-#                if nsamples0 > nsamples1:
-#                    nsamples = nsamples1
-#                else:
-#                    nsamples = nsamples0
-#            elif nsamples0 > 0 :
-#                nsamples = nsamples0
-#            elif nsamples1 > 0 :
-#                nsamples = nsamples1
-#    
-#            chns=[]
-#            tmst0=[]
-#            tmst1=[]
-#            for j in range(nsamples):
-#                if 0 in fembs:
-#                   a0 = wib_data[0][j]["FEMB0_2"]
-#                else:
-#                   a0 = [0]*128
-#    
-#                if 1 in fembs:
-#                   a1 = wib_data[0][j]["FEMB1_3"]
-#                else:
-#                   a1 = [0]*128
-#    
-#                if 2 in fembs:
-#                   a2 = wib_data[1][j]["FEMB0_2"]
-#                else:
-#                   a2 = [0]*128
-#    
-#                if 3 in fembs:
-#                   a3 = wib_data[1][j]["FEMB1_3"]
-#                else:
-#                   a3 = [0]*128
-#
-#                if 0 in fembs or 1 in fembs:
-#                   t0 = wib_data[0][j]["TMTS"]
-#                else:
-#                   t0 = 0
-#    
-#                if 2 in fembs or 3 in fembs:
-#                   t1 = wib_data[1][j]["TMTS"]
-#                else:
-#                   t1 = 0
-#   
-#                aa=a0+a1+a2+a3
-#                chns.append(aa)
-#                tmst0.append(t0)
-#                tmst1.append(t1)
-#    
-#            chns = list(zip(*chns))
-#            sss.append(chns)
-#            ttt.append([tmst0,tmst1])
-#    
-#        return sss,ttt
-    
+
+    def pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
+        qc = ana_tools()
+        pldata = qc.data_decode(pls_rawdata, fembs)
+
+        for ifemb in range(len(fembs)):
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+            ppk, npk, bl = qc.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname, funcfit=False)
+            # outfp = datareport[fembs[ifemb]] + "pulse_{}.bin".format(fname)
+            # with open(outfp, 'wb') as fn:
+            #      pickle.dump([ppk,npk,bl], fn)
+
+            tmp = QC_check.CHKPulse(ppk)
+
+            log.chkflag["Pulse"]["PPK"] = (tmp[0])
+            log.badlist["Pulse"]["PPK"] = (tmp[1])
+
+            tmp = QC_check.CHKPulse(npk)
+            log.chkflag["Pulse"]["NPK"] = (tmp[0])
+            log.badlist["Pulse"]["NPK"] = (tmp[1])
+
+            tmp = QC_check.CHKPulse(bl)
+            log.chkflag["Pulse"]["BL"] = (tmp[0])
+            log.badlist["Pulse"]["BL"] = (tmp[1])
+
+            if (log.chkflag["Pulse"]["PPK"] == False) and (log.chkflag["Pulse"]["NPK"] == False) and (
+                    log.chkflag["Pulse"]["BL"] == False):
+                log.report_log07[femb_id]["Result"] = True
+            else:
+                log.report_log07[femb_id]["Pulse PPK err_status"] = log.badlist["Pulse"]["PPK"]
+                log.report_log07[femb_id]["Pulse NPK err_status"] = log.badlist["Pulse"]["NPK"]
+                log.report_log07[femb_id]["Pulse BL err_status"] = log.badlist["Pulse"]["BL"]
+                log.report_log07[femb_id]["Result"] = False
+
     def GetRMS(self, data, nfemb, fp, fname):
+        # acquire and plot the  < PED & RMS> characters for each channel
     
         nevent = len(data)
     
@@ -197,9 +152,13 @@ class ana_tools:
             if ch_ped < ped_min:
                 ped_min = ch_ped
 
-
+        # abstract assume valid parameter to calculate median and std of ped, which used to static valid parameters
         fe_rms_med = np.median(rms)
+        refine_rms = [x for x in rms if (abs(x-fe_rms_med) < 7)]
+        rms_5std = 5 * np.std(refine_rms)
         fe_ped_med = np.median(ped)
+        refine_ped = [x for x in ped if (abs(x-fe_ped_med) < 350)]
+        ped_5std = 5 * np.std(refine_ped)
 
         plt.figure(figsize=(12, 4))
         plt.subplot(1, 2, 2)
@@ -210,8 +169,8 @@ class ana_tools:
         x_sticks = range(0, 129, 16)
         plt.xticks(x_sticks)
         plt.grid(axis='x')
-        if (rms_max < (fe_rms_med + 5)) and (rms_min > (fe_rms_med - 5)):
-            plt.ylim(fe_rms_med - 5, fe_rms_med + 5)
+        if (rms_max < (fe_rms_med + 8)) and (rms_min > (fe_rms_med - 8)):
+            plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
         else:
             plt.grid(axis='y')
         # fp_fig = fp+"rms_{}.png".format(fname)
@@ -240,13 +199,13 @@ class ana_tools:
 
         return ped,rms
 
-    def GetPeaks(self, data,  nfemb, fp, fname, funcfit=False, shapetime=2, period=500):
+    def GetPeaks(self, data, nfemb, fp, fname, funcfit=False, shapetime=2, period=500, dac = 0):
 
         nevent = len(data)
 
-        ppk_val=[]
-        npk_val=[]
-        bl_val=[]
+        ppk_val = []
+        npk_val = []
+        bl_val = []
         ppk = []
         npk = []
         bl = []
@@ -255,7 +214,7 @@ class ana_tools:
         rms = []
         ped = []
 
-        plt.figure(figsize = (18, 4))
+        plt.figure(figsize=(18, 4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -265,25 +224,25 @@ class ana_tools:
             pulseoffset = 300
 
         for ich in range(128):
-            global_ch = nfemb*128+ich
-            allpls=np.zeros(period)
+            global_ch = nfemb * 128 + ich
+            allpls = np.zeros(period)
             allpls2 = np.zeros(period)
-            npulse=0
-            hasError=False
+            npulse = 0
+            hasError = False
             pulse = []
             pulse2 = []
 
             for itr in range(nevent):
                 evtdata = np.array(data[itr][nfemb][ich])
-                tstart = data[itr][4]//0x20
-                for tt in range(int(period-(tstart%period)), len(evtdata)-period-offset2-1, period):
-                    allpls = allpls + evtdata[tt:tt+period]
-                    pulse.extend(evtdata[tt:tt+period])
-                    allpls2 = allpls2 + evtdata[tt + offset2:tt+period + offset2]
-                    pulse2.extend(evtdata[tt + offset2:tt+period + offset2])
-                    npulse = npulse+1
+                tstart = data[itr][4] // 0x20
+                for tt in range(int(period - (tstart % period)), len(evtdata) - period - offset2 - 1, period):
+                    allpls = allpls + evtdata[tt:tt + period]
+                    pulse.extend(evtdata[tt:tt + period])
+                    allpls2 = allpls2 + evtdata[tt + offset2:tt + period + offset2]
+                    pulse2.extend(evtdata[tt + offset2:tt + period + offset2])
+                    npulse = npulse + 1
 
-            apulse = allpls/npulse
+            apulse = allpls / npulse
             apulse2 = allpls2 / npulse
 
             pmax = np.amax(apulse)
@@ -291,47 +250,48 @@ class ana_tools:
 
             data_type = apulse.dtype
             plt.subplot(1, 3, 1)
-            if maxpos>=pulseoffset and maxpos<len(apulse) +pulseoffset -pulrange:
+            if maxpos >= pulseoffset and maxpos < len(apulse) + pulseoffset - pulrange:
+                plot_pulse = apulse[maxpos - pulseoffset:maxpos - pulseoffset + pulrange]
+                plt.plot(range(pulrange), plot_pulse)
+                # baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
+                baseline = pulse[:maxpos - 20]
+                baseline.extend(pulse[500:maxpos - 20 + 500])
+                baseline.extend(pulse[2*500:maxpos - 20 + 2*500])
 
-                plt.plot(range(pulrange),apulse[maxpos-pulseoffset:maxpos-pulseoffset + pulrange])
-                #baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
-                baseline = pulse[:maxpos-20]#, evtdata[maxpos+80:len(apulse)], evtdata[period:maxpos-20 + period], evtdata[maxpos+80 + period:len(apulse) + period]))
-                baseline.extend(pulse[500:maxpos-20+500])
-                # baseline.extend(pulse[period:maxpos-20 + period])
-                # baseline.extend(pulse[maxpos+80 + period:len(apulse) + period])
+            if maxpos < pulseoffset:
+                plot_pulse = apulse2[maxpos - pulseoffset + 380:maxpos - pulseoffset + 380 + pulrange]
+                plt.plot(range(pulrange), plot_pulse)
+                baseline = pulse[maxpos + 80:maxpos + 500 - 100]
+                baseline.extend(pulse[maxpos + 80 + period:maxpos + 500 - 100 + period])
+                baseline.extend(pulse[maxpos + 80 + 2*period:maxpos + 500 - 100 + 2*period])
 
-            if maxpos<pulseoffset:
-                plt.plot(range(pulrange),apulse2[maxpos-pulseoffset+380:maxpos-pulseoffset+380 + pulrange])
-                baseline = pulse[maxpos+80:maxpos+500-100]# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
-                baseline.extend(pulse[maxpos+80 + period:maxpos+500-100 + period])# + evtdata[maxpos+80 + period:maxpos+500-100 + period]
-                # baseline = evtdata[maxpos+80:maxpos+500-100]# + allpls2[maxpos+80 + period:maxpos+500-100 + period]
-
-            if maxpos>=len(apulse) +pulseoffset -pulrange:
-                plt.plot(range(pulrange), apulse2[maxpos - pulseoffset-120:maxpos - pulseoffset-120 + pulrange])
-                baseline = pulse[80:maxpos-20]# + evtdata[80 + period + maxpos-20 + period]
-                baseline.extend(pulse[80 + period : maxpos-20 + period])# + evtdata[80 + period + maxpos-20 + period]
-                # baseline = evtdata[80:maxpos-20]# + allpls2[80 + period + maxpos-20 + period]
+            if maxpos >= len(apulse) + pulseoffset - pulrange:
+                plot_pulse = apulse2[maxpos - pulseoffset - 120:maxpos - pulseoffset - 120 + pulrange]
+                plt.plot(range(pulrange), plot_pulse)
+                baseline = pulse[80:maxpos - 20]
+                baseline.extend(pulse[80 + period: maxpos - 20 + period])
+                baseline.extend(pulse[80 + 2*period: maxpos - 20 + 2*period])
 
             pulse_rms = np.std(baseline)
             pulse_ped = np.mean(baseline)
 
             if funcfit:
                 popt = FitFunc(apulse, shapetime, makeplot=False)
-                a_xx = np.array(range(20))*0.5
-                a_yy = ResFunc(a_xx, popt[0],popt[1],popt[2],popt[3])
+                a_xx = np.array(range(20)) * 0.5
+                a_yy = ResFunc(a_xx, popt[0], popt[1], popt[2], popt[3])
                 pmax = np.amax(a_yy)
 
-            if maxpos>100:
-                bbl = np.mean(apulse[:maxpos-50])
+            if maxpos > 100:
+                bbl = np.mean(apulse[:maxpos - 50])
             else:
                 bbl = np.mean(apulse[400:])
 
             pmin = np.amin(apulse)
 
             ppk_val.append(pmax)
-            ppk.append(pmax-bbl)
+            ppk.append(pmax - bbl)
             npk_val.append(pmin)
-            npk.append(pmin-bbl)
+            npk.append(pmin - bbl)
             # bl_rms.append(bbl_rms)
             bl_val.append(bbl)
             bl.append(bbl - bbl)
@@ -339,254 +299,98 @@ class ana_tools:
             rms.append(pulse_rms)
             ped.append(pulse_ped)
 
+            if ich == 0:
+                log.channel0_pulse[nfemb][dac] = plot_pulse - pulse_ped
+
         rms_mean = np.mean(rms)
 
         bottom = -1000
-        plt.title(fname, fontsize = 14) # "128-CH Pulse Response Overlap"
-        plt.ylim(bottom, 16384+bottom)
-        plt.xlabel("Sample Points", fontsize = 14)
-        plt.ylabel("ADC count", fontsize = 14)
+        plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
+        plt.ylim(bottom, 16384 + bottom)
+        plt.xlabel("Sample Points", fontsize=14)
+        plt.ylabel("ADC count", fontsize=14)
 
-        plt.subplot(1 ,3, 2)
-        plt.plot(range(128), ppk_val, marker='|', linestyle = '-', alpha = 0.7, label='pos', color = 'blue')
-        plt.plot(range(128), bl_val, marker='|', linestyle = '-', alpha = 0.9, label='ped', color = '0.3')
-        plt.plot(range(128), npk_val, marker='|', linestyle = '-', alpha = 0.7, label='neg', color = 'orange')
-        plt.grid(axis = 'x', color='gray', linestyle='--', alpha = 0.7)
+        plt.subplot(1, 3, 2)
+        plt.plot(range(128), ppk_val, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
+        plt.plot(range(128), bl_val, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
+        plt.plot(range(128), npk_val, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
+        plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
 
-        #pl1.plot(range(128), bl_rms)
-        plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize = 14)
-        plt.ylim(bottom, 16384+bottom)
-        plt.xlabel("chan", fontsize = 14)
+        # pl1.plot(range(128), bl_rms)
+        plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize=14)
+        plt.ylim(bottom, 16384 + bottom)
+        plt.xlabel("chan", fontsize=14)
         plt.xticks(np.arange(0, 129, 16))
-        plt.ylabel("ADC count", fontsize = 14)
+        plt.ylabel("ADC count", fontsize=14)
         plt.legend()
 
-        # plt.subplot(1, 4, 3)
-        # plt.plot(range(128), ped, marker='.', linestyle = '-', alpha = 0.5, label='Pedestal')
-        # if np.mean(ped) < 5000:
-        #     plt.ylim(bottom, 5000 + bottom)
-        # else:
-        #     plt.ylim(bottom, 10000)
-        # plt.title("Pedestal Distribution", fontsize = 14)
-        # plt.xlabel("chan", fontsize = 14)
-        # plt.xticks(np.arange(0, 129, 16))
-        # plt.ylabel("Pedestal", fontsize = 14)
-        # plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
-        # plt.legend()
-
         plt.subplot(1, 3, 3)
-        plt.plot(range(128), rms, marker='o', linestyle = '-', alpha = 0.5, label='RMS')
-        plt.title("RMS Distribution", fontsize = 14)
-        plt.ylim(rms_mean-5, rms_mean+5)
-        plt.xlabel("chan", fontsize = 14)
+        plt.plot(range(128), rms, marker='o', linestyle='-', alpha=0.5, label='RMS')
+        plt.title("RMS Distribution", fontsize=14)
+        plt.ylim(rms_mean - 5, rms_mean + 5)
+        plt.xlabel("chan", fontsize=14)
         plt.xticks(np.arange(0, 129, 16))
-        plt.ylabel("RMS", fontsize = 14)
+        plt.ylabel("RMS", fontsize=14)
         plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
 
         plt.legend()
 
-        fp_fig = fp+"pulse_{}.png".format(fname)
+        fp_fig = fp + "pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
         plt.close()
 
-        fp_bin = fp+"Pulse_{}.bin".format(fname)
+        fp_bin = fp + "Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
-             pickle.dump([ppk_val,npk_val,bl_val], fn)
+            pickle.dump([ppk_val, npk_val, bl_val], fn)
+
+        return ppk, npk, bl
 
 
-        return ppk,npk,bl
+    def PrintPWR(self, pwr_data, nfemb, fp):
 
+        pwr_set=[5,3,3,3.5]
+        pwr_dic={'name':[],'V_set/V':[],'V_meas/V':[],'I_meas/A':[],'P_meas/W':[]}
+        i=0
+        total_p = 0
 
-#
-#
-#                if itr==0:
-#                    peak1_pos = np.argmax(evtdata[200:period+200]) 
-#                    peak_val = evtdata[peak1_pos]
-#                    tmp_bl = np.mean(evtdata[peak1_pos-50:peak1_pos-150])
-#                    t0 = (peak1_pos + tstart + 200)%period
-#                    if abs(peak_val/tmp_bl-1)<0.04:
-#                        print(fname)
-#                        print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
-#                        hasError=True
-#                        break
-#                start_t = period - tstart%500kk
-#                  
-#
-#
-#
-#        
-#                if itr==0:
-#                   peak1_pos = np.argmax(evtdata[0:500]) 
-#                   peak_val = evtdata[peak1_pos]
-#
-#                   if peak1_pos<100:
-#                      tmp_bl = np.mean(evtdata[peak1_pos+200:500])
-#                   else:
-#                      tmp_bl = np.mean(evtdata[0:50])
-#                   if abs(peak_val/tmp_bl-1)<0.04:
-#                      print(fname)
-#                      print("femb%d ch%d event0 doesn't have pulse, will skip this chan (peak=%d, BL=%d)"%(nfemb,ich,peak_val,tmp_bl))
-#                      hasError=True
-#                      break
-#
-#                   if peak1_pos>400 or peak1_pos<50:
-#                      t0 = peak1_pos+50+np.argmax(evtdata[peak1_pos+50:peak1_pos+550])
-#                      t0 = t0-200
-#                      if t0<0:
-#                          t0=0
-#                      allpls = allpls + evtdata[t0:t0+500]
-#                      t0 = tmst[0][nfemb//2][t0]
-#                   else:
-#                      allpls = allpls + evtdata[:500]
-#                      t0 = tmst[0][nfemb//2][0]
-#                   npulse=1
-#
-#                start_t = 500-(tmst[itr][nfemb//2][0]-t0)%500
-#                end_t = len(evtdata)-500
-#                for tt in range(start_t, end_t, 500):
-#                    allpls = allpls + evtdata[tt:tt+500]
-#                    npulse = npulse+1
-#
-#            if hasError:
-#               ppk_val.append(peak_val)
-#               npk_val.append(0)
-#               bl_val.append(tmp_bl)
-#               apulse = data[0][nfemb][ich] 
-#               if peak1_pos>=30 and peak1_pos<len(apulse)-90:
-#                  ax[0].plot(range(120),apulse[peak1_pos-30:peak1_pos+90])
-#               if peak1_pos<30:
-#                  ax[0].plot(range(120),apulse[0:120])
-#               if peak1_pos>=len(apulse)-90:
-#                   ax[0].plot(range(120),apulse[len(apulse)-120:])
-#               continue
-# 
-#
+        pwr_dic['name'] = ['BIAS','LArASIC','ColdDATA','ColdADC']
+        bias_v = round(pwr_data['FEMB%d_BIAS_V'%nfemb],3)
+        bias_i = round(pwr_data['FEMB%d_BIAS_I'%nfemb],3)
 
+        if abs(bias_i)>0.005:
+           print('Warning: FEMB{} Bias current abs({})>0.005'.format(nfemb,bias_i))
 
+        pwr_dic['V_set/V'].append(pwr_set[0])
+        pwr_dic['V_meas/V'].append(bias_v)
+        pwr_dic['I_meas/A'].append(bias_i)
+        pwr_dic['P_meas/W'].append(round(bias_v*bias_i,3))
+        total_p = total_p + round(bias_v*bias_i,3)
 
+        for i in range(3):
+            tmpv = round(pwr_data['FEMB{}_DC2DC{}_V'.format(nfemb,i)],3)
+            tmpi = round(pwr_data['FEMB{}_DC2DC{}_I'.format(nfemb,i)],3)
+            tmpp = round(tmpv*tmpi,3)
 
-    # def PrintPWR(self, pwr_data, nfemb, fp):
-    #
-    #     pwr_set=[5,3,3,3.5]
-    #     pwr_dic={'name':[],'V_set/V':[],'V_meas/V':[],'I_meas/A':[],'P_meas/W':[]}
-    #     i=0
-    #     total_p = 0
-    #
-    #     pwr_dic['name'] = ['BIAS','LArASIC','ColdDATA','ColdADC']
-    #     bias_v = round(pwr_data['FEMB%d_BIAS_V'%nfemb],3)
-    #     bias_i = round(pwr_data['FEMB%d_BIAS_I'%nfemb],3)
-    #
-    #     if abs(bias_i)>0.005:
-    #        print('Warning: FEMB{} Bias current abs({})>0.005'.format(nfemb,bias_i))
-    #
-    #     pwr_dic['V_set/V'].append(pwr_set[0])
-    #     pwr_dic['V_meas/V'].append(bias_v)
-    #     pwr_dic['I_meas/A'].append(bias_i)
-    #     pwr_dic['P_meas/W'].append(round(bias_v*bias_i,3))
-    #     total_p = total_p + round(bias_v*bias_i,3)
-    #
-    #     for i in range(3):
-    #         tmpv = round(pwr_data['FEMB{}_DC2DC{}_V'.format(nfemb,i)],3)
-    #         tmpi = round(pwr_data['FEMB{}_DC2DC{}_I'.format(nfemb,i)],3)
-    #         tmpp = round(tmpv*tmpi,3)
-    #
-    #         pwr_dic['V_set/V'].append(pwr_set[i+1])
-    #         pwr_dic['V_meas/V'].append(tmpv)
-    #         pwr_dic['I_meas/A'].append(tmpi)
-    #         pwr_dic['P_meas/W'].append(tmpp)
-    #
-    #         total_p = total_p + tmpp
-    #
-    #     df=pd.DataFrame(data=pwr_dic)
-    #     fig, ax =plt.subplots(figsize=(10,2))
-    #     ax.axis('off')
-    #     table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-    #     ax.set_title("Power Consumption = {} W".format(round(total_p,3)))
-    #     table.set_fontsize(14)
-    #     table.scale(1,2)
-    #     fig.savefig(fp+".png")
-    #     plt.close(fig)
+            pwr_dic['V_set/V'].append(pwr_set[i+1])
+            pwr_dic['V_meas/V'].append(tmpv)
+            pwr_dic['I_meas/A'].append(tmpi)
+            pwr_dic['P_meas/W'].append(tmpp)
 
+            total_p = total_p + tmpp
 
-    # def PrintVolMON(self, fembs, mvold, fp, fsub):
-    #     for nfemb in fembs:
-    #         mon_dic = mvold
-    #         df=pd.DataFrame(data=mon_dic)
-    #         fig, ax =plt.subplots(figsize=(12,1))
-    #         ax.axis('off')
-    #         table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-    #         ax.set_title("Monitoring power rails (#mV) when " + fsub[0:-4])
-    #         table.auto_set_font_size(False)
-    #         table.set_fontsize(10)
-    #         table.scale(1,2)
-    #         newfp=fp[nfemb]+fsub[0:-4]+".png"
-    #         plt.tight_layout()
-    #         fig.savefig(newfp)
-    #         plt.close(fig)
-
-
-    # def PrintMON(self, fembs, nchips, mon_bgp, mon_t, mon_adcs, fp, makeplot=False):
-    #
-    #     for nfemb in fembs:
-    #
-    #         mon_dic={'ASIC#':[],'FE T':[],'FE BGP':[],'ADC VCMI':[],'ADC VCMO':[], 'ADC VREFP':[], 'ADC VREFN':[], 'ADC VSSA':[]}
-    #
-    #         for i in nchips: # 8 chips per board
-    #
-    #             mon_dic['ASIC#'].append(i)
-    #             fe_t = round(mon_t[f'chip{i}'][0][nfemb]*self.fadc,1)
-    #             fe_bgp = round(mon_bgp[f'chip{i}'][0][nfemb]*self.fadc,1)
-    #             mon_dic['FE T'].append(fe_t)
-    #             mon_dic['FE BGP'].append(fe_bgp)
-    #
-    #             vcmi = round(mon_adcs[f'chip{i}']["VCMI"][1][0][nfemb]*self.fadc,1)
-    #             vcmo = round(mon_adcs[f'chip{i}']["VCMO"][1][0][nfemb]*self.fadc,1)
-    #             vrefp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][nfemb]*self.fadc,1)
-    #             vrefn = round(mon_adcs[f'chip{i}']["VREFN"][1][0][nfemb]*self.fadc,1)
-    #             vssa = round(mon_adcs[f'chip{i}']["VSSA"][1][0][nfemb]*self.fadc,1)
-    #
-    #             mon_dic['ADC VCMI'].append(vcmi)
-    #             mon_dic['ADC VCMO'].append(vcmo)
-    #             mon_dic['ADC VREFP'].append(vrefp)
-    #             mon_dic['ADC VREFN'].append(vrefn)
-    #             mon_dic['ADC VSSA'].append(vssa)
-    #
-    #         df=pd.DataFrame(data=mon_dic)
-    #         fig, ax =plt.subplots(figsize=(10,4.5))
-    #         ax.axis('off')
-    #         table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
-    #         ax.set_title("Monitoring path for FE-ADC (#mV)")
-    #         table.set_fontsize(14)
-    #         table.scale(1,2.2)
-    #         newfp=fp[nfemb]+"mon_meas.png"
-    #         plt.tight_layout()
-    #         fig.savefig(newfp)
-    #         plt.close(fig)
-    #
-    #         if makeplot:
-    #            fig1, ax1 =plt.subplots(1,2,figsize=(10,4))
-    #            ax1[0].plot(nchips, mon_dic['FE T'],marker='.',label='FE T')
-    #            ax1[0].plot(nchips, mon_dic['FE BGP'],marker='.',label='FE BGP')
-    #            ax1[0].set_title("Monitoring path for FE (mV)")
-    #            ax1[0].set_xlabel("nchip")
-    #            ax1[0].legend()
-    #
-    #            ax1[1].plot(nchips, mon_dic['ADC VCMI'],marker='.',label='ADC VCMI')
-    #            ax1[1].plot(nchips, mon_dic['ADC VCMO'],marker='.',label='ADC VCMO')
-    #            ax1[1].plot(nchips, mon_dic['ADC VREFP'],marker='.',label='ADC VREFP')
-    #            ax1[1].plot(nchips, mon_dic['ADC VREFN'],marker='.',label='ADC VREFN')
-    #            ax1[1].plot(nchips, mon_dic['ADC VSSA'],marker='.',label='ADC VSSA')
-    #            ax1[1].set_title("Monitoring path for ADC (mV)")
-    #            ax1[1].set_xlabel("nchip")
-    #            ax1[1].legend()
-    #            plt.tight_layout()
-    #
-    #            newfp=fp[nfemb]+"mon_meas_plot.png"
-    #            fig1.savefig(newfp)
-    #            plt.close(fig1)
+        # df=pd.DataFrame(data=pwr_dic)
+        # fig, ax =plt.subplots(figsize=(10,2))
+        # ax.axis('off')
+        # table = ax.table(cellText=df.values,colLabels=df.columns,loc='center')
+        # ax.set_title("Power Consumption = {} W".format(round(total_p,3)))
+        # table.set_fontsize(14)
+        # table.scale(1,2)
+        # fig.savefig(fp+".png")
+        # plt.close(fig)
 
     def PlotMon(self, fembs, mon_dic, savedir, fdir, fname, fembNo):
         issue_log = defaultdict(dict)
+        pulse_log = defaultdict(dict)
         for nfemb in fembs:
             mon_list=[]
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
@@ -606,7 +410,7 @@ class ana_tools:
 
                 mon_list.append(mon_mean*self.fadc)
 
-            fig,ax = plt.subplots(figsize=(6,4))
+            # fig,ax = plt.subplots(figsize=(6,4))
             xx=range(len(mon_dic))
             mon_mean = np.mean(mon_list)
             mon_std = np.std(mon_list)
@@ -614,16 +418,17 @@ class ana_tools:
             issue_log[femb_id]["Result"] = True
             for data in mon_list:
                 i = i + 1
-                if data > (mon_mean + 20) or data < (mon_mean -20):
+                if data > (mon_mean + 50) or data < (mon_mean -50):
                     issue_log[femb_id]["{}_C{}".format(fname, i)] = data
                     issue_log[femb_id]["Result"] = False
-            ax.plot(xx, mon_list, marker='.')
-            ax.set_ylabel(fname)
-            fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
-            fig.savefig(fp)
-            plt.close(fig)
+            pulse_log[femb_id] = mon_list
+            # ax.plot(xx, mon_list, marker='.')
+            # ax.set_ylabel(fname)
+            # fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
+            # fig.savefig(fp)
+            # plt.close(fig)
         print(issue_log)
-        return issue_log
+        return issue_log, pulse_log
 
     def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fembNo):
         issue_inl = defaultdict(dict)
@@ -672,38 +477,6 @@ class ana_tools:
             plt.close(fig)
         return issue_inl
 
-    # def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fname):
-    #
-    #     for nfemb in fembs:
-    #
-    #         fig,ax = plt.subplots(figsize=(10,8))
-    #
-    #         for key,mon_list in mon_dic.items():
-    #             data_list=[]
-    #             dac_list = mon_list[1]
-    #             mon_data = mon_list[0]
-    #             sps = len(mon_data[0])
-    #
-    #             for i in range(len(dac_list)):
-    #                 sps_list=[]
-    #                 for j in range(sps):
-    #                     a_mon = mon_data[i][4][j][nfemb]
-    #                     sps_list.append(a_mon)
-    #
-    #                 if sps>1:
-    #                    sps_list = np.array(sps_list)
-    #                    mon_mean = np.mean(sps_list)
-    #                 else:
-    #                    mon_mean = sps_list[0]
-    #
-    #                 data_list.append(mon_mean*self.fadc)
-    #
-    #             ax.plot(dac_list, data_list, marker='.',label=key)
-    #         ax.set_ylabel(fname)
-    #         ax.legend()
-    #         fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
-    #         plt.savefig(fp)
-    #         plt.close(fig)
 
     def PlotADCMon(self, fembs, mon_list, savedir, fdir):
 
@@ -748,90 +521,30 @@ class ana_tools:
                 plt.savefig(fp)
                 plt.close(fig)
 
-#    def CheckLinearty(self,x_np, y_np, fdir, fname, x_lo, x_hi):
-#
-#        delx = x_np[1]-x_np[0]
-#        y1 = y_np[:-1]
-#        y2 = y_np[1:]
-#
-#        slp1 = (y2-y1)/delx
-#        slp2 = (slp1[1:]-slp1[:-1])/delx
-#
-#        fig1,ax1 = plt.subplots(1,2,figsize=(12,4))
-#        ax1[0].plot(x_np[1:],slp1,marker='.',label='dy/dx')
-#        ax1[0].set_ylabel("slope1")
-#        ax1[0].legend()
-#        ax1[0].set_title("first order deviation") 
-#
-#        ax1[1].plot(x_np[2:],slp2,marker='.',label='d^2y/dx^2')
-#        ax1[1].set_ylabel("slope2")
-#        ax1[1].legend()
-#        ax1[1].set_title("second order deviation") 
-#
-#        plt.savefig(fdir+'chk_linear_{}.png'.format(fname))
-#        plt.close(fig1)
-#
-#        non_linear_x=[]
-#
-#        for i in range(len(slp2)):
-#            if abs(slp2[i])>5:
-#               non_linear_x.append(i+2)
-#
-#        if not non_linear_x:
-#           max_dac = x_np[-1]
-#           ln_slp,ln_intercept = np.polyfit(x_np,y_np,1)           
-#
-#           y_max = y_np[-1]
-#           y_min = y_np[0]
-#           INL=0
-#           for i in range(len(x_np)):
-#               y_r = y_np[i]
-#               y_p = x_np[i]*ln_slp + ln_intercept
-#               inl = abs(y_r-y_p)/(y_max-y_min)
-#               if inl>INL:
-#                  INL=inl
-#        else:
-#           max_i = 0
-#           for xx in non_linear_x:
-#               if x_np[xx] in range(x_lo, x_hi):
-#                  ln_slp=0
-#                  INL=0
-#                  max_dac=0
-#                  break
-#               if x_np[xx]>x_hi:
-#                  max_i = xx
-#                  break
-#
-#           if max_i>0:
-#              ln_slp,ln_intercept = np.polyfit(x_np[:max_i],y_np[:max_i],1)                       
-#
-#              max_dac = x_np[max_i-1]
-#              y_max = y_np[max_i-1]
-#              y_min = y_np[0]
-#              INL=0
-#              for i in range(max_i):
-#                  y_r = y_np[i]
-#                  y_p = x_np[i]*ln_slp + ln_intercept
-#                  inl = abs(y_r-y_p)/(y_max-y_min)
-#                  if inl>INL:
-#                     INL=inl           
-#                
-#        return ln_slp,INL,max_dac
-#        
     def CheckLinearty(self, dac_list, pk_list, updac, lodac, chan, fp):
-
+    #   the updac range need to be ensured
         dac_init=[]
         pk_init=[]
-        print(updac)
-        c = 0
         for i in range(len(dac_list)):
-            #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$???????????????????????????????#
-            if ((pk_list[i]<updac)):
-               dac_init.append(dac_list[i])
-               pk_init.append(pk_list[i])
+            if ((pk_list[i]<updac) and (pk_list[i]>lodac)):
+                dac_init.append(dac_list[i])
+                pk_init.append(pk_list[i])
 
-        print(dac_init)
-        print(pk_init)
+        y_max = np.max(pk_init)
+        y_min = np.min(pk_init)
+
+        slope_i, intercept_i = np.polyfit(dac_init, pk_init, 1)
+
+        INL = 0
+        for i in range(len(dac_init)):
+            y_r = pk_init[i]
+            y_p = dac_init[i] * slope_i + intercept_i
+            inl = abs(y_r - y_p) / (y_max - y_min)
+            if inl > INL:
+                INL = inl
+        return slope_i, INL
+    '''
+
         try:
            slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
         except:
@@ -916,7 +629,7 @@ class ana_tools:
                INL=inl
 
         return slope_f, INL, linear_dac_max
-
+'''
 
     def GetGain(self, fembs, datadir, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
 
@@ -952,7 +665,25 @@ class ana_tools:
                 fp = savedir[ifemb]+fdir
                 if dac==0:
                    ped,rms = self.GetRMS(pldata, ifemb, fp, fname)
-                   pk_list[ifemb].append(np.zeros(128)) 
+                   tmp = QC_check.CHKPulse(ped, 7)
+                   log.chkflag["BL"] = (tmp[0])
+                   log.badlist["BL"] = (tmp[1])
+                   ped_err_flag = tmp[0]
+                   baseline_err_status = tmp[1]
+                   log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
+                   tmp = QC_check.CHKPulse(rms, 350)
+                   log.chkflag["RMS"] = (tmp[0])
+                   log.badlist["RMS"] = (tmp[1])
+                   rms_err_flag = tmp[0]
+                   rms_err_status = tmp[1]
+                   log.tmp_log[ifemb]["RMS 128-CH std"] = tmp[2]
+                   pk_list[ifemb].append(np.zeros(128))
+                   if (ped_err_flag == False) and (rms_err_flag == False):
+                       log.tmp_log[ifemb]["Result"] = True
+                   else:
+                       log.tmp_log[ifemb]["baseline err_status"] = baseline_err_status
+                       log.tmp_log[ifemb]["RMS err_status"] = rms_err_status
+                       log.tmp_log[ifemb]["Result"] = False
                 else:
                    fname_1 = namepat.format(snc,sgs,sts,dac)
                    #ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname_1)
@@ -960,12 +691,12 @@ class ana_tools:
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000)
                         print("vdac")
                    else:
-                        ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1)
+                        ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
                    ppk_np = np.array(ppk)
-                   bl_np = np.array(bl)
-                   new_ppk = ppk_np-bl_np
-                   pk_list[ifemb].append(new_ppk) 
-      
+                   # bl_np = np.array(bl)
+                   pk_list[ifemb].append(ppk_np)
+                   # pk_list[ifemb].append(ppk_np)
+
 
         for ifemb in fembs:
             tmp_list = pk_list[ifemb]
@@ -979,44 +710,54 @@ class ana_tools:
             gain_list = []
             inl_list = []
             max_dac_list = []
-            fig,ax = plt.subplots(2,2,figsize=(12,10))
+            plt.figure(figsize=(25, 4))
+            #   overlap channel 0 pulse from [1 - 63]
+            plt.subplot(1, 4, 1)
+            for dac in dac_list[1: -1]:
+                plt.plot(range(120), log.channel0_pulse[ifemb][dac])
+            plt.ylabel("ADC value", fontsize=14)
+            plt.xlabel("Sample", fontsize=14)
+            plt.title("Pulse Response Overlap of DAC 1~63 (Channel #0)", fontsize=14)
+            #   peak - dac linear
+            plt.subplot(1, 4, 2)
             for ch in range(128):
-                #gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],fp,fname,lodac,updac)
-                gain,inl,max_dac = self.CheckLinearty(dac_np,pk_np[ch],updac,lodac,ch,fp)
+                uplim = np.max(pk_np[ch]) - 1000
+                gain,inl = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
                 if gain==0:
                    print("femb%d ch%d gain is zero"%(ifemb,ch))           
                 else:
                    gain = 1/gain*dac_du/1000 *CC/e
                 gain_list.append(gain)
                 inl_list.append(inl)
-                max_dac_list.append(max_dac)
-                ax[0,0].plot(dac_np,pk_np[ch])
+                # max_dac_list.append(max_dac)
+                plt.plot(dac_np, pk_np[ch])
 
-            ax[0,0].set_ylabel("peak value")
-            ax[0,0].set_xlabel("DAC")
-            ax[0,0].set_title("Peak vs. DAC") 
+            plt.ylabel("Peak Value", fontsize=14)
+            plt.xlabel("DAC", fontsize=14)
+            plt.title("Peak vs. DAC Linearity", fontsize=14)
+            #   Gain
+            plt.subplot(1, 4, 3)
+            plt.plot(range(128), gain_list, marker='.')
+            plt.xlabel("Channel", fontsize=14)
+            plt.ylabel("Gain", fontsize=14)
+            plt.title("Gain Distribution for the 128-Channel", fontsize=14)
+            #   INL
+            plt.subplot(1, 4, 4)
+            plt.plot(range(128), inl_list, marker='.')
+            plt.xlabel("Channel", fontsize=14)
+            plt.ylabel("INL", fontsize=14)
+            plt.title("INL Distribution for the 128-Channel", fontsize=14)
+            # plt.plot(range(128), max_dac_list, marker='.')
+            # plt.xlabel("chan")
+            # plt.ylabel("linear_range")
+            # plt.title("linear range")
 
-            ax[0,1].plot(range(128),gain_list,marker='.')
-            ax[0,1].set_xlabel("chan")
-            ax[0,1].set_ylabel("gain")
-            ax[0,1].set_title("gain") 
+            plt.savefig(fp + 'gain_{}.png'.format(fname))
+            plt.close()
 
-            ax[1,0].plot(range(128),inl_list,marker='.')
-            ax[1,0].set_xlabel("chan")
-            ax[1,0].set_ylabel("INL")
-            ax[1,0].set_title("INL") 
-
-            ax[1,1].plot(range(128),max_dac_list,marker='.')
-            ax[1,1].set_xlabel("chan")
-            ax[1,1].set_ylabel("linear_range")
-            ax[1,1].set_title("linear range") 
-
-            plt.savefig(fp+'gain_{}.png'.format(fname))
-            plt.close(fig)
-               
-            fp_bin = fp+"Gain_{}.bin".format(fname)
+            fp_bin = fp + "Gain_{}.bin".format(fname)
             with open(fp_bin, 'wb') as fn:
-                 pickle.dump( gain_list, fn)
+                pickle.dump(gain_list, fn)
                 
     def GetENC(self, fembs, snc, sgs, sts, sgp, savedir, fdir):
 
@@ -1038,16 +779,18 @@ class ana_tools:
             gain_list=np.array(gain_list)
 
             enc_list = rms_list*gain_list
+            enc_mean = np.mean(enc_list)
 
-            fig,ax = plt.subplots(figsize=(6,4))
+            plt.figure(figsize=(6,4))
             xx=range(128)
-            ax.plot(xx, enc_list, marker='.')
-            ax.set_xlabel("chan")
-            ax.set_ylabel("ENC")
-            ax.set_title(fname)
+            plt.plot(xx, enc_list, marker='.')
+            plt.ylim(enc_mean-300, enc_mean + 300)
+            plt.xlabel("chan", fontsize = 14)
+            plt.ylabel("ENC", fontsize = 14)
+            plt.title(fname, fontsize = 14)
             fp = savedir[ifemb]+fdir+"enc_{}.png".format(fname)
             plt.savefig(fp)
-            plt.close(fig)
+            plt.close()
 
             fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
             with open(fp_bin, 'wb') as fn:

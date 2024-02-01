@@ -1052,6 +1052,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(0.5)
             else:
                 time.sleep(0.05)
+                input()
             self.wib_mon_adcs() #get rid of previous result
             adcss = []
             for i in range(sps):

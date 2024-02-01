@@ -66,14 +66,14 @@ for tm in tasks:
        rp.ADC_DC_Noise_report()
 
     if tm==16:
-       rp.PLL_scan_report()
+       rp.PLL_scan_report("PLL_PAT")
 
     if tm==17:
        rp.CHK_report()
 
     # if tm==13:
     #    rp.CHK_report()
-
+    rp.report()
 t2=time.time()
 tt=t2-t1
 time.sleep(1)

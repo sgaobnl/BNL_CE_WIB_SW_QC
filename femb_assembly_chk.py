@@ -1,18 +1,13 @@
-import PIL
-
-from wib_cfgs import WIB_CFGS
 import time
+from wib_cfgs import WIB_CFGS
 import sys
 import pickle
 import copy
 import datetime
-import QC_check
-from fpdf import FPDF
 import components.assembly_parameter as paras
 import components.assembly_log as log
 import components.assembly_function as a_func
 import components.assembly_report as a_repo
-
 # qc_tools = ana_tools()
 # Create an array to store the merged image
 

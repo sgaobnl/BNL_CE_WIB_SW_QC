@@ -6,7 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
-import components.assembly_function as a_func
+import QC_components.qc_function as a_func
 import QC_components.qc_log as log
 #import TestPattern_chk as PLL_TP
 
@@ -438,14 +438,14 @@ class QC_Runs:
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
                     self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
-        print('SEDC pulse')
+        print('SEON pulse')
         sg1 = 0;    sg0 = 0     # 14 mV/fC
         st1 = 1;    st0 = 1     # 2 us
         self.chk.femb_cd_rst()
         self.sample_N = 1
         for snci in range(2):
-#   SEDC    2   {[snc 200/900 mV] * [sg 14 mV/fC] * [st 2 us]}  sdf = 1
-                    fp = datadir + "CHK_SEDC_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)
+#   SEON    2   {[snc 200/900 mV] * [sg 14 mV/fC] * [st 2 us]}  sdf = 1
+                    fp = datadir + "CHK_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)
                     self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdf = 1, pwr_flg=False)
 
 
@@ -539,16 +539,16 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0 # 14mV/fC
         st0 = 1;        st1 = 1 # 2us
         # 500 pA
-        fp = datadir + "RMS_SELC_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "500pA")
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "500pA", dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False)
         # 100 pA
-        fp = datadir + "RMS_SELC_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "100pA")
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "100pA", dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, pwr_flg=False)
         # 5000 pA
-        fp = datadir + "RMS_SELC_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "5nA")
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "5nA", dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, pwr_flg=False)
         # 1000 pA
-        fp = datadir + "RMS_SELC_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "1nA")
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "1nA", dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
 #   SE ON  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}
         st1 = 1;    st0 = 1     # 2 us
@@ -556,7 +556,7 @@ class QC_Runs:
             for sgi in range(4):
                 sg0 = sgi % 2
                 sg1 = sgi // 2
-                fp = datadir + "RMS_SEDC_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
+                fp = datadir + "RMS_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
                 self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdf = 1, pwr_flg=False)
 
 #   DIFF  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}

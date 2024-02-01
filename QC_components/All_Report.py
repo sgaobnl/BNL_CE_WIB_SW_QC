@@ -57,6 +57,8 @@ def final_report(datareport, fembs, fembNo):
             file.write('## INPUT INFORMATION' + '\n')
             info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
             file.write(info + '\n')
+
+
 # 01        Print <Power Consumption>
             file.write('## ITEM 01 POWER CONSUMPTION' + '\n')
             file.write("------\n")
@@ -101,7 +103,7 @@ def final_report(datareport, fembs, fembNo):
             info = dict_to_markdown_table(log.report_log01_33[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
             file.write("______\n")
-
+            '''
 # 03        print <Leakage Current>
             file.write('## ITEM 03 Leakage Current' + '\n')
             file.write("------\n")
@@ -136,12 +138,54 @@ def final_report(datareport, fembs, fembNo):
 
 
 # 04        print <Check Pulse>
+'''
 
 
 
+# 05        RMS configuration
+            file.write('### RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us' + '\n')
+            file.write('#### All_200mVBL_Configuration' + '\n')
+            file.write("![ped](./{}/200mV_All_Configuration.png)".format(log.item05) + "\n")
+            file.write('#### All_900mVBL_Configuration' + '\n')
+            file.write("![ped](./{}/900mV_All_Configuration.png)".format(log.item05) + "\n")
+            file.write('#### RMS whole Report' + '\n')
+            file.write("[PDF](./{}/report.pdf)".format(log.item05) + "\n")
 
-# 05
+# 06        Calibration 01:
+            # SE    200 mVBL    4_7 mVfC    2 us
+            # SE    200 mVBL    7_8 mVfC    2 us
+            # SE    200 mVBL    14 mVfC     2 us
+            # SE    200 mVBL    25 mVfC     2 us
+            # DIFF  200 mVBL    14 mVfC     2 us
+            file.write('### Calibration 011 SE 200 mVBL    4_7 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/ped_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
+            file.write("![ped](./{}/gain_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
 
+            file.write('### Calibration 012 SE 200 mVBL    7_8 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/ped_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
+            file.write("![ped](./{}/gain_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
+
+            file.write('### Calibration 013 SE 200 mVBL    14_0 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/ped_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
+            file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
+
+            file.write('### Calibration 014 SE 200 mVBL    25_0 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/ped_200mVBL_25_0mVfC_2_0us.png)".format(log.item061)+ "\n")
+            file.write("![ped](./{}/gain_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "\n")
+
+            file.write('### Calibration 015 DIFF 200 mVBL    14_0 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "![ped](./{}/ped_200mVBL_14_0mVfC_2_0us.png)".format(log.item062)+ "\n")
+            file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "\n")
+
+#   07      Calibration 02:
+            # SE    900 mVBL    14_0 mVfC       2 us
+            file.write('### Calibration 021 SE 900 mVBL    14_0 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
+            file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
+            # DIFF  900 mVBL    14 mVfC     2 us
+            file.write('### Calibration 022 DIFF 900 mVBL    14_0 mVfC    2 us' + '\n')
+            file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "\n")
+            file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "\n")
 
 
 
@@ -149,41 +193,9 @@ def final_report(datareport, fembs, fembNo):
             file.write('### FE_MON' + '\n')
             # 10_01
             file.write('#### mon_bandgap' + '\n')
-            info = dict_to_markdown_table(log.report_log10_01[femb_id])
+            info = dict_to_markdown_table(log.report_log10_01[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
-            file.write("![ped](./{}/mon_bandgap.png)".format(log.item10) + "\n")
-
-            # 10_02
-            file.write('#### mon_temperature' + '\n')
-            info = dict_to_markdown_table(log.report_log10_02[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/mon_temperature.png)".format(log.item10) + "\n")
-
-            # 10_03
-            file.write('#### mon_200mVBL_sdf1' + '\n')
-            info = dict_to_markdown_table(log.report_log10_03[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/mon_200mVBL_sdf1.png)".format(log.item10) + "\n")
-
-            # 10_04
-            file.write('#### mon_200mVBL_sdf0' + '\n')
-            info = dict_to_markdown_table(log.report_log10_04[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/mon_200mVBL_sdf0.png)".format(log.item10) + "\n")
-
-            # 10_05
-            file.write('#### mon_900mVBL_sdf1' + '\n')
-            info = dict_to_markdown_table(log.report_log10_05[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/mon_900mVBL_sdf1.png)".format(log.item10) + "\n")
-
-            # 10_06
-            file.write('#### mon_900mVBL_sdf0' + '\n')
-            info = dict_to_markdown_table(log.report_log10_06[femb_id])
-            file.write(info + '\n')
-            file.write("![ped](./{}/mon_900mVBL_sdf0.png)".format(log.item10) + "\n")
-
-
+            file.write("![ped](./{}/FE_Mon.png)".format(log.item10) + "\n")
 
 # 11        print <FE_DAC_MON>
             # 11_01
@@ -191,3 +203,7 @@ def final_report(datareport, fembs, fembNo):
             info = dict_to_markdown_table(log.report_log11_01[femb_id])
             file.write(info + '\n')
             file.write("![ped](./{}/mon_LArASIC_DAC_25mVfC.png)".format(log.item11) + "\n")
+'''   
+
+
+'''

@@ -1,4 +1,4 @@
-from llc_back import LLC
+from llc import LLC
 from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 import copy
 from datetime import datetime
@@ -1050,12 +1050,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(0.5)
             else:
                 time.sleep(0.05)
+                input()
             self.wib_mon_adcs() #get rid of previous result
             adcss = []
             for i in range(sps):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
+            print(vms_dict)
         for femb_id in femb_ids:
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict

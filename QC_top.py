@@ -74,7 +74,6 @@ for tm in tasks:
 
     if tm == 16:
        qc.femb_test_pattern_pll()
-
 t2=time.time()
 tt[tm]=t2-t1
 time.sleep(1)
