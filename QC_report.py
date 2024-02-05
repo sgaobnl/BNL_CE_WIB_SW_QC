@@ -210,22 +210,22 @@ class QC_reports:
 
 
 
-#     SEDC Power Measurement    Power
-          f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+#     SE ON Power Measurement    Power
+          f_pwr = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
                pwr_meas = pickle.load(fn)[1]
           se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
           log.report_log01_21.update(se_pwr)
 
-#     SEDC Pulse Measurement      Pulse
-          f_pl = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+#     SE ON Pulse Measurement      Pulse
+          f_pl = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
           pldata = qc.data_decode(rawdata, self.fembs)
           se_pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us"))
           log.report_log01_22.update(se_pulse)
 
-#     SE Power Rail             Rail
+#     SE ON Power Rail             Rail
           power_rail_seon = dict(a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID))
           log.report_log01_23.update(power_rail_seon)
 
@@ -419,31 +419,58 @@ class QC_reports:
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb]+"RMS/"
                   ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
-                  tmp = QC_check.CHKPulse(ped, 7)
+                  tmp = QC_check.CHKPulse(ped, 350)
                   log.chkflag["BL"] = (tmp[0])
                   log.badlist["BL"] = (tmp[1])
-                  ped_err_flag = tmp[0]
+                  ped_status = tmp[0]
                   baseline_err_content = tmp[1]
                   log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
-                  tmp = QC_check.CHKPulse(rms, 5)
+                  tmp = QC_check.CHKPulse(rms, 7)
                   log.chkflag["RMS"] = (tmp[0])
                   log.badlist["RMS"] = (tmp[1])
-                  rms_err_flag = tmp[0]
+                  rms_status = tmp[0]
                   rms_err_content = tmp[1]
                   log.tmp_log[ifemb]["RMS 128-CH std"] = tmp[2]
-                  if (ped_err_flag == False) and (rms_err_flag == False):
+                  index_of_keyword = fname.find("mVfC_")
+                  keyword = fname[index_of_keyword-4 : index_of_keyword]
+                  if (ped_status == True) and (rms_status == True):
                       log.report_log05_result[ifemb][fname] = True
+                      log.report_log05_tablecell[ifemb][fname] = "{}".format(keyword)
                   else:
-                      log.report_log054_pedestal_issue[ifemb]["baseline err_content"] = baseline_err_content
-                      log.report_log055_rms_issue[ifemb]["RMS err_content"] = rms_err_content
+                      log.report_log054_pedestal_issue[ifemb][fname] = baseline_err_content
+                      log.report_log055_rms_issue[ifemb][fname] = rms_err_content
                       section_status = False
                       log.report_log05_result[ifemb][fname] = False
+                      log.report_log05_tablecell[ifemb][fname] = "<span style = 'color:red;'> {} </span>".format(keyword)
                   log.report_log052_pedestal[ifemb][fname] = ped
                   log.report_log053_rms[ifemb][fname] = rms
 
-          a_func.rms_table()
+                  # print(log.report_log053_rms[ifemb][fname])
+                  # print(log.report_log053_rms[ifemb].keys())
+                  # print(log.report_log05_result[ifemb][fname])
+                  # print(log.report_log05_tablecell[ifemb][fname])
 
           for ifemb in self.fembs:
+              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
+              log.report_log05_table[femb_id]["Baseline"] = "200 mV | | | | | |"
+              log.report_log05_table[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF | SE Leakage Current"
+              log.report_log05_table[femb_id]["peak time"] = "0.5 us | 1 us | 2 us | 3 us | 2 us | 2 us | 2 us 14 mVfC "
+              log.report_log05_table[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
+              log.report_log05_table[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
+              log.report_log05_table[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
+              log.report_log05_table[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
+
+              log.report_log05_table2[femb_id]["Baseline"] = "900 mV | | | | | | |"
+              log.report_log05_table2[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF |"
+              log.report_log05_table2[femb_id]["peak time"] = "0.5 us | 1 us | 2 us | 3 us | 2 us | 2 us |"
+              log.report_log05_table2[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_4_7mVfC_2_0us'])
+              log.report_log05_table2[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_7_8mVfC_2_0us'])
+              log.report_log05_table2[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_14_0mVfC_2_0us'])
+              log.report_log05_table2[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_25_0mVfC_2_0us'])
+
+              print(log.report_log05_table[femb_id])
+              print(log.report_log05_table2[femb_id])
+              input()
               plt.figure(figsize=(20, 4))
               plt.subplot(1, 4, 1)
               x_sticks = range(0, 129, 16)
@@ -523,7 +550,7 @@ class QC_reports:
               plt.savefig(fp + '900mV_All_Configuration.png')
               plt.close()
           self.Gather_PNG_PDF(fp)
-          return section_status
+          log.report_log05_fin_result = section_status
          
       def FE_MON_report(self):
 
@@ -642,7 +669,7 @@ class QC_reports:
           mon_dac=raw[1]
 
           qc=ana_tools()
-          qc.PlotADCMon(self.fembs, mon_dac, self.savedir, "MON_ADC")
+          qc.PlotADCMon(self.fembs, mon_dac, self.savedir, "MON_ADC",  self.fembsID)
 
       def GenCALIPDF(self, snc, sgs, sts, sgp, fdir):
 

@@ -478,23 +478,25 @@ class ana_tools:
         return issue_inl
 
 
-    def PlotADCMon(self, fembs, mon_list, savedir, fdir):
-
+    def PlotADCMon(self, fembs, mon_list, savedir, fdir, fembNo):
+        issue_inl = defaultdict(dict)
         mon_items = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
         mon_items_n=[1,2,3,4]
         nvset = len(mon_list)
+        print(nvset)
+        input()
+        status = True
 
         for nfemb in fembs:
-
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
             for imon in mon_items_n:
                 vset_list=[]
-                fig,ax = plt.subplots(figsize=(10,8))
+                fig,ax = plt.subplots(figsize=(4,3))
                 data_dic={}
-                for i in range(nvset): 
+                for i in range(nvset):
                     vset_list.append(mon_list[i][0])
                     mon_data = mon_list[i][1]
                     chip_dic = mon_data[imon]
-
                     for key,chip_data in chip_dic.items():
                         sps = len(chip_data[3])
                         sps_list=[]
@@ -512,6 +514,24 @@ class ana_tools:
                            data_dic[key]=[]
 
                         data_dic[key].append(mon_mean*self.fadc)
+                for key, chip_data in chip_dic.items():
+                    #   INL judgement
+                    x_data = np.array(range(0,256,16))
+                    y_data = np.array(data_dic[key])
+                    coefficients = np.polyfit(x_data[0:14], y_data[0:14], deg=1)
+                    fit_function = np.poly1d(coefficients)
+                    fit_y = fit_function(x_data[0:14])
+                    inl = round(np.max(abs(fit_y - y_data[0:14]) * 100 / abs(y_data[0] - y_data[-1])), 2)
+                    print(key)
+                    print(mon_items[imon])
+                    print(inl)
+                    if inl < 1:
+                        log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] = "{}".format(inl)
+                    else:
+                        status = False
+                        log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] =  "<span style = 'color:red;'> {} </span>".format(inl)
+                print(log.ADCMON_table_cell)
+                input()
 
                 for key,values in data_dic.items():
                     ax.plot(vset_list, data_dic[key], marker='.',label=key)
@@ -520,6 +540,27 @@ class ana_tools:
                 fp = savedir[nfemb] + fdir + "/mon_{}.png".format(mon_items[imon])
                 plt.savefig(fp)
                 plt.close(fig)
+
+            log.ADCMON_table[femb_id]["VCMI / %"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(
+                log.ADCMON_table_cell[femb_id]["VCMI_chip0"], log.ADCMON_table_cell[femb_id]["VCMI_chip1"],
+                log.ADCMON_table_cell[femb_id]["VCMI_chip2"], log.ADCMON_table_cell[femb_id]["VCMI_chip3"],
+                log.ADCMON_table_cell[femb_id]["VCMI_chip4"], log.ADCMON_table_cell[femb_id]["VCMI_chip5"],
+                log.ADCMON_table_cell[femb_id]["VCMI_chip6"], log.ADCMON_table_cell[femb_id]["VCMI_chip7"])
+            log.ADCMON_table[femb_id]["VCMO / %"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(
+                log.ADCMON_table_cell[femb_id]["VCMO_chip0"], log.ADCMON_table_cell[femb_id]["VCMO_chip1"],
+                log.ADCMON_table_cell[femb_id]["VCMO_chip2"], log.ADCMON_table_cell[femb_id]["VCMO_chip3"],
+                log.ADCMON_table_cell[femb_id]["VCMO_chip4"], log.ADCMON_table_cell[femb_id]["VCMO_chip5"],
+                log.ADCMON_table_cell[femb_id]["VCMO_chip6"], log.ADCMON_table_cell[femb_id]["VCMO_chip7"])
+            log.ADCMON_table[femb_id]["VREFP / %"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(
+                log.ADCMON_table_cell[femb_id]["VREFP_chip0"], log.ADCMON_table_cell[femb_id]["VREFP_chip1"],
+                log.ADCMON_table_cell[femb_id]["VREFP_chip2"], log.ADCMON_table_cell[femb_id]["VREFP_chip3"],
+                log.ADCMON_table_cell[femb_id]["VREFP_chip4"], log.ADCMON_table_cell[femb_id]["VREFP_chip5"],
+                log.ADCMON_table_cell[femb_id]["VREFP_chip6"], log.ADCMON_table_cell[femb_id]["VREFP_chip7"])
+            log.ADCMON_table[femb_id]["VREFN / %"] = " {} | {} | {} | {} | {} | {} | {} | {} ".format(
+                log.ADCMON_table_cell[femb_id]["VREFN_chip0"], log.ADCMON_table_cell[femb_id]["VREFN_chip1"],
+                log.ADCMON_table_cell[femb_id]["VREFN_chip2"], log.ADCMON_table_cell[femb_id]["VREFN_chip3"],
+                log.ADCMON_table_cell[femb_id]["VREFN_chip4"], log.ADCMON_table_cell[femb_id]["VREFN_chip5"],
+                log.ADCMON_table_cell[femb_id]["VREFN_chip6"], log.ADCMON_table_cell[femb_id]["VREFN_chip7"])
 
     def CheckLinearty(self, dac_list, pk_list, updac, lodac, chan, fp):
     #   the updac range need to be ensured

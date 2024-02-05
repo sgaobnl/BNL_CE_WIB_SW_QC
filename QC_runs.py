@@ -259,7 +259,7 @@ class QC_Runs:
         #self.chk.femb_cd_rst()
         dac = 0x00
         sts=0
-        fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1)
 
         #   SE on Power Rail
@@ -267,7 +267,7 @@ class QC_Runs:
 
         dac = 0x20
         sts=1
-        fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False) 
 
         ####### DIFF #######

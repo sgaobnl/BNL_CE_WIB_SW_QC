@@ -42,6 +42,10 @@ report_log4 = [report_log04_01, report_log04_02, report_log04_03, report_log04_0
 # 05
 item05 = "RMS"
 report_log05_result = defaultdict(dict)
+report_log05_fin_result = False
+report_log05_tablecell = defaultdict(dict)
+report_log05_table = defaultdict(dict)
+report_log05_table2 = defaultdict(dict)
 report_log051_pulse = defaultdict(dict)
 report_log052_pedestal = defaultdict(dict)
 report_log054_pedestal_issue = defaultdict(dict)
@@ -74,8 +78,10 @@ mon_pulse = defaultdict(dict)
 item11 = "MON_FE"
 report_log11_01 = defaultdict(dict)
 
-
-
+# 12
+item12 = "MON_ADC"
+ADCMON_table_cell = defaultdict(dict)
+ADCMON_table = defaultdict(dict)
 
 chkflag = defaultdict(dict)    # input information
 badlist = defaultdict(dict)    # input information

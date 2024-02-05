@@ -85,7 +85,7 @@ def power_ana(fembs, fembNo, pwr_meas, env):
         log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
 
         # log.report_log05[femb_id]["Power check status"] = tmp[0]
-        log.tmp_log[femb_id]["Power ERROR status"] = "{} | - |Whole Power| {}".format(tmp[1], (LArASIC_p + COLDATA_p + ColdADC_p))
+        log.tmp_log[femb_id]["Power"] = "{} | - |Total P | {}".format(tmp[1], round(LArASIC_p + COLDATA_p + ColdADC_p, 3))
     return log.tmp_log
 
 
@@ -132,12 +132,3 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/"):
             log.tmp_log[femb_id]["Result"] = False
 
     return log.tmp_log
-
-
-
-
-
-
-#   RMS analysis
-def rms_table():
-    a = 1

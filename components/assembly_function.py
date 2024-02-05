@@ -140,7 +140,7 @@ def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
     log.tmp_log.clear()
     log.check_log.clear()
     # parameter
-    gnd_ref = 100; gnd_err = 100
+    gnd_ref = 150; gnd_err = 150
     adc_p_ref = 2245; adc_p_err = 100
     CDVDDA_ref = 1187; CDVDDA_err = 100
     CDVDDIO_ref = 2236; CDVDDIO_err = 100

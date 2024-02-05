@@ -12,6 +12,15 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
         table = "| {} | {} |\n| --- | --- | --- | --- | --- |\n".format(KEY, " | | | ")
         for key, value in zip(keys, values):
             table += f"| {key} | {value} |\n"
+    elif VALUE == "RMS":
+        # 构建表格头部
+        table = "| | {} |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n".format(" | | | | | |")
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
+    elif VALUE == "ADC_MON":
+        table = "| Voltage Type| Chip 0 | Chip 1 | Chip 2 | Chip 3 | Chip 4 | Chip 5 | Chip 6 | Chip 7 |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
     elif VALUE == "Horizontal":
         table = '|' + '|'.join(dictionary.keys()) + '|' + '\n'
         table += '|' + '|'.join(['---' for _ in dictionary.keys()]) + '|' + '\n'
@@ -63,12 +72,14 @@ def final_report(datareport, fembs, fembNo):
             file.write('## ITEM 01 POWER CONSUMPTION' + '\n')
             file.write("------\n")
             file.write('### SE Power Measurement' + '\n')
+            file.write('<div style = "display: flex; justify-content: space-between">' + '\n')
             info = dict_to_markdown_table(log.report_log01_11[femb_id], VALUE="PWRVALUE")
             file.write(info + '\n')
-
-            file.write('### SE Power pulse' + '\n')
             info = dict_to_markdown_table(log.report_log01_12[femb_id])
             file.write(info + '\n')
+            file.write('</div>' + '\n')
+
+            file.write('### SE Power pulse' + '\n')
             file.write("![ped](./PWR_Meas/pulse_PWR_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n")
 
             file.write('### SE power rail' + '\n')
@@ -76,16 +87,16 @@ def final_report(datareport, fembs, fembNo):
             file.write(info + '\n')
 
             file.write("------\n")
-            file.write('### SEDC power measurement' + '\n')
+            file.write('### SE ON power measurement' + '\n')
+            file.write('<div style = "display: flex; justify-content: space-between">' + '\n')
             info = dict_to_markdown_table(log.report_log01_21[femb_id], VALUE="PWRVALUE")
             file.write(info + '\n')
-
-            file.write('### SEDC Power pulse' + '\n')
             info = dict_to_markdown_table(log.report_log01_22[femb_id])
             file.write(info + '\n')
+            file.write('</div>' + '\n')
             file.write("![ped](./PWR_Meas/pulse_PWR_SE_SDF_200mVBL_14_0mVfC_2_0us.png)" + "\n")
 
-            file.write('### SEDC power rail' + '\n')
+            file.write('### SE ON power rail' + '\n')
             info = dict_to_markdown_table(log.report_log01_23[femb_id], VALUE="Horizontal")
             file.write(info + '\n')
 
@@ -143,8 +154,15 @@ def final_report(datareport, fembs, fembNo):
 
 
 # 05        RMS configuration
-            file.write('### RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us' + '\n')
+            if log.report_log05_fin_result == True:
+                file.write('### <span style = "color : green;"> "RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
+            else:
+                file.write('### <span style = "color : red;"> "RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
             file.write('#### All_200mVBL_Configuration' + '\n')
+            info = dict_to_markdown_table(log.report_log05_table[femb_id], VALUE="RMS")
+            file.write(info + '\n')
+            info = dict_to_markdown_table(log.report_log05_table2[femb_id], VALUE="RMS")
+            file.write(info + '\n')
             file.write("![ped](./{}/200mV_All_Configuration.png)".format(log.item05) + "\n")
             file.write('#### All_900mVBL_Configuration' + '\n')
             file.write("![ped](./{}/900mV_All_Configuration.png)".format(log.item05) + "\n")
@@ -203,6 +221,14 @@ def final_report(datareport, fembs, fembNo):
             info = dict_to_markdown_table(log.report_log11_01[femb_id])
             file.write(info + '\n')
             file.write("![ped](./{}/mon_LArASIC_DAC_25mVfC.png)".format(log.item11) + "\n")
+# 12        print <ADC_MON>
+            # 12_01
+            file.write('### FE_ADC_MON' + '\n')
+            info = dict_to_markdown_table(log.ADCMON_table[femb_id], VALUE="ADC_MON")
+            file.write(info + '\n')
+            file.write("![ped](./{}/mon_VCMI.png)".format(log.item12) + "![ped](./{}/mon_VCMO.png)".format(log.item12)  + "![ped](./{}/mon_VREFN.png)".format(log.item12)  + "![ped](./{}/mon_VREFP.png)".format(log.item12) + "\n")
+
+
 '''   
 
 
