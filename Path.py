@@ -1,7 +1,7 @@
 import os
 
 Desk = "D:/A0-FEMB_test_"
-Board_version_batch = "script_improvement/"
+Board_version_batch = "format/"
 
 
 ##===================================

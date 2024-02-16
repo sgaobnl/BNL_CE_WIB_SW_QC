@@ -294,7 +294,7 @@ class ana_tools:
             npk.append(pmin - bbl)
             # bl_rms.append(bbl_rms)
             bl_val.append(bbl)
-            bl.append(bbl - bbl)
+            bl.append(bbl)
 
             rms.append(pulse_rms)
             ped.append(pulse_ped)

@@ -53,8 +53,8 @@ def final_report(datareport, fembs, fembNo):
         log.final_status[femb_id]["item6"] = log.report_log061[femb_id]["Result"]
         log.final_status[femb_id]["item7"] = log.report_log07[femb_id]["Result"]
         log.final_status[femb_id]["item8"] = log.report_log08[femb_id]["Result"]
-        log.final_status[femb_id]["item8"] = log.report_log091[femb_id]["Result"]
-        log.final_status[femb_id]["item8"] = log.report_log101[femb_id]["Result"]
+        log.final_status[femb_id]["item9"] = log.report_log091[femb_id]["Result"]
+        log.final_status[femb_id]["item10"] = log.report_log101[femb_id]["Result"]
         log.final_status[femb_id]["Monitor_Path"] = log.report_log111[femb_id]["Result"]
         #log.final_status[femb_id]["item9"] = log.report_log09[femb_id]["Result"]
 
@@ -88,7 +88,6 @@ def final_report(datareport, fembs, fembNo):
         else:
             print(femb_id)
             summary = "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb])
-            print(dict_list)
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict[femb_id])

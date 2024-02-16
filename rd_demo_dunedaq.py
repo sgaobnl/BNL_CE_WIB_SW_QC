@@ -81,6 +81,7 @@ for fe in range(8):
 #print (rms)
 #plt.plot(np.arange(128),rms)
 plt.savefig(fdir + f"{fembs[0]}_wf.jpg")#plt.show()
+plt.show()
 plt.close()
     
 # if True:

@@ -463,6 +463,10 @@ class QC_Runs:
                     fp = datadir + "CHK_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)
                     self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False, swdac = 1)
                                 #time.sleep(0.5)
+
+
+
+
 #       External Pulse
         print('External pulse')
 
@@ -476,23 +480,10 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.sample_N = 1
 
-        fp = datadir + "CHK_EX_{}_{}_{}.bin".format("900mVBL","14_0mVfC","2_0us")
+        fp = datadir + "CHK_EX_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
 
-        print('SGP pulse response')
-#   SGP    4       {[snc 200 mV] * [4.7 7.8 14 25 mV/fc] *[2 us]}
-        st1 = 1;        st0 = 1  # 2 us
-        self.chk.femb_cd_rst()
-        cfg_paras_rec = []
-        for i in range(8):
-            self.chk.adcs_paras[i][2] = 1  # enable differential interface
-        # self.chk.set_fe_board(sts=1, snc=0, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x10)
-        self.sample_N = 1
-        for sgi in range(4):
-            sg0 = sgi % 2
-            sg1 = sgi // 2
-            fp = datadir + "CHK_SGP_{}_{}_{}_0x{:02x}.bin".format(sncs[1], sgs[sgi], pts[3], dac)
-            self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sgp = 1, pwr_flg=False)
+
 #    def femb_chk_pulse2(self):
 #
 #        datadir = self.save_dir+"CHK2/"
@@ -591,7 +582,7 @@ class QC_Runs:
 
         self.chk.femb_cd_rst()
         self.sample_N = 10
-        fp = datadir + "ADC_SYNC_PAT_noSHA_SE.bin"
+        fp = datadir + "ADC_Test_mode_DC_Noise_SE.bin"
         self.take_data(fp=fp, adc_sync_pat=True, bypass = True)
 
         # self.chk.femb_cd_rst()
@@ -616,7 +607,7 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0  # 14mV/fC
         st0 = 1;        st1 = 1  # 2us
 
-        for i in range(0x1C, 0x33):
+        for i in range(0x1d, 0x2d):
             self.chk.pll = i
             print("PLL value = ", end="");  print(hex(i), end=" "); print("Take TestPattern data")
             self.chk.femb_cd_rst()
@@ -632,7 +623,7 @@ class QC_Runs:
             self.chk.data_align(self.fembs)
             time.sleep(0.5)
 
-            rms_rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=1, trig_cmd=0)  # returns list of size 1
+            rms_rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=1, trig_cmd=0, TP = True)  # returns list of size 1
             print(i)
             file_name = "Raw_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL", "14_0mVfC", "2_0us", 0x00, hex(i))
             print(hex(i))

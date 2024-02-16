@@ -136,7 +136,7 @@ def monitor_power_rail(interface, fembs, datadir, save = False):
             pickle.dump([vold, fembs], fn)
     return vold
 
-def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
+def monitor_power_rail_analysis(interface, datadir, fembNo):
     log.tmp_log.clear()
     log.check_log.clear()
     # parameter
@@ -154,8 +154,8 @@ def monitor_power_rail_analysis(interface, datadir, reportdir, fembNo):
         vfembs = monvols[1]
         vold = monvols[0]
     vkeys = list(vold.keys())
-    LSB = 2.5 / 16384
-    #LSB = 2.048 / 16384
+    #LSB = 2.5 / 16384
+    LSB = 2.048 / 16384
     for ifemb in range(len(vfembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % vfembs[ifemb]])
         mvold = {}
@@ -542,8 +542,8 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
     nchips = range(8)
     #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
     log.report_log11["ITEM"] = "5 Monitoring Path"
-    fadc = 1/(2**14)*2500   # NEW WIB IS 2500
-    #fadc = 1/(2**14)*2048   # NEW WIB IS 2500
+    #fadc = 1/(2**14)*2500   # NEW WIB IS 2500
+    fadc = 1/(2**14)*2048   # NEW WIB IS 2500
     fe_t = [None] * 8;    fe_bgp = [None] * 8;    vcmi = [None] * 8;    vcmo = [None] * 8
     vrefp = [None] * 8;    vrefn = [None] * 8;    vssa = [None] * 8
     check = True

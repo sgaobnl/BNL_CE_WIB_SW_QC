@@ -1041,7 +1041,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         vols=[0x01, 0x03, 0x09, 0x0b, 0x11, 0x13, 0x19, 0x1b]
         vms_dict = {}
         for volcs in range (len(vms)):
-            print (f"Monitor Power Rail of {vms[volcs]}")
+            #print (f"Monitor Power Rail of {vms[volcs]}")
             for femb_id in femb_ids:
                 if "GND" in vms[volcs]:
                     self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x02,cd1_0x27 = 0x1f, cd2_0x26 =0x00 ,cd2_0x27 = 0x1f)

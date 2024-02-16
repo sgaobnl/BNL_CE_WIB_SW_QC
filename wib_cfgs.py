@@ -1048,7 +1048,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x02,cd1_0x27 = 0x1f, cd2_0x26 =0x00 ,cd2_0x27 = 0x1f)
                 else:
                     self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x04,cd1_0x27 = 0x1f, cd2_0x26 =vols[volcs] ,cd2_0x27 = 0x1f)
-
             if self.longcable:
                 time.sleep(0.5)
             else:
@@ -1059,7 +1058,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
-            print(vms_dict)
         for femb_id in femb_ids:
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict
@@ -1141,7 +1139,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #             self.poke(0xA00C0004, wrreg) #reset spy buffer
 #             self.spybuf(fembs)
 #
-    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True): 
+    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True, TP = False):
         synctry = 0
         while True:
 	    #spy_rec_ticks subject to change
@@ -1242,8 +1240,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
                     synctry = synctry+1
                     if synctry > 100:
-                        print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
-                        exit()
+                        if TP == True:
+                            break;
+                        else:
+                            print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                            exit()
                     if synctry%10 == 0:
                         print ("perform data synchronzation again...")
                         self.data_align(fembs)

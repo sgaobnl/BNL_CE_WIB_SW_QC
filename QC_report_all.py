@@ -5,7 +5,7 @@ import time
 
 ag = argparse.ArgumentParser()
 ag.add_argument("folder", help="data folder", type=str)
-ag.add_argument("-t", "--tasks",help="a list of tasks to be analyzed", type=int, choices=range(1,14), nargs='+',default=range(1,14))
+ag.add_argument("-t", "--tasks",help="a list of tasks to be analyzed", type=int, choices=range(1,16+1), nargs='+',default=range(1,16+1))
 ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int, choices=range(0,4), nargs='+')
 args = ag.parse_args()
 
@@ -27,7 +27,7 @@ for tm in tasks:
        rp.PWR_cycle_report()
        
     if tm==3:
-       rp.CHKPULSE("Leakage_Current")
+       rp.LCCHKPULSE("Leakage_Current")
        
     if tm==4:
        rp.CHKPULSE("CHK")
@@ -63,7 +63,7 @@ for tm in tasks:
        rp.CALI_report_6()
 
     if tm==15:
-       rp.ADC_DC_Noise_report()
+       rp.femb_adc_sync_pat_report("ADC_SYNC_PAT")
 
     if tm==16:
        rp.PLL_scan_report("PLL_PAT")

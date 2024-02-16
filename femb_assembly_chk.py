@@ -10,6 +10,7 @@ import components.assembly_function as a_func
 import components.assembly_report as a_repo
 # qc_tools = ana_tools()
 # Create an array to store the merged image
+LAr_Dalay = 3.5
 
 ####### Input FEMB slots #######
 if len(sys.argv) < 2:
@@ -81,6 +82,10 @@ log.report_log01["Detail"] = logs
 ###########################################
 chk = WIB_CFGS()
 chk.wib_fw()
+
+####### Power off FEMBs #######
+print("Power off FEMBs to initial the test")
+chk.femb_powering([])
 
 #   set FEMB voltages
 chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
@@ -198,7 +203,7 @@ for femb_id in fembs:
     cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en))
     chk.femb_cfg(femb_id, adac_pls_en )
 chk.data_align(fembs)
-time.sleep(1)
+time.sleep(LAr_Dalay)
 # data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -298,9 +303,9 @@ for femb_id in fembs:
     chk.set_fe_board(sts=1, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=1, dac=0x10 )
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
-    chk.femb_cfg(femb_id, adac_pls_en )
+    chk.femb_cfg(femb_id, adac_pls_en )     # enable the Pulse
 chk.data_align(fembs)
-time.sleep(1)
+time.sleep(LAr_Dalay)
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -343,7 +348,7 @@ for femb_id in fembs:
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
 chk.data_align(fembs)
-time.sleep(5)
+time.sleep(LAr_Dalay)
 
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1

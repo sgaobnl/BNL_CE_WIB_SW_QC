@@ -19,9 +19,9 @@ from PIL import Image
 import QC_components.qc_a_function as a_func
 import QC_components.qc_log as log
 import QC_components.All_Report as a_repo
+from collections import defaultdict
 
 class QC_reports:
-
 
       def __init__(self, fdir, fembs=[]):
 
@@ -183,6 +183,7 @@ class QC_reports:
           c.save()
 
       def PWR_consumption_report(self):
+          log.test_label.append(1)
           qc = ana_tools()
           self.CreateDIR("PWR_Meas")
           datadir = self.datadir+"PWR_Meas/"
@@ -193,20 +194,33 @@ class QC_reports:
           f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
               pwr_meas = pickle.load(fn)[1]
-          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
-          log.report_log01_11.update(se_pwr)
+
+          for ifemb in range(len(self.fembs)):
+              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 SE Power Consumption')
+              pwr1 = dict(log.tmp_log)
+              check1 = dict(log.check_log)
+              log.report_log01_11.update(pwr1)
+              log.check_log01_11.update(check1)
 
 #     SE Pulse Measurement      Pulse
           f_pl = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
           pldata = qc.data_decode(rawdata, self.fembs)
-          se_pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_200mVBL_14_0mVfC_2_0us"))
-          log.report_log01_12.update(se_pulse)
+          a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
+          # log.report_log01_12.update(se_pulse)
+          pulse = dict(log.tmp_log)
+          pulse_check = dict(log.check_log)
+          log.report_log01_12.update(pulse)
+          log.check_log01_12.update(pulse_check)
 
 #     SE Power Rail             Rail
-          power_rail_se = dict(a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID))
-          log.report_log01_13.update(power_rail_se)
+          a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID, '01_13SE Power Rail')
+          power_rail = dict(log.tmp_log)
+          power_rail_check = dict(log.check_log)
+          log.report_log01_13.update(power_rail)
+          log.check_log01_13.update(power_rail_check)
 
 
 
@@ -214,20 +228,32 @@ class QC_reports:
           f_pwr = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
                pwr_meas = pickle.load(fn)[1]
-          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
-          log.report_log01_21.update(se_pwr)
+          for ifemb in range(len(self.fembs)):
+              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_21 SE ON Power Consumption')
+              pwr1 = dict(log.tmp_log)
+              check1 = dict(log.check_log)
+              log.report_log01_21.update(pwr1)
+              log.check_log01_21.update(check1)
 
 #     SE ON Pulse Measurement      Pulse
           f_pl = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
                rawdata = pickle.load(fn)[0]
           pldata = qc.data_decode(rawdata, self.fembs)
-          se_pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us"))
-          log.report_log01_22.update(se_pulse)
+          a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_ON_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_22 SE ON Power Pulse')
+          # log.report_log01_12.update(se_pulse)
+          pulse = dict(log.tmp_log)
+          pulse_check = dict(log.check_log)
+          log.report_log01_22.update(pulse)
+          log.check_log01_22.update(pulse_check)
 
 #     SE ON Power Rail             Rail
-          power_rail_seon = dict(a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID))
-          log.report_log01_23.update(power_rail_seon)
+          a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID, '01_23 SE ON Power Rail')
+          power_rail = dict(log.tmp_log)
+          power_rail_check = dict(log.check_log)
+          log.report_log01_23.update(power_rail)
+          log.check_log01_23.update(power_rail_check)
 
 
 
@@ -235,25 +261,37 @@ class QC_reports:
           f_pwr = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
           with open(f_pwr, 'rb') as fn:
               pwr_meas = pickle.load(fn)[1]
-          se_pwr = dict(a_func.power_ana(self.fembs, self.fembsID, pwr_meas, self.logs['env']))
-          log.report_log01_31.update(se_pwr)
+          for ifemb in range(len(self.fembs)):
+              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], 'DIFF Power Consumption')
+              pwr1 = dict(log.tmp_log)
+              check1 = dict(log.check_log)
+              log.report_log01_31.update(pwr1)
+              log.check_log01_31.update(check1)
 
 #     DIFF Pulse Measurement      Pulse
           f_pl = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
           with open(f_pl, 'rb') as fn:
               rawdata = pickle.load(fn)[0]
           pldata = qc.data_decode(rawdata, self.fembs)
-          diff_pulse = dict(
-              a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us"))
-          log.report_log01_32.update(diff_pulse)
+          a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", 'DIFF Power Pulse')
+          # log.report_log01_12.update(se_pulse)
+          pulse = dict(log.tmp_log)
+          pulse_check = dict(log.check_log)
+          log.report_log01_32.update(pulse)
+          log.check_log01_32.update(pulse_check)
+
 
 #     DIFF Power Rail
-          power_rail_diff = dict(a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID))
-          log.report_log01_33.update(power_rail_diff)
+          power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID, 'DIFF Power Rail')
+          power_rail = dict(log.tmp_log)
+          power_rail_check = dict(log.check_log)
+          log.report_log01_33.update(power_rail)
+          log.check_log01_33.update(power_rail_check)
 
 
       def PWR_cycle_report(self):
-
+          log.test_label.append(2)
           if 'RT' in self.logs['env']:
               return
 
@@ -322,17 +360,18 @@ class QC_reports:
 
 #     03 04    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
       def LCCHKPULSE(self, fdir):
-
+          log.test_label.append(3)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
           log_dict = log.report_log3
           qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          dict_list = [log.report_log03_01, log.report_log03_02, log.report_log03_03, log.report_log03_04]
+          check_list = [log.check_log03_01, log.check_log03_02, log.check_log03_03, log.check_log03_04]
           i = 0
           for afile in files:
               with open(afile, 'rb') as fn:
                    raw = pickle.load(fn)
-              #print("analyze file: %s"%afile)
               rawdata = raw[0]
               pwr_meas = raw[1]
 
@@ -342,31 +381,55 @@ class QC_reports:
                   fname = afile.split("\\")[-1][:-4]
               else:
                   fname = afile.split("/")[-1][:-4]
-              # for ifemb in self.fembs:
-              #     fp = self.savedir[ifemb] + fdir+"/"
-              #     if 'vdac' in fname:
-              #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-              #     else:
-              #         qc.GetPeaks(pldata, ifemb, fp, fname)
-
-              #====
-              pulse = dict(qc.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
-              log.report_log3[i].update(pulse)
+              label = fname[fname.find("0x20_")+5:]
+              a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_'+label)
+              pulse = dict(log.tmp_log)
+              pulse_check = dict(log.check_log)
+              dict_list[i].update(pulse)
+              check_list[i].update(pulse_check)
               i = i + 1
-          #self.Gather_PNG_PDF(fp)
+
+
+          for ifemb in range(len(self.fembs)):
+              femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              plt.figure(figsize=(6, 3))
+              x = ["100pA", "500pA", "1nA", "5nA"]
+              y1 = [log.report_log03_02[femb_id]["ppk_mean0"], log.report_log03_01[femb_id]["ppk_mean0"],
+                    log.report_log03_04[femb_id]["ppk_mean0"], log.report_log03_03[femb_id]["ppk_mean0"]]
+              yer = [log.report_log03_02[femb_id]["ppk_err0"], log.report_log03_01[femb_id]["ppk_err0"],
+                     log.report_log03_04[femb_id]["ppk_err0"], log.report_log03_03[femb_id]["ppk_err0"]]
+              plt.errorbar(x, y1, yer, fmt='o', capsize=3, color='blue', linestyle='-', label='ppk with error bars')
+              y2 = [log.report_log03_02[femb_id]["npk_mean0"], log.report_log03_01[femb_id]["npk_mean0"],
+                    log.report_log03_04[femb_id]["npk_mean0"], log.report_log03_03[femb_id]["npk_mean0"]]
+              y2er = [log.report_log03_02[femb_id]["npk_err0"], log.report_log03_01[femb_id]["npk_err0"],
+                      log.report_log03_04[femb_id]["npk_err0"], log.report_log03_03[femb_id]["npk_err0"]]
+              plt.errorbar(x, y2, y2er, fmt='o', capsize=3, color='orange', linestyle='-',
+                           label='abs(npk) or baseline with error bars')
+              plt.ylim(0, 12000)
+              plt.title('PPK & NPK with different leakage current')
+              plt.ylabel('ADC / Count')
+              # plt.xlabel('Leakage Current')
+
+              plt.legend()
+
+              fp = self.savedir[self.fembs[ifemb]] + "Leakage_Current/"
+              fp_fig = fp + "LC_pulse.png"
+              plt.savefig(fp_fig)
+              plt.close()
+
 
 
 # 04 pulse check
       def CHKPULSE(self, fdir):
-
+          log.test_label.append(4)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
           log.report_log4
-          # else:
-          #       log_dict = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
 
           qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+          dict_list_SE_200 = [log.report_log03_01, log.report_log03_02, log.report_log03_03, log.report_log03_04]
+          check_list_SE_900 = [log.check_log03_01, log.check_log03_02, log.check_log03_03, log.check_log03_04]
           i = 0
           for afile in files:
               with open(afile, 'rb') as fn:
@@ -451,14 +514,15 @@ class QC_reports:
                   # print(log.report_log05_tablecell[ifemb][fname])
 
           for ifemb in self.fembs:
+              print(log.report_log05_tablecell[ifemb])
               femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
               log.report_log05_table[femb_id]["Baseline"] = "200 mV | | | | | |"
               log.report_log05_table[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF | SE Leakage Current"
               log.report_log05_table[femb_id]["peak time"] = "0.5 us | 1 us | 2 us | 3 us | 2 us | 2 us | 2 us 14 mVfC "
-              log.report_log05_table[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
-              log.report_log05_table[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
-              log.report_log05_table[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
-              log.report_log05_table[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_0x20_'])
+              log.report_log05_table[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_100pA'])
+              log.report_log05_table[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_500pA'])
+              log.report_log05_table[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_1nA'])
+              log.report_log05_table[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_5nA'])
 
               log.report_log05_table2[femb_id]["Baseline"] = "900 mV | | | | | | |"
               log.report_log05_table2[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF |"
@@ -470,7 +534,6 @@ class QC_reports:
 
               print(log.report_log05_table[femb_id])
               print(log.report_log05_table2[femb_id])
-              input()
               plt.figure(figsize=(20, 4))
               plt.subplot(1, 4, 1)
               x_sticks = range(0, 129, 16)
@@ -840,10 +903,27 @@ class QC_reports:
                   fname = afile.split("/")[-1][:-4]
               for ifemb in self.fembs:
                   fp = self.savedir[ifemb] + fdir+"/"
+                  # if 'vdac' in fname:
+                  #     ppk, npk, bl = qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+                  # else:
+                  #     ppk, npk, bl = qc.GetPeaks(pldata, ifemb, fp, fname)
                   if 'vdac' in fname:
-                      qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+                      vped,vrms = qc.GetRMS(pldata, ifemb, fp, fname)
                   else:
-                      qc.GetPeaks(pldata, ifemb, fp, fname)
+                      ped,rms = qc.GetRMS(pldata, ifemb, fp, fname)
+                  if "noSHA_SE" in fname:
+                      if np.std(ped) < 1:
+                          issue = "True"
+                      else:
+                          issue = "False"
+                  if "SHA_DIFF" in fname:
+                      print(ped[0])
+                      print(ped[1])
+                      print(ped[2])
+                      print(ped[3])
+                      print(len(ped))
+                      print(ped)
+                      print(rms)
 
 #   16  PLL SCAN
       def PLL_scan_report(self, fdir):
@@ -874,7 +954,7 @@ class QC_reports:
                     ped,rms=qc.GetRMS(pldata, ifemb, fp, fname)
                     if rms != 0:
                         check = False
-                    if (ped != 0x55AA) and (ped != 0xAA55):
+                    if (ped != 0x55AA/4) and (ped != 0xAA55/4):
                         check = False
           return check
 
@@ -1189,7 +1269,7 @@ class QC_reports:
                                 err_mssg["RMS"].append("BL {} chips: {}".format(fname,tmp[1][1]))
 
 
-          
+
               self.CHK_genreport(chkflag,err_mssg,ifemb)
 
 if __name__=='__main__':

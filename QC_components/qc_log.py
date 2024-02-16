@@ -1,16 +1,31 @@
 from collections import defaultdict
 
 report_log00 = defaultdict(dict)    # input information
+test_label = []
+#   01  Power Consumption
 report_log01 = defaultdict(dict)    # input information
-report_log01_11 = defaultdict(dict)    # input information
-report_log01_12 = defaultdict(dict)    # input information
-report_log01_13 = defaultdict(dict)    # input information
-report_log01_21 = defaultdict(dict)    # input information
-report_log01_22 = defaultdict(dict)    # input information
-report_log01_23 = defaultdict(dict)    # input information
-report_log01_31 = defaultdict(dict)    # input information
-report_log01_32 = defaultdict(dict)    # input information
-report_log01_33 = defaultdict(dict)    # input information
+check_log01 = defaultdict(dict)    # input information
+#   SE OFF
+report_log01_11 = defaultdict(dict)
+report_log01_12 = defaultdict(dict)
+report_log01_13 = defaultdict(dict)
+check_log01_11 = defaultdict(dict)
+check_log01_12 = defaultdict(dict)
+check_log01_13 = defaultdict(dict)
+#   SE ON
+report_log01_21 = defaultdict(dict)
+report_log01_22 = defaultdict(dict)
+report_log01_23 = defaultdict(dict)
+check_log01_21 = defaultdict(dict)
+check_log01_22 = defaultdict(dict)
+check_log01_23 = defaultdict(dict)
+#   DIFF (SEDC)
+report_log01_31 = defaultdict(dict)
+report_log01_32 = defaultdict(dict)
+report_log01_33 = defaultdict(dict)
+check_log01_31 = defaultdict(dict)
+check_log01_32 = defaultdict(dict)
+check_log01_33 = defaultdict(dict)
 
 # 03
 item3 = "Leakage_Current"
@@ -18,6 +33,12 @@ report_log03_01 = defaultdict(dict)    # input information
 report_log03_02 = defaultdict(dict)    # input information
 report_log03_03 = defaultdict(dict)    # input information
 report_log03_04 = defaultdict(dict)    # input information
+check_log03_01 = defaultdict(dict)    # input information
+check_log03_02 = defaultdict(dict)    # input information
+check_log03_03 = defaultdict(dict)    # input information
+check_log03_04 = defaultdict(dict)    # input information
+
+check_log03_table_01 = defaultdict(dict)    # input information
 report_log3 = [report_log03_01, report_log03_02, report_log03_03, report_log03_04]
 
 # 04
@@ -83,9 +104,15 @@ item12 = "MON_ADC"
 ADCMON_table_cell = defaultdict(dict)
 ADCMON_table = defaultdict(dict)
 
+# 15
+item15 = "ADC_SYNC_PAT"
+# ADCMON_table_cell = defaultdict(dict)
+# ADCMON_table = defaultdict(dict)
+
 chkflag = defaultdict(dict)    # input information
 badlist = defaultdict(dict)    # input information
 tmp_log = defaultdict(dict)
+check_log = defaultdict(dict)
 tmp_pulse = defaultdict(dict)
 
 
