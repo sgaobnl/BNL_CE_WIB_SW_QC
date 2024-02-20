@@ -278,19 +278,19 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         npk_err = int(abs(np.max(npk) - np.min(npk)))
         # bbl_mean = np.mean(bl)
 
-        log.tmp_log[femb_id]["ppk_mean0"] = int(ppk_mean)
-        log.tmp_log[femb_id]["ppk_err0"] = int(ppk_err)
-        log.tmp_log[femb_id]["npk_mean0"] = abs(int(npk_mean))
-        log.tmp_log[femb_id]["npk_err0"] = int(npk_err)
+        log.tmp_log[femb_id]["{}_ppk_mean0".format(fname)] = int(ppk_mean)
+        log.tmp_log[femb_id]["{}_ppk_err0".format(fname)] = int(ppk_err)
+        log.tmp_log[femb_id]["{}_npk_mean0".format(fname)] = abs(int(npk_mean))
+        log.tmp_log[femb_id]["{}_npk_err0".format(fname)] = int(npk_err)
 
         tmp = QC_check.CHKPulse(ppk, 500)
         print(tmp[0])
         if tmp[0] == False:
-            log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
-            log.tmp_log[femb_id]["ppk_err"] = '<span style="color: red;">' + str(ppk_err) + '</span>'
+            log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
+            log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = '<span style="color: red;">' + str(ppk_err) + '</span>'
         else:
-            log.tmp_log[femb_id]["ppk_mean"] = str(ppk_mean)
-            log.tmp_log[femb_id]["ppk_err"] = str(ppk_err)
+            log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = str(ppk_mean)
+            log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = str(ppk_err)
         check = check and tmp[0]
         check_issue.append("Pulse_PPK_issue: {}\n".format(tmp[1]))
         # log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
@@ -298,11 +298,11 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         tmp = QC_check.CHKPulse(npk, 500)
         print(tmp[0])
         if tmp[0] == False:
-            log.tmp_log[femb_id]["npk_mean"] = '<span style="color: red;">' + str(npk_mean) + '</span>'
-            log.tmp_log[femb_id]["npk_err"] = '<span style="color: red;">' + str(npk_err) + '</span>'
+            log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = '<span style="color: red;">' + str(npk_mean) + '</span>'
+            log.tmp_log[femb_id]["{}_npk_err".format(fname)] = '<span style="color: red;">' + str(npk_err) + '</span>'
         else:
-            log.tmp_log[femb_id]["npk_mean"] = str(npk_mean)
-            log.tmp_log[femb_id]["npk_err"] = str(npk_err)
+            log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = str(npk_mean)
+            log.tmp_log[femb_id]["{}_npk_err".format(fname)] = str(npk_err)
         check = check and tmp[0]
         check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
         # log.badlist[femb_id]["Pulse_SE_NPK"]=(tmp[1])

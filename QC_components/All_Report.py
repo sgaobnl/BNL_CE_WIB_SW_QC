@@ -77,6 +77,17 @@ def final_report(datareport, fembs, fembNo):
                     check_list03.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status03)
 
+        if 4 in log.test_label:
+            dict_list04 = [log.check_log04_01[femb_id], log.check_log04_02[femb_id], log.check_log04_03[femb_id], log.check_log04_04[femb_id], log.check_log04_05[femb_id], log.check_log04_06[femb_id]]
+            check_status04 = True
+            check_list04 = []
+            for dict_i in dict_list04:
+                if dict_i['Result'] == False:
+                    check_status04 = False
+                    check_list04.append(str(dict_i['Label']) + "\n")
+                    check_list04.append(str(dict_i['Issue List']) + "\n")
+            check_list.append(check_status04)
+
         all_true = all(value for value in check_list)
         if all_true:
             summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
@@ -182,12 +193,6 @@ def final_report(datareport, fembs, fembNo):
                 file.write(log.check_log03_table_01[femb_id]['npk_mean'])
                 file.write(log.check_log03_table_01[femb_id]['npk_err'] + '\n')
 
-
-
-
-
-
-
                 file.write("------\n")
                 file.write('### 03_01 {} pulse'.format(log.check_log03_01[femb_id]['Label']) + '\n')
                 info = dict_to_markdown_table(log.report_log03_01[femb_id], VALUE="Horizontal")
@@ -211,41 +216,102 @@ def final_report(datareport, fembs, fembNo):
                 info = dict_to_markdown_table(log.report_log03_04[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA.png)" + "\n")
-            '''
-# 03        print <Leakage Current>
-            file.write('## ITEM 03 Leakage Current' + '\n')
-            file.write("------\n")
-
-            # 03_01 100 pA
-            file.write('### Pulse LC 100 pA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_02[femb_id], VALUE="Horizontal")
-            file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA.png)".format(log.item3) + "\n")
-
-            # 03_02 500 pA
-            file.write('### Pulse LC 500 pA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_01[femb_id], VALUE="Horizontal")
-            file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA.png)".format(log.item3) + "\n")
-
-            # 03_03 1 nA
-            file.write('### Pulse LC 1 nA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_04[femb_id], VALUE="Horizontal")
-            file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA.png)".format(log.item3) + "\n")
-
-            # 03_04 5 nA
-            file.write('### Pulse LC 5 nA' + '\n')
-            info = dict_to_markdown_table(log.report_log03_03[femb_id], VALUE="Horizontal")
-            file.write(info + '\n')
-            file.write("![ped](./{}/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA.png)".format(log.item3) + "\n")
-
-
-
-
-
 
 # 04        print <Check Pulse>
+            if 4 in log.test_label:
+                if check_status04:
+                    Head04 = '### ' + '<span style="color: green;">' + 'ITEM 04 Whole Pulse Response' + '    < Pass >' + '</span>'  + '\n'
+                else:
+                    Head04 = '### ' + '<span style="color: red;">' + 'ITEM 04 Whole Pulse Response' + '    < Fail >' + '</span>'  + '\n'
+                file.write(Head04 + '\n')
+                file.write("------\n")
+                file.write("[PDF](./{}/report.pdf)".format(log.item04) + "\n")
+                file.write('### SE OFF    Baseline 200 mV' + '\n')
+                log.check_log04_table_01[femb_id]['title'] = " | Gain | PeakTime | PPK Mean | PPK Error | NPK Mean | NPK Error |\n"
+                log.check_log04_table_01[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | \n"
+
+                log.check_log04_table_01[femb_id]['line1'] = " | 4.7 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_ppk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_ppk_err"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_npk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line2'] = " | 4.7 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_ppk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_ppk_err"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_npk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line3'] = " | 4.7 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_ppk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_ppk_err"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_npk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line4'] = " | 4.7 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_ppk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_ppk_err"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_npk_mean"], log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_01[femb_id]['line5'] = " 7.8 mV/fC | 0.5 us | {} | {} | {} | {} |\n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line6'] = " 7.8 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_ppk_err"],  log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line7'] = " 7.8 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line8'] = " 7.8 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_01[femb_id]['line9'] = " 14 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line10'] = " 14 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_ppk_err"],  log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line11'] = " 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_ppk_err"],  log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line12'] = " 14 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_ppk_err"],  log.report_log04_01[femb_id]['CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_01[femb_id]['line13'] = " 25 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line14'] = " 25 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line15'] = " 25 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_01[femb_id]['line16'] = " 25 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_ppk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_ppk_err"], log.report_log04_01[femb_id]['CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_npk_mean'], log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_npk_err"])
+
+                file.write('\n')
+                file.write(log.check_log04_table_01[femb_id]['title'])
+                file.write(log.check_log04_table_01[femb_id]['table line'])
+                file.write(log.check_log04_table_01[femb_id]['line1'])
+                file.write(log.check_log04_table_01[femb_id]['line2'])
+                file.write(log.check_log04_table_01[femb_id]['line3'])
+                file.write(log.check_log04_table_01[femb_id]['line4'])
+                file.write(log.check_log04_table_01[femb_id]['line5'])
+                file.write(log.check_log04_table_01[femb_id]['line6'])
+                file.write(log.check_log04_table_01[femb_id]['line7'])
+                file.write(log.check_log04_table_01[femb_id]['line8'])
+                file.write(log.check_log04_table_01[femb_id]['line9'])
+                file.write(log.check_log04_table_01[femb_id]['line10'])
+                file.write(log.check_log04_table_01[femb_id]['line11'])
+                file.write(log.check_log04_table_01[femb_id]['line12'])
+                file.write(log.check_log04_table_01[femb_id]['line13'])
+                file.write(log.check_log04_table_01[femb_id]['line14'])
+                file.write(log.check_log04_table_01[femb_id]['line15'])
+                file.write(log.check_log04_table_01[femb_id]['line16'])
+#   SE 900 mV
+                file.write('### SE OFF    Baseline 900 mV' + '\n')
+                log.check_log04_table_02[femb_id]['title'] = " | Gain | PeakTime | PPK Mean | PPK Error | NPK Mean | NPK Error |\n"
+                log.check_log04_table_02[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | \n"
+
+                log.check_log04_table_02[femb_id]['line1'] = " | 4.7 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_ppk_mean"], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_ppk_err"], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_npk_mean"], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_ppk_err"])
+                log.check_log04_table_02[femb_id]['line2'] = " | 4.7 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_npk_mean"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line3'] = " | 4.7 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_npk_mean"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line4'] = " | 4.7 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_npk_mean"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_02[femb_id]['line5'] = " | 7.8 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line6'] = " | 14 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line7'] = " | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line8'] = " | 14 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_02[femb_id]['line9'] = " | 14 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line10'] = " | 14 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_ppk_err"],  log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line11'] = " | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_ppk_err"],  log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line12'] = " | 14 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_ppk_err"],  log.report_log04_02[femb_id]['CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_npk_err"])
+
+                log.check_log04_table_02[femb_id]['line13'] = " | 25 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line14'] = " | 25 mV/fC | 1 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line15'] = " | 25 mV/fC | 2 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_npk_err"])
+                log.check_log04_table_02[femb_id]['line16'] = " | 25 mV/fC | 3 us | {} | {} | {} | {} | \n".format(log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_ppk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_ppk_err"], log.report_log04_02[femb_id]['CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_npk_mean'], log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_npk_err"])
+                file.write('\n')
+                file.write(log.check_log04_table_02[femb_id]['title'])
+                file.write(log.check_log04_table_02[femb_id]['table line'])
+                file.write(log.check_log04_table_02[femb_id]['line1'])
+                file.write(log.check_log04_table_02[femb_id]['line2'])
+                file.write(log.check_log04_table_02[femb_id]['line3'])
+                file.write(log.check_log04_table_02[femb_id]['line4'])
+                file.write(log.check_log04_table_02[femb_id]['line5'])
+                file.write(log.check_log04_table_02[femb_id]['line6'])
+                file.write(log.check_log04_table_02[femb_id]['line7'])
+                file.write(log.check_log04_table_02[femb_id]['line8'])
+                file.write(log.check_log04_table_02[femb_id]['line9'])
+                file.write(log.check_log04_table_02[femb_id]['line10'])
+                file.write(log.check_log04_table_02[femb_id]['line11'])
+                file.write(log.check_log04_table_02[femb_id]['line12'])
+                file.write(log.check_log04_table_02[femb_id]['line13'])
+                file.write(log.check_log04_table_02[femb_id]['line14'])
+                file.write(log.check_log04_table_02[femb_id]['line15'])
+                file.write(log.check_log04_table_02[femb_id]['line16'])
 '''
 
 
@@ -338,4 +404,3 @@ def final_report(datareport, fembs, fembNo):
 '''   
 
 
-'''

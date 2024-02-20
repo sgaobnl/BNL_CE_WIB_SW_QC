@@ -465,6 +465,26 @@ class QC_Runs:
                                 #time.sleep(0.5)
 
 
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 0    # disable differential interface
+
+
+        print('SGP pulse response')
+        #   SGP    4       {[snc 200 mV] * [4.7 7.8 14 25 mV/fc] *[2 us]}
+        st1 = 1;
+        st0 = 1  # 2 us
+        sts = 1
+        self.chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 1  # enable differential interface
+        # self.chk.set_fe_board(sts=1, snc=0, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sdd=1, swdac=1, dac=0x10)
+        self.sample_N = 1
+        for sgi in range(4):    # adjust Gain 4.7 7.8 14 25 mV/fc
+            sg0 = sgi % 2
+            sg1 = sgi // 2
+            fp = datadir + "CHK_SGP_{}_{}_{}_0x{:02x}.bin".format(sncs[1], sgs[sgi], pts[3], dac)
+            self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
 
 
 #       External Pulse
@@ -484,7 +504,7 @@ class QC_Runs:
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
 
 
-#    def femb_chk_pulse2(self):
+    #    def femb_chk_pulse2(self):
 #
 #        datadir = self.save_dir+"CHK2/"
 #        try:

@@ -428,8 +428,12 @@ class QC_reports:
 
           qc=ana_tools()
           files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-          dict_list_SE_200 = [log.report_log03_01, log.report_log03_02, log.report_log03_03, log.report_log03_04]
-          check_list_SE_900 = [log.check_log03_01, log.check_log03_02, log.check_log03_03, log.check_log03_04]
+          # dict_list_SE_200 = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
+          # check_list_SE_200 = [log.check_log04_01, log.check_log04_02, log.check_log04_03, log.check_log04_04]
+
+          # dict_list_SE_200 = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
+          # check_list_SE_200 = [log.check_log04_01, log.check_log04_02, log.check_log04_03, log.check_log04_04]
+
           i = 0
           for afile in files:
               with open(afile, 'rb') as fn:
@@ -438,7 +442,25 @@ class QC_reports:
               rawdata = raw[0]
               pwr_meas = raw[1]
 
-              if "_SE_" in afile:
+              # if "_SE_" in afile:
+              #
+              #   pldata = qc.data_decode(rawdata, self.fembs)
+              #
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   print(fname)
+              #
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   log.report_log04_01.update(pulse)
+              #   log.check_log04_01.update(pulse_check)
+              #   i = i + 1
+
+              if "_SE_200" in afile:
 
                 pldata = qc.data_decode(rawdata, self.fembs)
 
@@ -446,18 +468,115 @@ class QC_reports:
                     fname = afile.split("\\")[-1][:-4]
                 else:
                     fname = afile.split("/")[-1][:-4]
-                # for ifemb in self.fembs:
-                #     fp = self.savedir[ifemb] + fdir+"/"
-                #     if 'vdac' in fname:
-                #         qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-                #     else:
-                #         qc.GetPeaks(pldata, ifemb, fp, fname)
-
-                #====
-                pulse = dict(a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/'))
-                log.report_log4[i].update(pulse)
+                print(fname)
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                print(pulse)
+                for ifemb in range(len(self.fembs)):
+                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+                    log.report_log04_01[femb_id].update(pulse[femb_id])
+                    log.check_log04_01[femb_id].update(pulse_check[femb_id])
                 i = i + 1
-          #self.Gather_PNG_PDF(fp)
+
+              if "_SE_900" in afile:
+
+                pldata = qc.data_decode(rawdata, self.fembs)
+
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                pulse.update(pulse)
+                pulse_check.update(pulse_check)
+                for ifemb in range(len(self.fembs)):
+                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+                    log.report_log04_02[femb_id].update(pulse[femb_id])
+                    log.check_log04_02[femb_id].update(pulse_check[femb_id])
+                i = i + 1
+
+              if "_SEON_" in afile:
+
+                pldata = qc.data_decode(rawdata, self.fembs)
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                log.report_log04_03.update(pulse)
+                log.check_log04_03.update(pulse_check)
+                i = i + 1
+
+
+              if "_DIFF_" in afile:
+
+                pldata = qc.data_decode(rawdata, self.fembs)
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                log.report_log04_04.update(pulse)
+                log.check_log04_04.update(pulse_check)
+                i = i + 1
+
+              if "_EX_" in afile:
+                pldata = qc.data_decode(rawdata, self.fembs)
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                log.report_log04_05.update(pulse)
+                log.check_log04_05.update(pulse_check)
+                i = i + 1
+
+              if "_SGP_" in afile:
+                pldata = qc.data_decode(rawdata, self.fembs)
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
+                label = fname[fname.find("0x20_") + 5:]
+                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+                pulse = dict(log.tmp_log)
+                pulse_check = dict(log.check_log)
+                log.report_log04_06.update(pulse)
+                log.check_log04_06.update(pulse_check)
+                i = i + 1
+
+          for key in log.report_log04_01.keys():
+              print(key, ":", log.report_log04_01[key])
+              print('\n')
+          print(log.report_log04_02)
+          print(log.report_log04_03)
+          print(log.report_log04_04)
+          print(log.report_log04_05)
+          print(log.report_log04_06)
+
+          for ifemb in self.fembs:
+              fp = self.savedir[ifemb] + fdir+"/"
+              if 'vdac' in fname:
+                qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+              else:
+                qc.GetPeaks(pldata, ifemb, fp, fname)
+
+          self.Gather_PNG_PDF(fp)
 
 
       def RMS_report(self):

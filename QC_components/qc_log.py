@@ -42,12 +42,27 @@ check_log03_table_01 = defaultdict(dict)    # input information
 report_log3 = [report_log03_01, report_log03_02, report_log03_03, report_log03_04]
 
 # 04
+item04 = "CHK"
 report_log04_01 = defaultdict(dict)    # input information
 report_log04_02 = defaultdict(dict)    # input information
 report_log04_03 = defaultdict(dict)    # input information
 report_log04_04 = defaultdict(dict)    # input information
 report_log04_05 = defaultdict(dict)    # input information
 report_log04_06 = defaultdict(dict)    # input information
+check_log04_01 = defaultdict(dict)    # input information
+check_log04_02 = defaultdict(dict)    # input information
+check_log04_03 = defaultdict(dict)    # input information
+check_log04_04 = defaultdict(dict)    # input information
+check_log04_05 = defaultdict(dict)    # input information
+check_log04_06 = defaultdict(dict)    # input information
+
+check_log04_table_01 = defaultdict(dict)
+check_log04_table_02 = defaultdict(dict)
+check_log04_table_03 = defaultdict(dict)
+check_log04_table_04 = defaultdict(dict)
+check_log04_table_05 = defaultdict(dict)
+check_log04_table_06 = defaultdict(dict)
+
 report_log04_07 = defaultdict(dict)    # input information
 report_log04_08 = defaultdict(dict)    # input information
 report_log04_09 = defaultdict(dict)    # input information
