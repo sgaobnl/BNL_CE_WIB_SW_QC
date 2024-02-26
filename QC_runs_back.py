@@ -165,7 +165,7 @@ class QC_Runs:
 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
-        time.sleep(1)
+        time.sleep(3)
 
         if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)
@@ -511,7 +511,7 @@ class QC_Runs:
 #            os.makedirs(datadir)
 #        except OSError:
 #            print ("Error to create folder %s !!! Continue to next test........"%datadir)
-#            return
+#            return 
 #
 ##SE off/on, DIFF on  (14mV/fC, 200mV BL/ 900mV BL, 2us) = 3*2, External pulse
 ##
@@ -535,7 +535,6 @@ class QC_Runs:
  
         self.chk.femb_cd_rst()
         self.sample_N = 10
-
         for snci in range(2):
             for sgi in  range(4):
                 sg0 = sgi%2
@@ -570,7 +569,7 @@ class QC_Runs:
                 sg1 = sgi // 2
                 fp = datadir + "RMS_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
                 self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdf = 1, pwr_flg=False)
-        ''''''
+
 #   DIFF  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1    # enable differential interface, seems repeat with sdd = 1
@@ -578,11 +577,8 @@ class QC_Runs:
             for sgi in range(4):
                 sg0 = sgi % 2
                 sg1 = sgi // 2
-                for sti in range(4):
-                    st0 = sti%2
-                    st1 = sti//2
-                    fp = datadir + "RMS_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+                fp = datadir + "RMS_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
+                self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
 
 
     def femb_adc_sync_pat(self):
@@ -680,19 +676,16 @@ class QC_Runs:
  
         self.chk.femb_cd_rst()
         self.sample_N = 5
-        # for sgi in  range(4):
-        #     sg0 = sgi%2
-        #     sg1 = sgi//2
         for sgi in  range(4):
             sg0 = sgi%2
-            sg1 = sgi//2
+            sg1 = sgi//2 
+            
 #            time.sleep(5)
             for dac in range(0,64,1):
                 fp = datadir + "CALI1_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL",sgs[sgi],"2_0us",dac)
                 self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
         self.chk.femb_cd_rst()
-        #   DIFF
         cfg_paras_rec = []
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1
@@ -700,7 +693,6 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0 # 14mV/fC
         #            time.sleep(5)
         for dac in range(0, 64, 1):
-
             fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
             self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
         for i in range(8):
@@ -976,7 +968,7 @@ class QC_Runs:
         print ("monitor LArASIC-ColdADC reference")
         vset = range(0,256,16)
         mon_adc=[]
-        for i in range(len(vset)):
+        for i in range(len(vset)): 
             for j in range(8):
                 self.chk.adcs_paras[j][4]=vset[i]
                 self.chk.adcs_paras[j][5]=vset[i]
@@ -985,7 +977,8 @@ class QC_Runs:
 
             mondata = self.chk.wib_adc_mon(femb_ids=self.fembs, sps=sps)
             mon_adc.append([vset[i], mondata])
-
+            print(self.chk.adcs_paras[2][4])
+                
         fp = datadir + "LArASIC_ColdADC_mon.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_adc_default, mon_adc, self.logs], fn)

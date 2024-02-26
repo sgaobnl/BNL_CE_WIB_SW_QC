@@ -54,13 +54,14 @@ if 1:
             if fe==0 and fe_chn==2:
                 print (np.mean(fechndata))
 
-    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
+            plt.plot(range(len(fechndata)), fechndata)
+#    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #    plt.legend()
 #    plt.grid()
 #    
-    for i in range(0,128,8):
-        plt.vlines(i-0.5, -1, 17000, color='y')
+#     for i in range(0,128,8):
+#         plt.vlines(i-0.5, -1, 17000, color='y')
 #
 #    plt.title("ADC noise distribution (bypass SHA) ")
 #    plt.title("ADC noise distribution (known anlog patten, SHA) ")
@@ -81,7 +82,7 @@ if 1:
 #    #plt.ylabel("RMS noise / bit")
     plt.ylabel("ADC count / bit")
     plt.ylim((0,17000))
-    plt.xlim((-1,130))
+    # plt.xlim((-1,130))
     plt.xlabel("Channel")
 #    plt.grid()
     plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])

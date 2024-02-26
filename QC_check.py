@@ -148,7 +148,7 @@ def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input 
            #
 
 
-    return flag,[bad_chan,bad_chip], para_med
+    return flag,[bad_chan,bad_chip], para_med, tmp_std
        
 
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):

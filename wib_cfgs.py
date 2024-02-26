@@ -360,11 +360,12 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         adc3 = (rdadc23>>16)&0xffff
         return adc0, adc1, adc2, adc3
 
-    def femb_cd_rst(self):
+    def femb_cd_rst(self, adcspara = True):
     #Reset COLDATA
     #This fixes the problem where some COLDATAs don't toggle the pulse when they're told to
         print ("Sending Fast command reset")
-        self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
+        if adcspara:
+            self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
         self.fastcmd(cmd= 'reset')
         self.adac_cali_quo = [False,False,False,False]
         time.sleep(0.05)
@@ -710,7 +711,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x99, wrdata=vrefn)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9a, wrdata=vcmo)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9b, wrdata=vcmi)
-
             if autocali:
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0)
                 time.sleep(0.01)
@@ -1062,11 +1062,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict
 
-    def wib_adc_mon(self, femb_ids, sps=10  ): 
+    def wib_adc_mon(self, femb_ids, sps=10):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
-        self.femb_cd_rst()
+        self.femb_cd_rst(False)
         
         #step 2
         mon_items = []
@@ -1074,9 +1074,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for mon_i in range(8):
             print (f"Monitor ADC {mons[mon_i]}")
             mon_dict = {}
+            time.sleep(0.05)
             for mon_chip in range(8):
                 for femb_id in femb_ids:
                     self.femb_adc_cfg(femb_id)
+                    time.sleep(0.05)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i  )
                     #print (f"FEMB{femb_id} is configurated")
                 adcss = []
@@ -1089,8 +1091,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 for i in range(sps):
                     adcs = self.wib_mon_adcs()
                     adcss.append(adcs)
+                    print(adcss)
                 mon_dict[f"chip{mon_chip}"] = [mon_chip, mons[mon_i], self.adcs_paras[mon_chip], adcss]
-             #   print (mon_dict[f"chip{mon_chip}"])
+            input()
             mon_items.append(mon_dict)
         self.wib_mon_switches()
         return mon_items
