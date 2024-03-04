@@ -23,7 +23,7 @@ from collections import defaultdict
 
 class QC_reports:
 
-      def __init__(self, fdir, fembs=[]):
+    def __init__(self, fdir, fembs=[]):
 
           savedir = newpath.report_dir_RTQC
           #self.datadir = "./tmp_data/"+fdir+"/"
@@ -81,7 +81,7 @@ class QC_reports:
               with open(fp, 'wb') as fn:
                    pickle.dump(self.logs, fn)
 
-      def CreateDIR(self, fdir):
+    def CreateDIR(self, fdir):
 
           for ifemb in self.fembs:
               fp = self.savedir[ifemb] + fdir + "/"
@@ -92,7 +92,7 @@ class QC_reports:
                      print ("Error to create folder %s"%fp)
                      sys.exit()
 
-      def GEN_PWR_PDF(self,fdir,femb_id):
+    def GEN_PWR_PDF(self,fdir,femb_id):
 
           pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
           pdf.alias_nb_pages()
@@ -159,7 +159,7 @@ class QC_reports:
           outfile = fdir+'report.pdf'
           pdf.output(outfile, "F")
 
-      def Gather_PNG_PDF(self, fdir):
+    def Gather_PNG_PDF(self, fdir):
 
           #input_folder_path = fdir + '/path/to/your/png/files'
           output_pdf_path = fdir + '/report.pdf'
@@ -182,7 +182,7 @@ class QC_reports:
 
           c.save()
 
-      def PWR_consumption_report(self):
+    def PWR_consumption_report(self):
           log.test_label.append(1)
           qc = ana_tools()
           self.CreateDIR("PWR_Meas")
@@ -290,7 +290,7 @@ class QC_reports:
           log.check_log01_33.update(power_rail_check)
 
 
-      def PWR_cycle_report(self):
+    def PWR_cycle_report(self):
           log.test_label.append(2)
           if 'RT' in self.logs['env']:
               return
@@ -359,7 +359,7 @@ class QC_reports:
               self.GEN_PWR_PDF(fdir, fembid)
 
 #     03 04    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
-      def LCCHKPULSE(self, fdir):
+    def LCCHKPULSE(self, fdir):
           log.test_label.append(3)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
@@ -420,7 +420,7 @@ class QC_reports:
 
 
 # 04 pulse check
-      def CHKPULSE(self, fdir):
+    def CHKPULSE(self, fdir):
           log.test_label.append(4)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
@@ -462,7 +462,6 @@ class QC_reports:
                 i = i + 1
 
               if "_SE_900" in afile:
-
                 pldata = qc.data_decode(rawdata, self.fembs)
 
                 if '\\' in afile:
@@ -480,70 +479,87 @@ class QC_reports:
                     log.check_log04_02[femb_id].update(pulse_check[femb_id])
                 i = i + 1
 
-              if "_SEON_" in afile:
+              # if "_SEON_" in afile:
+              #   pldata2 = qc.data_decode(rawdata, self.fembs)
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata2, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   for ifemb in range(len(self.fembs)):
+              #       femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              #       log.report_log04_03[femb_id].update(pulse[femb_id])
+              #       log.check_log04_03[femb_id].update(pulse_check[femb_id])
+              #   i = i + 1
 
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_03[femb_id].update(pulse[femb_id])
-                    log.check_log04_03[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-
-
-              if "_DIFF_" in afile:
-
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_04[femb_id].update(pulse[femb_id])
-                    log.check_log04_04[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-
-              if "_EX_" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                log.report_log04_05.update(pulse)
-                log.check_log04_05.update(pulse_check)
-                i = i + 1
-
-              if "_SGP_" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_06[femb_id].update(pulse[femb_id])
-                    log.check_log04_06[femb_id].update(pulse_check[femb_id])
-                i = i + 1
+              # if "_SEON" in afile:
+              #   pldata = qc.data_decode(rawdata, self.fembs)
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   print(fname)
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SEON_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   print(pulse)
+              #   for ifemb in range(len(self.fembs)):
+              #       femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              #       log.report_log04_03[femb_id].update(pulse[femb_id])
+              #       log.check_log04_03[femb_id].update(pulse_check[femb_id])
+              #   i = i + 1
+              #
+              #
+              # if "_DIFF_" in afile:
+              #
+              #   pldata = qc.data_decode(rawdata, self.fembs)
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   for ifemb in range(len(self.fembs)):
+              #       femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              #       log.report_log04_04[femb_id].update(pulse[femb_id])
+              #       log.check_log04_04[femb_id].update(pulse_check[femb_id])
+              #   i = i + 1
+              #
+              # if "_EX_" in afile:
+              #   pldata = qc.data_decode(rawdata, self.fembs)
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   log.report_log04_05.update(pulse)
+              #   log.check_log04_05.update(pulse_check)
+              #   i = i + 1
+              #
+              # if "_SGP_" in afile:
+              #   pldata = qc.data_decode(rawdata, self.fembs)
+              #   if '\\' in afile:
+              #       fname = afile.split("\\")[-1][:-4]
+              #   else:
+              #       fname = afile.split("/")[-1][:-4]
+              #   label = fname[fname.find("0x20_") + 5:]
+              #   a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
+              #   pulse = dict(log.tmp_log)
+              #   pulse_check = dict(log.check_log)
+              #   for ifemb in range(len(self.fembs)):
+              #       femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+              #       log.report_log04_06[femb_id].update(pulse[femb_id])
+              #       log.check_log04_06[femb_id].update(pulse_check[femb_id])
+              #   i = i + 1
 
           for key in log.report_log04_01.keys():
               print(key, ":", log.report_log04_01[key])
@@ -789,7 +805,7 @@ class QC_reports:
           self.Gather_PNG_PDF(fp)
 
 
-      def RMS_report(self):
+    def RMS_report(self):
           log.test_label.append(5)
           self.CreateDIR("RMS")
           datadir = self.datadir+"RMS/"
@@ -1052,7 +1068,7 @@ class QC_reports:
           self.Gather_PNG_PDF(fp)
           log.report_log05_fin_result = section_status
          
-      def FE_MON_report(self):
+    def FE_MON_report(self):
           log.test_label.append(10)
           self.CreateDIR("MON_FE")
           datadir = self.datadir+"MON_FE/"
@@ -1126,11 +1142,11 @@ class QC_reports:
 
 
 
-      def report(self):
+    def report(self):
           print(self.savedir)
           a_repo.final_report(self.savedir, self.fembs, self.fembsID)
 
-      def FE_DAC_MON_report(self):
+    def FE_DAC_MON_report(self):
           log.test_label.append(11)
           self.CreateDIR("MON_FE")
           datadir = self.datadir+"MON_FE/"
@@ -1160,7 +1176,7 @@ class QC_reports:
           # qc.PlotMonDAC(self.fembs, mon_7_8mVfC, self.savedir, "MON_FE", "LArASIC_DAC_7_8mVfC")
           # qc.PlotMonDAC(self.fembs, mon_25mVfC, self.savedir, "MON_FE", "LArASIC_DAC_25mVfC")
 
-      def ColdADC_DAC_MON_report(self):
+    def ColdADC_DAC_MON_report(self):
           log.test_label.append(12)
           self.CreateDIR("MON_ADC")
           datadir = self.datadir+"MON_ADC/"
@@ -1182,7 +1198,7 @@ class QC_reports:
           log.check_log1201.update(inl_check)
 
 
-      def GenCALIPDF(self, snc, sgs, sts, sgp, fdir):
+    def GenCALIPDF(self, snc, sgs, sts, sgp, fdir):
 
           if sgp==0:
              fname ="{}_{}_{}".format(snc, sgs, sts)
@@ -1210,7 +1226,7 @@ class QC_reports:
               outfile = self.savedir[ifemb]+fdir+'report_{}.pdf'.format(fname)
               pdf.output(outfile, "F")
 
-      def CALI_report_1(self):
+    def CALI_report_1(self):
           log.test_label.append(6)
           a_func=ana_tools()
           self.CreateDIR("CALI1")
@@ -1288,7 +1304,7 @@ class QC_reports:
               plt.savefig(report_dir + 'Cali1.png')
               plt.close()
 
-      def CALI_report_2(self):
+    def CALI_report_2(self):
           log.test_label.append(7)
           qc=ana_tools()
           dac_list = range(0,64,2)
@@ -1340,7 +1356,7 @@ class QC_reports:
               plt.close()
 
           # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI2_DIFF/")
-      def CALI_report_3(self):
+    def CALI_report_3(self):
           log.test_label.append(8)
           qc=ana_tools()
           dac_list = range(0,64)
@@ -1356,7 +1372,7 @@ class QC_reports:
           qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
 
 
-      def CALI_report_4(self):
+    def CALI_report_4(self):
           log.test_label.append(9)
           qc=ana_tools()
           dac_list = range(0,64)
@@ -1380,7 +1396,7 @@ class QC_reports:
           # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4_DIFF/")
 
 
-      def CALI_report_5(self):
+    def CALI_report_5(self):
           log.test_label.append(13)
           qc=ana_tools()
           dac_list = range(0, 390, 25)
@@ -1398,7 +1414,7 @@ class QC_reports:
           # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI5/")
 
 
-      def CALI_report_6(self):
+    def CALI_report_6(self):
           log.test_label.append(14)
           qc=ana_tools()
           dac_list = range(0, 790, 50)
@@ -1415,7 +1431,7 @@ class QC_reports:
           # self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI6/")
 
 
-      def femb_adc_sync_pat_report(self, fdir):
+    def femb_adc_sync_pat_report(self, fdir):
           log.test_label.append(15)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
@@ -1460,7 +1476,7 @@ class QC_reports:
                       print(rms)
 
 #   16  PLL SCAN
-      def PLL_scan_report(self, fdir):
+    def PLL_scan_report(self, fdir):
           log.test_label.append(16)
           self.CreateDIR(fdir)
           datadir = self.datadir+fdir+"/"
@@ -1505,7 +1521,7 @@ class QC_reports:
 
 
 
-      def CHK_Peaks(self,data,fname):
+    def CHK_Peaks(self,data,fname):
 
           err_mssg=[]
           chkflag="Pass"
@@ -1533,7 +1549,7 @@ class QC_reports:
 
           return chkflag,err_mssg
 
-      def temp_report(self, test):
+    def temp_report(self, test):
           print(test)
           if test == 0:
               datadir = self.datadir
@@ -1541,7 +1557,7 @@ class QC_reports:
               datadir = "D:\A0-FEMB_test_script_improvement\T3_QC_Performance_TEST\AQC_REPORTS_T3\FEMB75_RT_150pF_R016"
           item_report.Gather_Report(datadir)
 
-      def CHK_pwr(self,data,fdir,fname,ifemb):
+    def CHK_pwr(self,data,fdir,fname,ifemb):
 
           err_mssg=[]
           chkflag="Pass"
@@ -1562,312 +1578,294 @@ class QC_reports:
 
           return chkflag,err_mssg
 
-      def CHK_genreport(self,chkflag,err_mssg,nfemb):
+    def CHK_genreport(self,chkflag,err_mssg,nfemb):
 
-          fembid = int(self.fembsID[f'femb{nfemb}'])
+        fembid = int(self.fembsID[f'femb{nfemb}'])
 
-          pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
-          pdf.alias_nb_pages()
-          pdf.add_page()
-          pdf.set_auto_page_break(False,0)
-          pdf.set_font('Times', 'B', 20)
-          pdf.cell(85)
-          pdf.l_margin = pdf.l_margin*2
-          pdf.cell(30, 5, 'FEMB#{:04d} QC Report'.format(fembid), 0, new_x="LMARGIN", new_y="NEXT", align='C')
-          pdf.ln(2)
+        pdf = FPDF(orientation = 'P', unit = 'mm', format='Letter')
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        pdf.set_auto_page_break(False,0)
+        pdf.set_font('Times', 'B', 20)
+        pdf.cell(85)
+        pdf.l_margin = pdf.l_margin*2
+        pdf.cell(30, 5, 'FEMB#{:04d} QC Report'.format(fembid), 0, new_x="LMARGIN", new_y="NEXT", align='C')
+        pdf.ln(2)
 
-          pdf.set_font('Times', '', 12)
-          pdf.cell(30, 5, 'Tester: {}'.format(self.logs['tester']), 0, new_x="RIGHT", new_y="TOP")
-          pdf.cell(80)
-          pdf.cell(30, 5, 'Date: {}'.format(self.logs['date']), 0, new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font('Times', '', 12)
+        pdf.cell(30, 5, 'Tester: {}'.format(self.logs['tester']), 0, new_x="RIGHT", new_y="TOP")
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Date: {}'.format(self.logs['date']), 0, new_x="LMARGIN", new_y="NEXT")
 
-          pdf.cell(30, 5, 'Temperature: {}'.format(self.logs['env']), 0, new_x="RIGHT", new_y="TOP")
-          pdf.cell(80)
-          pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(self.logs['toytpc']), 0, new_x="LMARGIN", new_y="NEXT")
-          pdf.cell(30, 5, 'Note: {}'.format(self.logs['note']), 0, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(30, 5, 'Temperature: {}'.format(self.logs['env']), 0, new_x="RIGHT", new_y="TOP")
+        pdf.cell(80)
+        pdf.cell(30, 5, 'Input Capacitor(Cd): {}'.format(self.logs['toytpc']), 0, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(30, 5, 'Note: {}'.format(self.logs['note']), 0, new_x="LMARGIN", new_y="NEXT")
 
-          pdf.ln(10)
+        pdf.ln(10)
 
-          if self.logs['env']=='LN':
-             chk_result=( ("Measurement","Result"),
-                          ("Power consumption",chkflag["PWR_Meas"]),
-                          ("Power cycles",chkflag["PWR_Cycle"]),
-                          ("Leakage current",chkflag["LK_curr"]),
-                          ("Pulse check",chkflag["CHK"]),
-                          ("RMS check",chkflag["RMS"])
-                        )
-          else:
-             chk_result=( ("Measurement","Result"),
-                          ("Power consumption",chkflag["PWR_Meas"]),
-                          ("Leakage current",chkflag["LK_curr"]),
-                          ("Pulse check",chkflag["CHK"]),
-                          ("RMS check",chkflag["RMS"])
-                        )
+        if self.logs['env']=='LN':
+            chk_result=( ("Measurement","Result"),
+                        ("Power consumption",chkflag["PWR_Meas"]),
+                        ("Power cycles",chkflag["PWR_Cycle"]),
+                        ("Leakage current",chkflag["LK_curr"]),
+                        ("Pulse check",chkflag["CHK"]),
+                        ("RMS check",chkflag["RMS"])
+                      )
+        else:
+            chk_result=(("Measurement","Result"), ("Power consumption",chkflag["PWR_Meas"]), ("Leakage current",chkflag["LK_curr"]), ("Pulse check",chkflag["CHK"]), ("RMS check",chkflag["RMS"]))
 
-          
-          with pdf.table() as table:
-              for data_row in chk_result:
-                  row = table.row()
-                  for datum in data_row:
-                      row.cell(datum)
 
-          pdf.add_page()
-          nn=0
-          if err_mssg["PWR_Meas"]:
-             pdf.ln(1)
-             pdf.set_font('Times', 'B', 11)
-             pdf.cell(80, 5, "Power consumption issues:", 0, new_x="LMARGIN", new_y="NEXT")
-             pdf.set_font('Times', '', 10)
-             nn = nn+1
-             for istr in err_mssg["PWR_Meas"]:
-                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
-                 nn = nn+1
+        with pdf.table() as table:
+            for data_row in chk_result:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
 
-          if nn>50:
-             pdf.add_page()
-             nn=0
+        pdf.add_page()
+        nn=0
+        if err_mssg["PWR_Meas"]:
+            pdf.ln(1)
+            pdf.set_font('Times', 'B', 11)
+            pdf.cell(80, 5, "Power consumption issues:", 0, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font('Times', '', 10)
+            nn = nn+1
+            for istr in err_mssg["PWR_Meas"]:
+                pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                nn = nn+1
 
-          if err_mssg["PWR_Cycle"]:
-             pdf.ln(1)
-             pdf.set_font('Times', 'B', 11)
-             pdf.cell(80, 5, "Power cycles issues:", 0, new_x="LMARGIN", new_y="NEXT")
-             pdf.set_font('Times', '', 10)
-             nn = nn+1
-             for istr in err_mssg["PWR_Cycle"]:
-                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
-                 nn = nn+1
+        if nn>50:
+            pdf.add_page()
+            nn=0
 
-          if nn>50:
-             pdf.add_page()
-             nn=0
+        if err_mssg["PWR_Cycle"]:
+            pdf.ln(1)
+            pdf.set_font('Times', 'B', 11)
+            pdf.cell(80, 5, "Power cycles issues:", 0, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font('Times', '', 10)
+            nn = nn+1
+            for istr in err_mssg["PWR_Cycle"]:
+                pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                nn = nn+1
 
-          if err_mssg["LK_curr"]:
-             pdf.ln(1)
-             pdf.set_font('Times', 'B', 11)
-             pdf.cell(80, 5, "Leakage current issues:", 0, new_x="LMARGIN", new_y="NEXT")
-             pdf.set_font('Times', '', 10)
-             nn = nn+1
-             for istr in err_mssg["LK_curr"]:
-                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
-                 nn = nn+1
+        if nn>50:
+            pdf.add_page()
+            nn=0
 
-          if nn>50:
-             pdf.add_page()
-             nn=0
+        if err_mssg["LK_curr"]:
+            pdf.ln(1)
+            pdf.set_font('Times', 'B', 11)
+            pdf.cell(80, 5, "Leakage current issues:", 0, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font('Times', '', 10)
+            nn = nn+1
+            for istr in err_mssg["LK_curr"]:
+                pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                nn = nn+1
 
-          if err_mssg["CHK"]:
-             pdf.ln(1)
-             pdf.set_font('Times', 'B', 11)
-             pdf.cell(80, 5, "CHK pulse issues:", 0, new_x="LMARGIN", new_y="NEXT")
-             pdf.set_font('Times', '', 10)
-             nn = nn+1
-             for istr in err_mssg["CHK"]:
-                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
-                 nn = nn+1
-                 if nn>50:
+        if nn>50:
+            pdf.add_page()
+            nn=0
+
+        if err_mssg["CHK"]:
+            pdf.ln(1)
+            pdf.set_font('Times', 'B', 11)
+            pdf.cell(80, 5, "CHK pulse issues:", 0, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font('Times', '', 10)
+            nn = nn+1
+            for istr in err_mssg["CHK"]:
+                pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                nn = nn+1
+                if nn>50:
                     pdf.add_page()
                     nn=0
 
-          if err_mssg["RMS"]:
-             pdf.ln(1)
-             pdf.set_font('Times', 'B', 11)
-             pdf.cell(80, 5, "RMS issues:", 0, new_x="LMARGIN", new_y="NEXT")
-             pdf.set_font('Times', '', 10)
-             nn = nn+1
-             for istr in err_mssg["RMS"]:
-                 pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
-                 nn = nn+1
-                 if nn>50:
+        if err_mssg["RMS"]:
+            pdf.ln(1)
+            pdf.set_font('Times', 'B', 11)
+            pdf.cell(80, 5, "RMS issues:", 0, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font('Times', '', 10)
+            nn = nn+1
+            for istr in err_mssg["RMS"]:
+                pdf.cell(80, 5, "{}".format(istr), 0, new_x="LMARGIN", new_y="NEXT")
+                nn = nn+1
+                if nn>50:
                     pdf.add_page()
                     nn=0
 
-          outfile = self.savedir[nfemb]+'report.pdf'
-          pdf.output(outfile)
+        outfile = self.savedir[nfemb]+'report.pdf'
+        pdf.output(outfile)
       
 
-      def CHK_report(self):
+    def CHK_report(self):
 
-          datadir = self.datadir+"PWR_Meas/"
-          f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
-          with open(f_pwr, 'rb') as fn:
-               pwr_meas_se = pickle.load(fn)[1]
+        datadir = self.datadir+"PWR_Meas/"
+        f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        with open(f_pwr, 'rb') as fn:
+            pwr_meas_se = pickle.load(fn)[1]
 
-          f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-          with open(f_pwr, 'rb') as fn:
-               pwr_meas_diff = pickle.load(fn)[1]
+        f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        with open(f_pwr, 'rb') as fn:
+            pwr_meas_diff = pickle.load(fn)[1]
 
-          f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-          with open(f_pwr, 'rb') as fn:
-               pwr_meas_sesdf = pickle.load(fn)[1]
+        f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        with open(f_pwr, 'rb') as fn:
+            pwr_meas_sesdf = pickle.load(fn)[1]
 
-          if 'LN' in self.logs['env']:
-             datadir = self.datadir+"PWR_Cycle/"
-             pwr_cycle_se=[]
-             for ii in range(3):
-                 f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(ii)
-                 with open(f_pwr, 'rb') as fn:
-                      pwr_cycle_se.append( pickle.load(fn)[1] )
-   
-             f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-             with open(f_pwr, 'rb') as fn:
-                  pwr_cycle_diff = pickle.load(fn)[1]
-   
-             f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-             with open(f_pwr, 'rb') as fn:
-                  pwr_cycle_sesdf = pickle.load(fn)[1]
-   
-          for ifemb in self.fembs:
-              chkflag={"PWR_Meas":"Pass","PWR_Cycle":"Pass","LK_curr":"Pass","CHK":"Pass","RMS":"Pass","CALI1":"Pass"}
-              err_mssg={"PWR_Meas":[],"PWR_Cycle":[],"LK_curr":[],"CHK":[],"RMS":[],"CALI1":[]}
+        if 'LN' in self.logs['env']:
+            datadir = self.datadir+"PWR_Cycle/"
+            pwr_cycle_se=[]
+            for ii in range(3):
+                f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(ii)
+                with open(f_pwr, 'rb') as fn:
+                    pwr_cycle_se.append( pickle.load(fn)[1] )
 
-              # check power consumptions          
-              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE",ifemb)
-              if tmp[0]=="Fail":
-                 chkflag["PWR_Meas"]="Fail"
-                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+            f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+            with open(f_pwr, 'rb') as fn:
+                pwr_cycle_diff = pickle.load(fn)[1]
 
-              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_DIFF",ifemb)
-              if tmp[0]=="Fail":
-                 chkflag["PWR_Meas"]="Fail"
-                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+            f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+            with open(f_pwr, 'rb') as fn:
+                pwr_cycle_sesdf = pickle.load(fn)[1]
 
-              tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE_SDF",ifemb)
-              if tmp[0]=="Fail":
-                 chkflag["PWR_Meas"]="Fail"
-                 err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1] 
+        for ifemb in self.fembs:
+            chkflag={"PWR_Meas":"Pass","PWR_Cycle":"Pass","LK_curr":"Pass","CHK":"Pass","RMS":"Pass","CALI1":"Pass"}
+            err_mssg={"PWR_Meas":[],"PWR_Cycle":[],"LK_curr":[],"CHK":[],"RMS":[],"CALI1":[]}
 
-              # check power cycles
-              if 'LN' in self.logs['env']:
-                 for ii in range(3): 
-                     tmp = self.CHK_pwr(pwr_cycle_se[ii],"PWR_Cycle","PWR_cycle{}_SE".format(ii),ifemb)
-                     if tmp[0]=="Fail":
+            # check power consumptions
+            tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE",ifemb)
+            if tmp[0]=="Fail":
+                chkflag["PWR_Meas"]="Fail"
+                err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1]
+
+            tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_DIFF",ifemb)
+            if tmp[0]=="Fail":
+                chkflag["PWR_Meas"]="Fail"
+                err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1]
+
+            tmp = self.CHK_pwr(pwr_meas_se,"PWR_Meas","PWR_SE_SDF",ifemb)
+            if tmp[0]=="Fail":
+                chkflag["PWR_Meas"]="Fail"
+                err_mssg["PWR_Meas"] = err_mssg["PWR_Meas"] + tmp[1]
+
+            # check power cycles
+            if 'LN' in self.logs['env']:
+                for ii in range(3):
+                    tmp = self.CHK_pwr(pwr_cycle_se[ii],"PWR_Cycle","PWR_cycle{}_SE".format(ii),ifemb)
+                    if tmp[0]=="Fail":
                         chkflag["PWR_Cycle"]="Fail"
-                        err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+                        err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1]
 
-                 tmp = self.CHK_pwr(pwr_cycle_diff,"PWR_Cycle","PWR_DIFF",ifemb)
-                 if tmp[0]=="Fail":
+                tmp = self.CHK_pwr(pwr_cycle_diff,"PWR_Cycle","PWR_DIFF",ifemb)
+                if tmp[0]=="Fail":
                     chkflag["PWR_Cycle"]="Fail"
-                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1]
 
-                 tmp = self.CHK_pwr(pwr_cycle_sesdf,"PWR_Cycle","PWR_SE_SDF",ifemb)
-                 if tmp[0]=="Fail":
+                tmp = self.CHK_pwr(pwr_cycle_sesdf,"PWR_Cycle","PWR_SE_SDF",ifemb)
+                if tmp[0]=="Fail":
                     chkflag["PWR_Cycle"]="Fail"
-                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1] 
+                    err_mssg["PWR_Cycle"] = err_mssg["PWR_Cycle"] + tmp[1]
 
-              # check leakage current
-              datadir = self.savedir[ifemb]+"Leakage_Current/"
-              fname = ["1nA","5nA","100pA","500pA"]
-              for ii in range(4): 
-                  fpl = datadir+"Pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_{}.bin".format(fname[ii])
-                  with open(fpl, 'rb') as fn:
-                       pldata = pickle.load(fn)
-                  tmp = self.CHK_Peaks(pldata,fname[ii])
+            # check leakage current
+            datadir = self.savedir[ifemb]+"Leakage_Current/"
+            fname = ["1nA","5nA","100pA","500pA"]
+            for ii in range(4):
+                fpl = datadir+"Pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_{}.bin".format(fname[ii])
+                with open(fpl, 'rb') as fn:
+                    pldata = pickle.load(fn)
+                tmp = self.CHK_Peaks(pldata,fname[ii])
 
-                  if tmp[0]=="Fail":
-                     chkflag["LK_curr"]="Fail"
-                     err_mssg["LK_curr"] = err_mssg["LK_curr"] + tmp[1] 
+                if tmp[0]=="Fail":
+                    chkflag["LK_curr"]="Fail"
+                    err_mssg["LK_curr"] = err_mssg["LK_curr"] + tmp[1]
 
-              # CHK
-              datadir = self.savedir[ifemb]+"CHK/"
-              blname = ["200mVBL","900mVBL"]
-              gainname = ["4_7mVfC","7_8mVfC","14_0mVfC","25_0mVfC"]
-              stname = ["0_5us","1_0us","2_0us","3_0us"]
-              for ii in range(2):
-                  for jj in range(4):
-                      for kk in range(4): 
-                          fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
-                          fpl = datadir+"Pulse_CHK_SE_{}_0x10.bin".format(fname)
-                          with open(fpl, 'rb') as fn:
-                               pldata = pickle.load(fn)
-                          tmp = self.CHK_Peaks(pldata,fname)
+            # CHK
+            datadir = self.savedir[ifemb]+"CHK/"
+            blname = ["200mVBL","900mVBL"]
+            gainname = ["4_7mVfC","7_8mVfC","14_0mVfC","25_0mVfC"]
+            stname = ["0_5us","1_0us","2_0us","3_0us"]
+            for ii in range(2):
+                for jj in range(4):
+                    for kk in range(4):
+                        fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
+                        fpl = datadir+"Pulse_CHK_SE_{}_0x10.bin".format(fname)
+                        with open(fpl, 'rb') as fn:
+                             pldata = pickle.load(fn)
+                        tmp = self.CHK_Peaks(pldata,fname)
 
-                          if tmp[0]=="Fail":
-                             chkflag["CHK"]="Fail"
-                             err_mssg["CHK"] = err_mssg["CHK"] + tmp[1] 
+                        if tmp[0]=="Fail":
+                           chkflag["CHK"]="Fail"
+                           err_mssg["CHK"] = err_mssg["CHK"] + tmp[1]
 
-              # RMS
-              datadir = self.savedir[ifemb]+"RMS/"
-              for ii in range(2):
-                  for jj in range(4):
-                      for kk in range(4): 
-                          fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
-                          frms = datadir+"RMS_{}.bin".format(fname)
-                          with open(frms, 'rb') as fn:
-                               rmsdata = pickle.load(fn)
+            # RMS
+            datadir = self.savedir[ifemb]+"RMS/"
+            for ii in range(2):
+                for jj in range(4):
+                    for kk in range(4):
+                        fname = "{}_{}_{}".format(blname[ii],gainname[jj],stname[kk])
+                        frms = datadir+"RMS_{}.bin".format(fname)
+                        with open(frms, 'rb') as fn:
+                             rmsdata = pickle.load(fn)
 
-                          tmp = QC_check.CHKPulse(rmsdata[1])  # rms
-                          if tmp[0]==True:
-                             chkflag["RMS"]="Fail"
-                             err_mssg["RMS"].append("RMS {} chans: {}".format(fname,tmp[1][0]))
-                             if tmp[1][1]:
+                        tmp = QC_check.CHKPulse(rmsdata[1])  # rms
+                        if tmp[0]==True:
+                            chkflag["RMS"]="Fail"
+                            err_mssg["RMS"].append("RMS {} chans: {}".format(fname,tmp[1][0]))
+                            if tmp[1][1]:
                                 err_mssg["RMS"].append("RMS {} chips: {}".format(fname,tmp[1][1]))
 
-                          tmp = QC_check.CHKPulse(rmsdata[0])  # ped
-                          if tmp[0]==True:
-                             chkflag["RMS"]="Fail"
-                             err_mssg["RMS"].append("BL {} chans: {}".format(fname,tmp[1][0]))
-                             if tmp[1][1]:
+                        tmp = QC_check.CHKPulse(rmsdata[0])  # ped
+                        if tmp[0]==True:
+                            chkflag["RMS"]="Fail"
+                            err_mssg["RMS"].append("BL {} chans: {}".format(fname,tmp[1][0]))
+                            if tmp[1][1]:
                                 err_mssg["RMS"].append("BL {} chips: {}".format(fname,tmp[1][1]))
-
-
-
-              self.CHK_genreport(chkflag,err_mssg,ifemb)
+            self.CHK_genreport(chkflag,err_mssg,ifemb)
 
 if __name__=='__main__':
 
-   ag = argparse.ArgumentParser()
-   ag.add_argument("task", help="a list of tasks to be analyzed", type=int, choices=range(1,13), nargs='+')
-   ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int, choices=range(0,4), nargs='+')
-   args = ag.parse_args()
-   
-   tasks = args.task
-   fembs = args.fembs
-   
-   rp = QC_reports("femb101_femb107_femb105_femb111_LN_150pF", fembs)
-   
-   tt={}
-   
-   for tm in tasks:
-       t1=time.time()
-       print("start tm=",tm)
-       if tm==1:
-          rp.PWR_consumption_report()
-   
-       if tm==2:
-          rp.PWR_cycle_report()
-          
-       if tm==3:
-          rp.CHKPULSE("Leakage_Current")
-          
-       if tm==4:
-          rp.CHKPULSE("CHK")
-   
-       if tm==5:
-          rp.RMS_report()
-   
-       if tm==6:
-          rp.CALI_report_1()
-   
-       if tm==7:
-          rp.CALI_report_2()
-   
-       if tm==8:
-          rp.CALI_report_3()
-   
-       if tm==9:
-          rp.CALI_report_4()
-   
-       if tm==10:
-          rp.FE_MON_report()
-   
-       if tm==11:
-          rp.FE_DAC_MON_report()
-   
-       if tm==12:
-          rp.ColdADC_DAC_MON_report()
+    ag = argparse.ArgumentParser()
+    ag.add_argument("task", help="a list of tasks to be analyzed", type=int, choices=range(1,13), nargs='+')
+    ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int, choices=range(0,4), nargs='+')
+    args = ag.parse_args()
 
-       t2=time.time()
-       tt[tm]=t2-t1
-       time.sleep(1)
+    tasks = args.task
+    fembs = args.fembs
+
+    rp = QC_reports("femb101_femb107_femb105_femb111_LN_150pF", fembs)
+
+    tt={}
+
+    for tm in tasks:
+        t1=time.time()
+        print("start tm=",tm)
+        if tm==1:
+           rp.PWR_consumption_report()
+        if tm==2:
+           rp.PWR_cycle_report()
+
+        if tm==3:
+           rp.CHKPULSE("Leakage_Current")
+
+        if tm==4:
+           rp.CHKPULSE("CHK")
+        if tm==5:
+           rp.RMS_report()
+        if tm==6:
+           rp.CALI_report_1()
+        if tm==7:
+           rp.CALI_report_2()
+        if tm==8:
+           rp.CALI_report_3()
+        if tm==9:
+           rp.CALI_report_4()
+        if tm==10:
+           rp.FE_MON_report()
+        if tm==11:
+           rp.FE_DAC_MON_report()
+        if tm==12:
+           rp.ColdADC_DAC_MON_report()
+        t2=time.time()
+        tt[tm]=t2-t1
+        time.sleep(1)
    
-   print(tt)
+    print(tt)

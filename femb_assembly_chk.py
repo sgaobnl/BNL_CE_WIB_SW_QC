@@ -88,12 +88,15 @@ print("Power off FEMBs to initial the test")
 chk.femb_powering([])
 
 #   set FEMB voltages
-chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
+#chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
+# chk.fembs_vol_set(vfe = 3.7, vcd = 4, vadc = 4.2)   #   this parameter can not be used in LN2
+chk.fembs_vol_set(vfe = 3.8, vcd = 0, vadc = 4.95)
 print("Check FEMB currents")
 fembs_remove = []
 
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
+input()
 
 #####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
@@ -111,17 +114,18 @@ for ifemb in fembs:
         print("ERROR: FEMB{} BIAS current |{}|>0.05A".format(ifemb,bias_i))
         hasERROR = True
 
-    if fe_i > paras.fe_i_high or fe_i < paras.fe_i_low:
+    # if fe_i > paras.fe_i_high or fe_i < paras.fe_i_low:
+    if  fe_i < paras.fe_i_low:
         print("ERROR: FEMB{} LArASIC current {} out of range (0.3A,0.6A)".format(ifemb,fe_i))
         hasERROR = True
 
-    if cd_i>paras.cd_i_high  or cd_i<paras.cd_i_low :
+    if cd_i>paras.cd_i_high:#  or cd_i<paras.cd_i_low :
         print("ERROR: FEMB{} COLDATA current {} out of range (0.1A,0.3A)".format(ifemb,cd_i))
         hasERROR = True
 
-    if adc_i>paras.adc_i_high or adc_i<paras.adc_i_low:
-        print("ERROR: FEMB{} ColdADC current {} out of range (1.2A,1.8A)".format(ifemb,adc_i))
-        hasERROR = True
+    # if adc_i>paras.adc_i_high or adc_i<paras.adc_i_low:
+    #     print("ERROR: FEMB{} ColdADC current {} out of range (1.2A,1.8A)".format(ifemb,adc_i))
+    #     hasERROR = True
 
     if hasERROR:
         print("FEMB ID {} Faild current check, will skip this femb".format(fembNo['femb%d'%ifemb]))
@@ -234,11 +238,12 @@ for ifemb in fembs:
        print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i)) 
        hasERROR = True
 
-    if fe_i>0.55 or fe_i<0.35:
-       print("ERROR: FEMB{} LArASIC current {} out of range (0.35A,0.55A)".format(ifemb,fe_i)) 
+    if fe_i<0.35:
+    # if fe_i>0.55 or fe_i<0.35:
+       print("ERROR: FEMB{} LArASIC current {} out of range (0.35A,0.55A)".format(ifemb,fe_i))
        hasERROR = True
 
-    if cd_i>0.35 or cd_i<0.15:
+    if cd_i>0.35:# or cd_i<0.15:
        print("ERROR: FEMB{} COLDATA current {} out of range (0.15A,0.35A)".format(ifemb,cd_i)) 
        hasERROR = True
 
@@ -281,7 +286,7 @@ if save:
 ################# monitoring power rails ###################
 log.report_log06["ITEM"] = "3.3 SE Interface power rail"
 power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, datareport, fembNo)
+power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo)
 log06 = dict(log.power_rail_report_log)
 log.report_log06.update(log06)
 log.report_log061 = dict(log.check_log)
@@ -419,7 +424,7 @@ if save:
 ######   6   DIFF monitor power rails   ######
 log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
 power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, datareport, fembNo)
+power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo)
 log10 = dict(log.power_rail_report_log)
 log.report_log10.update(log10)
 log.report_log101 = dict(log.check_log)

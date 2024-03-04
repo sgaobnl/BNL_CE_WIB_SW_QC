@@ -168,6 +168,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
             vfm = np.mean(vf)
             vfstd = np.std(vf)
             mvold[key] = [vfm, vfstd]
+        print(mvold)
 
 #   print value into table and also highlight the issue value while check them out
         mvvold = {}

@@ -340,7 +340,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def wib_mon_adcs(self):
+        time.sleep(0.001)
         rdreg = self.peek(0xA00C0004)
+        time.sleep(0.001)
         #set bit19(mon_adc_start) to 1 and then to 0 to start monitring ADC conversion
         self.poke(0xA00C0004,(rdreg&0xfff7ffff)|0x80000) #Set bit19 to 1
         self.poke(0xA00C0004,rdreg&0xfff7ffff) #set bit19 to 0
@@ -975,6 +977,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
+            time.sleep(0.001)
             adcs = self.wib_mon_adcs()
             adcss.append(adcs)
         if mon_type == 2:
@@ -1055,6 +1058,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.wib_mon_adcs() #get rid of previous result
             adcss = []
             for i in range(sps):
+                time.sleep(0.001)
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
