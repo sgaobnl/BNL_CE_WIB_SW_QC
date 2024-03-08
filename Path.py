@@ -1,7 +1,7 @@
 import os
 
-Desk = "D:/A0-FEMB_test_"
-Board_version_batch = "format/"
+Desk = "D:/A0-FEMB_03_"
+Board_version_batch = "1E_ship/"
 
 
 ##===================================

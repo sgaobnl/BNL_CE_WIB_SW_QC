@@ -67,16 +67,6 @@ def final_report(datareport, fembs, fembNo):
     print("\n\n")
     print("Detail for Issues")
 
-    # print(log.report_log021)
-    # print(log.report_log03)
-    # print(log.report_log04)
-    # print(log.report_log051)
-    # print(log.report_log061)
-    # print(log.report_log07)
-    # print(log.report_log08)
-    # print(log.report_log091)
-    # print(log.report_log001)
-    # print(log.report_log111)
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
         dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log061, log.report_log07, log.report_log08, log.report_log091, log.report_log101, log.report_log111]
@@ -203,7 +193,7 @@ def final_report(datareport, fembs, fembNo):
             if (log.report_log111[femb_id]["Result"] == True):
                 Head05 = '## ' + '<span style="color: green;">' + 'PART 05 Monitoring Path Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
-                Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Path Measurement' + ' | Fail' + '</span>' + '\n'
+                Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Path Measurement' + '{} | Fail'.format(femb_id) + '</span>' + '\n'
             file.write(Head05 + '\n')
 
             file.write('## ' + str(log.report_log11["ITEM"]) + '\n')

@@ -107,7 +107,7 @@ def final_report(datareport, fembs, fembNo):
             for dict_i in dict_list06:
                 if dict_i['Result'] == False:
                     check_status06 = False
-                    check_list06.append(str(dict_i['Label']) + "\n")
+                    # check_list06.append(str(dict_i['Label']) + "\n")
                     check_list06.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status06)
 
@@ -537,9 +537,9 @@ def final_report(datareport, fembs, fembNo):
 # 05        RMS configuration
             if 5 in log.test_label:
                 if check_status05 == True:
-                    file.write('### <span style = "color : green;"> "RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
+                    file.write('### <span style = "color : green;"> "Item 05 RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
                 else:
-                    file.write('### <span style = "color : red;"> "RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
+                    file.write('### <span style = "color : red;"> "Item 05 RMS configuration SE/SEON/SELC/DIFF 200/900 mV 4_7/7_8/14/25 mV/fC 0.5/1/2/3 us" </span>' + '\n')
                 file.write("![ped](./{}/SE_200_900_mV_RMS_ErrorBar.png)".format(log.item05) + "\n")
                 file.write("![ped](./{}/SEON_DIFF_200_900_mV_RMS_ErrorBar.png)".format(log.item05) + "\n")
                 file.write("![ped](./{}/SELC_200_2us_ErrorBar.png)".format(log.item05) + "\n")

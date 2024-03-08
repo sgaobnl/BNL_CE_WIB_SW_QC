@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import QC_components.qc_log as log
 import QC_check as QC_check
+from scipy import stats
 
 def ResFunc(x, par0, par1, par2, par3):
 
@@ -452,6 +453,8 @@ class ana_tools:
                         if sps>1:
                            sps_list = np.array(sps_list)
                            mon_mean = np.mean(sps_list)
+                           # mon_mean = stats.mode(sps_list)[0]
+
                         else:
                            mon_mean = sps_list[0]
 

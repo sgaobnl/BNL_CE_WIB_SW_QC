@@ -8,6 +8,7 @@ class FE_ASIC_REG_MAPPING:
 
 ####sec_chn_reg only sets a channel register, the other registers remains as before
     def set_fechn_reg(self, chip=0, chn=0, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, smn=0, sdf=0 ):
+        time.sleep(0.01)
         chn_reg = ((sts&0x01)<<7) + ((snc&0x01)<<6) + ((sg0&0x01)<<5)+ ((sg1&0x01)<<4) + ((st0&0x01)<<3)+ ((st1&0x01)<<2)  + ((smn&0x01)<<1) + ((sdf&0x01)<<0) 
         chn_reg_bool = []
         for j in range(8):

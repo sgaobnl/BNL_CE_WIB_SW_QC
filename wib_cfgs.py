@@ -26,7 +26,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adc_flg=[True, True, True, True]
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
-        self.pll = 0x20
+        self.pll = 0x21
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -283,6 +283,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(0xff5e00c4, 0x52000)
 
     def wib_mon_switches(self, dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=0, inj_cal_pulse=0):
+        time.sleep(0.001)
         reg_value = (dac0_sel&0x01) + ((dac1_sel&0x01)<<1) + ((dac2_sel&0x01)<<2) + ((dac2_sel&0x01)<<3) + ((mon_vs_pulse_sel&0x01)<<4)+ ((inj_cal_pulse&0x01)<<5)
         rdreg = self.peek(0xA00C003C)
         self.poke(0xA00C003C, (rdreg&0xffffffC0)|reg_value)
@@ -519,6 +520,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.cd_flg[femb_id]=False
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
+        time.sleep(0.001)
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=cd1_0x27)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x27, wrdata=cd2_0x27)
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x26, wrdata=cd1_0x26)
@@ -990,7 +992,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.wib_mon_switches()
         return mon_paras
 
-    def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
+    def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ):
+        time.sleep(0.01)
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         self.set_fe_reset()
         self.set_fe_board(sg0=sg0, sg1=sg1)
@@ -1058,7 +1061,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.wib_mon_adcs() #get rid of previous result
             adcss = []
             for i in range(sps):
-                time.sleep(0.001)
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
@@ -1095,9 +1097,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 for i in range(sps):
                     adcs = self.wib_mon_adcs()
                     adcss.append(adcs)
-                    print(adcss)
                 mon_dict[f"chip{mon_chip}"] = [mon_chip, mons[mon_i], self.adcs_paras[mon_chip], adcss]
-            input()
             mon_items.append(mon_dict)
         self.wib_mon_switches()
         return mon_items

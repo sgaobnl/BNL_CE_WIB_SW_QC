@@ -57,14 +57,16 @@ if save:
     note = input("A short note (<200 letters):")
     logs['Note']=note
     
+    fembName={}
     fembNo={}
     for i in fembs:
-        fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
-    logs['FEMB ID'] = fembNo
+        fembName['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
+        fembNo['femb{}'.format(i)]=fembName['femb{}'.format(i)][1:]
+    logs['FEMB ID'] = fembName
     #logs['femb id']=fembNo
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
-    datadir=a_func.Create_data_folders(fembNo, env, toytpc)
+    datadir=a_func.Create_data_folders(fembName, env, toytpc)
     fp = datadir + "logs_env.bin"
     with open(fp, 'wb') as fn:
         pickle.dump(logs, fn)
@@ -89,14 +91,13 @@ chk.femb_powering([])
 
 #   set FEMB voltages
 #chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
-# chk.fembs_vol_set(vfe = 3.7, vcd = 4, vadc = 4.2)   #   this parameter can not be used in LN2
-chk.fembs_vol_set(vfe = 3.8, vcd = 0, vadc = 4.95)
+chk.fembs_vol_set(vfe = 3, vcd = 3, vadc = 3.6)   #   this parameter can not be used in LN2
+# chk.fembs_vol_set(vfe = 4, vcd = 4, vadc = 4)
 print("Check FEMB currents")
 fembs_remove = []
 
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
-input()
 
 #####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
@@ -184,7 +185,7 @@ chk.wib_femb_link_en(fembs)
 #      PART 03 SE Performance Measurement  #
 ############################################
 #   create report dir
-datareport = a_func.Create_report_folders(fembs, fembNo, env, toytpc, datadir)
+datareport = a_func.Create_report_folders(fembs, fembName, env, toytpc, datadir)
 ##### 3.1 Measure RMS at 200mV, 14mV/fC, 2us ###################
 #   report in log04
 print("Take RMS data")

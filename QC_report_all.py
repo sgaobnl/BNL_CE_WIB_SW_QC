@@ -68,8 +68,8 @@ for tm in tasks:
     if tm==16:
        rp.PLL_scan_report("PLL_PAT")
 
-    if tm==17:
-       rp.CHK_report()
+    # if tm==17:
+    #    rp.CHK_report()
 
     # if tm==13:
     #    rp.CHK_report()

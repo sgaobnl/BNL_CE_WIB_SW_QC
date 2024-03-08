@@ -53,8 +53,9 @@ if 1:
             rms.append(np.mean(fechndata))
             if fe==0 and fe_chn==2:
                 print (np.mean(fechndata))
-
+            print(len(fechndata))
             plt.plot(range(len(fechndata)), fechndata)
+
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #    plt.legend()
