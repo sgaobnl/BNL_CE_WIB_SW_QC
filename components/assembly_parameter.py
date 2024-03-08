@@ -21,7 +21,7 @@ if D==0:
     cd_i_low    =   0.1
     cd_i_high   =   0.3
     adc_i_low   =   1.2
-    adc_i_high  =   1.8
+    adc_i_high  =   1.99
 else:
     bias_i_low  =   0.15
     fe_i_low    =   0.3

@@ -901,6 +901,37 @@ class QC_Runs:
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_refs, mon_temps, mon_200bls_sdf1, mon_200bls_sdf0, mon_900bls_sdf1, mon_900bls_sdf0, self.logs], fn)
 
+# ============================================================================
+    def LArASIC_Analog(self, sps=500):
+
+        datadir = self.save_dir + "LArASIC_Analog/"
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print("Error to create folder %s !!! Continue to next test........" % datadir)
+            return
+
+        self.chk.femb_cd_rst()
+        chips = 8
+
+# mon_type      (0:     monitor analog          1:      Temperature         2:      Bandgap)
+# snc           (0:     Baseline = 900 mV;      1:      Baseline = 200 mV)
+# sdd - sdf     (0 - 0: SE OFF;                 0 - 1:  SE ON               1 - x:  DIFF (SEDC))
+
+        print("monitor pulse 900mV sdf=0")
+        mon_900bls_sdf0_pulse = {}
+        for mon_chip in range(chips):
+            for mon_chipchn in range(16):
+                adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, adac_pls_en = 1,mon_type=0, snc=0, sdf=0, mon_chip=mon_chip,
+                                             mon_chipchn=mon_chipchn, sps=sps)
+                mon_900bls_sdf0_pulse["chip%dchn%02d" % (mon_chip, mon_chipchn)] = adcrst[7]
+
+        print(mon_900bls_sdf0_pulse)
+
+        fp = datadir + "LArASIC_Analog.bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump([mon_900bls_sdf0_pulse, self.logs], fn)
+
     def femb_MON_2(self, sps=10):
 
         datadir = self.save_dir+"MON_FE/"

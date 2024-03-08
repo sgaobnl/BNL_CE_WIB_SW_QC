@@ -10,7 +10,7 @@ import components.assembly_function as a_func
 import components.assembly_report as a_repo
 # qc_tools = ana_tools()
 # Create an array to store the merged image
-LAr_Dalay = 3.5
+LAr_Dalay = 5
 
 ####### Input FEMB slots #######
 if len(sys.argv) < 2:
@@ -353,8 +353,8 @@ for femb_id in fembs:
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )
-chk.data_align(fembs)
 time.sleep(LAr_Dalay)
+chk.data_align(fembs)
 
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1

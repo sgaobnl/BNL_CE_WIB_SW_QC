@@ -5,7 +5,7 @@ import time
 ag = argparse.ArgumentParser()
 ag.add_argument("fembs", help="a list of femb slots number", type=int, nargs='+')
 #ag.add_argument("-s", "--save", help="number of pulses to be saved", type=int, default=1)
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,16+1),  nargs='+', default=range(1,16+1))
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,17+1),  nargs='+', default=range(1,17+1))
 args = ag.parse_args()
 
 fembs = args.fembs
@@ -22,58 +22,61 @@ for tm in tasks:
 
     print("start tm=",tm)
     if tm==1:
-       qc.pwr_consumption()
+        qc.pwr_consumption()
 
     if tm==2:
-       qc.pwr_cycle()
+        qc.pwr_cycle()
        
     if tm==3:
-       qc.femb_leakage_cur()
+        qc.femb_leakage_cur()
        
     if tm==4:
-       qc.femb_chk_pulse()
+        qc.femb_chk_pulse()
 
     if tm==5:
-       qc.femb_rms()
+        qc.femb_rms()
 
     if tm==6:
-       qc.femb_CALI_1()
+        qc.femb_CALI_1()
 
     if tm==7:
-       qc.femb_CALI_2()
+        qc.femb_CALI_2()
 
     if tm==8:
-       qc.femb_CALI_3()
+        qc.femb_CALI_3()
 
     if tm==9:
-       qc.femb_CALI_4()
+        qc.femb_CALI_4()
 
     if tm==10:
-       qc.femb_MON_1()
+        qc.femb_MON_1()
 
     if tm==11:
-       qc.femb_MON_2()
+        qc.femb_MON_2()
 
     if tm==12:
-       qc.femb_MON_3()
+        qc.femb_MON_3()
 
     if tm==13:
-       vdac_offset = 0.084
-       qc.vgndoft = 1.04 + vdac_offset - 0.4  # to be added later
-       qc.vdacmax = 1.04 + vdac_offset
-       qc.femb_CALI_5()  # external calibration 900mV BL
+        vdac_offset = 0.084
+        qc.vgndoft = 1.04 + vdac_offset - 0.4  # to be added later
+        qc.vdacmax = 1.04 + vdac_offset
+        qc.femb_CALI_5()  # external calibration 900mV BL
 
     if tm==14:
-       vdac_offset = 0.084
-       qc.vgndoft = 1.04 + vdac_offset - 0.8  # to be added later
-       qc.vdacmax = 1.04 + vdac_offset
-       qc.femb_CALI_6()  # external calibration 200mV BL
+        vdac_offset = 0.084
+        qc.vgndoft = 1.04 + vdac_offset - 0.8  # to be added later
+        qc.vdacmax = 1.04 + vdac_offset
+        qc.femb_CALI_6()  # external calibration 200mV BL
 
     if tm==15:
-       qc.femb_adc_sync_pat()
+        qc.femb_adc_sync_pat()
 
     if tm == 16:
-       qc.femb_test_pattern_pll()
+        qc.femb_test_pattern_pll()
+
+    if tm == 17:
+        qc.LArASIC_Analog()
 t2=time.time()
 tt[tm]=t2-t1
 time.sleep(1)

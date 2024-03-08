@@ -78,7 +78,8 @@ class ana_tools:
         self.fadc = 1/(2**14)*2048 # mV
 
     def data_decode(self,raw,fembs):
-        wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True)
+        #wibdata = wib_dec(data=raw, fembs=fembs,fastchk = False, cd0cd1sync=True)
+        wibdata = wib_dec(raw, fembs, spy_num=1, cd0cd1sync=False)
         return wibdata
 
     def pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):

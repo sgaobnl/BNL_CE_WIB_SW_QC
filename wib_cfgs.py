@@ -284,7 +284,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def wib_mon_switches(self, dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=0, inj_cal_pulse=0):
         time.sleep(0.001)
-        reg_value = (dac0_sel&0x01) + ((dac1_sel&0x01)<<1) + ((dac2_sel&0x01)<<2) + ((dac2_sel&0x01)<<3) + ((mon_vs_pulse_sel&0x01)<<4)+ ((inj_cal_pulse&0x01)<<5)
+        reg_value = (dac0_sel&0x01) + ((dac1_sel&0x01)<<1) + ((dac2_sel&0x01)<<2) + ((dac3_sel&0x01)<<3) + ((mon_vs_pulse_sel&0x01)<<4)+ ((inj_cal_pulse&0x01)<<5)
         rdreg = self.peek(0xA00C003C)
         self.poke(0xA00C003C, (rdreg&0xffffffC0)|reg_value)
 
@@ -953,13 +953,21 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
-        self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf) 
-        self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
+        if adac_pls_en == 0:
+            self.set_fechn_reg(chip=mon_chip&0x07, chn=chn, snc=snc, sg0=sg0, sg1=sg1, smn=1, sdf=sdf)
+            self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
+        else:
+            self.set_fechn_reg(chip=mon_chip & 0x07, chn=chn, sts = 1, snc=snc, sg0=sg0, sg1=sg1, st0 = 1, st1 = 1, smn=1, sdf=sdf)
+            self.set_fechip_global(chip=mon_chip & 0x07, slk0 = 0, stb1=stb1, stb=stb0, s16 = 1, slk1 = 0, sdc = 0, sdd = 0, sgp = 0, swdac = 1, dac = 0x30)
         self.set_fe_sync()
-
+        # input(2)
         self.fembs_fe_cfg(fembs)
+        # input(3)
         for femb_id in fembs:
+            self.femb_fe_cfg(femb_id)
+            self.femb_adac_cali(femb_id)
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+        # input(4)
 
     def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
@@ -979,7 +987,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
-            time.sleep(0.001)
             adcs = self.wib_mon_adcs()
             adcss.append(adcs)
         if mon_type == 2:
@@ -989,7 +996,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         else:
             mon_str = "Channel"
         mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss]
+        print("FEMB: {} chip: {} channel: {}".format(femb_ids, mon_chip, mon_chipchn))
+
         self.wib_mon_switches()
+        input()
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ):
