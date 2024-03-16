@@ -235,12 +235,32 @@ class DAT_LArASIC_QC_ana:
             flg_rms_passed = True
         if all(item > pedr[0] for item in peds) and all(item < pedr[1] for item in peds) :
             flg_ped_passed = True
+        
+        flgs_amps = []
+        passed = True
+        for chn in range(128):
+            if (amps[chn] < par[0]) or (amps[chn] > par[1]):
+                passed = False
+            if (chn+1)%16==0:
+                flgs_amps.append(passed)
+                passed = True
+        
+        flgs_rms = []
+        passed = True
+        for chn in range(128):
+            if (rmss[chn] < rmsr[0]) and (rmss[chn] > rmsr[1]):
+                passed = False
+            if (chn+1)%16==0:
+                flgs_rms.append(passed)
+                passed = True
+        print(flgs_rms)
+        print(len(flgs_rms))
 
         result = {'Amplitude': flg_amps_passed,
                   'RMS': flg_rms_passed,
                   'Pedestal': flg_ped_passed}
         return result
-        
+
     # def plt_subplot(self, plt, fembs, rawdata ):
     def plt_subplot(self, plt, chns, rmss, peds, pkps, pkns, wfs, wfsf):
         ax1 = plt.subplot2grid((2, 3), (0, 1), colspan=1, rowspan=1)
@@ -316,7 +336,7 @@ class DAT_LArASIC_QC_ana:
                 chns, rmss, peds, pkps, pkns, wfs, wfsf = self.data_ana(fembs, rawdata)
                 if (onekey=="DIRECT_PLS_CHK") :
                     show_flg = self.ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
-                    print(show_flg)
+                    # print(show_flg)
                     
                     # fig = plt.figure(figsize=(16,8))
                     # # self.plt_subplot(plt=plt, fembs=fembs, rawdata=rawdata)
