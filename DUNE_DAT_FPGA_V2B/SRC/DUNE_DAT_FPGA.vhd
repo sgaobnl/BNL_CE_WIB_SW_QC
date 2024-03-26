@@ -49,22 +49,6 @@ entity DUNE_DAT_FPGA is
 		CD2_FPGA_CD_INA_SDA 				: INOUT STD_LOGIC;
 		CD2_FPGA_CD_INA_SCL 				: OUT STD_LOGIC;
 		--ASIC work.I2c_master
---		FE1_INA_SDA 						: INOUT STD_LOGIC;
---		FE1_INA_SCL 						: OUT STD_LOGIC;
---		FE2_INA_SDA 						: INOUT STD_LOGIC; 
---		FE2_INA_SCL 						: OUT STD_LOGIC;
---		FE3_INA_SDA 						: INOUT STD_LOGIC;
---		FE3_INA_SCL 						: OUT STD_LOGIC;
---		FE4_INA_SDA 						: INOUT STD_LOGIC;
---		FE4_INA_SCL 						: OUT STD_LOGIC;
---		FE5_INA_SDA 						: INOUT STD_LOGIC;
---		FE5_INA_SCL 						: OUT STD_LOGIC;
---		FE6_INA_SDA 						: INOUT STD_LOGIC;
---		FE6_INA_SCL 						: OUT STD_LOGIC;
---		FE7_INA_SDA 						: INOUT STD_LOGIC;
---		FE7_INA_SCL 						: OUT STD_LOGIC;
---		FE8_INA_SDA 						: INOUT STD_LOGIC;
---		FE8_INA_SCL 						: OUT STD_LOGIC;
 		
 		FE_INA_SDA							: INOUT STD_LOGIC_VECTOR(7 downto 0);
 		FE_INA_SCL 							: OUT STD_LOGIC_VECTOR(7 downto 0);
@@ -119,44 +103,19 @@ entity DUNE_DAT_FPGA is
 	--FE ASIC CONTROL & CALIBRATION
 		FE_IN_TST_SEL 						: OUT STD_LOGIC_VECTOR(15 downto 0); 
 		
---		FE1_CALI_CS 						: OUT STD_LOGIC;		
---		FE2_CALI_CS 						: OUT STD_LOGIC;		
---		FE3_CALI_CS 						: OUT STD_LOGIC;		
---		FE4_CALI_CS 						: OUT STD_LOGIC;		
---		FE5_CALI_CS 						: OUT STD_LOGIC;	
---		FE6_CALI_CS 						: OUT STD_LOGIC;
---		FE7_CALI_CS 						: OUT STD_LOGIC;
---		FE8_CALI_CS 						: OUT STD_LOGIC;
 		FE_CALI_CS 							: OUT STD_LOGIC_VECTOR(7 downto 0);
 
 		
---		FE1_INS_PLS_CS 						: OUT STD_LOGIC;	
---		FE2_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE3_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE4_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE5_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE6_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE7_INS_PLS_CS 						: OUT STD_LOGIC;
---		FE8_INS_PLS_CS 						: OUT STD_LOGIC;
 		FE_INS_PLS_CS 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 
---		FE_TEST_INH							: OUT STD_LOGIC; 
---		FE1_TEST_INH 						: OUT STD_LOGIC;
---		FE2_TEST_INH 						: OUT STD_LOGIC;
---		FE3_TEST_INH 						: OUT STD_LOGIC;
---		FE4_TEST_INH 						: OUT STD_LOGIC;
---		FE5_TEST_INH 						: OUT STD_LOGIC;
---		FE6_TEST_INH 						: OUT STD_LOGIC;
---		FE7_TEST_INH 						: OUT STD_LOGIC;
---		FE8_TEST_INH 						: OUT STD_LOGIC;
 		FE_TEST_INH_ARR					: OUT STD_LOGIC_VECTOR(7 downto 0);		
 		FE_TEST_CSA							: OUT STD_LOGIC; 		
 		FE_TEST_CSB							: OUT STD_LOGIC; 
 		FE_TEST_CSC							: OUT STD_LOGIC; 
 
-		FE_CMN_CSA							: OUT STD_LOGIC; 		
-		FE_CMN_CSB							: OUT STD_LOGIC; 
-		FE_CMN_CSC							: OUT STD_LOGIC; 
+--		FE_CMN_CSA							: OUT STD_LOGIC; 		
+--		FE_CMN_CSB							: OUT STD_LOGIC; 
+--		FE_CMN_CSC							: OUT STD_LOGIC; 
 		FE_CMN_INH							: OUT STD_LOGIC; 
 		
 		EXT_PULSE_CNTL						: OUT STD_LOGIC; 
@@ -164,14 +123,6 @@ entity DUNE_DAT_FPGA is
 		--work.ADC_LTC2314
 		FE_MonADC_CS						: OUT STD_LOGIC; 
 		FE_MonADC_SCK						: OUT STD_LOGIC; 
---		FE1_MonADC_SDO 						: IN STD_LOGIC;
---		FE2_MonADC_SDO 						: IN STD_LOGIC;
---		FE3_MonADC_SDO 						: IN STD_LOGIC;
---		FE4_MonADC_SDO 						: IN STD_LOGIC;
---		FE5_MonADC_SDO 						: IN STD_LOGIC;
---		FE6_MonADC_SDO 						: IN STD_LOGIC;
---		FE7_MonADC_SDO 						: IN STD_LOGIC;		
---		FE8_MonADC_SDO 						: IN STD_LOGIC;	
 		FE_MonADC_SDO 						: IN STD_LOGIC_VECTOR(7 downto 0);
 		
 		--AD5683R
@@ -182,25 +133,9 @@ entity DUNE_DAT_FPGA is
 		
 		FE_DAC_TP_SCK						: OUT STD_LOGIC; 
 		FE_DAC_TP_SYNC						: OUT STD_LOGIC; 	
---		FE1_DAC_TP_DIN 						: OUT STD_LOGIC;		
---		FE2_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE3_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE4_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE5_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE6_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE7_DAC_TP_DIN 						: OUT STD_LOGIC;
---		FE8_DAC_TP_DIN 						: OUT STD_LOGIC;	
 		FE_DAC_TP_DIN 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 
 	--ADC ASIC 
---		ADC1_POR_NAND 						: OUT STD_LOGIC;
---		ADC2_POR_NAND 						: OUT STD_LOGIC;
---		ADC3_POR_NAND 						: OUT STD_LOGIC;
---		ADC4_POR_NAND 						: OUT STD_LOGIC;
---		ADC5_POR_NAND 						: OUT STD_LOGIC;
---		ADC6_POR_NAND 						: OUT STD_LOGIC;
---		ADC7_POR_NAND 						: OUT STD_LOGIC;
---		ADC8_POR_NAND 						: OUT STD_LOGIC;
 		ADC_POR_NAND 						: OUT STD_LOGIC_VECTOR(7 downto 0);
 		
 		
@@ -215,32 +150,14 @@ entity DUNE_DAT_FPGA is
 		CD2_ADC_I2C_ADD3 					: OUT STD_LOGIC;
 		
 		--WORK.COLDADC_RO_CNT 
---		ADC1_RO_OUT 						: IN STD_LOGIC;
---		ADC2_RO_OUT 						: IN STD_LOGIC;		
---		ADC3_RO_OUT 						: IN STD_LOGIC;		
---		ADC4_RO_OUT 						: IN STD_LOGIC;		
---		ADC5_RO_OUT							: IN STD_LOGIC; 
---		ADC6_RO_OUT							: IN STD_LOGIC; 
---		ADC7_RO_OUT							: IN STD_LOGIC; 
---		ADC8_RO_OUT							: IN STD_LOGIC;
 		ADC_RO_OUT							: IN STD_LOGIC_VECTOR(7 downto 0);
  		
-
---		ADC1_CHIP_ACTIVE 					: OUT STD_LOGIC;
---		ADC2_CHIP_ACTIVE 					: OUT STD_LOGIC;
---		ADC3_CHIP_ACTIVE 					: OUT STD_LOGIC;
---		ADC4_CHIP_ACTIVE 					: OUT STD_LOGIC;
---		ADC5_CHIP_ACTIVE 					: OUT STD_LOGIC; 
---		ADC6_CHIP_ACTIVE					: OUT STD_LOGIC; 
---		ADC7_CHIP_ACTIVE					: OUT STD_LOGIC; 
---		ADC8_CHIP_ACTIVE					: OUT STD_LOGIC; 
 		ADC_CHIP_ACTIVE						: OUT STD_LOGIC_VECTOR(7 downto 0); 		
 		
 		--CALIBRATION & MONITORING
 		--work.ADC_LTC2314
 		ADC_TST_SEL 						: OUT STD_LOGIC_VECTOR(7 downto 0);
 		
---		ADC_SRC_CS_P						: OUT STD_LOGIC_VECTOR(15 downto 0);
 		ADC_SRC_CS_P0					   : OUT STD_LOGIC;
 		ADC_SRC_CS_P1					   : OUT STD_LOGIC;
 		ADC_SRC_CS_P2					   : OUT STD_LOGIC;
@@ -261,24 +178,8 @@ entity DUNE_DAT_FPGA is
 		
 		ADC_MonADC_CS						: OUT STD_LOGIC; 		
 		ADC_MonADC_SCK						: OUT STD_LOGIC; 
---		ADC1_MonADC_SDO 					: IN STD_LOGIC;
---		ADC2_MonADC_SDO 					: IN STD_LOGIC;
---		ADC3_MonADC_SDO 					: IN STD_LOGIC;
---		ADC4_MonADC_SDO 					: IN STD_LOGIC;
---		ADC5_MonADC_SDO 					: IN STD_LOGIC;
---		ADC6_MonADC_SDO 					: IN STD_LOGIC;
---		ADC7_MonADC_SDO 					: IN STD_LOGIC;
---		ADC8_MonADC_SDO 					: IN STD_LOGIC;
 		ADC_MonADC_SDO 					: IN STD_LOGIC_VECTOR(7 downto 0);		
 
---		ADC1_TEST_INH 						: OUT STD_LOGIC;
---		ADC2_TEST_INH 						: OUT STD_LOGIC;
---		ADC3_TEST_INH 						: OUT STD_LOGIC;
---		ADC4_TEST_INH 						: OUT STD_LOGIC;
---		ADC5_TEST_INH 						: OUT STD_LOGIC;
---		ADC6_TEST_INH 						: OUT STD_LOGIC;
---		ADC7_TEST_INH 						: OUT STD_LOGIC;
---		ADC8_TEST_INH 						: OUT STD_LOGIC;
 		ADC_TEST_INH 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 		
 		ADC_TEST_IN_SEL					: OUT STD_LOGIC;
@@ -306,9 +207,15 @@ entity DUNE_DAT_FPGA is
 		
 
 	--MISC
-		--MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
-		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 3)	
+		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
 	
+--      EFUSE_CSB						   : OUT STD_LOGIC;  -- MISC_U1_IO(0) 
+--      EFUSE_DIN 						   : OUT STD_LOGIC;  -- MISC_U1_IO(1)
+--      EFUSE_PGM						   : OUT STD_LOGIC;  -- MISC_U1_IO(2)
+--      EFUSE_SLCK						   : OUT STD_LOGIC;  -- MISC_U1_IO(3)
+--      EFUSE_VDDQ						   : OUT  STD_LOGIC   -- MISC_U1_IO(4) 
+
+
 	);
 
 end DUNE_DAT_FPGA;
@@ -428,6 +335,8 @@ signal	DAC_TP_data				: std_logic_vector(15 downto 0);
 type		ro_cnt_array is array(7 downto 0) of STD_LOGIC_VECTOR(31 downto 0);
 signal	ro_cnt_arr				: ro_cnt_array;
 signal	ro_cnt					: STD_LOGIC_VECTOR(31 downto 0);
+SIGNAL	ro_start				: STD_LOGIC;
+signal	ro_length100MHz	   : STD_LOGIC_VECTOR(31 downto 0);
 
 --Test pulse generation
 SIGNAL	FPGA_TP_EN				: STD_LOGIC;
@@ -448,11 +357,28 @@ SIGNAL	ASIC_DAC_CNTL			: STD_LOGIC;
 SIGNAL	Test_pulse				: STD_LOGIC;
 --SIGNAL	Test_pulse_buffer		: STD_LOGIC_VECTOR(7 downto 0);
 
+
+SIGNAL		EFUSE_CSB						   :  STD_LOGIC;  -- MISC_U1_IO(0) 
+SIGNAL      EFUSE_DIN 						   :  STD_LOGIC;  -- MISC_U1_IO(1)
+SIGNAL      EFUSE_PGM						   :  STD_LOGIC;  -- MISC_U1_IO(2)
+SIGNAL      EFUSE_SLCK						   :  STD_LOGIC;  -- MISC_U1_IO(3)
+SIGNAL      EFUSE_VDDQ						   :  STD_LOGIC;   -- MISC_U1_IO(4) 
+SIGNAL	EFUSE_start		:  STD_LOGIC;	
+SIGNAL	EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
+SIGNAL	    FE_CMN_CSA							: STD_LOGIC; 		
+SIGNAL	    FE_CMN_CSB							: STD_LOGIC; 
+SIGNAL	    FE_CMN_CSC							: STD_LOGIC; 
+
+
 --Registers
 SIGNAL	reg0_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg1_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg2_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg3_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+--SIGNAL	reg2_i_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+--SIGNAL	reg3_i_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+--SIGNAL	reg2_o_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+--SIGNAL	reg3_o_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg4_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg5_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg6_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
@@ -537,6 +463,15 @@ SIGNAL	reg84_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg85_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg86_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg87_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg88_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg89_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg90_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg91_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg92_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg93_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg94_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+SIGNAL	reg95_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
+
 
 SIGNAL	reg_adc				: STD_LOGIC_VECTOR(63 downto 0);
 SIGNAL	reg_fe 				: STD_LOGIC_VECTOR(63 downto 0);
@@ -603,8 +538,6 @@ FE_INS_PLS_CS <= TP_SOCKET_EN ; --AND Test_pulse_buffer; --bitwise and
 --------------------------------------
 
 
-
-
 ----- register map -------
 
 --MISC_U1_IO(0) <= I2C_LVDS_SDA_W2C_P;
@@ -612,10 +545,17 @@ FE_INS_PLS_CS <= TP_SOCKET_EN ; --AND Test_pulse_buffer; --bitwise and
 --MISC_U1_IO(2) <= CLK_64MHZ_SYS_P;
 --MISC_U1_IO(3) <= CLK_62_5MHz;
 --MISC_U1_IO(4) <= CLK_100MHz;
-MISC_U1_IO(4 downto 3)	<= reg63_p(1 downto 0);
+--MISC_U1_IO(5 downto 3)	<= reg63_p(2 downto 0);
 --MISC_U1_IO(3) <= reset;
 --MISC_U1_IO(4) <= SYS_RESET;
-MISC_U1_IO(5) <= CLK_10MHz;
+--SC_U1_IO(5) <= CLK_10MHze
+
+MISC_U1_IO(0)	<= FE_CMN_CSA when reg62_p(3) = '0' else  EFUSE_CSB ;
+MISC_U1_IO(1)	<= FE_CMN_CSB when reg62_p(3) = '0' else  EFUSE_DIN ;
+MISC_U1_IO(2)	<= FE_CMN_CSC when reg62_p(3) = '0' else  EFUSE_PGM ;
+MISC_U1_IO(3)	<= '0'        when reg62_p(3) = '0' else  EFUSE_SLCK;
+MISC_U1_IO(4)	<= '0'        when reg62_p(3) = '0' else  EFUSE_VDDQ;
+MISC_U1_IO(5)	<= reg62_p(3) ;
 
 SYS_RESET				<= reg0_p(0);							-- SYSTEM RESET
 REG_RESET				<= reg0_p(1);							-- RESISTER RESET
@@ -624,8 +564,13 @@ CD_sEL				<= reg1_p(0);
 CD1_PAD_RESET 		<= not reg1_p(4);
 CD2_PAD_RESET 		<= not reg1_p(5);
 
-reg2_p <= b"000" & CD1_CONTROL;
-reg3_p <= b"000" & CD2_CONTROL;
+--CD1_CONTROL <= reg3_o_p (4 downto 0) when reg66_p(0) = '1' else (others => 'Z');
+--CD2_CONTROL <= reg2_o_p (4 downto 0) when reg66_p(1) = '1' else (others => 'Z');
+--
+--reg3_i_p <= b"000" & CD1_CONTROL;
+--reg2_i_p <= b"000" & CD2_CONTROL;
+reg3_p <= b"000" & CD1_CONTROL;
+reg2_p <= b"000" & CD2_CONTROL;
 
 SOCKET_RDOUT_SEL <= reg4_p(2 downto 0);
 
@@ -893,7 +838,8 @@ PORT MAP(	clk 			=> CLK_50MHz,
 				reset_in 	=> SYS_RESET,
 				start 		=> start,
 				RST_OUT 		=> reset);
-		
+
+
 		
 
 --DAT_PLL_inst	: DAT_PLL
@@ -1008,7 +954,25 @@ gen_FE_INA: for i in 0 to 7 generate
 	);
 end generate gen_FE_INA;
 
-
+EFUSE_DATA(7 downto 0)	   <= reg88_p;   
+EFUSE_DATA(15 downto 8)	   <= reg89_p;    
+EFUSE_DATA(23 downto 16)   <= reg90_p;    
+EFUSE_DATA(31 downto 24)   <= reg91_p;    
+EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programming	
+EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
+	PORT MAP
+	(
+		clk     		=> CLK_62_5MHz,
+		reset       => reset,			
+		start			=> EFUSE_start,
+		EFUSE_DATA	=> EFUSE_DATA,
+		EFUSE_CSB	=> EFUSE_CSB,
+        EFUSE_DIN 	=> EFUSE_DIN,
+        EFUSE_PGM	=> EFUSE_PGM,
+        EFUSE_SLCK  => EFUSE_SLCK, 
+        EFUSE_VDDQ	=> EFUSE_VDDQ,	
+		BuSY			=> open
+	);
 --CD1_MonADC_inst : entity work.COTS_AD7274
 --  PORT MAP
 --  (
@@ -1311,11 +1275,14 @@ DAC_TP_inst : entity work.DAC8411 --AD5683R
 		 SYNC				=> DAC_TP_SYNC
 	);
 
+
 gen_ro_cnt: for i in 7 downto 0 generate	
 	ro_inst: ENTITY WORK.COLDADC_RO_CNT 
 	  PORT MAP(
 		 clk  =>    clk_100Mhz, --?
 		 reset    => reset,
+		 ro_start => reg63_p(0),
+		 ro_cntx10ns => reg95_p(7 downto 0) & reg94_p(7 downto 0) & reg93_p(7 downto 0) & reg92_p(7 downto 0),
 		 ro_in    => ADC_RO_OUT(i),
 		 ro_cnt   =>  ro_cnt_arr(i)  
 	);
@@ -1362,8 +1329,10 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		
 		reg0_i 	=> reg0_p,
 		reg1_i 	=> reg1_p,		 
+--		reg2_i 	=> reg2_i_p,		 
+--		reg3_i 	=> reg3_i_p,	
 		reg2_i 	=> reg2_p,		 
-		reg3_i 	=> reg3_p,	
+		reg3_i 	=> reg3_p,
 		reg4_i 	=> reg4_p,
 		reg5_i 	=> reg5_p,
 		reg6_i 	=> reg6_p,
@@ -1448,10 +1417,20 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg85_i 	=> reg85_p,	
 		reg86_i 	=> reg86_p,
 		reg87_i 	=> reg87_p,
+		reg88_i 	=> reg88_p,
+		reg89_i 	=> reg89_p,	
+		reg90_i 	=> reg90_p,
+		reg91_i 	=> reg91_p,
+		reg92_i 	=> reg92_p,
+		reg93_i 	=> reg93_p,
+		reg94_i 	=> reg94_p,
+		reg95_i 	=> reg95_p,
 
 		
 		reg0_o 	=> reg0_p,
 		reg1_o 	=> reg1_p,		 
+--		reg2_o 	=> reg2_o_p,		 
+--		reg3_o   => reg3_o_p,
 		reg2_o 	=> open,		 
 		reg3_o   => open,
 		reg4_o 	=> reg4_p,
@@ -1537,7 +1516,15 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg84_o 	=> reg84_p,
 		reg85_o 	=> reg85_p,	
 		reg86_o 	=> reg86_p,
-		reg87_o 	=> reg87_p
+		reg87_o 	=> reg87_p,
+		reg88_o 	=> reg88_p,
+		reg89_o 	=> reg89_p,	
+		reg90_o 	=> reg90_p,
+		reg91_o 	=> reg91_p,
+		reg92_o 	=> reg92_p,
+		reg93_o 	=> reg93_p,
+		reg94_o 	=> reg94_p,
+		reg95_o 	=> reg95_p
 		
 	);
 

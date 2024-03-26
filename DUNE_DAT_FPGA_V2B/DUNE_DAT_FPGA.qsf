@@ -336,9 +336,9 @@ set_location_assignment PIN_C1 -to ADC_TEST_IN_SEL
 #set_location_assignment PIN_P24 -to FE_CMN_CSA #--for next version DAT
 #set_location_assignment PIN_P23 -to FE_CMN_CSB #--for next version DAT
 #set_location_assignment PIN_N23 -to FE_CMN_CSC #--for next version DAT
-set_location_assignment PIN_AD3 -to FE_CMN_CSA
-set_location_assignment PIN_AE3 -to FE_CMN_CSB
-set_location_assignment PIN_AC24 -to FE_CMN_CSC
+#set_location_assignment PIN_AD3 -to FE_CMN_CSA
+#set_location_assignment PIN_AE3 -to FE_CMN_CSB
+#set_location_assignment PIN_AC24 -to FE_CMN_CSC
 set_location_assignment PIN_K21 -to FE_CMN_INH
 #DAT_FPGA_CLK
 
@@ -366,9 +366,9 @@ set_location_assignment PIN_L9 -to CLK_125MHz_OSC_P
 set_location_assignment PIN_AB23 -to MISC_U1_IO[5]
 set_location_assignment PIN_AB24 -to MISC_U1_IO[4]
 set_location_assignment PIN_AC23 -to MISC_U1_IO[3]
-#set_location_assignment PIN_AC24 -to MISC_U1_IO[2]
-#set_location_assignment PIN_AE3 -to MISC_U1_IO[1]
-#set_location_assignment PIN_AD3 -to MISC_U1_IO[0]
+set_location_assignment PIN_AC24 -to MISC_U1_IO[2]
+set_location_assignment PIN_AE3 -to MISC_U1_IO[1]
+set_location_assignment PIN_AD3 -to MISC_U1_IO[0]
 
 #set_location_assignment PIN_M22 -to ADC_SRC_CS_P[0]
 #set_location_assignment PIN_N19 -to ADC_SRC_CS_P[1]
@@ -490,6 +490,9 @@ set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 
 
 
+
+
+set_global_assignment -name VHDL_FILE SRC/EFUSE_COLDATA.vhd
 set_global_assignment -name VHDL_FILE SRC/ADC_AD7274.vhd
 set_global_assignment -name SDC_FILE DUNE_DAT.sdc
 set_global_assignment -name VHDL_FILE SRC/SBND_TST_PULSE.vhd
@@ -509,4 +512,5 @@ set_global_assignment -name CDF_FILE output_files/Chain2.cdf
 set_global_assignment -name CDF_FILE output_files/Chain1.cdf
 set_global_assignment -name CDF_FILE output_files/Chain3.cdf
 set_global_assignment -name CDF_FILE output_files/Chain4.cdf
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

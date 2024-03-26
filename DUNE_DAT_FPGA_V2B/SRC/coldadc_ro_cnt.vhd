@@ -17,6 +17,8 @@ ENTITY COLDADC_RO_CNT IS
   PORT(
     clk     : IN     STD_LOGIC;  
     reset       : IN     STD_LOGIC;                    -- reset, active high reset
+    ro_start       : IN     STD_LOGIC;  
+    ro_cntx10ns    : IN STD_LOGIC_VECTOR(31 downto 0) ;
     ro_in       : IN     STD_LOGIC;  
     ro_cnt     : OUT STD_LOGIC_VECTOR(31 downto 0) 
 );                   
@@ -27,6 +29,7 @@ ARCHITECTURE logic OF COLDADC_RO_CNT IS
   
   signal ro_cnt_reg	  :STD_LOGIC_VECTOR(31 downto 0);  
   signal s1_cnt_reg	  :STD_LOGIC_VECTOR(31 downto 0);  
+  signal ro_start_1r	  :STD_LOGIC;  
   signal s1_reg	  :STD_LOGIC;  
   signal s1_reg_1r	  :STD_LOGIC;  
   signal s1_reg_2r	  :STD_LOGIC;  
@@ -54,13 +57,15 @@ BEGIN
   begin
       if(reset = '1') then
           s1_cnt_reg <=x"00000000";
+			 ro_start_1r <= '0';
       elsif(clk'event and clk = '1') then
-          if s1_cnt_reg = x"0000007f" then
+		    ro_start_1r <= ro_start;
+          if (ro_start = '1') and (ro_start_1r = '0') then
               s1_reg <= '1';
               s1_cnt_reg <= s1_cnt_reg + 1;
-          elsif s1_cnt_reg >= x"05F5E17f" then
+          elsif s1_cnt_reg >= ro_cntx10ns then
               s1_reg <= '0';
-              s1_cnt_reg <=x"00000000";
+ --             s1_cnt_reg <=x"00000000";
           else
               s1_cnt_reg <= s1_cnt_reg + 1;
           end if;
