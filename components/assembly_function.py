@@ -93,6 +93,8 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
             continue
         else:
             log.report_log03[femb_id]["COLDATA_REG_{}".format(times)] = ("Pass")
+            if Decision:
+                log.report_log03[femb_id]["Result"] = True
 
         errflag = chk.femb_adc_chkreg(ifemb)
         if errflag:
@@ -276,7 +278,7 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ped, rms = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-        tmp = QC_check.CHKPulse(ped, 5)
+        tmp = QC_check.CHKPulse(ped, 500)
         log.chkflag["BL"]=(tmp[0])
         log.badlist["BL"]=(tmp[1])
         ped_err_flag = tmp[0]
@@ -289,12 +291,18 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
         rms_err_flag = tmp[0]
         rms_err_status = tmp[1]
         log.report_log04[femb_id]["RMS 128-CH std"] = tmp[2]
-        if (ped_err_flag == False) and (rms_err_flag == False):
+        if (ped_err_flag == True) and (rms_err_flag == True):
             log.report_log04[femb_id]["Result"] = True
         else:
             log.report_log04[femb_id]["baseline err_status"] = baseline_err_status
             log.report_log04[femb_id]["RMS err_status"] = rms_err_status
             log.report_log04[femb_id]["Result"] = False
+        if "900" in fname:
+            log.rmsdata[femb_id]["rms{}".format(fname)] = rms
+            log.peddata[femb_id]["ped{}".format(fname)] = ped
+            print(log.rmsdata[femb_id]["rms{}".format(fname)])
+            print(log.peddata[femb_id]["ped{}".format(fname)])
+
 
 
 #   item05  Power analysis

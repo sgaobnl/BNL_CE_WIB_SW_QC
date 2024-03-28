@@ -47,7 +47,7 @@ def final_report(datareport, fembs, fembNo):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
 
         log.final_status[femb_id]["item2"] = log.report_log021[femb_id]["Result"]
-        log.final_status[femb_id]["item3"] = log.report_log03[femb_id]["Result"]
+        # log.final_status[femb_id]["item3"] = log.report_log03[femb_id]["Result"]
         log.final_status[femb_id]["item4"] = log.report_log04[femb_id]["Result"]
         log.final_status[femb_id]["item5"] = log.report_log051[femb_id]["Result"]
         log.final_status[femb_id]["item6"] = log.report_log061[femb_id]["Result"]

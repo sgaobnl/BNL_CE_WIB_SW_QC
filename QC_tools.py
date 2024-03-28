@@ -172,7 +172,8 @@ class ana_tools:
         plt.xticks(x_sticks)
         plt.grid(axis='x')
         if (rms_max < (fe_rms_med + 8)) and (rms_min > (fe_rms_med - 8)):
-            plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
+            # plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
+            plt.ylim(16, 40)
         else:
             plt.grid(axis='y')
         # fp_fig = fp+"rms_{}.png".format(fname)
@@ -216,7 +217,7 @@ class ana_tools:
         rms = []
         ped = []
 
-        plt.figure(figsize=(18, 4))
+        plt.figure(figsize=(12, 4))
         offset2 = 120
         if period == 500:
             pulrange = 120
@@ -250,7 +251,7 @@ class ana_tools:
             maxpos = np.argmax(apulse)
 
             data_type = apulse.dtype
-            plt.subplot(1, 3, 1)
+            plt.subplot(1, 2, 1)
             if maxpos >= pulseoffset and maxpos < len(apulse) + pulseoffset - pulrange:
                 plot_pulse = apulse[maxpos - pulseoffset:maxpos - pulseoffset + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
@@ -294,7 +295,8 @@ class ana_tools:
             npk_val.append(pmin)
             npk.append(pmin - pulse_ped)
             # bl_rms.append(bbl_rms)
-            bl_val.append(bbl)
+            # bl_val.append(bbl)
+            bl_val.append(pulse_ped)
             bl.append(bbl)
 
             rms.append(pulse_rms)
@@ -311,7 +313,7 @@ class ana_tools:
         plt.xlabel("Sample Points", fontsize=14)
         plt.ylabel("ADC count", fontsize=14)
 
-        plt.subplot(1, 3, 2)
+        plt.subplot(1, 2, 2)
         plt.plot(range(128), ppk_val, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
         plt.plot(range(128), bl_val, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
         plt.plot(range(128), npk_val, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
@@ -325,16 +327,16 @@ class ana_tools:
         plt.ylabel("ADC count", fontsize=14)
         plt.legend()
 
-        plt.subplot(1, 3, 3)
-        plt.plot(range(128), rms, marker='o', linestyle='-', alpha=0.5, label='RMS')
-        plt.title("RMS Distribution", fontsize=14)
-        plt.ylim(rms_mean - 5, rms_mean + 5)
-        plt.xlabel("chan", fontsize=14)
-        plt.xticks(np.arange(0, 129, 16))
-        plt.ylabel("RMS", fontsize=14)
-        plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
-
-        plt.legend()
+        # plt.subplot(1, 3, 3)
+        # plt.plot(range(128), rms, marker='o', linestyle='-', alpha=0.5, label='RMS')
+        # plt.title("RMS Distribution", fontsize=14)
+        # plt.ylim(rms_mean - 5, rms_mean + 5)
+        # plt.xlabel("chan", fontsize=14)
+        # plt.xticks(np.arange(0, 129, 16))
+        # plt.ylabel("RMS", fontsize=14)
+        # plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
+        #
+        # plt.legend()
 
         fp_fig = fp + "pulse_{}.png".format(fname)
         plt.savefig(fp_fig)
@@ -344,7 +346,7 @@ class ana_tools:
         with open(fp_bin, 'wb') as fn:
             pickle.dump([ppk_val, npk_val, bl_val], fn)
 
-        return ppk, npk, bl
+        return ppk_val, npk_val, bl_val
 
 
     def PrintPWR(self, pwr_data, nfemb, fp):
@@ -751,7 +753,7 @@ class ana_tools:
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
                    else:
                         ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
-                   ppk_np = np.array(ppk)
+                   ppk_np = np.array(ppk)-np.array(bl)
                    # bl_np = np.array(bl)
                    pk_list[ifemb].append(ppk_np)
                    # pk_list[ifemb].append(ppk_np)

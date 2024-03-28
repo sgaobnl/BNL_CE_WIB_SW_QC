@@ -251,7 +251,8 @@ def final_report(datareport, fembs, fembNo):
                 # file.write('</div>' + '\n\n')
 
                 file.write('### 01_12 SE Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_12[femb_id], VALUE="Horizontal")
+                info = dict_to_markdown_table(log.report_log01_12[femb_id])
+                # info = dict_to_markdown_table(log.report_log01_12[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./PWR_Meas/pulse_PWR_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n")
 
@@ -267,7 +268,7 @@ def final_report(datareport, fembs, fembNo):
                 # file.write('</div>' + '\n\n')
 
                 file.write('### 01_22 SE ON Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_22[femb_id], VALUE="Horizontal")
+                info = dict_to_markdown_table(log.report_log01_22[femb_id])
                 file.write(info + '\n')
                 file.write("![ped](./PWR_Meas/pulse_PWR_SE_ON_200mVBL_14_0mVfC_2_0us.png)" + "\n")
 
@@ -283,7 +284,7 @@ def final_report(datareport, fembs, fembNo):
                 # file.write('</div>' + '\n\n')
 
                 file.write('### 01_32 DIFF Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_32[femb_id], VALUE="Horizontal")
+                info = dict_to_markdown_table(log.report_log01_32[femb_id])
                 file.write(info + '\n')
                 file.write("![ped](./PWR_Meas/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png)" + "\n")
 
@@ -304,18 +305,19 @@ def final_report(datareport, fembs, fembNo):
 
                 log.check_log03_table_01[femb_id]['title'] = " | Leakage <bar> Current | 100 pA | 500 pA | 1 nA | 5 nA | \n"
                 log.check_log03_table_01[femb_id]['table line'] = " | --- | --- | --- | --- | --- | \n"
-                log.check_log03_table_01[femb_id]['ppk_mean'] = " | PPK Mean | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_mean0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_mean0"])
-                log.check_log03_table_01[femb_id]['ppk_err'] = " | PPK Error | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_err0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_err0"])
-                log.check_log03_table_01[femb_id]['npk_mean'] = " | NPK Mean | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_mean0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_mean0"])
-                log.check_log03_table_01[femb_id]['npk_err'] = " | NPK Error | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_err0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_err0"])
+                log.check_log03_table_01[femb_id]['ppk_mean'] = " | Amplitude Mean | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_mean0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_mean0"])
+                # log.check_log03_table_01[femb_id]['ppk_err'] = " | PPK Std | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_err0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_err0"])
+                log.check_log03_table_01[femb_id]['npk_mean'] = " | Pedestal Mean | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_mean0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_mean0"])
+                # log.check_log03_table_01[femb_id]['npk_err'] = " | NPK Std | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_err0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_err0"])
 
                 file.write(log.check_log03_table_01[femb_id]['title'])
                 file.write(log.check_log03_table_01[femb_id]['table line'])
                 file.write(log.check_log03_table_01[femb_id]['ppk_mean'])
-                file.write(log.check_log03_table_01[femb_id]['ppk_err'])
-                file.write(log.check_log03_table_01[femb_id]['npk_mean'])
-                file.write(log.check_log03_table_01[femb_id]['npk_err'] + '\n')
-
+                # file.write(log.check_log03_table_01[femb_id]['ppk_err'])
+                file.write(log.check_log03_table_01[femb_id]['npk_mean'] + '\n')
+                # file.write(log.check_log03_table_01[femb_id]['npk_err'] + '\n')
+                file.write('<details>' + '\n')
+                file.write('<summary> Detail </summary>' + '\n')
                 file.write("------\n")
                 file.write('### 03_01 {} pulse'.format(log.check_log03_01[femb_id]['Label']) + '\n')
                 info = dict_to_markdown_table(log.report_log03_01[femb_id], VALUE="Horizontal")
@@ -339,7 +341,7 @@ def final_report(datareport, fembs, fembNo):
                 info = dict_to_markdown_table(log.report_log03_04[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA.png)" + "\n")
-
+                file.write('</details >' + '\n')
 # 04        print <Check Pulse>
             if 4 in log.test_label:
                 if check_status04:

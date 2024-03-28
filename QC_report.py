@@ -114,23 +114,25 @@ class QC_reports:
 #     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
 
 #     SE Power Measurement      Power
-        f_pwr = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        f_pwr = datadir+"PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
         with open(f_pwr, 'rb') as fn:
             pwr_meas = pickle.load(fn)[1]
+            print(pwr_meas)
+            input()
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-            initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 SE Power Consumption')
+            initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 Buffer_OFF_Power Consumption')
             pwr1 = dict(log.tmp_log)
             check1 = dict(log.check_log)
             log.report_log01_11.update(pwr1)
             log.check_log01_11.update(check1)
 
 #     SE Pulse Measurement      Pulse
-        f_pl = datadir+"PWR_SE_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        f_pl = datadir+"PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
         with open(f_pl, 'rb') as fn:
              rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
-        a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
+        a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
         # log.report_log01_12.update(se_pulse)
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
@@ -138,7 +140,7 @@ class QC_reports:
         log.check_log01_12.update(pulse_check)
 
 #     SE Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID, '01_13SE Power Rail')
+        a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID, '01_13 Buffer OFF Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_13.update(power_rail)
@@ -298,15 +300,15 @@ class QC_reports:
                   log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_mean0"]]
             yer = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_err0"],
                    log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_err0"]]
-            plt.errorbar(x, y1, yer, fmt='o', capsize=3, color='blue', linestyle='-', label='ppk with error bars')
+            plt.errorbar(x, y1, yer, fmt='o', capsize=3, color='blue', linestyle='-', label='Amplitude with error bars')
             y2 = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_mean0"],
                   log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_mean0"]]
             y2er = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_err0"],
                     log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_err0"]]
             plt.errorbar(x, y2, y2er, fmt='o', capsize=3, color='orange', linestyle='-',
-                         label='abs(npk) or baseline with error bars')
+                         label='Pedestal with error bars')
             plt.ylim(0, 12000)
-            plt.title('PPK & NPK with different leakage current')
+            plt.title('Postive Amplitude & Pedestal at different leakage current')
             plt.ylabel('ADC / Count')
             # plt.xlabel('Leakage Current')
             plt.legend()
@@ -957,7 +959,7 @@ class QC_reports:
             plt.ylabel("ADC", fontsize=12)
             plt.grid(axis='x')
             plt.legend()
-            plt.title("INL in 4.7 7.8 14 25 mV/fC", fontsize=12)
+            plt.title("Channel Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
             plt.subplot(1, 2, 2)
             plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label = 'Gain')
             plt.plot(2, log.report_log0601[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'DIFF')

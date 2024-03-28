@@ -8,6 +8,7 @@ import components.assembly_parameter as paras
 import components.assembly_log as log
 import components.assembly_function as a_func
 import components.assembly_report as a_repo
+import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
 LAr_Dalay = 5
@@ -31,6 +32,11 @@ else:
     save = False
     sample_N = 1
     fembs = [int(a) for a in sys.argv[1:]]
+
+if 'sp' in sys.argv:
+    ship = True
+else:
+    ship = False
 
 ###########################################
 #      PART 01 Input test information     #
@@ -91,7 +97,7 @@ chk.femb_powering([])
 
 #   set FEMB voltages
 #chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
-chk.fembs_vol_set(vfe = 3, vcd = 3, vadc = 3.6)   #   this parameter can not be used in LN2
+chk.fembs_vol_set(vfe = 3.1, vcd = 3.1, vadc = 3.6)   #   this parameter can not be used in LN2
 # chk.fembs_vol_set(vfe = 4, vcd = 4, vadc = 4)
 print("Check FEMB currents")
 fembs_remove = []
@@ -189,7 +195,7 @@ datareport = a_func.Create_report_folders(fembs, fembName, env, toytpc, datadir)
 ##### 3.1 Measure RMS at 200mV, 14mV/fC, 2us ###################
 #   report in log04
 print("Take RMS data")
-log.report_log04["ITEM"] = "3.1 Measure RMS at 200mV, 14mV/fC, 2us, DAC = 0x00"
+log.report_log04["ITEM"] = "3.1 No Buffer RMS at 200mV, 14mV/fC, 2us, DAC = 0x00"
 fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("200mVBL","14_0mVfC","2_0us",0x00)
 snc = 1 # 200 mV
 sg0 = 0
@@ -207,8 +213,9 @@ for femb_id in fembs:
     adac_pls_en = 0
     cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en))
     chk.femb_cfg(femb_id, adac_pls_en )
-chk.data_align(fembs)
 time.sleep(LAr_Dalay)
+chk.data_align(fembs)
+
 # data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -221,12 +228,75 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
 
+pts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
+if ship:
+    for sti in range(4):
+        st0 = sti % 2
+        st1 = sti // 2
+        print("=== Take ship RMS data ===")
+        log.report_log04["ITEM"] = "3.1 No Buffer RMS at 900mV, 14mV/fC, 2us, DAC = 0x00"
+        fname = "Raw_SE_{}_{}_{}_0x{:02x}".format("900mVBL", "14_0mVfC", pts[sti], 0x00)
+        snc = 0  # 900 mV
+        sg0 = 0
+        sg1 = 0  # 14mV/fC
+        # configuration
+        chk.femb_cd_rst()
+        cfg_paras_rec = []
+        for i in range(8):
+            chk.adcs_paras[i][8]=1   # enable  auto
+        for femb_id in fembs:
+            chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
+            adac_pls_en = 0
+            cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en))
+            chk.femb_cfg(femb_id, adac_pls_en )
+        time.sleep(LAr_Dalay)
+        chk.data_align(fembs)
+
+        # data acquire
+        rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+
+        # report: data analysis ========================
+        a_func.rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname)
+        #   save data ==========================
+        if save:
+            fp = datadir + fname + ".bin"
+            with open(fp, 'wb') as fn:
+                pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
+    for ifemb in range(len(fembs)):
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
+        print(log.rmsdata[femb_id]["rmsRaw_SE_900mVBL_14_0mVfC_0_5us_0x00"])
+        print(log.rmsdata[femb_id]["rmsRaw_SE_900mVBL_14_0mVfC_1_0us_0x00"])
+        print(log.rmsdata[femb_id]["rmsRaw_SE_900mVBL_14_0mVfC_2_0us_0x00"])
+        print(log.rmsdata[femb_id]["rmsRaw_SE_900mVBL_14_0mVfC_3_0us_0x00"])
+        file_path = datareport[fembs[ifemb]]
+        plt.figure(figsize=(6, 4))
+        x_sticks = range(0, 129, 16)
+        for key in log.rmsdata[femb_id]:
+            if "0_5us" in key:
+                plt.plot(range(128), log.rmsdata[femb_id][key], marker='.', linestyle='-', alpha=0.7, color='red', label='0_5us')
+            if "1_0us" in key:
+                plt.plot(range(128), log.rmsdata[femb_id][key], marker='.', linestyle='-', alpha=0.7, color='orange', label='1_0us')
+            if "2_0us" in key:
+                plt.plot(range(128), log.rmsdata[femb_id][key], marker='.', linestyle='-', alpha=0.7, color='green', label='2_0us')
+            if "3_0us" in key:
+                plt.plot(range(128), log.rmsdata[femb_id][key], marker='.', linestyle='-', alpha=0.7, color='blue', label='3_0us')
+        plt.xlabel("Channel", fontsize=12)
+        plt.ylabel("RMS", fontsize=12)
+        plt.xticks(x_sticks)
+        plt.ylim(16, 40)
+        plt.grid(axis='x')
+        plt.grid(axis='y')
+        plt.legend()
+        plt.title("SE 900 mV RMS Distribution", fontsize=12)
+        plt.savefig(file_path + 'RMS_4_peak_time.png')
+        plt.close()
+
 ################ Measure FEMB currents 2 ####################
 print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
 result = False
 #####   3.2  SE interface current measure #####
-log.report_log05['ITEM'] = "3.2 SE interface Current Measurement"   #05
+log.report_log05['ITEM'] = "3.2 No Buffer interface Current Measurement"   #05
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
     bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
@@ -235,7 +305,7 @@ for ifemb in fembs:
     adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
-    if bias_i>0.15 or bias_i<-0.02:
+    if abs(bias_i)>paras.bias_i_low:
        print("ERROR: FEMB{} BIAS current {} out of range (-0.02A,0.05A)".format(ifemb,bias_i)) 
        hasERROR = True
 
@@ -285,7 +355,7 @@ if save:
 #for ifemb in fembs:
 
 ################# monitoring power rails ###################
-log.report_log06["ITEM"] = "3.3 SE Interface power rail"
+log.report_log06["ITEM"] = "3.3 No Buffer Interface power rail"
 power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
 power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo)
 log06 = dict(log.power_rail_report_log)
@@ -298,7 +368,7 @@ fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
 snc = 0 # 900 mV
 sg0 = 0; sg1 = 0 # 14mV/fC
 st0 = 1; st1 = 1 # 2us
-log.report_log07["ITEM"] = "3.4 SE Interface Pulse at 900mV 14mV/fC 2us"
+log.report_log07["ITEM"] = "3.4 No Buffer Interface Pulse at 900mV 14mV/fC 2us"
 #   initial configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
@@ -310,8 +380,9 @@ for femb_id in fembs:
     adac_pls_en = 1
     cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     chk.femb_cfg(femb_id, adac_pls_en )     # enable the Pulse
-chk.data_align(fembs)
 time.sleep(LAr_Dalay)
+chk.data_align(fembs)
+
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -344,7 +415,7 @@ print("Take differential pulse data")
 fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
 chk.femb_cd_rst()
 cfg_paras_rec = []
-log.report_log08["ITEM"] = "4.1 DIFF Pulse Measurement at 900mV, 14mV/fC, 2us"
+log.report_log08["ITEM"] = "4.1 SEDC Pulse Measurement at 900mV, 14mV/fC, 2us"
 for i in range(8):
     chk.adcs_paras[i][2]=1   # enable differential 
     chk.adcs_paras[i][8]=1   # enable  auto
@@ -372,7 +443,7 @@ a_func.DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname)
 #####   4.2  DIFF interface current measure #####
 print("Check DIFF current")
 pwr_meas3 = chk.get_sensors()
-log.report_log09['ITEM'] = "4.2 DIFF interface Current Measurement"   #05
+log.report_log09['ITEM'] = "4.2 SEDC interface Current Measurement"   #05
 result = False
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])

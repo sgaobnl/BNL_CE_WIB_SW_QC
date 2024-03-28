@@ -148,12 +148,7 @@ class QC_Runs:
                     else:
                         self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x10
 
-            #if self.autocali_flg not True:
-            #    self.chk.adc_flg[femb_id] = True 
-            #    for i in range(8):
-            #        self.chk.adcs_paras[i][8]=1   # enable adc calibration
-
-            self.chk.fe_flg[femb_id] = True 
+            self.chk.fe_flg[femb_id] = True
             if sts == 1 : 
                 if swdac==1: #internal ASIC-DAC is enabled
                     self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
@@ -163,13 +158,13 @@ class QC_Runs:
                     adac_pls_en = 0
                     ext_cali_flg = True
             else:
-               self.chk.set_fe_board(sts=sts, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x0, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
-               adac_pls_en = 0
+                self.chk.set_fe_board(sts=sts, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x0, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
+                adac_pls_en = 0
             time.sleep(0.001)
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             time.sleep(0.001)
             self.chk.femb_cfg(femb_id, adac_pls_en )
-        time.sleep(1)
+        time.sleep(1)   #======================
 
         if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)
@@ -225,7 +220,6 @@ class QC_Runs:
                 pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
 
     def pwr_consumption(self):
-
         datadir = self.save_dir+"PWR_Meas/"
         try:
             os.makedirs(datadir)
@@ -239,20 +233,20 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2us 
         
-        ####### SE #######
+        ####### Buffer OFF #######
         self.sample_N = 1
         self.chk.femb_cd_rst()
         dac = 0x00
         sts = 0
-        fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp)
+        fp = datadir + "PWR_Buffer_OFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True) #   power measurement
 
-        #   SE Power Rail
+        #   Buffer OFF Power Rail
         a_func.monitor_power_rail("SE", self.fembs, datadir, 1)
 
         dac = 0x20
         sts = 1
-        fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_Buffer_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
 
@@ -268,7 +262,7 @@ class QC_Runs:
 
         dac = 0x20
         sts=1
-        fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_SE_ON_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False) 
 
         ####### DIFF #######
@@ -285,7 +279,7 @@ class QC_Runs:
 
         dac = 0x20
         sts = 1
-        fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False) 
         
     def pwr_cycle(self):
@@ -537,32 +531,32 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.sample_N = 10
 #
-#         for snci in range(2):
-#             for sgi in  range(4):
-#                 sg0 = sgi%2
-#                 sg1 = sgi//2
-#                 for sti in range(4):
-#                     st0 = sti%2
-#                     st1 = sti//2
-# #   SE OFF  2*4*4 = 32  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 0.5/1/2/3 us]}
-#                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
-#                     self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+        for snci in range(2):
+            for sgi in  range(4):
+                sg0 = sgi%2
+                sg1 = sgi//2
+                for sti in range(4):
+                    st0 = sti%2
+                    st1 = sti//2
+#   SE OFF  2*4*4 = 32  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 0.5/1/2/3 us]}
+                    fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
+                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
 #   SE  OFF Leakage current *4  100 pA, 500 pA, 1 nA, 5 nA  {200 mV * 14 mV/fC * 2 us}
-#         snc = 1 # 200 mV
-#         sg0 = 0;        sg1 = 0 # 14mV/fC
-#         st0 = 1;        st1 = 1 # 2us
-#         # 500 pA
-#         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "500pA", dac)
-#         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False)
-#         # 100 pA
-#         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "100pA", dac)
-#         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, pwr_flg=False)
-#         # 5000 pA
-#         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "5nA", dac)
-#         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, pwr_flg=False)
-#         # 1000 pA
-#         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "1nA", dac)
-#         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
+        snc = 1 # 200 mV
+        sg0 = 0;        sg1 = 0 # 14mV/fC
+        st0 = 1;        st1 = 1 # 2us
+        # 500 pA
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "500pA", dac)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False)
+        # 100 pA
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "100pA", dac)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, pwr_flg=False)
+        # 5000 pA
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "5nA", dac)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, pwr_flg=False)
+        # 1000 pA
+        fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "1nA", dac)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
 #   SE ON  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}
         st1 = 1;    st0 = 1     # 2 us
         for snci in range(2):
@@ -632,7 +626,7 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0  # 14mV/fC
         st0 = 1;        st1 = 1  # 2us
 
-        for i in range(0x1d, 0x2d):
+        for i in range(0x20, 0x28):
             self.chk.pll = i
             print("PLL value = ", end="");  print(hex(i), end=" "); print("Take TestPattern data")
             self.chk.femb_cd_rst()
@@ -920,9 +914,11 @@ class QC_Runs:
 
         print("monitor pulse 900mV sdf=0")
         mon_900bls_sdf0_pulse = {}
-        for mon_chip in range(chips):
+        for mon_chip in range(3, 5):
             for mon_chipchn in range(16):
-                adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, adac_pls_en = 1,mon_type=0, snc=0, sdf=0, mon_chip=mon_chip,
+                # adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, adac_pls_en = 1,mon_type=0, snc=0, sdf=0, mon_chip=mon_chip,
+                #                              mon_chipchn=mon_chipchn, sps=sps)
+                adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, adac_pls_en = 0,mon_type=0, snc=0, sdf=0, mon_chip=mon_chip,
                                              mon_chipchn=mon_chipchn, sps=sps)
                 mon_900bls_sdf0_pulse["chip%dchn%02d" % (mon_chip, mon_chipchn)] = adcrst[7]
 

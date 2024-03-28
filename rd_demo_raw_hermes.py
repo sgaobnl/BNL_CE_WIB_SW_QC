@@ -24,9 +24,9 @@ rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
 #fembs = [int(sys.argv[2])]
-fembs = [0]
+fembs = [2]
 
-wibdata = wib_dec(rawdata,fembs, spy_num=10)
+wibdata = wib_dec(rawdata,fembs, spy_num=5)
 #wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 datd = []
@@ -42,8 +42,8 @@ if 1:
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    for fe in range(8):
-        for fe_chn in range(16):
+    for fe in range(6, 7):
+        for fe_chn in range(15, 16):
     
             fechndata = datd[fe*16+fe_chn]
             #plt.plot(fechndata)
@@ -51,14 +51,19 @@ if 1:
 #            rms.append(np.std(fechndata))
 #            pkp.append(np.max(fechndata))
             rms.append(np.mean(fechndata))
-            if fe==0 and fe_chn==2:
-                print (np.mean(fechndata))
-            print(len(fechndata))
-            plt.plot(range(len(fechndata)), fechndata)
+            rms_tmp = round(np.std(fechndata), 2)
+            # if fe==0 and fe_chn==2:
+                # print (np.mean(fechndata))
+            # print(len(fechndata))
+            if np.std(fechndata) > 12:
+                print(np.std(fechndata))
+                print(fe)
+                print(fe_chn)
+            plt.plot(range(len(fechndata)), fechndata, label = "Chip_{}, CH_{}, std = {}".format(fe, fe_chn, rms_tmp))
 
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
-#    plt.legend()
+#     plt.legend()
 #    plt.grid()
 #    
 #     for i in range(0,128,8):
@@ -82,7 +87,7 @@ if 1:
     plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
 #    #plt.ylabel("RMS noise / bit")
     plt.ylabel("ADC count / bit")
-    plt.ylim((0,17000))
+    plt.ylim((0,16000))
     # plt.xlim((-1,130))
     plt.xlabel("Channel")
 #    plt.grid()

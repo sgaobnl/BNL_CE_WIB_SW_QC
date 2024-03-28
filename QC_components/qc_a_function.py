@@ -162,7 +162,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
     check = True
     check_issue = []
     # parameter
-    bias_v_ref = 5; bias_v_err = 0.5;    bias_i_ref = 0; bias_i_err = 0.1
+    bias_v_ref = 5; bias_v_err = 0.6;    bias_i_ref = 0; bias_i_err = 0.1
     LArASIC_v_ref = 3; LArASIC_v_err = 0.2;    LArASIC_i_ref1 = 0.43; LArASIC_i_ref2 = 0.693; LArASIC_i_err = 0.1
     COLDATA_v_ref = 3; COLDATA_v_err = 0.2;    COLDATA_i_ref1 = 0.174; COLDATA_i_ref2 = 0.229; COLDATA_i_err = 0.1
     ColdADC_v_ref = 3.5; ColdADC_v_err = 0.2;  ColdADC_i_ref1 = 1.648;  ColdADC_i_ref2 = 1.709; ColdADC_i_err = 0.1

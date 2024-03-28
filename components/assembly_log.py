@@ -15,6 +15,9 @@ report_log02 = defaultdict(dict)    # initial current measurement
 report_log021 = defaultdict(dict)    # initial current result
 report_log03 = defaultdict(dict)    # initial registers check
 report_log04 = defaultdict(dict)    # SE mode: rms & ped
+rmsdata = defaultdict(dict)
+peddata = defaultdict(dict)
+
 report_log05 = defaultdict(dict)    # SE mode: current measurement
 report_log051 = defaultdict(dict)    # SE mode: current result
 report_log06 = defaultdict(dict)    # SE mode: power rail

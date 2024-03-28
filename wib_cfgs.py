@@ -26,7 +26,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adc_flg=[True, True, True, True]
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
-        self.pll = 0x21
+        # pll_ref LN 0x25   RT 0x26 rang(20~2A) scan 25-->20 25-->2A
+        self.pll = 0x25
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -999,7 +1000,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         print("FEMB: {} chip: {} channel: {}".format(femb_ids, mon_chip, mon_chipchn))
 
         self.wib_mon_switches()
-        input()
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ):
