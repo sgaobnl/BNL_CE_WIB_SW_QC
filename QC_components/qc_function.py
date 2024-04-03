@@ -63,7 +63,7 @@ def monitor_power_rail(interface, fembs, datadir, save = False):
             else:
                 print(key, vold[key][0][fembid], (vold[key][0][fembid] - vgnd) * LSB, "voltage offset caused by power cable is substracted")
     if save:
-        fp = datadir + "MON_PWR_"+ interface +"_{}_{}_{}_0x{:02x}.bin".format("200mVBL", "14_0mVfC", "2_0us", 0x00)
+        fp = datadir + "MON_Regular_"+ interface +"_{}_{}_{}_0x{:02x}.bin".format("200mVBL", "14_0mVfC", "2_0us", 0x00)
         with open(fp, 'wb') as fn:
             pickle.dump([vold, fembs], fn)
     return vold

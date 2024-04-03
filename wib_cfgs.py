@@ -27,7 +27,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
         # pll_ref LN 0x25   RT 0x26 rang(20~2A) scan 25-->20 25-->2A
-        self.pll = 0x25
+        self.pll = 0x23
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -497,10 +497,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return hasERROR
 
     def femb_cd_cfg(self, femb_id):
-#set PLL Pattern
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=5, reg_addr=0x41, wrdata=self.pll)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=5, reg_addr=0x41, wrdata=self.pll)
-#set coldata 8b10 
+        # the configure order is also important, do not change
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x03, wrdata=0x3c)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x03, wrdata=0x3c)
 #set LVDS current strength
@@ -518,6 +515,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #Frame14
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
+#set coldata 8b10
+        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=5, reg_addr=0x41, wrdata=self.pll)
+        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=5, reg_addr=0x41, wrdata=self.pll)
+# set PLL Pattern
         self.cd_flg[femb_id]=False
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):

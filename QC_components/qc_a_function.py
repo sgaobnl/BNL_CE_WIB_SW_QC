@@ -26,7 +26,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo, label = 'test'):
     ACCVDD1P2_ref = 1097;    ACCVDD1P2_err = 100
     FE_ref = 1797;    FE_err = 200
 
-    fsub = "MON_PWR_" + interface + "_200mVBL_14_0mVfC_2_0us_0x00.bin"
+    fsub = "MON_Regular_" + interface + "_200mVBL_14_0mVfC_2_0us_0x00.bin"
     fpwr = datadir + fsub
     with open(fpwr, 'rb') as fn:
         monvols = pickle.load(fn)
@@ -161,13 +161,23 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
 
     check = True
     check_issue = []
+
+
     # parameter
+    #           BIAS    LArASIC ColdADC COLDATA
+    ref_v       = [5,     3,      3.5,    3]
+    err_v       = [1,     0.2,    0.2,    0.2]
+    ref_i_RT    = [0,  0.43,   1.648,  0.174]
+    ref_i_LN    = [0,  0.693,  1.709,  0.229]
+    err_i       = [0.2,     0.2,    0.2,    0.2]
+    #   the above will use to improve the structure
     bias_v_ref = 5; bias_v_err = 0.6;    bias_i_ref = 0; bias_i_err = 0.1
     LArASIC_v_ref = 3; LArASIC_v_err = 0.2;    LArASIC_i_ref1 = 0.43; LArASIC_i_ref2 = 0.693; LArASIC_i_err = 0.1
     COLDATA_v_ref = 3; COLDATA_v_err = 0.2;    COLDATA_i_ref1 = 0.174; COLDATA_i_ref2 = 0.229; COLDATA_i_err = 0.1
     ColdADC_v_ref = 3.5; ColdADC_v_err = 0.2;  ColdADC_i_ref1 = 1.648;  ColdADC_i_ref2 = 1.709; ColdADC_i_err = 0.1
     # bias_v i p
     temp_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
+    log.check_log[femb_id]["BIAS_V"] = temp_v
     if abs(temp_v - bias_v_ref) < bias_v_err:
         bias_v = "{}".format(temp_v)
     else:
@@ -175,6 +185,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("BIAS_V = {} out of [{} +- {}]\n".format(temp_v, bias_v_ref, bias_v_err))
         bias_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
     temp_i = round(pwr_meas['FEMB%d_BIAS_I' % fembs[ifemb]], 3)
+    log.check_log[femb_id]["BIAS_I"] = temp_i
     if abs(temp_i - bias_i_ref) < bias_i_err:
         bias_i = "{}".format(abs(temp_i))
     else:
@@ -185,6 +196,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
 
     # LArASIC_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
+    log.check_log[femb_id]["LArASIC_V"] = temp_v
     if abs(temp_v - LArASIC_v_ref) < LArASIC_v_err:
         LArASIC_v = "{}".format(temp_v)
     else:
@@ -192,6 +204,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("LArASIC_v = {} out of [{} +- {}]\n".format(temp_v, LArASIC_v_ref, LArASIC_v_err))
         LArASIC_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
     temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
+    log.check_log[femb_id]["LArASIC_I"] = temp_i
     if abs(temp_i - LArASIC_i_ref1) < LArASIC_i_err:
         LArASIC_i = "{}".format(temp_i)
     elif(abs(temp_i - LArASIC_i_ref2) < LArASIC_i_err):
@@ -204,6 +217,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
 
     # COLDATA_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
+    log.check_log[femb_id]["COLDATA_V"] = temp_v
     if abs(temp_v - COLDATA_v_ref) < COLDATA_v_err:
         COLDATA_v = "{}".format(temp_v)
     else:
@@ -211,6 +225,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("COLDATA_v = {} out of [{} +- {}]\n".format(temp_v, COLDATA_v_ref, COLDATA_v_err))
         COLDATA_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
     temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
+    log.check_log[femb_id]["COLDATA_I"] = temp_i
     if abs(temp_i - COLDATA_i_ref1) < COLDATA_i_err:
         COLDATA_i = "{}".format(temp_i)
     elif(abs(temp_i - COLDATA_i_ref2) < COLDATA_i_err):
@@ -223,6 +238,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
 
     # ColdADC_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
+    log.check_log[femb_id]["ColdADC_V"] = temp_v
     if abs(temp_v - ColdADC_v_ref) < ColdADC_v_err:
         ColdADC_v = "{}".format(temp_v)
     else:
@@ -230,6 +246,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("ColdADC_v = {} out of [{} +- {}]\n".format(temp_v, ColdADC_v_ref, ColdADC_v_err))
         ColdADC_v = "<span style = 'color:red;'> {} </span>".format(temp_v)
     temp_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
+    log.check_log[femb_id]["ColdADC_I"] = temp_i
     if abs(temp_i - ColdADC_i_ref1) < ColdADC_i_err:
         ColdADC_i = "{}".format(temp_i)
     elif(abs(temp_i - ColdADC_i_ref2) < ColdADC_i_err):
@@ -241,13 +258,14 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
     ColdADC_p = round(temp_v * temp_i, 3)
 
     total_p = bias_p + LArASIC_p + COLDATA_p + ColdADC_p
+    log.check_log[femb_id]["TPower"] = total_p
 
     # the | is used in Markdown table
-    log.tmp_log[femb_id]["Measure Object"] = "BIAS | LArASIC | ColdDATA | ColdADC"
-    log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3.5 "
-    log.tmp_log[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
-    log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, COLDATA_i, ColdADC_i)
-    log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
+    log.tmp_log[femb_id]["Measure Items"] = "BIAS | LArASIC | ColdADC | COLDATA "
+    log.tmp_log[femb_id]["V_set / V"] = " 5 | 3 | 3.5 | 3 "
+    log.tmp_log[femb_id]["V_meas / V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, ColdADC_v, COLDATA_v)
+    log.tmp_log[femb_id]["I_meas / A"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, ColdADC_i, COLDATA_i)
+    log.tmp_log[femb_id]["P_meas / V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, ColdADC_p, COLDATA_p)
     log.tmp_log[femb_id]["Total Power"] = " {} |  | | ".format(round(total_p, 2))
 
     log.check_log[femb_id]["Result"] = check
@@ -272,25 +290,29 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         ppk, npk, bl = qc_tools.GetPeaks(pls_rawdata, fembs[ifemb], report_addr, fname, funcfit=False)
 
         ppk_mean = int(np.mean(ppk))
-        ppk_err = int(abs(np.max(ppk) - np.min(ppk)))
+        ppk_err = int(np.std(ppk))
 
-        npk_mean = int(np.mean(npk))
-        npk_err = int(abs(np.max(npk) - np.min(npk)))
+        bbl_mean = int(np.mean(bl))
+        bbl_err = int(np.std(bl))
         # bbl_mean = np.mean(bl)
 
-        log.tmp_log[femb_id]["{}_ppk_mean0".format(fname)] = int(ppk_mean)
-        log.tmp_log[femb_id]["{}_ppk_err0".format(fname)] = int(ppk_err)
-        log.tmp_log[femb_id]["{}_npk_mean0".format(fname)] = abs(int(npk_mean))
-        log.tmp_log[femb_id]["{}_npk_err0".format(fname)] = int(npk_err)
+        # log.check_log[femb_id]["{}_ppk_mean".format(fname)] = int(ppk_mean)
+        # log.check_log[femb_id]["{}_ppk_err".format(fname)] = int(ppk_err)
+        # log.check_log[femb_id]["{}_npk_mean".format(fname)] = abs(int(npk_mean))
+        # log.check_log[femb_id]["{}_npk_err".format(fname)] = int(npk_err)
 
         tmp = QC_check.CHKPulse(ppk, 800)
         print(tmp[0])
         if tmp[0] == False:
-            log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
-            log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = '<span style="color: red;">' + str(ppk_err) + '</span>'
+            # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
+            log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
+            # log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = '<span style="color: red;">' + str(ppk_err) + '</span>'
+            log.tmp_log[femb_id]["ppk_std"] = '<span style="color: red;">' + str(ppk_err) + '</span>'
         else:
-            log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = str(ppk_mean)
-            log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = str(ppk_err)
+            # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = str(ppk_mean)
+            log.tmp_log[femb_id]["ppk_mean"] = str(ppk_mean)
+            # log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = str(ppk_err)
+            log.tmp_log[femb_id]["ppk_std"] = str(ppk_err)
         check = check and tmp[0]
         check_issue.append("Pulse_PPK_issue: {}\n".format(tmp[1]))
         # log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
@@ -298,11 +320,15 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         tmp = QC_check.CHKPulse(npk, 800)
         print(tmp[0])
         if tmp[0] == False:
-            log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = '<span style="color: red;">' + str(npk_mean) + '</span>'
-            log.tmp_log[femb_id]["{}_npk_err".format(fname)] = '<span style="color: red;">' + str(npk_err) + '</span>'
+            # log.tmp_log[femb_id]["{}_baseline_mean".format(fname)] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
+            log.tmp_log[femb_id]["baseline_mean"] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
+            # log.tmp_log[femb_id]["{}_baseline_err".format(fname)] = '<span style="color: red;">' + str(bbl_err) + '</span>'
+            log.tmp_log[femb_id]["baseline_err"] = '<span style="color: red;">' + str(bbl_err) + '</span>'
         else:
-            log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = str(npk_mean)
-            log.tmp_log[femb_id]["{}_npk_err".format(fname)] = str(npk_err)
+            # log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = str(bbl_mean)
+            log.tmp_log[femb_id]["baseline_mean"] = str(bbl_mean)
+            # log.tmp_log[femb_id]["{}_npk_err".format(fname)] = str(bbl_err)
+            log.tmp_log[femb_id]["baseline_err"] = str(bbl_err)
         check = check and tmp[0]
         check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
         # log.badlist[femb_id]["Pulse_SE_NPK"]=(tmp[1])

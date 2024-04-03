@@ -26,6 +26,14 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
         table = '|' + '|'.join(dictionary.keys()) + '|' + '\n'
         table += '|' + '|'.join(['---' for _ in dictionary.keys()]) + '|' + '\n'
         table += '|' + '|'.join(str(dictionary[key]) for key in dictionary.keys()) + '|' + '\n'
+    elif VALUE == "Rail":
+        table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
+    elif VALUE == "Pulse":
+        table = "| {} | {} |\n| --- | --- |\n".format(KEY, 'VALUE')
+        for key, value in zip(keys, values):
+            table += f"| {key} | {value} |\n"
     else:
         table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
         for key, value in zip(keys, values):
@@ -229,68 +237,67 @@ def final_report(datareport, fembs, fembNo):
             file.write('\n')
             file.write('\n')
 # Title     FEMB ID
-#             file.write('# Quality Control for < ' + (femb_id) + ' >\n')
 # 00        Print <Input Information>
-            file.write('## INPUT INFORMATION' + '\n')
+            file.write('## INPUT INFORMATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {}'.format(femb_id) + '\n')
             info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
             file.write(info + '\n')
 
+            file.write('## Test Status' + '\n')
+            if 1 in log.test_label:
+                if check_status01:
+                    Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                else:
+                    Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                file.write('[Chapter_1](#item1)' + Item01 + '\n\n')
+            file.write("------\n")
+            file.write('<img src="./PWR_Meas/Power_Total.png" alt="picture" height="270">' + "\n\n")  # width="200"
+            file.write("------\n")
+
+##  Detail Pages
 
 # 01        Print <Power Consumption>
             if 1 in log.test_label:
                 if check_status01:
-                    Head01 = '### ' + '<span style="color: green;">' + 'ITEM 01 POWER CONSUMPTION' + '    < Pass >' + '</span>'  + '\n'
+                    Head01 = '### ' + '</span>' + '<span id="item1"> Chapter_1 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM_01_POWER_CONSUMPTION' + '    < Pass >' + '</span>' + '\n'
                 else:
-                    Head01 = '### ' + '<span style="color: red;">' + 'ITEM 01 POWER CONSUMPTION' + '    < Fail >' + '</span>'  + '\n'
+                    Head01 = '### ' + '</span>' + '<span id="item1"> Chapter_1 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_01_POWER_CONSUMPTION' + '    < Fail >' + '</span>'  + '\n'
                 file.write(Head01 + '\n')
                 file.write("------\n")
-                file.write('### 01_11 SE Power Measurement' + '\n')
-                # file.write('<div style = "display: flex; justify-content: space-between">' + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_11[femb_id], VALUE="PWRVALUE")
-                file.write(info + '\n')
-                # file.write('</div>' + '\n\n')
-
-                file.write('### 01_12 SE Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_12[femb_id])
-                # info = dict_to_markdown_table(log.report_log01_12[femb_id], VALUE="Horizontal")
-                file.write(info + '\n')
-                file.write("![ped](./PWR_Meas/pulse_PWR_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n")
-
-                file.write('### 01_13 SE power rail' + '\n')
-                info = dict_to_markdown_table(log.report_log01_13[femb_id], VALUE="Horizontal")
+                file.write('### 1_1 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement'  + '\n')
+                info = dict_to_markdown_table(log.report_log01_11[femb_id], KEY = "Single-End Interface OFF", VALUE="PWRVALUE")
                 file.write(info + '\n')
 
-                file.write("------\n")
-                file.write('### 01_21 SE ON Power Measurement' + '\n')
-                # file.write('<div style = "display: flex; justify-content: space-between">' + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_21[femb_id], VALUE="PWRVALUE")
-                file.write(info + '\n')
-                # file.write('</div>' + '\n\n')
-
-                file.write('### 01_22 SE ON Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_22[femb_id])
-                file.write(info + '\n')
-                file.write("![ped](./PWR_Meas/pulse_PWR_SE_ON_200mVBL_14_0mVfC_2_0us.png)" + "\n")
-
-                file.write('### 01_23 SE ON power rail' + '\n')
-                info = dict_to_markdown_table(log.report_log01_23[femb_id], VALUE="Horizontal")
+                info = dict_to_markdown_table(log.report_log01_21[femb_id], KEY = "Single-End Interface ON", VALUE="PWRVALUE")
                 file.write(info + '\n')
 
-                file.write("------\n")
-                file.write('### 01_31 DIFF Power Measurement' + '\n')
-                # file.write('<div style = "display: flex; justify-content: space-between">' + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_31[femb_id], VALUE="PWRVALUE")
+                info = dict_to_markdown_table(log.report_log01_31[femb_id], KEY = "Differential Interface ON", VALUE="PWRVALUE")
                 file.write(info + '\n')
-                # file.write('</div>' + '\n\n')
 
-                file.write('### 01_32 DIFF Power pulse' + '\n')
-                info = dict_to_markdown_table(log.report_log01_32[femb_id])
-                file.write(info + '\n')
-                file.write("![ped](./PWR_Meas/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png)" + "\n")
+                file.write('### 1_2 &nbsp;&nbsp;&nbsp;&nbsp; Power Rail' + '\n')
+                file.write('<div style = "display: flex; justify-content: space-between;">'+'\n\n')
+                info = dict_to_markdown_table(log.report_log01_13[femb_id], KEY="SE OFF Voltage", VALUE = "Rail")
+                file.write(info + '\n\n')
+                info = dict_to_markdown_table(log.report_log01_23[femb_id], KEY="SE ON Voltage", VALUE = "Rail")
+                file.write(info + '\n\n')
+                info = dict_to_markdown_table(log.report_log01_33[femb_id], KEY="DIFF Voltage", VALUE="Rail")
+                file.write(info + '\n\n')
+                file.write('</div>' + '\n\n')
 
-                file.write('### 01_33 DIFF power rail' + '\n')
-                info = dict_to_markdown_table(log.report_log01_33[femb_id], VALUE="Horizontal")
-                file.write(info + '\n')
+                file.write('### 01_3 &nbsp;&nbsp;&nbsp;&nbsp; Initial Pulse Check' + '\n')
+                file.write('<div style = "display: flex; justify-content: space-between;">' + '\n\n')
+                info = dict_to_markdown_table(log.report_log01_12[femb_id], KEY="SE OFF pulse", VALUE = "Pulse")
+                file.write(info + '\n\n')
+                info = dict_to_markdown_table(log.report_log01_22[femb_id], KEY="SE ON pulse", VALUE = "Pulse")
+                file.write(info + '\n\n')
+                info = dict_to_markdown_table(log.report_log01_32[femb_id], KEY="DIFF pulse", VALUE = "Pulse")
+                file.write(info + '\n\n')
+                file.write('</div>' + '\n\n')
+                file.write('<details>'+ '\n\n')
+                file.write('<img src="./PWR_Meas/pulse_PWR_SE_OFF_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="200">' + "\n") #width="200"
+                file.write('<img src="./PWR_Meas/pulse_PWR_SE_ON_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="200">' + "\n") #width="200"
+                file.write('<img src="./PWR_Meas/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="200">' + "\n") #width="200"
+                file.write('</details>'+ '\n\n')
+
 
 
 # 03

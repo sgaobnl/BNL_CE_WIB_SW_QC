@@ -111,28 +111,26 @@ class QC_reports:
         self.CreateDIR("PWR_Meas")
         datadir = self.datadir+"PWR_Meas/"
 
-#     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
+#     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
 
 #     SE Power Measurement      Power
-        f_pwr = datadir+"PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        f_pwr = datadir+"PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
         with open(f_pwr, 'rb') as fn:
             pwr_meas = pickle.load(fn)[1]
-            print(pwr_meas)
-            input()
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-            initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 Buffer_OFF_Power Consumption')
+            initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 SE OFF Power Consumption')
             pwr1 = dict(log.tmp_log)
             check1 = dict(log.check_log)
             log.report_log01_11.update(pwr1)
             log.check_log01_11.update(check1)
 
 #     SE Pulse Measurement      Pulse
-        f_pl = datadir+"PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        f_pl = datadir+"PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
         with open(f_pl, 'rb') as fn:
              rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
-        a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_Buffer_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
+        a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
         # log.report_log01_12.update(se_pulse)
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
@@ -140,7 +138,7 @@ class QC_reports:
         log.check_log01_12.update(pulse_check)
 
 #     SE Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE", datadir, self.fembsID, '01_13 Buffer OFF Power Rail')
+        a_func.monitor_power_rail_analysis("SE_OFF", datadir, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_13.update(power_rail)
@@ -161,7 +159,7 @@ class QC_reports:
             log.check_log01_21.update(check1)
 
 #     SE ON Pulse Measurement      Pulse
-        f_pl = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        f_pl = datadir+"PWR_SE_ON_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
         with open(f_pl, 'rb') as fn:
              rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
@@ -173,7 +171,7 @@ class QC_reports:
         log.check_log01_22.update(pulse_check)
 
 #     SE ON Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE_on", datadir, self.fembsID, '01_23 SE ON Power Rail')
+        a_func.monitor_power_rail_analysis("SE_ON", datadir, self.fembsID, '01_23 SE ON Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_23.update(power_rail)
@@ -194,7 +192,7 @@ class QC_reports:
             log.check_log01_31.update(check1)
 
 #     DIFF Pulse Measurement      Pulse
-        f_pl = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        f_pl = datadir + "PWR_DIFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
         with open(f_pl, 'rb') as fn:
             rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
@@ -212,6 +210,41 @@ class QC_reports:
         power_rail_check = dict(log.check_log)
         log.report_log01_33.update(power_rail)
         log.check_log01_33.update(power_rail_check)
+
+        # plot Power Measurement
+        for ifemb in range(len(self.fembs)):
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+            df = ["SE_OFF", "SE_ON", "DIFF"]
+            x = np.arange(0, len(df) * 3, 3)
+            width = 0.9
+            x1 = x+0.325
+            x2 = x
+            x3 = x-0.325
+            y1 = [log.check_log01_11[femb_id]["LArASIC_I"], log.check_log01_21[femb_id]["LArASIC_I"], log.check_log01_31[femb_id]["LArASIC_I"]]
+            plt.bar(x1, y1, width=0.3, label = 'LArASIC_I', color = 'darkred', edgecolor = 'k', zorder = 3)
+
+            plt.plot(x1, [log.check_log01_11[femb_id]["LArASIC_I"]+0.05, log.check_log01_21[femb_id]["LArASIC_I"]+0.05, log.check_log01_31[femb_id]["LArASIC_I"]+0.05], marker='^', linestyle='--', color='darkred')
+            y2 = [log.check_log01_11[femb_id]["ColdADC_I"], log.check_log01_21[femb_id]["ColdADC_I"], log.check_log01_31[femb_id]["ColdADC_I"]]
+            plt.bar(x2, y2, width=0.35, label='ColdADC_I', color='darkorange', edgecolor='k', zorder=3)
+            y3 = [log.check_log01_11[femb_id]["COLDATA_I"], log.check_log01_21[femb_id]["COLDATA_I"], log.check_log01_31[femb_id]["COLDATA_I"]]
+
+            plt.bar(x3, y3, width=0.3, label='COLDATA_I', color='cornflowerblue', edgecolor='k', zorder=3)
+
+            plt.text(0, log.check_log01_11[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_11[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_11[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
+            plt.text(3, log.check_log01_21[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_21[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_21[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
+            plt.text(6, log.check_log01_31[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_31[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_31[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
+            plt.text(0.325, log.check_log01_11[femb_id]["LArASIC_I"]+0.1, str(log.check_log01_11[femb_id]["LArASIC_I"]), horizontalalignment='center')
+            plt.text(3.325, log.check_log01_21[femb_id]["LArASIC_I"]+0.1, str(log.check_log01_21[femb_id]["LArASIC_I"]), horizontalalignment='center')
+            plt.text(6.325, log.check_log01_31[femb_id]["LArASIC_I"]+0.1, str(log.check_log01_31[femb_id]["LArASIC_I"]), horizontalalignment='center')
+            plt.text(-0.3, log.check_log01_11[femb_id]["COLDATA_I"]+0.05, str(log.check_log01_11[femb_id]["COLDATA_I"]), horizontalalignment='center')
+            plt.text(2.7, log.check_log01_21[femb_id]["COLDATA_I"]+0.05, str(log.check_log01_21[femb_id]["COLDATA_I"]), horizontalalignment='center')
+            plt.text(5.7, log.check_log01_31[femb_id]["COLDATA_I"]+0.05, str(log.check_log01_31[femb_id]["COLDATA_I"]), horizontalalignment='center')
+            plt.legend(loc="upper left", ncol=3, shadow=False)
+            plt.xticks(x, df, fontsize=10)
+            plt.ylabel('Current / A')
+            plt.ylim(0, 2.2)
+            plt.savefig(self.savedir[self.fembs[ifemb]] + "PWR_Meas/" + 'Power_Total.png')
+            plt.close()
 
 
     def PWR_cycle_report(self):

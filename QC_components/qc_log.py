@@ -5,6 +5,8 @@ test_label = []
 #   01  Power Consumption
 report_log01 = defaultdict(dict)    # input information
 check_log01 = defaultdict(dict)    # input information
+power_meas={"BIAS_V":[],"LArASIC_V":[],"ColdADC_V":[],"COLDATA_V":[],"BIAS_I":[],"LArASIC_I":[],"ColdADC_I":[],"COLDATA_I":[]}
+
 #   SE OFF
 report_log01_11 = defaultdict(dict)
 report_log01_12 = defaultdict(dict)

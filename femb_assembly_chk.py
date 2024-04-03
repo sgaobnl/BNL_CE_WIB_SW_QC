@@ -220,13 +220,14 @@ chk.data_align(fembs)
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 # report: data analysis ========================
-a_func.rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname)
+
 
 #   save data ==========================
 if save:
     fp = datadir + fname + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
+a_func.rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname)
 
 pts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
 if ship:
@@ -283,7 +284,7 @@ if ship:
         plt.xlabel("Channel", fontsize=12)
         plt.ylabel("RMS", fontsize=12)
         plt.xticks(x_sticks)
-        plt.ylim(16, 40)
+        plt.ylim(5, 16)
         plt.grid(axis='x')
         plt.grid(axis='y')
         plt.legend()

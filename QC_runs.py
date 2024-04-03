@@ -233,20 +233,20 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2us 
         
-        ####### Buffer OFF #######
+        ####### SE OFF #######
         self.sample_N = 1
         self.chk.femb_cd_rst()
         dac = 0x00
         sts = 0
-        fp = datadir + "PWR_Buffer_OFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_SE_OFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True) #   power measurement
 
-        #   Buffer OFF Power Rail
-        a_func.monitor_power_rail("SE", self.fembs, datadir, 1)
-
+        #   SE OFF Power Rail
+        a_func.monitor_power_rail("SE_OFF", self.fembs, datadir, 1)
+        input()
         dac = 0x20
         sts = 1
-        fp = datadir + "PWR_Buffer_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        fp = datadir + "PWR_SE_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
 
@@ -258,8 +258,8 @@ class QC_Runs:
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1)
 
         #   SE on Power Rail
-        a_func.monitor_power_rail("SE_on", self.fembs, datadir, 1)
-
+        a_func.monitor_power_rail("SE_ON", self.fembs, datadir, 1)
+        input()
         dac = 0x20
         sts=1
         fp = datadir + "PWR_SE_ON_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
@@ -276,7 +276,7 @@ class QC_Runs:
 
         #   DIFF Power Rail
         a_func.monitor_power_rail("DIFF", self.fembs, datadir, 1)
-
+        input()
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)

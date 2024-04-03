@@ -173,7 +173,7 @@ class ana_tools:
         plt.grid(axis='x')
         if (rms_max < (fe_rms_med + 8)) and (rms_min > (fe_rms_med - 8)):
             # plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
-            plt.ylim(16, 40)
+            plt.ylim(4, 16)
         else:
             plt.grid(axis='y')
         # fp_fig = fp+"rms_{}.png".format(fname)

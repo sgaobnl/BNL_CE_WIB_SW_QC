@@ -278,14 +278,14 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ped, rms = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-        tmp = QC_check.CHKPulse(ped, 500)
+        tmp = QC_check.CHKPulse(ped, 700)
         log.chkflag["BL"]=(tmp[0])
         log.badlist["BL"]=(tmp[1])
         ped_err_flag = tmp[0]
         baseline_err_status = tmp[1]
         log.report_log04[femb_id]["PED 128-CH std"] = tmp[2]
 
-        tmp = QC_check.CHKPulse(rms, 5)
+        tmp = QC_check.CHKPulse(rms, 7)
         log.chkflag["RMS"]=(tmp[0])
         log.badlist["RMS"]=(tmp[1])
         rms_err_flag = tmp[0]

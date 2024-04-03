@@ -24,7 +24,7 @@ rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
 #fembs = [int(sys.argv[2])]
-fembs = [2]
+fembs = [3]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
 #wibdata = wib_dec(rawdata,fembs, spy_num=1)
@@ -42,8 +42,8 @@ if 1:
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    for fe in range(6, 7):
-        for fe_chn in range(15, 16):
+    for fe in range(8):
+        for fe_chn in range(16):
     
             fechndata = datd[fe*16+fe_chn]
             #plt.plot(fechndata)
@@ -87,7 +87,7 @@ if 1:
     plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
 #    #plt.ylabel("RMS noise / bit")
     plt.ylabel("ADC count / bit")
-    plt.ylim((0,16000))
+    plt.ylim((0,2000))
     # plt.xlim((-1,130))
     plt.xlabel("Channel")
 #    plt.grid()
