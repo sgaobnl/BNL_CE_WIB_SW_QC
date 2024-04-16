@@ -8,8 +8,9 @@ import sys
 import numpy as np
 import pickle
 import copy
-import time, datetime, random, statistics    
-
+import time, datetime, random, statistics   
+import ctypes 
+import pyvisa  
 
 
 class DAT_CFGS(WIB_CFGS):
@@ -27,8 +28,12 @@ class DAT_CFGS(WIB_CFGS):
 
         #MUX (SN74LV405AD)
         self.mon_fe_cs = ["GND", "Ext_Test", "DAC", "FE_COMMON_DAC", "VBGR", "DNI[To_AmpADC]", "GND", "AUX_VOLTAGE_MUX"]
+        self.mon_fe_cmn_cs = ["GND", "DAC_OUT", "TST_PULSE_AMON", "Ext_TEST", "DAC_OUT_WIB_SWTCH", "P1.8V"]
+        self.mon_adc_cs = ["VOLTAGE_MONITOR_MUX", "CURRENT_MONITOR_MUX", "VREFP", "VREFN", "VCMI", "VCMO", "AUX_ISINK_MUX", "AUX_ISOURCE_MUX"]
+        self.adc_imon_sel = ["ICMOS_REF", "ISHA0", "IADC0", "ISHA1", "IADC1", "IBUFF(CMOS)", "IREF", "IREFBUFFER0"]
         self.mon_AD_REF = 2.564 #need to update accoring to board
         self.AD_LSB = 2564/4096 #mV/bit #need to update accoring to board
+        self.imon_R = 5#5kOhm resistor for DAT current monitor
         self.monadc_avg = 1
         self.fedly= 3
         self.sddflg = 0 
@@ -213,7 +218,7 @@ class DAT_CFGS(WIB_CFGS):
         for asic in range(8):
             for i in range(len(dat_addrs)):
                 addr = dat_addrs[i]
-                current = self.datpower_getcurrent(addr, fe=asic)
+                current = self.datpower_getcurrent(addr, fe=asic) #fe keyword arg is for fe OR adc power monitors
                 bus_voltage = self.datpower_getvoltage(addr, fe=asic)
                 #c0 = self.datpower_getcurrent(addr, fe=asic)
                 #v0 = self.datpower_getvoltage(addr, fe=asic)
@@ -431,7 +436,7 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
-    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xE8, vrefn=0x18, vcmo=0x90, vcmi=0x60, autocali=1):
+    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xE8, vrefn=0x18, vcmo=0x90, vcmi=0x60, autocali=1, adac_pls_en=0):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
@@ -447,7 +452,7 @@ class DAT_CFGS(WIB_CFGS):
                               ]
             self.set_fe_reset()
             self.set_fe_sync()
-            adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
+            #adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
             self.femb_cfg(femb_id, adac_pls_en )
         if self.data_align_pwron_flg == True:
@@ -803,29 +808,39 @@ class DAT_CFGS(WIB_CFGS):
                         exit()
 
 
-    def dat_monadcs(self):
+    def dat_monadcs(self, mode="fe"):
+        if mode != "fe" and mode != "adc":
+            print("dat_monadcs: mode can be 'fe' or 'adc'")
+            return
         avg_datas = [[],[],[],[],[],[],[],[]]
         avg = self.monadc_avg
-        for avgi in range(avg):
+        for avgi in range(avg):            
             self.dat_monadc_trig() #get rid of previous result    
             self.dat_monadc_trig() #get rid of previous result   
-            for fe in range(8):
+            for chip in range(8):
                 for check in range(10):
-                    if not self.dat_monadc_busy(fe=fe):
-                        break;
+                    if mode == "fe":
+                        if not self.dat_monadc_busy(fe=chip):
+                            break;
+                    elif mode == "adc":
+                        if not self.dat_monadc_busy(adc=chip):
+                            break;                        
                     if check is 9:
                         print("Timed out while waiting for AD7274 controller to finish")
-                data = self.dat_monadc_getdata(fe=fe)
-                avg_datas[fe].append(data)
+                if mode == "fe":
+                    data = self.dat_monadc_getdata(fe=chip)
+                elif mode == "adc":
+                    data = self.dat_monadc_getdata(adc=chip)
+                avg_datas[chip].append(data)
         datas = []
         datas_std = []
-        for fe in range(8):
+        for chip in range(8):
             if avg == 1:
-                datas.append(avg_datas[fe][0])
+                datas.append(avg_datas[chip][0])
                 datas_std.append(0)
             else:
-                datas.append(int(np.mean(avg_datas[fe])))
-                datas_std.append(np.std(avg_datas[fe]))
+                datas.append(int(np.mean(avg_datas[chip])))
+                datas_std.append(np.std(avg_datas[chip]))
         return datas, datas_std
 
     def dat_fe_vbgrs(self):
@@ -866,13 +881,13 @@ class DAT_CFGS(WIB_CFGS):
 
         mux_cs=5
         mux_name = self.mon_fe_cs[mux_cs]
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xFF)    
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS)   
-        self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0x00)    
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)    
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
-        self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_CALI_CS, 0xFF)    
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS)   
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0x00)    
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)    
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
+        self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xff)    
 
         mon_datas = {} 
 
@@ -986,14 +1001,311 @@ class DAT_CFGS(WIB_CFGS):
             self.femb_fe_cfg(femb_id=femb_id)
             mux_cs=0
             mux_name = self.mon_fe_cs[mux_cs]
-            self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)    
-            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
-            self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
-            self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
-            self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xFF)    
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)    
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00) #disable pin4 of U230 (FE_INS_PLS_CS = 1)   
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xFF)    
         return mon_datas
 
+    def dat_adc_mons(self, mon_type=0xff):
+        femb_id = self.fembs[0]
+        
+        mon_datas = {} 
+        
+        #mon_type = 0x01: VOLTAGE_MONITOR_MUX
+        if mon_type&0x01:
+            mux_cs = 0
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)   
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_Vmon"] = [datas, datas_v]    
+            
+        #mon_type = 0x2: CURRENT_MONITOR_MUX
+        if mon_type&0x02:
+            mux_cs = 1
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)    
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_Imon"] = [datas, datas_v]     
+        
+        #mon_type = 0x4: VREFP
+        if mon_type&0x04:
+            mux_cs = 2
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs) 
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle            
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VREFP"] = [datas, datas_v]     
 
+        #mon_type = 0x8: VREFN
+        if mon_type&0x08:
+            mux_cs = 3
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)  
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VREFN"] = [datas, datas_v]  
+
+        #mon_type = 0x10: VCMI
+        if mon_type&0x10:
+            mux_cs = 4
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)  
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VCMI"] = [datas, datas_v]
+
+        #mon_type = 0x20: VCMO
+        if mon_type&0x20:
+            mux_cs = 5
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)    
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VCMO"] = [datas, datas_v]
+
+        #mon_type = 0x40: AUX_ISINK_MUX
+        if mon_type&0x40:
+            mux_cs = 6
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs) 
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle            
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_Isink"] = [datas, datas_v]
+
+        #mon_type = 0x80: AUX_ISOURCE_MUX
+        if mon_type&0x80:
+            mux_cs = 7
+            mux_name = self.mon_adc_cs[mux_cs]
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="adc")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_Isrc"] = [datas, datas_v]
+            
+        return mon_datas
+    
+    def adc_histbuf(self): #adapted from llc.spybuf()
+        HIST_MEM_SIZE = 0x8000 #rom A00C8000 to A00CFFFF
+        buf = (ctypes.c_char*HIST_MEM_SIZE)()
+        buf_bytes = bytearray(HIST_MEM_SIZE)
+        
+
+        self.wib.bufread(buf,8) #read from histogram memory
+        byte_ptr = (ctypes.c_char*HIST_MEM_SIZE).from_buffer(buf_bytes)            
+        if not ctypes.memmove(byte_ptr, buf, HIST_MEM_SIZE):
+            print('memmove failed')
+            exit()
+                    
+        return buf_bytes     
+    
+    def dat_adc_histbuf_trig(self, num_samples=1639000, waveform='ramp'):
+        #set samples to take
+        self.poke(0xA00C007C, num_samples)
+
+        hist_data = []
+
+        #chs = 128
+        chs = []
+        for femb in self.fembs:
+            for ch in range(128):
+                chs.append(femb*128+ch)
+
+        start = time.time()
+        #for ch in range(chs):   
+        for ch in chs:    
+            
+            #indicate which channel is to be analyzed
+            # self.poke(0xA00C0078, ch | (0x1<<9)) #extra bit is to make sure trigger is output over P12 LEMO
+            self.poke(0xA00C0078, ch)
+            
+            if waveform == 'RAMP':                
+                while True:
+                # while self.peek(0xA00C00F0) & ~(0x3ff) != 0x000: #wait till monitor output = 0x000
+                    peek = self.peek(0xA00C00F0) >> 10
+                    if peek < 500:
+                        break
+                    # else:
+                        # print(hex(peek))
+                    pass
+                
+            
+            #trigger histogram
+            self.poke(0xA00C0074, 0x1)
+            self.poke(0xA00C0074, 0x0)
+            
+            tries = 0
+            while self.peek(0xA00C00F0) & (0x1<<9) == 0: #while hist not done
+                # tries = tries + 1
+                # if tries == 10000:
+                    # print("Histogram acquisition failed for channel",ch)
+                    # print("Aborting acquisition")
+                    # return hist_data
+                pass
+            ch_hist_data = self.adc_histbuf()
+                
+            print("Ch",ch) # ,"stats:")
+            # for addr,count in enumerate(ch_hist_data):
+                # if count != 0:
+                    # print(count,"counts of ADC value",hex(addr),"num_waits =",num_waits)
+
+            hist_data.append(ch_hist_data)
+            
+            
+            #break #1 ch only
+
+        print("Connecting ADC back to ASIC channels")
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
+        
+        #Set P12 LEMO output to 10mhz clock
+        #self.poke(0xA00C0078, 0x0)
+        
+        return hist_data    
+        
+    def dat_enob_acq(self):
+        #print("WIB ENOB 16,384 samples test")  
+        #print("before running this script: configure the FEMB chips and trigger")  
+
+        
+        ch_data = []
+        for ch in range(512):
+            if (ch // 128) not in self.fembs:
+               ch_data.append(None)
+               continue
+            
+            self.poke(0xa00c0078, ch)
+            #trigger capture
+            self.poke(0xa00c0074, 0x3)
+            # for i in range(750):
+                # pass
+            self.poke(0xa00c0074, 0x2)
+            #wait till capture done
+            tries = 0
+            while (self.peek(0xa00c00f0) & 0x100) == 0:            
+                pass
+                tries = tries + 1
+                if tries == 20000:
+                    print("ENOB waveform acquisition failed for channel",ch)
+                    print("Aborting acquisition")
+                    return ch_data
+            self.poke(0xa00c0074, 0x0)
+            data = self.adc_histbuf() #block read
+            
+            ch_data.append(data)
+            print("Ch",ch)
+
+        return ch_data        
+    
+    def adc_refv_chk(self,datad):
+        dkeys = list(datad.keys())
+        err_high = 1.15
+        err_low = 0.85
+        
+        vrefp_nom = 1950 #mV
+        vrefn_nom = 450 
+        vcmi_nom = 900 
+        vcmo_nom = 1200
+        
+        warn_flg = False
+        for onekey in dkeys:
+            if "MON_VREFP" in onekey:
+                vnom = vrefp_nom
+            elif "MON_VREFN" in onekey:
+                vnom = vrefn_nom
+            elif "MON_VCMI" in onekey:
+                vnom = vcmi_nom
+            elif "MON_VCMO" in onekey:
+                vnom = vcmo_nom            
+            if all(vnom*err_low < data < vnom*err_high for data in datad[onekey][1]): 
+                pass
+            else:
+                print ("Warning: {} is out of range of {} mV: {}".format(onekey, vnom, datad[onekey][1]))
+                warn_flg = True
+        return warn_flg
+            
+    def sig_gen_config(self, waveform = None, freq = 1000, vlow = 0, vhigh = 2.5):        
+        
+        if waveform == None: #turn off output
+            pass
+        elif waveform == "RAMP" or waveform == "DC": #DC will use vhigh argument
+            pass
+        elif waveform == "SINE":
+            waveform = "SIN" 
+        else:
+            print("sig_gen_config: Unrecognized waveform argument. Options are RAMP, SINE, DC")
+            waveform = "error"
+        
+        if vlow >= 0:
+            lowsign = "+"
+        else:
+            lowsign = ""
+        if vhigh >= 0:
+            highsign = "+"
+        else:
+            highsign = ""     
+            
+        rm = pyvisa.ResourceManager()
+        sigconfig_done = False
+        while not sigconfig_done:
+            try:
+                sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
+                print(sig_gen.query("*IDN?"),end='')
+                if waveform == None or waveform == "error": #turn off output
+                    sig_gen.write("OUTPUT OFF")  
+                else:
+                    
+
+                    if waveform == 'DC':
+                        sig_gen.write("FUNCTION DC")
+                        sig_gen.write("VOLTAGE:OFFSET "+highsign+str(vhigh))
+                    elif waveform == 'RAMP' or waveform == 'SIN':
+                        sig_gen.write("FUNCTION "+str(waveform))
+                        sig_gen.write("FREQ "+str(freq))
+                    
+                        sig_gen.write("VOLTAGE:LOW "+lowsign+str(vlow))
+                        sig_gen.write("VOLTAGE:HIGH "+highsign+str(vhigh))
+                    
+                    
+                    sig_gen.write("OUTPUT:LOAD INF") #HiZ impedance
+                    sig_gen.write("OUTPUT ON")
+                sigconfig_done = True 
+                print("Signal generator configured")               
+            except Exception as e:
+                print(e)
+                print("Error configuring signal generator. Trying again...")
+            err = sig_gen.query("SYSTEM:ERROR?")
+            print("Signal generator status:",err,end='')
+            sig_gen.close() 
+
+        return err 
+    
+    
+    
+    
+    
+    # def dat_adc_imons(self, mon_type=0xff):
+        # femb_id = self.fembs[0]
+        
+        # mon_datas = {}     
+
+        # #mon_type = 0x01: VBGR
+        # if mon_type&0x01:   
+            # imon_select = 0x0
+            
+            # vbgr_imons = 
+
+    
 #    def asic_off_pwrchk(self):
 #        while True:
 #            fes_pwr_info =  self.fe_pwr_meas()
