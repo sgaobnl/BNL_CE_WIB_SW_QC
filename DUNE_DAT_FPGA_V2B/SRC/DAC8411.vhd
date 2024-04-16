@@ -6,13 +6,15 @@
 --////          jfried@bnl.gov	              
 --////  Created: 8/4/2015
 --////  Description:  
---////	JD Modified 12/2022 to fit AD5683R			
+--////	JD Modified 12/2022 to fit AD5683R
+--////	JD Modified 08/2023 to allow configuration of command bits			
 --////
 --/////////////////////////////////////////////////////////////////////
 --////
 --//// Copyright (C) 2015 Brookhaven National Laboratory
 --////
 --/////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -32,6 +34,7 @@ ENTITY DAC8411 IS
 		 reset			        	: in  std_logic;                   
 		 start						: in  std_logic;
 		 DATA							: in  std_logic_vector(15 downto 0);
+		 CMD							: in  std_logic_vector(3 downto 0);
 		 SCLK							: out std_logic;
 		 DIN							: out std_logic;
 		 SYNC							: out std_logic
@@ -106,7 +109,7 @@ end process;
 				SYNC			<= '1';
 				DIN			<= '0';
 				if (start_s = '1')  then
-				  DAC_data	<= b"0011" & DATA & b"0000"; --0011 "Write DAC Register" command in AD5683R
+				  DAC_data	<= CMD & DATA & b"0000"; --0011 "Write DAC Register" command in AD5683R
 				  state 		<= S_SET_DAC_DATA;		  
 				else
 				  state 		<= S_IDLE;
