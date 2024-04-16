@@ -16,8 +16,7 @@ def CreateFolders(fembs, fembNo, env, toytpc):
     #reportdir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/CHK/"+datadir+"/"
     #reportdir = "./reports/"+datadir+"/"
     #reportdir = "D:/IO_1865_1D_QC/CHK/Reports/"+datadir+"/"
-    #reportdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
-    reportdir = "D:/IO_1865_1G_QC/Reports/"+datadir+"/"
+    reportdir = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
     
     PLOTDIR = {}
 
@@ -62,8 +61,8 @@ if len(sys.argv) > 2:
 
 datadir = sys.argv[1]
 #fdata = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/CHK/"+datadir+"/"
-fdata = "D:/IO_1865_1G_QC/"+datadir+"/"
-#fdata = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
+#fdata = "D:/IO_1865_1D_QC/CHK/"+datadir+"/"
+fdata = "D:/Github/BNL_CE_WIB_SW_QC_main/tmp_data/CHK/"+datadir+"/"
 
 print(fdata)
 

@@ -1,4 +1,4 @@
-import time, datetime
+import time
 import sys
 import numpy as np
 import pickle
@@ -8,29 +8,27 @@ from dat_cfg import DAT_CFGS
                 
 dat =  DAT_CFGS()
 dat.fembs = [0]
-dat.en_ref10MHz(ref_en = True)
 
 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-cfg_info = dat.dat_adc_qc_cfg(diff_en=1)
-#dat.en_ref10MHz(ref_en=True)
-dat.dat_coldadc_ext(ext_source ="P6")
-#dat.dat_coldadc_ext(ext_source ="P6")
-dat.dat_set_dac(0000, adc=0) #set ADC_P to 0 V
-dat.dat_set_dac(0000, adc=1) #set ADC_N to 0 V
-#dat.dat_coldadc_cali_cs()
+cfg_info = dat.dat_adc_qc_cfg()
+dat.dat_coldadc_cali_cs()
+dat.dat_set_dac(0, adc=1) #set ADC_N to 0 V
 
-time.sleep(1)
-
-fdir = "./tmp_data/"
-rawdata =  dat.dat_adc_qc_acq(50)
-datad = {}
-datad["SINE"] = rawdata 
-ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-fp = fdir + "LN_QC_sine_" + ts + ".bin"
-with open(fp, 'wb') as fn:
-    pickle.dump(datad, fn)
-
-
+#fdir = "./tmp_data/"
+#for tmp in range(65):
+#    if tmp%10 == 0:
+#        input ("transfer data")
+#    datad = {}
+#    for valint in range(tmp*1000,(tmp+1)*1000, 1):
+#        if valint%100==0:
+#            print (valint)
+#        dat.dat_set_dac(val=valint, adc=0)
+#        rawdata =  dat.dat_adc_qc_acq(1)
+#        datad["DAC%06d"%valint] = rawdata 
+#    fp = fdir + "QC_ColdADC%06d.bin"%tmp
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#
 
 
 

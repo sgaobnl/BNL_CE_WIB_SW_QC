@@ -25,16 +25,16 @@ dat =  DAT_CFGS()
 
 print ("\033[93m  QC task list   \033[0m")
 print ("\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m")
-print ("\033[96m 1: FE power consumption measurement  \033[0m")
-print ("\033[96m 2: FE response measurement checkout  \033[0m")
-print ("\033[96m 3: FE monitoring measurement  \033[0m")
-print ("\033[96m 4: FE power cycling measurement  \033[0m")
-print ("\033[96m 5: FE noise measurement  \033[0m")
-print ("\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m")
-print ("\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m")
-print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
-print ("\033[96m 7: FE delay run  \033[0m")
-print ("\033[96m 8: FE cali-cap measurement \033[0m")
+#print ("\033[96m 1: FE power consumption measurement  \033[0m")
+#print ("\033[96m 2: FE response measurement checkout  \033[0m")
+#print ("\033[96m 3: FE monitoring measurement  \033[0m")
+#print ("\033[96m 4: FE power cycling measurement  \033[0m")
+#print ("\033[96m 5: FE noise measurement  \033[0m")
+#print ("\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m")
+#print ("\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m")
+#print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
+#print ("\033[96m 7: FE delay run  \033[0m")
+#print ("\033[96m 8: FE cali-cap measurement \033[0m")
 print ("\033[96m 9: Turn DAT on \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
@@ -131,11 +131,6 @@ if 0 in tms:
     dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
     chkdata = dat.dat_asic_chk()
     datad.update(chkdata)
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
 
     datad['logs'] = logs
 
@@ -153,26 +148,40 @@ if 0 in tms:
     tt.append(time.time())
     print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
 
+
 if 1 in tms:
-    print ("FE power consumption measurement starts...")
+    print ("COLDATA basic functionlity checkout...")
     datad = {}
     datad['logs'] = logs
-    for snc in [0, 1]:
-        for sdd in [0, 1]:
-            for sdf in [0, 1]:
-                if (sdd == 1) and (sdf==1):
-                    continue
-                else:
-                    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
-                    rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=snc, sdd=sdd, sdf=sdf ) 
-                    pwr_meas = dat.fe_pwr_meas()
-                    datad["PWR_SDD%d_SDF%d_SNC%d"%(sdd,sdf,snc)] = [dat.fembs, rawdata[0], rawdata[1], pwr_meas]
-    
-    fp = fdir + "QC_PWR" + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump(datad, fn)
-    tt.append(time.time())
-    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+
+    print ("COLDATA hard reset check")
+    dat.dat_cd_hard_reset(femb_id = dat.fembs[0])
+    time.sleep(1)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
+    datad["Post-Hard_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+
+    print ("COLDATA fast reset check")
+    dat.femb_cd_rst()
+    time.sleep(1)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
+    datad["FAST_CMD_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+
+    print ("COLDATA GPIO check")
+    dat.dat_cd_gpio_chk(femb_id = dat.fembs[0])
+
+
+if 2 in tms:
+    print ("COLDATA Primary/Secondary Swap check")
+
+#    fp = fdir + "QC_PWR" + ".bin"
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#    tt.append(time.time())
+#    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("debugging...")
+    exit()
 
 if 2 in tms:
     print ("FE check response measurement starts...")

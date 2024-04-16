@@ -257,7 +257,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-time.sleep(0.5)
+time.sleep(3)
 
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -344,7 +344,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-time.sleep(0.5)
+time.sleep(3)
 
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -366,7 +366,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 
 chk.data_align(fembs)
-time.sleep(0.5)
+time.sleep(3)
 
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 

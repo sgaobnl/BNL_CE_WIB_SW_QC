@@ -100,6 +100,7 @@ class LLC():
         #DAT registers
         #DAT registers in case needed
         self.DAT_FPGA_RST = 0x00 #bit0-system reset, bit1-reg reset
+        self.DAT_CD_CONFIG = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD_CONFIG')
         self.DAT_CD1_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD1_CONTROL')
         self.DAT_CD2_CONTROL = ctypes.c_uint8.in_dll(self.wib, 'DAT_CD2_CONTROL')
         self.DAT_SOCKET_SEL = ctypes.c_uint8.in_dll(self.wib, 'DAT_SOCKET_SEL')
@@ -439,8 +440,8 @@ class LLC():
         power_meas["FEMB0_DC2DC2_I"] = (bus2_ltc2991_48_vs[4] - bus2_ltc2991_48_vs[5])/0.01
         power_meas["FEMB0_DC2DC3_V"] =  bus2_ltc2991_48_vs[7]
         power_meas["FEMB0_DC2DC3_I"] = (bus2_ltc2991_48_vs[6] - bus2_ltc2991_48_vs[7])/0.1
-        power_meas["FEMB1_BIAS_V"]   =  bus2_ltc2991_4e_vs[1]
-        power_meas["FEMB1_BIAS_I"]   = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1])/0.1
+        power_meas["FEMB1_BIAS_V"]   =  bus2_ltc2991_4e_vs[3]
+        power_meas["FEMB1_BIAS_I"]   = (bus2_ltc2991_4e_vs[2] - bus2_ltc2991_4e_vs[3])/0.1
         power_meas["FEMB1_DC2DC0_V"] =  bus2_ltc2991_49_vs[1]
         power_meas["FEMB1_DC2DC0_I"] = (bus2_ltc2991_49_vs[0] - bus2_ltc2991_49_vs[1])/0.1
         power_meas["FEMB1_DC2DC1_V"] =  bus2_ltc2991_49_vs[3]
@@ -449,8 +450,8 @@ class LLC():
         power_meas["FEMB1_DC2DC2_I"] = (bus2_ltc2991_49_vs[4] - bus2_ltc2991_49_vs[5])/0.01
         power_meas["FEMB1_DC2DC3_V"] =  bus2_ltc2991_49_vs[7]
         power_meas["FEMB1_DC2DC3_I"] = (bus2_ltc2991_49_vs[6] - bus2_ltc2991_49_vs[7])/0.1
-        power_meas["FEMB2_BIAS_V"]   =  bus2_ltc2991_4e_vs[1]
-        power_meas["FEMB2_BIAS_I"]   = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1])/0.1
+        power_meas["FEMB2_BIAS_V"]   =  bus2_ltc2991_4e_vs[5]
+        power_meas["FEMB2_BIAS_I"]   = (bus2_ltc2991_4e_vs[4] - bus2_ltc2991_4e_vs[5])/0.1
         power_meas["FEMB2_DC2DC0_V"] =  bus2_ltc2991_4a_vs[1]
         power_meas["FEMB2_DC2DC0_I"] = (bus2_ltc2991_4a_vs[0] - bus2_ltc2991_4a_vs[1])/0.1
         power_meas["FEMB2_DC2DC1_V"] =  bus2_ltc2991_4a_vs[3]
@@ -459,8 +460,8 @@ class LLC():
         power_meas["FEMB2_DC2DC2_I"] = (bus2_ltc2991_4a_vs[4] - bus2_ltc2991_4a_vs[5])/0.01
         power_meas["FEMB2_DC2DC3_V"] =  bus2_ltc2991_4a_vs[7]
         power_meas["FEMB2_DC2DC3_I"] = (bus2_ltc2991_4a_vs[6] - bus2_ltc2991_4a_vs[7])/0.1
-        power_meas["FEMB3_BIAS_V"]   =  bus2_ltc2991_4e_vs[1]
-        power_meas["FEMB3_BIAS_I"]   = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1])/0.1
+        power_meas["FEMB3_BIAS_V"]   =  bus2_ltc2991_4e_vs[7]
+        power_meas["FEMB3_BIAS_I"]   = (bus2_ltc2991_4e_vs[6] - bus2_ltc2991_4e_vs[7])/0.1
         power_meas["FEMB3_DC2DC0_V"] =  bus2_ltc2991_4b_vs[1]
         power_meas["FEMB3_DC2DC0_I"] = (bus2_ltc2991_4b_vs[0] - bus2_ltc2991_4b_vs[1])/0.1
         power_meas["FEMB3_DC2DC1_V"] =  bus2_ltc2991_4b_vs[3]

@@ -66,7 +66,58 @@ for femb_id in fembs:
 if True: # FE monitoring 
     if True: # FE monitoring 
         chips = 8
-        sps = 1
+        sps=10
+        if True:
+            print ("monitor bandgap reference")
+            mon_refs = {}
+            for mon_chip in range(chips):
+                #adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=1)
+                #print (adcrst)
+                adcrst = chk.wib_fe_mon(femb_ids=fembs, mon_type=2, mon_chip=mon_chip, sps=sps, sdf=0)
+                print (adcrst)
+                print ("###################")
+        exit()
+
+
+        sps = 100 
+        if True:
+            print ("monitor vdac ")
+            mon_refs = {}
+            #for mon_chip in range(chips):
+
+            #for mon_chip in [1]:
+            while True:
+                #for mon_chip in range(chips):
+                for mon_chip in [0]:
+                    adcrst = chk.wib_fe_dac_mon(femb_ids=fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=range(64), sps = sps )
+                    brd = 0
+                    k0 = adcrst[0][4][0][brd]
+                    for y in adcrst:
+                       # print (y[2], y[4][0][brd]-k0, (y[4][0][brd]-k0)*2048.0/(2**14))
+                        k0 = y[4][0][brd]
+
+                    k0s = []
+                    for b in range(sps):
+
+                        k0s.append(adcrst[0][4][b][brd])
+
+                    mk0 = np.mean(k0s)
+                    for y in adcrst:
+                        k1s = []
+                        for b in range(sps):
+                            k1s.append(y[4][b][brd])
+                        mk1 = np.mean(k1s)
+
+                        print (y[2], y[4][0][brd]-k0, int(mk1-mk0), int((y[4][0][brd]-k0)*25000.0/(2**14)), int((mk1-mk0)*25000.0/(2**14)))
+                        mk0=mk1
+                        k0 = y[4][0][brd]
+
+                    exit()
+                break
+
+
+        exit()
+
         if True:
             print ("monitor power rails")
             vold = chk.wib_vol_mon(femb_ids=fembs,sps=sps)
