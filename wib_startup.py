@@ -30,7 +30,7 @@ if ("Y" in ynstr) or ("y" in ynstr):
         chk.wib_i2c_adj(n = int(sys.argv[1]))
     else:
         print ("EFMB I2C phase adjustment...")
-        chk.wib_i2c_adj(n = 300)
+        chk.wib_i2c_adj(n = 600)
     print ("Done")
     with open("./timing.cfg", "w") as fp:
         fp.write("%d, %d, %d, 300,"%(int(ts_clk_sel), fp1_ptc0_sel, cmd_stamp_sync))

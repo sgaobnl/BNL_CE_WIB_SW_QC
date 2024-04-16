@@ -344,7 +344,6 @@ if 0 in tms:
                 show_flg = ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
             if ("ASICDAC_CALI_CHK" in onekey):
                 show_flg = ana_res(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,3000] )
-            show_flg=True
 
             if show_flg:
                 print (onekey + "  : Fail")
@@ -412,7 +411,6 @@ if 1 in tms:
             if not show_flg:
                 show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[300,2000] )
 
-        show_flg=True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")
@@ -488,7 +486,6 @@ if 2 in tms:
         if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
             show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
 
-        show_flg = True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")
@@ -915,7 +912,6 @@ if 7 in tms:
         cfg_info = cfgdata[2]
 
         show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,45], pedr=[8000,10000] )
-        show_flg = True
         if show_flg:
             print (onekey + "  : Fail")
             print ("command on WIB terminal to retake data for this test item is as bellow :")
