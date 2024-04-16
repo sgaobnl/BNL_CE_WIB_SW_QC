@@ -326,7 +326,16 @@ signal	FE_DAC_TP_data			: std_logic_vector(15 downto 0);
 signal	FE_DAC_TP_data_arr	: DAC_data;
 --signal	FE_DAC_TP_SYNC_arr	: std_logic_vector(7 downto 0);
 
-signal	DAC_other_set			: std_logic_vector(2 downto 0);
+signal 	FE_DAC_TP_CMD			: std_logic_vector(3 downto 0);
+signal 	DAC_ADC_P_CMD			: std_logic_vector(3 downto 0);
+signal 	DAC_ADC_N_CMD			: std_logic_vector(3 downto 0);
+signal 	DAC_TP_CMD				: std_logic_vector(3 downto 0);
+
+--signal	DAC_other_set			: std_logic_vector(2 downto 0);
+signal	DAC_TP_set				: std_logic;
+signal	DAC_ADC_N_set			: std_logic;
+signal	DAC_ADC_P_set			: std_logic;
+
 
 signal	DAC_ADC_P_data			: std_logic_vector(15 downto 0);
 signal	DAC_ADC_N_data			: std_logic_vector(15 downto 0);
@@ -335,8 +344,8 @@ signal	DAC_TP_data				: std_logic_vector(15 downto 0);
 type		ro_cnt_array is array(7 downto 0) of STD_LOGIC_VECTOR(31 downto 0);
 signal	ro_cnt_arr				: ro_cnt_array;
 signal	ro_cnt					: STD_LOGIC_VECTOR(31 downto 0);
-SIGNAL	ro_start				: STD_LOGIC;
-signal	ro_length100MHz	   : STD_LOGIC_VECTOR(31 downto 0);
+--SIGNAL	ro_start				: STD_LOGIC;
+--signal	ro_length100MHz	   : STD_LOGIC_VECTOR(31 downto 0);
 
 --Test pulse generation
 SIGNAL	FPGA_TP_EN				: STD_LOGIC;
@@ -684,7 +693,11 @@ FE_DAC_TP_set <= reg39_p;
 FE_DAC_TP_data(7 downto 0) <= reg40_p;
 FE_DAC_TP_data(15 downto 8) <= reg41_p;
 
-DAC_other_set <= reg42_p(2 downto 0);
+--DAC_other_set <= reg42_p(2 downto 0);
+DAC_TP_set <= reg42_p(2);
+DAC_ADC_N_set <= reg42_p(1);
+DAC_ADC_P_set <= reg42_p(0);
+
 
 DAC_ADC_P_data(7 downto 0) <= reg43_p;
 DAC_ADC_P_data(15 downto 8) <= reg44_p;
@@ -1220,6 +1233,7 @@ FE1_DAC_TP_inst : entity work.DAC8411 --AD5683R
 		 reset			=> reset,	
 		 start			=> FE_DAC_TP_set(0),
 		 DATA				=> FE_DAC_TP_data_arr(0),
+		 CMD				=> FE_DAC_TP_CMD,
 		 SCLK				=> FE_DAC_TP_SCK,
 		 DIN				=> FE_DAC_TP_DIN(0),
 		 SYNC				=> FE_DAC_TP_SYNC
@@ -1233,6 +1247,7 @@ gen_FE_DAC_TP : for i in 7 downto 1 generate
 			 reset			=> reset,	
 			 start			=> FE_DAC_TP_set(0),
 			 DATA				=> FE_DAC_TP_data_arr(i),
+		     CMD				=> FE_DAC_TP_CMD,
 			 SCLK				=> open,
 			 DIN				=> FE_DAC_TP_DIN(i),
 			 SYNC				=> open
@@ -1244,8 +1259,10 @@ DAC_ADC_P_inst : entity work.DAC8411 --AD5683R
 	(
 	 	 clk         	=> CLK_25MHz,         
 		 reset			=> reset,	
-		 start			=> DAC_other_set(0),
+		 start			=> DAC_ADC_P_set,
+		 #start			=> DAC_other_set(0),
 		 DATA				=> DAC_ADC_P_data,
+		 CMD				=> DAC_ADC_P_CMD,
 		 SCLK				=> DAC_ADC_P_SCK,
 		 DIN				=> DAC_ADC_P_DIN,
 		 SYNC				=> DAC_ADC_P_SYNC
@@ -1256,8 +1273,10 @@ DAC_ADC_N_inst : entity work.DAC8411 --AD5683R
 	(
 	 	 clk         	=> CLK_25MHz,         
 		 reset			=> reset,	
-		 start			=> DAC_other_set(1),
+--		 start			=> DAC_other_set(1),
+		 start			=> DAC_ADC_N_set,
 		 DATA				=> DAC_ADC_N_data,
+		 CMD				=> DAC_ADC_N_CMD,
 		 SCLK				=> DAC_ADC_N_SCK,
 		 DIN				=> DAC_ADC_N_DIN,
 		 SYNC				=> DAC_ADC_N_SYNC
@@ -1268,8 +1287,10 @@ DAC_TP_inst : entity work.DAC8411 --AD5683R
 	(
 	 	 clk         	=> CLK_25MHz,         
 		 reset			=> reset,	
-		 start			=> DAC_other_set(2),
+--		 start			=> DAC_other_set(2),
+		 start			=> DAC_TP_set,
 		 DATA				=> DAC_TP_data,
+		 CMD				=> DAC_TP_CMD,
 		 SCLK				=> DAC_TP_SCK,
 		 DIN				=> DAC_TP_DIN,
 		 SYNC				=> DAC_TP_SYNC
@@ -1281,8 +1302,8 @@ gen_ro_cnt: for i in 7 downto 0 generate
 	  PORT MAP(
 		 clk  =>    clk_100Mhz, --?
 		 reset    => reset,
-		 ro_start => reg63_p(0),
-		 ro_cntx10ns => reg95_p(7 downto 0) & reg94_p(7 downto 0) & reg93_p(7 downto 0) & reg92_p(7 downto 0),
+--		 ro_start => reg63_p(0),
+--		 ro_cntx10ns => reg95_p(7 downto 0) & reg94_p(7 downto 0) & reg93_p(7 downto 0) & reg92_p(7 downto 0),
 		 ro_in    => ADC_RO_OUT(i),
 		 ro_cnt   =>  ro_cnt_arr(i)  
 	);
