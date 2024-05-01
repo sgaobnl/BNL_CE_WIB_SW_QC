@@ -5,7 +5,7 @@ import pickle
 import importlib.machinery
 
 from wib_cfgs import WIB_CFGS
-from adc_hist import histbuf
+from adc_hist_buf import histbuf
 
 
 def acq_16ksamp(fembs):

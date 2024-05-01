@@ -11,6 +11,7 @@ import copy
 import time, datetime, random, statistics   
 import ctypes 
 import pyvisa  
+import struct
 
 
 class DAT_CFGS(WIB_CFGS):
@@ -38,6 +39,7 @@ class DAT_CFGS(WIB_CFGS):
         self.fedly= 3
         self.sddflg = 0 
         self.ADCVREF = 2.5
+        self.gen_rm = 'TCPIP0::192.168.121.201::inst0::INSTR'
 
     def wib_pwr_on_dat(self):
         print ("Initilization checkout")
@@ -334,7 +336,6 @@ class DAT_CFGS(WIB_CFGS):
 #perform FEMB configuration, check ADC pattern data
 
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
-        self.dat_fpga_reset()
         warn_flg = False
         kl = list(fes_pwr_info.keys())
         for onekey in kl:
@@ -418,16 +419,38 @@ class DAT_CFGS(WIB_CFGS):
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
+        if warn_flg:
+            print ("\033[91m" + "please check before restart"+ "\033[0m")
+            input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
+            self.femb_powering([])
+            self.data_align_flg = False
+            exit()
 
-        vbgr = self.dat_fe_vbgrs()
-        for fe in range(8):
-            vtmp = vbgr['VBGR'][1][fe]
-            if (vtmp > 1100) and (vtmp < 1300) :
-                pass
-            else:
-                print ("Warning: VBGR of FE{} is out of range {}mV (typical 1.2V)".format(fe, vtmp))
-                warn_flg = True
+    def asic_init_por(self, duts=["FE", "ADC", "CD"]): #check status after power on
+        warn_flg = False
+        self.dat_fpga_reset()
+        if "FE" in duts:
+            vbgr = self.dat_fe_vbgrs()
+            for fe in range(8):
+                vtmp = vbgr['VBGR'][1][fe]
+                if (vtmp > 1100) and (vtmp < 1300) :
+                    pass
+                else:
+                    print ("Warning: VBGR of FE{} is out of range {}mV (typical 1.2V)".format(fe, vtmp))
+                    warn_flg = True
 
+        if "ADC" in duts:
+            datad_mons = self.dat_adc_mons(femb_id = 0, mon_type=0x3c)  
+            for onekey in datad_mons.keys():
+                if self.adc_refv_chk({onekey:datad_mons[onekey]}):
+                    warn_flg = True
+                    break
+            if not warn_flg: #ColdADC POR register check
+                if self.femb_adc_chkreg(self.dat_on_wibslot):
+                    warn_flg = True
+
+        if "CD" in duts:
+            print ("To be developped")
 
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
@@ -436,21 +459,22 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
             exit()
 
-    def dat_adc_qc_cfg(self,data_fmt=0x08, diff_en=0, sdf_en=0, vrefp=0xE8, vrefn=0x18, vcmo=0x90, vcmi=0x60, autocali=1, adac_pls_en=0):
+    def dat_adc_qc_cfg(self,data_fmt=0x08, sha_cs=0, ibuf_cs=0, vrefp=0xDF, vrefn=0x33, vcmo=0x89, vcmi=0x67, autocali=1, adac_pls_en=0):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
-            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-                                [0x4, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0x5, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0x6, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0x7, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0x8, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0x9, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0xA, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
-                                [0xB, data_fmt, diff_en, sdf_en, vrefp, vrefn, vcmo, vcmi, autocali],
+            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+                                [0x4, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x5, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x6, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x7, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x8, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0x9, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0xA, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
+                                [0xB, data_fmt, sha_cs, ibuf_cs, vrefp, vrefn, vcmo, vcmi, autocali],
                               ]
             self.set_fe_reset()
+            self.set_fe_board(dac=1) # to aviod all 0 in FE register
             self.set_fe_sync()
             #adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
@@ -464,11 +488,158 @@ class DAT_CFGS(WIB_CFGS):
             self.data_align_flg = False
         return cfg_paras_rec
 
-    def dat_fe_qc_cfg(self, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
+    def dat_adc_qc_refdacs(self, femb_id=0 ):
+        refv_dacs = []
+        # #Scan the DAC (8bit) for each ref voltages
+        # for dac in range(0,0x100,0x10): #do we need every value? add a step?
+            # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
+            # refv_dacs.append(dat.dat_adc_mons(mon_type=0x3c))
+            # #data.update(dat.dat_adc_mons(mon_type=0x3c))
+            
+        #Using https://www.analog.com/media/en/training-seminars/design-handbooks/Data-Conversion-Handbook/Chapter5.pdf pg 10
+        #1. measure all 0's and all 1's to get LSB
+        # dac = 0xFF
+        # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
+        # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c) 
+        
+        #2. measure one-hot codes
+        #3. measure "major carry points": 0000 to 0001, 0001 to 0010, 0011 to 0100, and 0111 to 1000    [i.e. one-hot minus 1]
+        # indiv_sums = {}
+        # indiv_sums['MON_VREFP'] = np.array([0,0,0,0,0,0,0,0])
+        # indiv_sums['MON_VREFN'] = np.array([0,0,0,0,0,0,0,0])
+        # indiv_sums['MON_VCMI'] = np.array([0,0,0,0,0,0,0,0])
+        # indiv_sums['MON_VCMO'] = np.array([0,0,0,0,0,0,0,0])
+        
+        #dac levels to sample:
+            #one hots and major carries for dnl/inl and a few others for plotting
+        dacs = [0, 0b1, 0b10, 0b11, 0b100, 0b111, 0b1000, 0b1111, 0b10000, 0b11111, 0b100000, 0b110000, 0b111111, 
+            0b1000000, 0b1010000, 0b1100000, 0b1110000, 0b1111111, 
+            0b10000000, 0b10010000, 0b10100000, 0b10110000, 0b11000000, 0b11010000, 0b11100000, 0b11110000, 0b11111111]
+        
+        # for shift in range(8):
+        for dac in dacs:
+            ###one-hot
+            # dac = 0x1 << shift
+            # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c)
+            for adc_no in range(8):
+                self.adcs_paras[adc_no][4] = dac
+                self.adcs_paras[adc_no][5] = dac
+                self.adcs_paras[adc_no][6] = dac
+                self.adcs_paras[adc_no][7] = dac
+                self.adcs_paras[adc_no][8] = 0 # disable autocali
+            self.femb_adc_cfg(femb_id)
+            time.sleep(0.2)
+
+            refv_dacs.append(self.dat_adc_mons(femb_id=femb_id, mon_type=0x3c))
+            #print (refv_dacs[-1])
+            # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
+                # indiv_sums[key] = indiv_sums[key] + refv_dacs[dac][key][1] #for verification
+            # print("\nadding",bin(dac),"\n")
+            ###major carry point
+            # if dac != 0x2: #because 0b10 was already covered by 0x1 << 0
+                # dac = dac - 1
+                # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
+                # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c)                
+        # one_lsb = {}
+        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:    
+            # one_lsb[key] = (refv_dacs[0xFF][key][1] - refv_dacs[0x00][key][1]) / 255 #8 bits
+        # print("adding 0")
+        #[4bit version]: The all "1"s code, 1111, previously measured should equal the sum of the individual bit voltages: 0000, 0001,
+        #0010, 0100, and 1000. This is a good test to verify that superposition holds.
+        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
+            # indiv_sums[key] = indiv_sums[key] + refv_dacs[0x00][key][1] #for verification
+        # print("individual sums:",indiv_sums)
+        # print("all 1's:",refv_dacs[0xFF])
+        
+        # vrefp00_sum = 0
+        # for dac in [0b0,0b1,0b10,0b100,0b1000,0b10000,0b100000,0b1000000,0b10000000]:
+            # print(bin(dac))
+            # vrefp00_sum = vrefp00_sum + refv_dacs[dac]['MON_VREFP'][1][0]
+        
+        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
+            # print('vrefp0 sum',key,":",vrefp00_sum[key][1])
+        # print('vrefp ff:',refv_dacs[0xFF]['MON_VREFP'][1][0])
+
+        #return voltages to normal
+        self.dat_adc_qc_cfg()
+        return refv_dacs
+
+    def dat_adc_qc_imons(self, femb_id=0 ):
+        #Check the current monitors
+        imons = {}
+        for imon_select in range(0x8):
+            adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07]  
+            #turn on and select current monitor
+            for chip in range(0x8):
+                self.femb_i2c_wrchk(femb_id=self.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0xaf, wrdata=(imon_select<<5)|0x02)
+            imon_datas = self.dat_adc_mons(mon_type=0x2)["MON_Imon"]
+            #Add current (mA) calculation to dict
+            imon_datas.append(np.array(imon_datas[1])/self.imon_R)
+            imons[self.adc_imon_sel[imon_select]] = imon_datas        
+
+        #return to normal
+        self.dat_adc_qc_cfg()
+        return imons
+
+    def dat_adc_qc_oscfreq(self, femb_id=0 ):
+        chipfreqs = []
+
+        adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07] 
+        for chip in range(8): #turn ring osc output on
+            self.femb_i2c_wrchk(femb_id, adcs_addr[chip], 1, 0xAA, 0x1)
+        freqs = []
+        for seconds in range(10):    
+            print(seconds+1,"seconds:")
+            freq_1s = []
+            time.sleep(1) #Allow DAT ro counters to count number of pulses in 1 second
+            for chip in range(8):       
+                self.cdpoke(femb_id, 0xC, 0, self.DAT_SOCKET_SEL, chip)
+                byte3 = self.cdpeek(femb_id, 0xC, 0, self.DAT_ADC_RING_OSC_COUNT_B3)
+                byte2 = self.cdpeek(femb_id, 0xC, 0, self.DAT_ADC_RING_OSC_COUNT_B2)
+                byte1 = self.cdpeek(femb_id, 0xC, 0, self.DAT_ADC_RING_OSC_COUNT_B1)
+                byte0 = self.cdpeek(femb_id, 0xC, 0, self.DAT_ADC_RING_OSC_COUNT_B0)
+                freq = (byte3 << 8*3) | (byte2 << 8*2) | (byte1 << 8*1) | byte0
+                if seconds == 0:
+                    pass
+                else:
+                    freq_1s.append(freq)
+            if seconds != 0:
+                freqs.append(freq_1s)
+        ks = zip(*freqs)
+        for k in ks:
+            chipfreqs.append(np.mean(k)) 
+
+        return chipfreqs
+
+    def dat_adc_qc_auto_weithts(self):
+        ws = []
+        adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07]
+        for chip in range(8):
+            chip_weights = []
+            for adc in range(2): #ADC0 or ADC1
+                adc_weights = []
+                for weight in range(2): #W0 or W2
+                    stage_weights = []
+                    for stage_num in range(16):                     
+                        #calculated using ColdADC datasheet, section "Configuration Memory", Table 10: Configuration Memory Address
+                        weight_lsb_addr = (adc << 6) | (weight << 5) | (stage_num << 1)
+                        weight_msb_addr = weight_lsb_addr | 0x1
+                        weight_lsb = self.femb_i2c_rd(self.dat_on_wibslot, adcs_addr[chip], 0x1, weight_lsb_addr)
+                        weight_msb = self.femb_i2c_rd(self.dat_on_wibslot, adcs_addr[chip], 0x1, weight_msb_addr)
+                        weight_16b = (weight_msb << 8) | weight_lsb
+                        stage_weights.append(weight_16b)
+                    adc_weights.append(stage_weights)
+                chip_weights.append(adc_weights)
+            ws.append(chip_weights)
+        return ws 
+
+
+
+    def dat_fe_qc_cfg(self, adac_pls_en=0, sts=1, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
-#            self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
 #                                [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                                [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                                [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
@@ -528,7 +699,7 @@ class DAT_CFGS(WIB_CFGS):
             if self.sddflg != sdd :
                 for i in range(8):
                     self.adcs_paras[i][2] = sdd
-#                self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
 #                                    [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                                    [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                                    [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
@@ -635,9 +806,9 @@ class DAT_CFGS(WIB_CFGS):
             for ch in range(16*8):
                 chmax = np.max(datd[ch][500:1500])
                 if ch == 0:
-                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                    chmaxpos = int(np.where(datd[ch][500:1500] == chmax)[0][0] + 500)
                 if ch == 64:
-                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                    chmaxpos = int(np.where(datd[ch][500:1500] == chmax)[0][0] + 500)
                 chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
                 chmin = np.min(datd[ch][500:1500])
                 if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-3]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+3]) > 1000) :
@@ -648,7 +819,7 @@ class DAT_CFGS(WIB_CFGS):
                     c2 = True
                 else:
                     c2 = False
-                if (chmax > 8000) & (chped < 2000) & (chped > 200) & (chmin<100) & c1 & c2:
+                if (chmax > 8000) & (chped < 2000) & (chped > 100) & (chmin<100) & c1 & c2:
                     pass
                 else:
                     initchk_flg = False 
@@ -664,9 +835,9 @@ class DAT_CFGS(WIB_CFGS):
             for ch in range(16*8):
                 chmax = np.max(datd[ch][500:1500])
                 if ch == 0:
-                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                    chmaxpos = int(np.where(datd[ch][500:1500] == chmax)[0][0] + 500)
                 if ch == 64:
-                    chmaxpos = np.where(datd[ch][500:1500] == chmax)[0][0] + 500
+                    chmaxpos = int(np.where(datd[ch][500:1500] == chmax)[0][0] + 500)
                 chped = np.mean(datd[ch][chmaxpos-100:chmaxpos-50])
                 chmin = np.min(datd[ch][500:1500])
                 if ( (datd[ch][chmaxpos] - datd[ch][chmaxpos-2]) > 1000) and ( (datd[ch][chmaxpos] - datd[ch][chmaxpos+2]) > 1000) :
@@ -694,6 +865,33 @@ class DAT_CFGS(WIB_CFGS):
                     #pass
         return datad
 
+
+    def dat_coldadc_input_cs(self,  mode="DACSE", SHAorADC = "SHA", chsenl=0x0000):
+        if "P6DIFF" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x22)
+        elif "P6SE" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02)
+        elif "WIBDIFF" in mode: #new DAT
+            print ("Only on new DAT")
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x11)
+        elif "WIBSE" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01)
+        elif "DACDIFF" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
+        elif "DACSE" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x03)
+        elif "OPEN" in mode:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x66)
+
+        if "ADC" in SHAorADC: #to ADC input directly 
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 1)
+        else:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
+
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
+
+
     def dat_coldadc_cali_cs(self,  mode="SE", chsenl=0x0000):
         if "DIFF" in mode:
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x33)
@@ -706,6 +904,32 @@ class DAT_CFGS(WIB_CFGS):
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
 
+    def dat_coldadc_ext(self, ext_source="DAT_P6", chsenl=0x0000):
+        ##DAC ADC N to 0V
+        ##make sure ADCs are hooked to P6/P7
+        ## ##Set ADC_P_TST_CSABC to 2, set ADC_N_TST_CSABC to 0  [Set ADC_P_TST_SEL to 0 | (0 << 4)]
+
+        if "P6" in ext_source:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND #SE
+            #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x22) #N tie to GND #DIFF
+        elif "WIB" in ext_source:
+            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01) #N tie to GND
+
+        # ##Set ADC_TEST_IN_SEL to 0, direct input to ADC x16 inputs
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
+
+        # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
+        #high(default) connects ADC to FE, low connects ADC to other sources
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
+
+
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x00) #N tie to GND #SE
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 1)
+
+        ## ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
+        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xff)
 
     def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
         if (efuseid < 0) :
@@ -752,32 +976,6 @@ class DAT_CFGS(WIB_CFGS):
                 print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
                 break
 
-    def dat_coldadc_ext(self, ext_source="DAT_P6", chsenl=0x0000):
-        ##DAC ADC N to 0V
-        ##make sure ADCs are hooked to P6/P7
-        ## ##Set ADC_P_TST_CSABC to 2, set ADC_N_TST_CSABC to 0  [Set ADC_P_TST_SEL to 0 | (0 << 4)]
-
-        if "P6" in ext_source:
-            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x02) #N tie to GND #SE
-            #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x22) #N tie to GND #DIFF
-        elif "WIB" in ext_source:
-            self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x01) #N tie to GND
-
-        # ##Set ADC_TEST_IN_SEL to 0, direct input to ADC x16 inputs
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 0)
-
-        # ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
-        #high(default) connects ADC to FE, low connects ADC to other sources
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
-        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
-
-
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x00) #N tie to GND #SE
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_TEST_IN_SEL, 1)
-
-        ## ##Set ADC_SRC_CS_P to 0x0000 (ADC_SRC_CS_P_MSB, ADC_SRC_CS_P_LSB)
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
-        #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xff)
 
 
 
@@ -868,7 +1066,7 @@ class DAT_CFGS(WIB_CFGS):
 
         for i in range(8):
             self.adcs_paras[i][8] = 0 # disable autocali 
-#        self.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdf_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+#            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
 #                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
@@ -1008,8 +1206,8 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(femb_id, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0xFF)    
         return mon_datas
 
-    def dat_adc_mons(self, mon_type=0xff):
-        femb_id = self.fembs[0]
+    def dat_adc_mons(self,femb_id=0, mon_type=0xff):
+        #femb_id = self.fembs[0]
         
         mon_datas = {} 
         
@@ -1018,7 +1216,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 0
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)   
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_Vmon"] = [datas, datas_v]    
@@ -1028,7 +1226,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 1
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)    
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_Imon"] = [datas, datas_v]     
@@ -1038,7 +1236,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 2
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs) 
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle            
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle            
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_VREFP"] = [datas, datas_v]     
@@ -1048,7 +1246,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 3
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)  
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_VREFN"] = [datas, datas_v]  
@@ -1058,7 +1256,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 4
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)  
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_VCMI"] = [datas, datas_v]
@@ -1068,7 +1266,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_cs = 5
             mux_name = self.mon_adc_cs[mux_cs]
             self.cdpoke(femb_id, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs)    
-            time.sleep(0.2) #delay 200 ms to allow voltage to settle
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
             datas = self.dat_monadcs(mode="adc")[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_VCMO"] = [datas, datas_v]
@@ -1115,16 +1313,13 @@ class DAT_CFGS(WIB_CFGS):
 
         hist_data = []
 
-        #chs = 128
         chs = []
         for femb in self.fembs:
             for ch in range(128):
                 chs.append(femb*128+ch)
 
         start = time.time()
-        #for ch in range(chs):   
         for ch in chs:    
-            
             #indicate which channel is to be analyzed
             # self.poke(0xA00C0078, ch | (0x1<<9)) #extra bit is to make sure trigger is output over P12 LEMO
             self.poke(0xA00C0078, ch)
@@ -1135,10 +1330,7 @@ class DAT_CFGS(WIB_CFGS):
                     peek = self.peek(0xA00C00F0) >> 10
                     if peek < 500:
                         break
-                    # else:
-                        # print(hex(peek))
                     pass
-                
             
             #trigger histogram
             self.poke(0xA00C0074, 0x1)
@@ -1146,49 +1338,83 @@ class DAT_CFGS(WIB_CFGS):
             
             tries = 0
             while self.peek(0xA00C00F0) & (0x1<<9) == 0: #while hist not done
-                # tries = tries + 1
-                # if tries == 10000:
-                    # print("Histogram acquisition failed for channel",ch)
-                    # print("Aborting acquisition")
-                    # return hist_data
                 pass
             ch_hist_data = self.adc_histbuf()
                 
-            print("Ch",ch) # ,"stats:")
-            # for addr,count in enumerate(ch_hist_data):
-                # if count != 0:
-                    # print(count,"counts of ADC value",hex(addr),"num_waits =",num_waits)
+            print("Hist of Ch%d is done"%ch) 
 
             hist_data.append(ch_hist_data)
-            
-            
-            #break #1 ch only
 
         print("Connecting ADC back to ASIC channels")
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFF)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xFF)
         
-        #Set P12 LEMO output to 10mhz clock
-        #self.poke(0xA00C0078, 0x0)
-        
         return hist_data    
         
-    def dat_enob_acq(self):
+    def dat_enob_acq(self, sineflg=True):
         #print("WIB ENOB 16,384 samples test")  
         #print("before running this script: configure the FEMB chips and trigger")  
-
-        
         ch_data = []
         for ch in range(512):
             if (ch // 128) not in self.fembs:
                ch_data.append(None)
                continue
+
+            while True:
+                self.poke(0xa00c0078, ch)
+                #trigger capture
+                self.poke(0xa00c0074, 0x3)
+                self.poke(0xa00c0074, 0x2)
+                #wait till capture done
+                tries = 0
+                while (self.peek(0xa00c00f0) & 0x100) == 0:            
+                    pass
+                    tries = tries + 1
+                    if tries == 20000:
+                        print("ENOB waveform acquisition failed for channel",ch)
+                        print("Aborting acquisition")
+                        return ch_data
+                self.poke(0xa00c0074, 0x0)
+                data = self.adc_histbuf() #block read
+                if sineflg:
+                    if self.enobdata_check(ch, data): #check if data is good
+                        break
+                else:
+                    break
             
+            ch_data.append(data)
+        return ch_data        
+
+    def dat_enob_acq_2 (self, sineflg=True):
+        ch_data = []
+        for ch in range(512):
+        #for ch in [0]:
+            if (ch // 128) not in self.fembs:
+               ch_data.append(None)
+               continue
+            data = self.dat_enob_acq_ch(ch=ch)
+            ch_data.append(data)
+        return ch_data        
+
+
+    def dat_enob_acq_ch(self, ch=0, sineflg=True):
+        chperchip = ch%16
+        #if chperchip == 0:
+        #    chsenl = 0xFFFF 
+        #else:
+        #    chsenl = 0xFFFF ^ (1<<chperchip)
+        chsenl = 0xFFFF ^ (1<<chperchip)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
+        time.sleep(0.05)
+        #input ("wait")
+        #print("WIB ENOB 16,384 samples test")  
+        #print("before running this script: configure the FEMB chips and trigger")  
+
+        while True:
             self.poke(0xa00c0078, ch)
             #trigger capture
             self.poke(0xa00c0074, 0x3)
-            # for i in range(750):
-                # pass
             self.poke(0xa00c0074, 0x2)
             #wait till capture done
             tries = 0
@@ -1198,15 +1424,34 @@ class DAT_CFGS(WIB_CFGS):
                 if tries == 20000:
                     print("ENOB waveform acquisition failed for channel",ch)
                     print("Aborting acquisition")
-                    return ch_data
+                    return None
             self.poke(0xa00c0074, 0x0)
             data = self.adc_histbuf() #block read
-            
-            ch_data.append(data)
-            print("Ch",ch)
+            if sineflg:
+                if self.enobdata_check(ch, data): #check if data is good
+                    break
+            else:
+                break
+        return data        
 
-        return ch_data        
     
+    def enobdata_check(self, ch, data): 
+        num_16bwords = 0x8000 / 2
+        words16b = list(struct.unpack_from("<%dH"%(num_16bwords),data))
+        if 0 in words16b or 0x3fff in words16b:
+            print ("data on ch%d has glitch, retake data"%ch)
+            return False
+        data0 = np.array(words16b[0:-1])
+        data1 = np.array(words16b[1:])
+        deltas = data0 - data1
+        dstd = np.std(deltas)
+        dmean = np.mean(deltas)
+        if np.max(deltas) > (dmean + 5*dstd) or np.min(deltas) < (dmean - 5*dstd):
+            print ("data on ch%d has glitch, retake data"%ch)
+            return False
+        else:
+            return True
+
     def adc_refv_chk(self,datad):
         dkeys = list(datad.keys())
         err_high = 1.15
@@ -1238,12 +1483,12 @@ class DAT_CFGS(WIB_CFGS):
         
         if waveform == None: #turn off output
             pass
-        elif waveform == "RAMP" or waveform == "DC": #DC will use vhigh argument
+        elif  waveform == "TRI" or waveform == "RAMP" or waveform == "DC": #DC will use vhigh argument
             pass
         elif waveform == "SINE":
             waveform = "SIN" 
         else:
-            print("sig_gen_config: Unrecognized waveform argument. Options are RAMP, SINE, DC")
+            print("sig_gen_config: Unrecognized waveform argument. Options are TRIG, RAMP, SINE, DC")
             waveform = "error"
         
         if vlow >= 0:
@@ -1259,40 +1504,33 @@ class DAT_CFGS(WIB_CFGS):
         sigconfig_done = False
         while not sigconfig_done:
             try:
-                sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
+                sig_gen = rm.open_resource(self.gen_rm)
                 print(sig_gen.query("*IDN?"),end='')
                 if waveform == None or waveform == "error": #turn off output
                     sig_gen.write("OUTPUT OFF")  
                 else:
-                    
-
                     if waveform == 'DC':
                         sig_gen.write("FUNCTION DC")
                         sig_gen.write("VOLTAGE:OFFSET "+highsign+str(vhigh))
-                    elif waveform == 'RAMP' or waveform == 'SIN':
+                    elif waveform == 'RAMP' or waveform == 'SIN' or waveform == 'TRI':
                         sig_gen.write("FUNCTION "+str(waveform))
+                        if waveform == 'RAMP':
+                            sig_gen.write("FUNC:RAMP:SYMM 100")
                         sig_gen.write("FREQ "+str(freq))
                     
                         sig_gen.write("VOLTAGE:LOW "+lowsign+str(vlow))
                         sig_gen.write("VOLTAGE:HIGH "+highsign+str(vhigh))
                     
-                    
                     sig_gen.write("OUTPUT:LOAD INF") #HiZ impedance
                     sig_gen.write("OUTPUT ON")
                 sigconfig_done = True 
                 print("Signal generator configured")               
+                sig_gen.close() 
             except Exception as e:
                 print(e)
                 print("Error configuring signal generator. Trying again...")
-            err = sig_gen.query("SYSTEM:ERROR?")
-            print("Signal generator status:",err,end='')
-            sig_gen.close() 
-
-        return err 
-    
-    
-    
-    
+                #err = sig_gen.query("SYSTEM:ERROR?")
+                #print("Signal generator status:",err,end='')
     
     # def dat_adc_imons(self, mon_type=0xff):
         # femb_id = self.fembs[0]

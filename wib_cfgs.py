@@ -9,7 +9,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def __init__(self):
         super().__init__()
         self.i2cerror = False 
-        self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
+        self.adcs_paras_init = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                             [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                             [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                             [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
@@ -19,7 +19,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                             [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
                           ]
-#        self.adcs_paras_init = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali #for SE operation
+#        self.adcs_paras_init = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80),  vrefp, vrefn, vcmo, vcmi, autocali #for SE operation
 #                            [0x4, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
 #                            [0x5, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
 #                            [0x6, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
@@ -654,6 +654,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
     def femb_adc_chkreg(self, femb_id):
 
         print("Check femb%d COLDADC default registers' value"%femb_id)
+        self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
 
         # page 1 registers
         #reg_addr1=range(0x80,0xB7)
@@ -699,8 +700,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for adc_no in range(8):
             c_id    = self.adcs_paras[adc_no][0]
             data_fmt= self.adcs_paras[adc_no][1] 
-            diff_en = self.adcs_paras[adc_no][2] 
-            sdc_en  = self.adcs_paras[adc_no][3] 
+            sha_cs  = self.adcs_paras[adc_no][2] 
+            ibuf_cs = self.adcs_paras[adc_no][3] 
             vrefp   = self.adcs_paras[adc_no][4] 
             vrefn   = self.adcs_paras[adc_no][5]  
             vcmo    = self.adcs_paras[adc_no][6] 
@@ -710,13 +711,32 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=2, reg_addr=0x01, wrdata=0x0c)
             #offset_binary_output_data_format
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x89, wrdata=data_fmt)
-            #diff or se
-            if diff_en == 0:
+
+            #SHA diff or se
+            if sha_cs == 0: #SE mode
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0x03) 
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x84, wrdata=0x3b)
-            if sdc_en == 0:
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0x23) #SDC bypassed
-            else:
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0x62) #SDC on
+            else: #diff mode
+                ibuf_cs = abs(ibuf_cs%3)
+                if ibuf_cs == 1: #SDC buf on
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0x62) #SDC on
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x84, wrdata=0x33)
+                elif ibuf_cs == 2: #DB buf on
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0xA1) #
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x84, wrdata=0x33)
+                else:
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x80, wrdata=0x03) 
+                    self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x84, wrdata=0x33)
+
+            if ibuf_cs > 0:
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x8f, wrdata=0x99)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x90, wrdata=0x99)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x91, wrdata=0x99)
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x92, wrdata=0x99)
+
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9d, wrdata=0x27) #ibuff0 current should be 200uA when input buffers are enabled
+                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9e, wrdata=0x27) #ibuff0 current should be 200uA when input buffers are enabled
+
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x98, wrdata=vrefp)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x99, wrdata=vrefn)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9a, wrdata=vcmo)
@@ -840,11 +860,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
             sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
             sts_cd2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
+            print (hex(sts_cd1 ), hex(sts_cd2))
 
             if (sts_cd1&0xff == 0xff) and (sts_cd2&0xff == 0xff):
+                print ("FEs are configurated")
                 break
             else:
-                print ("\033[91m" + "LArASIC readback status is {}, {} diffrent from 0xFF".format(sts_cd1, sts_cd2) + "\033[0m")
+                print ("\033[91m" + "LArASIC readback status are {} {}, diffrent from 0xFF".format(sts_cd1, sts_cd2) + "\033[0m")
                 if i > 10:
                     #self.femb_powering(fembs =[])
                     #print ("Turn all FEMBs off, exit anyway")

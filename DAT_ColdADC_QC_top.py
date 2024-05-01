@@ -26,15 +26,15 @@ dat =  DAT_CFGS()
 print ("\033[93m  QC task list   \033[0m")
 print ("\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m")
 print ("\033[96m 1: ADC power cycling measurement  \033[0m")
-print ("\033[96m 2: ADC I2C communication checkout  \033[0m")
+print ("\033[96m 2: ADC reserved...  \033[0m")
 print ("\033[96m 3: ADC reference voltage measurement  \033[0m")
 print ("\033[96m 4: ADC autocalibration check  \033[0m")
-print ("\033[96m 5: ADC open channel noise measurement  \033[0m")
+print ("\033[96m 5: ADC noise measurement  \033[0m")
 print ("\033[96m 6: ADC DNL/INL measurement  \033[0m")
-print ("\033[96m 7: ADC overflow check  \033[0m")
+print ("\033[96m 7: ADC DAT-DAC SCAN  \033[0m")
 print ("\033[96m 8: ADC ENOB measurement \033[0m")
 print ("\033[96m 9: ADC ring oscillator frequency readout \033[0m")
-print ("\033[96m 10: ADC gain test \033[0m")
+print ("\033[96m 10: ADC RANGE test \033[0m")
 print ("\033[96m 11: Turn DAT off \033[0m")
 print ("\033[96m 12: Turn DAT (on WIB slot0) on without any check\033[0m")
 
@@ -48,7 +48,6 @@ wib_time = datetime.datetime.now().strftime("%m-%d-%Y %H:%M:%S")
 tt = []
 tt.append(time.time())
 
-
 if 0 in tms:
     while True:
         print ("\033[92m WIB time: " + wib_time + " \033[0m")
@@ -60,7 +59,7 @@ if 0 in tms:
             print ("(Windows PC only) open Powershell, type in: ")
             print ("""\033[91m  $cdate = get-date  \033[0m""")
             print ("""\033[91m  $wibdate = "date -s '$cdate'"  \033[0m""")
-            print ("""\033[91m  ssh root@192.168.121.1  $wibdate  \033[0m""")
+            print ("""\033[91m  ssh root@192.168.121.123  $wibdate  \033[0m""")
             print ("""\033[91m  password: fpga  \033[0m""")
             print ("Restart this script...")
             exit()
@@ -76,11 +75,13 @@ else:
 
 logs = {}
 logsd, fdir =  dat_user_input(infile_mode=True,  froot = "./tmp_data/",  itemized_flg=itemized_flg)
+
+#to be change later sgao 04/19/24
+itemized_flg = False
 if itemized_flg:
     if not os.path.exists(fdir):
         print ("\033[91m Please perform a full test instead of the itemized tests, exit anyway\033[0m")
         exit()
-
 
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
@@ -96,21 +97,22 @@ if dat_sn  == 2:
     Vref = 1.5738
 logs.update(logsd)
 
+#to be change later sgao 04/19/24
 #tms=[0]
-if 0 not in tms :
-    pwr_meas = dat.get_sensors()
-    for key in pwr_meas:
-        if "FEMB%d"%dat.dat_on_wibslot in key:
-            on_f = False
-            if ("BIAS_V" in key) and (pwr_meas[key] > 4.5):
-                    if ("DC2DC0_V" in key) and (pwr_meas[key] > 3.5):
-                            if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
-                                    if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
-                                            on_f = True
-            if (not on_f) and (tms[0] != 11):
-                tms = [11] + tms #turn DAT on
-                if 11 not in tms:
-                    tms = tms + [11] #turn DAT off after testing
+#if 0 not in tms :
+#    pwr_meas = dat.get_sensors()
+#    for key in pwr_meas:
+#        if "FEMB%d"%dat.dat_on_wibslot in key:
+#            on_f = False
+#            if ("BIAS_V" in key) and (pwr_meas[key] > 4.5):
+#                    if ("DC2DC0_V" in key) and (pwr_meas[key] > 3.5):
+#                            if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
+#                                    if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
+#                                            on_f = True
+#            if (not on_f) and (tms[0] != 11):
+#                tms = [11] + tms #turn DAT on
+#                if 11 not in tms:
+#                    tms = tms + [11] #turn DAT off after testing
 
 ####### Init check information #######
 if 12 in tms:
@@ -135,29 +137,12 @@ if 0 in tms:
     cds_pwr_info = dat.dat_cd_pwr_meas()
     datad["CD_PWRON"] = cds_pwr_info
     dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
+    dat.asic_init_por()
     chkdata = dat.dat_asic_chk()
     datad.update(chkdata)
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
+    print ("to do: FE mapping to be done")
     
-    #Monitor reference voltages
-    datad_mons = dat.dat_adc_mons(mon_type=0x3c)  
-    passf = True
-    for onekey in datad_mons.keys():
-        if dat.adc_refv_chk({onekey:datad_mons[onekey]}): #warn_flag == True
-            print(onekey+": FAIL")
-            datad_mons[onekey].append("FAIL")
-            passf = False
-        else:
-            pass
-            datad_mons[onekey].append("PASS")
-            #print(onekey+": PASS")
-    datad.update(datad_mons)
     datad['logs'] = logs
-
     if not os.path.exists(fdir):
         try:
             os.makedirs(fdir)
@@ -170,117 +155,43 @@ if 0 in tms:
         pickle.dump(datad, fn)
 
     tt.append(time.time())
-    if passf:
-        print ("\033[92mPass init check, it took %d seconds \033[0m"%(tt[-1]-tt[-2]))
-    else:
-       print ("\033[91mFail init check, it took %d seconds \033[0m"%(tt[-1]-tt[-2])) 
+    print ("\033[92mPass init check, it took %d seconds \033[0m"%(tt[-1]-tt[-2]))
     
     
-###
-
-
-
 if 1 in tms: #if "cycling_placeholder" in tms:
     print ("\033[95mADC power cycling measurement starts...\033[0m")
     cycle_times = 6
     
     datad = {}
     datad['logs'] = logs
-    
-
-    adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07] 
-    
+     
     for ci in range(cycle_times):
         dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
         dat.wib_pwr_on_dat() #turn DAT on
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x20)
-        
+
         cseti = ci%4   
-
-
-        
         if cseti == 0: #SDC off(bypass), DB(bypass), SE : Regaddr0x80[1:0] = b”11” [por default], regaddr0x84[3]=b’1’ (diff_en = 0, sdc_en = 0)
-            # cfg_info = dat.dat_adc_qc_cfg(diff_en=0, sdf_en=0,adac_pls_en=1)   
-            diff_en = 0
-            sdf_en = 0
-
-            # rawdata, cfg_info = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)
+            sha_cs = 0
+            ibuf_cs = 0
         if cseti == 1: #SDC off(bypass), DB(bypass), DIFF : Regaddr0x80[1:0] = b”11”[por default], regaddr0x84[3]=b’0’ (diff_en = 1)
-            # cfg_info = dat.dat_adc_qc_cfg(diff_en=1, sdf_en=0,adac_pls_en=1)
-            diff_en = 1
-            sdf_en = 0
-            # rawdata, cfg_info = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)
+            sha_cs = 1
+            ibuf_cs = 0
         #Skipping this config because datasheet says not to do it:
         # if cseti == 2: #SDC on, DB on, SE:  Regaddr0x80[1:0] = b”00” (must set manually), regaddr0x84[3]=b’1’ (diff_en = 0)
-            # cfg_info = dat.dat_adc_qc_cfg(diff_en=0, sdf_en=0)
-            # wrdata = 0xe0 #turns on both buffers and directs currents from cmos reference to the buffer
-            # for chip in range(0x8):
-                # self.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x80, wrdata=wrdata)                
-            # rawdata = dat.dat_adc_qc_acq()        
         if cseti == 2: #SDC on, DB off, SE:  Regaddr0x80[1:0] = b”10”, regaddr0x84[3]=b’1’ (sdc_en = 1, diff_en = 0)
-            # cfg_info = dat.dat_adc_qc_cfg(diff_en=0, sdf_en=1,adac_pls_en=1)
-            diff_en = 0
-            sdf_en = 1
-            # rawdata, cfg_info = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)
+            sha_cs = 1
+            ibuf_cs = 1
         if cseti == 3: #SDC off, DB on, DIFF:  Regaddr0x80[1:0] = b”01”(must set manually), regaddr0x84[3]=b’0’ [por default]
-            # cfg_info = dat.dat_adc_qc_cfg(diff_en=1, sdf_en=0,adac_pls_en=1)
-            diff_en = 1
-            sdf_en = 0
-
-             
-            # rawdata, cfg_info = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)
-        for adc_no in range(0x8):
-            dat.adcs_paras[adc_no][2] = diff_en
-            dat.adcs_paras[adc_no][3] = sdf_en
+            sha_cs = 1
+            ibuf_cs = 2
         
-        cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)                    
-        if cseti == 3:
-            wrdata = 0xA1 #turns on diff buffer and directs currents from cmos reference to the buffer
-            # wrdata = 0x1
-            # wrdata = 0x91
-            for chip in range(0x8):
-                dat.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x80, wrdata=wrdata)
-                
-        if cseti == 2 or cseti == 3:
-            wrdata = 0x33 #turns on diff buffer and directs currents from cmos reference to the buffer
-            for chip in range(0x8):
-                dat.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x84, wrdata=wrdata) 
-                
-        if diff_en or sdf_en:
-            for chip in range(0x8):
-                for reg_addr in [0x8f, 0x90, 0x91, 0x92]:
-                    dat.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=reg_addr, wrdata=0x99)
-        # if sdf_en:
-            # wrdata = 0x42
-            # for chip in range(0x8):
-                # dat.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x80, wrdata=wrdata)            
-        
-        for chip in range(0x8):
-            print("\033[95m  ADC%d  \033[0m"%(chip))
-            print ("\033[95m  cseti="+str(cseti)+"   \033[0m")  
-            reg80 = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x80)
-            reg84 = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x84)
-            reg8f = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x8f)
-            reg90 = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x90)
-            reg91 = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x91)
-            reg92 = dat.femb_i2c_rd(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0x92)
-            
-            print ("\033[95m  0x80="+hex(reg80)+"   \033[0m")
-            print ("\033[95m  0x84="+hex(reg84)+"   \033[0m")
-            print ("\033[95m  0x8f="+hex(reg8f)+"   \033[0m") 
-            print ("\033[95m  0x90="+hex(reg90)+"   \033[0m") 
-            print ("\033[95m  0x91="+hex(reg91)+"   \033[0m") 
-            print ("\033[95m  0x92="+hex(reg92)+"   \033[0m") 
-        
-        rawdata = dat.dat_adc_qc_acq()      
-
-        
+        cfg_info = dat.dat_adc_qc_cfg(sha_cs=sha_cs, ibuf_cs=ibuf_cs, autocali=0)                    
+        rawdata = dat.dat_adc_qc_acq(num_samples = 1)
         fes_pwr_info = dat.fe_pwr_meas()
         adcs_pwr_info = dat.adc_pwr_meas()
         cds_pwr_info = dat.dat_cd_pwr_meas()
-        
         datad["PwrCycle_%d"%cseti] = [dat.fembs, rawdata, cfg_info, fes_pwr_info, adcs_pwr_info, cds_pwr_info]
-               
 
     fp = fdir + "QC_PWR_CYCLE" + ".bin"
     with open(fp, 'wb') as fn:
@@ -290,160 +201,30 @@ if 1 in tms: #if "cycling_placeholder" in tms:
         
 if 2 in tms:#if "i2c_placeholder" in tms:
     print ("\033[95mI2C communication test starts...   \033[0m")
-    datad = {}
-    datad['logs'] = logs
-
-    #Check power-on reset
-    dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
-    dat.wib_pwr_on_dat() #turn DAT on    
-    error = dat.femb_adc_chkreg(dat.dat_on_wibslot)
-    
-    if error:
-        print("\033[91mPOR reg check failed.   \033[0m")
-        #read all registers and save values?
-        reg_addr1=range(0x80,0xB3)
-        reg_addr2=range(1,5)
-        
-        adcs_rdregs = [[[],[]] for adc_no in range(8)] 
-        for adc_no in range(8):
-            c_id = dat.adcs_paras[adc_no][0]
-
-            reg_page=1
-            nreg=0
-            for reg_addr in reg_addr1:
-                rdreg = dat.femb_i2c_rd(dat.dat_on_wibslot, c_id, reg_page, reg_addr)
-                #defreg = reg_dval1[nreg]
-                nreg = nreg+1
-                # if rdreg!=defreg:
-                   # print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
-                   # hasERROR = True
-                adcs_rdregs[adc_no][0].append(rdreg)   
-    
-            reg_page=2
-            nreg=0
-            for reg_addr in reg_addr2:
-                rdreg = dat.femb_i2c_rd(dat.dat_on_wibslot, c_id, reg_page, reg_addr)
-                # defreg = reg_dval2[nreg]
-                nreg = nreg+1
-                # if rdreg!=defreg:
-                   # print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
-                   # hasERROR = True        
-                adcs_rdregs[adc_no][1].append(rdreg) 
-        #Store registers
-        datad['POR_CHKREG_FAIL'] = adcs_rdregs
-    else:
-        datad['POR_CHKREG_FAIL'] = None
-    
-    #Write/read registers
-    ## What values to check for test write? What is safe?
-    ## Save failed reads info in datad
-    
-    fp = fdir + "QC_I2C_COMM" + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump(datad, fn)
-    tt.append(time.time())
-    print ("\033[92mADC I2C communication check is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
-    
+    print ("The test was included in the init chekcout")
+    print ("PASS")
 
 if 3 in tms:#if "refv_placeholder" in tms:
-    
     print ("\033[95mADC monitoring measurement starts...   \033[0m")
+#note: only WIB FEMB slot 0 is used for DAT now
+    femb_id = dat.DAT_on_WIBslot
     data = {}
     data['logs'] = logs   
-    cfg_info = dat.dat_adc_qc_cfg()
-    time.sleep(1)
-        
-    #measure default outputs of VREFP, VREFN, VCMI, VCMO
-    data.update(dat.dat_adc_mons(mon_type=0x3c))
-    
-    refv_dacs = []
-    # #Scan the DAC (8bit) for each ref voltages
-    # for dac in range(0,0x100,0x10): #do we need every value? add a step?
-        # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
-        # refv_dacs.append(dat.dat_adc_mons(mon_type=0x3c))
-        # #data.update(dat.dat_adc_mons(mon_type=0x3c))
-        
-    #Using https://www.analog.com/media/en/training-seminars/design-handbooks/Data-Conversion-Handbook/Chapter5.pdf pg 10
-    #1. measure all 0's and all 1's to get LSB
-    # dac = 0xFF
-    # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
-    # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c) 
-    
-    #2. measure one-hot codes
-    #3. measure "major carry points": 0000 to 0001, 0001 to 0010, 0011 to 0100, and 0111 to 1000    [i.e. one-hot minus 1]
-    # indiv_sums = {}
-    # indiv_sums['MON_VREFP'] = np.array([0,0,0,0,0,0,0,0])
-    # indiv_sums['MON_VREFN'] = np.array([0,0,0,0,0,0,0,0])
-    # indiv_sums['MON_VCMI'] = np.array([0,0,0,0,0,0,0,0])
-    # indiv_sums['MON_VCMO'] = np.array([0,0,0,0,0,0,0,0])
-    
-    #dac levels to sample:
-        #one hots and major carries for dnl/inl and a few others for plotting
-    dacs = [0, 0b1, 0b10, 0b11, 0b100, 0b111, 0b1000, 0b1111, 0b10000, 0b11111, 0b100000, 0b110000, 0b111111, 
-        0b1000000, 0b1010000, 0b1100000, 0b1110000, 0b1111111, 
-        0b10000000, 0b10010000, 0b10100000, 0b10110000, 0b11000000, 0b11010000, 0b11100000, 0b11110000, 0b11111111]
-    
-    # for shift in range(8):
-    for dac in dacs:
-        ###one-hot
-        # dac = 0x1 << shift
-        cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
-        # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c)
-        refv_dacs.append(dat.dat_adc_mons(mon_type=0x3c))
-        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-            # indiv_sums[key] = indiv_sums[key] + refv_dacs[dac][key][1] #for verification
-        # print("\nadding",bin(dac),"\n")
-        ###major carry point
-        # if dac != 0x2: #because 0b10 was already covered by 0x1 << 0
-            # dac = dac - 1
-            # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
-            # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c)                
-    # one_lsb = {}
-    # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:    
-        # one_lsb[key] = (refv_dacs[0xFF][key][1] - refv_dacs[0x00][key][1]) / 255 #8 bits
-    # print("adding 0")
-    #[4bit version]: The all "1"s code, 1111, previously measured should equal the sum of the individual bit voltages: 0000, 0001,
-    #0010, 0100, and 1000. This is a good test to verify that superposition holds.
-    # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-        # indiv_sums[key] = indiv_sums[key] + refv_dacs[0x00][key][1] #for verification
-    # print("individual sums:",indiv_sums)
-    # print("all 1's:",refv_dacs[0xFF])
-    
-    # vrefp00_sum = 0
-    # for dac in [0b0,0b1,0b10,0b100,0b1000,0b10000,0b100000,0b1000000,0b10000000]:
-        # print(bin(dac))
-        # vrefp00_sum = vrefp00_sum + refv_dacs[dac]['MON_VREFP'][1][0]
-    
-    # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-        # print('vrefp0 sum',key,":",vrefp00_sum[key][1])
-    # print('vrefp ff:',refv_dacs[0xFF]['MON_VREFP'][1][0])
 
-    
+    cfg_info = dat.dat_adc_qc_cfg()
+    time.sleep(0.5)
+    #measure default outputs of VREFP, VREFN, VCMI, VCMO
+    data.update(dat.dat_adc_mons(femb_id, mon_type=0x3c))
+
     #In a well-behaved DAC where superposition holds, these tests should be sufficient to verify
     #the static performance.
-    data["refv_dacs"] = refv_dacs
+    data["refv_dacs"] = dat.dat_adc_qc_refdacs(femb_id)
     #Use ^ for DNL/INL
-    
-    #return voltages to normal
-    cfg_info = dat.dat_adc_qc_cfg() 
-    
-    #Check the current monitors
-    imons = {}
-    for imon_select in range(0x8):
-        adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07]  
-        #turn on and select current monitor
-        for chip in range(0x8):
-            dat.femb_i2c_wrchk(femb_id=dat.dat_on_wibslot, chip_addr=adcs_addr[chip], reg_page=1, reg_addr=0xaf, wrdata=(imon_select<<5)|0x02)
-        
-    
-        imon_datas = dat.dat_adc_mons(mon_type=0x2)["MON_Imon"]
-        #Add current (mA) calculation to dict
-        imon_datas.append(np.array(imon_datas[1])/dat.imon_R)
-        imons[dat.adc_imon_sel[imon_select]] = imon_datas        
-    data['Imons'] = imons    
+    data['Imons'] = dat.dat_adc_qc_imons(femb_id)    
     
     fp = fdir + "QC_REFV" + ".bin"
     with open(fp, 'wb') as fn:
+
         pickle.dump(data, fn)    
     tt.append(time.time())
     print ("\033[92mADC monitoring measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))        
@@ -458,25 +239,7 @@ if 4 in tms:#if "autocali_placeholder" in tms:
     cfg_info = dat.dat_adc_qc_cfg() 
     
     #Check weights   
-    datad['weights'] = []
-    adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07]
-    for chip in range(8):
-        chip_weights = []
-        for adc in range(2): #ADC0 or ADC1
-            adc_weights = []
-            for weight in range(2): #W0 or W2
-                stage_weights = []
-                for stage_num in range(16):                     
-                    #calculated using ColdADC datasheet, section "Configuration Memory", Table 10: Configuration Memory Address
-                    weight_lsb_addr = (adc << 6) | (weight << 5) | (stage_num << 1)
-                    weight_msb_addr = weight_lsb_addr | 0x1
-                    weight_lsb = dat.femb_i2c_rd(dat.dat_on_wibslot, adcs_addr[chip], 0x1, weight_lsb_addr)
-                    weight_msb = dat.femb_i2c_rd(dat.dat_on_wibslot, adcs_addr[chip], 0x1, weight_msb_addr)
-                    weight_16b = (weight_msb << 8) | weight_lsb
-                    stage_weights.append(weight_16b)
-                adc_weights.append(stage_weights)
-            chip_weights.append(adc_weights)
-        datad['weights'].append(chip_weights)
+    datad['weights'] =  dat.dat_adc_qc_auto_weithts()
         
     fp = fdir + "QC_AUTOCALI" + ".bin"
     with open(fp, 'wb') as fn:
@@ -485,39 +248,58 @@ if 4 in tms:#if "autocali_placeholder" in tms:
     print ("\033[92mADC autocalibration check is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))   
     
 if 5 in tms:#if "noise_placeholder" in tms:
-    print ("\033[95mADC open channel noise measurement starts...   \033[0m")
-    
+    print ("\033[95mADC  noise measurement starts...   \033[0m")
     datad = {}
     datad['logs'] = logs  
+    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
+    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)    
 
-    
-    measure_mode = "fe_dc"
-    
-    datad["fembs"] = dat.fembs
-    
-    # if measure_mode == "fe_dc": #Measure DC from LArASIC #200 mv and 900 mV
-        # adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0)
-          
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0xFF) 
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0xFF)     
-    # cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=0, sts=1, swdac=1, dac=1, snc=0) #900mV
-    datad['FE_DC_900mV'], datad['900mV_cfg'] = dat.dat_fe_qc(adac_pls_en=0, sts=1, swdac=1, dac=0x5, snc=0, num_samples=10) #900mV
-    datad['FE_DC_200mV'], datad['200mV_cfg'] = dat.dat_fe_qc(adac_pls_en=0, sts=1, swdac=1, dac=0x5, snc=1, num_samples=10) #200mV
-    print("len of FE_DC_900mV",len(datad['FE_DC_900mV']))
-    # elif measure_mode == "open_ch": #Measure open channel noise (but there is 8 channels tied together)
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0x0) 
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0x0) 
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_TEST_IN_SEL, 0x0)
-    dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x67) #connect P and N to different open sources?
-    datad['open_adc_cfg'] = dat.dat_adc_qc_cfg()
-    datad['Mux_open'] = dat.dat_adc_qc_acq(num_samples=10)
-    
+    if True:#test with LArASIC
+        print ("Test RMS noise with differnt output modes under 14mV/fC, 2us")
+        slk0=0
+        slk1=0
+        st0=1
+        st1=1
+        sg0=0
+        sg1=0
+        for snc in [0, 1]:
+            for buf in [0,1,2]:
+                sdd = buf//2
+                sdf = buf%2
+                fe_cfg_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
+                data = dat.dat_fe_qc_acq(num_samples=5)
+                cfgstr = "RMS_OUTPUT_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
+                datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
+
+    if True:#test with input open
+        cfg_info = dat.dat_adc_qc_cfg(sha_cs=1, autocali=1)
+        dat.dat_coldadc_input_cs(mode="OPEN", SHAorADC = "SHA", chsenl=0x0000)
+        datad['DIFF_OPEN']   =  [dat.fembs, dat.dat_adc_qc_acq(5), cfg_info, "ColdADC_DIFF_OPEN"]
+
+        cfg_info = dat.dat_adc_qc_cfg(sha_cs=0, autocali=1)
+        dat.dat_coldadc_input_cs( mode="OPEN", SHAorADC = "SHA", chsenl=0x0000)
+        datad['SE_OPEN']   =   [dat.fembs, dat.dat_adc_qc_acq(5), cfg_info, "ColdADC_SE_OPEN"]
+
+    if True:#test with input is DAT-DAC
+        val = 0.9 #V
+        valint = int(val*65536/dat.ADCVREF)
+        dat.dat_set_dac(val=valint, adc=0) #set ADC_P to 0 V
+        dat.dat_set_dac(val=valint, adc=1) #set ADC_N to 0 V
+
+        cfg_info = dat.dat_adc_qc_cfg(sha_cs=1, autocali=1)
+        dat.dat_coldadc_input_cs( mode="DACDIFF", SHAorADC = "SHA", chsenl=0x0000)
+        datad['DACDIFF']   =  [dat.fembs, dat.dat_adc_qc_acq(5), cfg_info, "ColdADC_DACDIFF"]
+
+        cfg_info = dat.dat_adc_qc_cfg(sha_cs=0, autocali=1)
+        dat.dat_coldadc_input_cs( mode="DACSE", SHAorADC = "SHA", chsenl=0x0000)
+        datad['DACSE']   =  [dat.fembs, dat.dat_adc_qc_acq(5), cfg_info, "ColdADC_DACSE"]
+   
     fp = fdir + "QC_RMS" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
 
     tt.append(time.time())        
-    print ("\033[92mADC open channel noise measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
+    print ("\033[92mADC noise measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
     
 if 6 in tms:
     print ("\033[95mADC DNL/INL measurement starts...   \033[0m")
@@ -525,30 +307,32 @@ if 6 in tms:
     datad = {}
     datad['logs'] = logs  
     
-    cfg_info = dat.dat_adc_qc_cfg() 
     
     #Assuming slow ramp config
     #Replace these or input them in DAT_user_input.py as necessary:
     datad['fembs'] = dat.fembs
-    # datad['waveform'] = 'SINE' 
-    datad['waveform'] = 'RAMP'
-    datad['source'] = 'DAT_P6'
-    # datad['source'] = 'WIB'
-    # datad['freq'] = 1000 # Hz
+    datad['waveform'] = 'RAMP' 
+    datad['source'] = 'WIB'
     datad['freq'] = 1 # Hz
     datad['voltage_low'] = -0.1 # Vpp
-    datad['voltage_high'] = 2.5
-    # datad['offset'] = 1 #V    
+    datad['voltage_high'] = 2.0
     datad['num_samples'] = 2000000
+    #datad['waveform'] = 'RAMP'
+    #datad['source'] = 'DAT_P6'
+    #datad['freq'] = 1000 # Hz
+    #datad['offset'] = 1 #V    
     
-    dat.sig_gen_config(datad['waveform'], datad['freq'], datad['voltage_low'], datad['voltage_high']) 
-    
-    dat.dat_coldadc_ext(ext_source=datad['source'])
-    # input("Scope U91 top left pin")
-    datad['rawdata'] = dat.dat_adc_qc_acq() #trigger readout
-    datad['histdata'] = dat.dat_adc_histbuf_trig(num_samples=datad['num_samples'], waveform=datad['waveform'])  
+    dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
 
-    dat.sig_gen_config()
+    cfg_info = dat.dat_adc_qc_cfg() 
+    dat.dat_coldadc_input_cs(mode="WIBSE", SHAorADC = "SHA", chsenl=0x0000)
+    dat.dat_adc_qc_acq(1)
+    histdata = dat.dat_adc_histbuf_trig(num_samples=datad['num_samples'], waveform=datad['waveform'])  
+    datad['histdata'] = [dat.fembs, histdata, cfg_info, "WIB_SE_SHA_HIST"]
+
+    #new FE board
+    
+    dat.sig_gen_config() #turn signal generator off
     
     fp = fdir + "QC_DNL_INL" + ".bin"
     with open(fp, 'wb') as fn:
@@ -558,105 +342,147 @@ if 6 in tms:
     print ("\033[92mADC DNL/INL measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
     
 if 7 in tms:#if "overflow_placeholder" in tms:
-    print ("\033[95mADC overflow check starts...   \033[0m")
-    
+    print ("\033[95mADC DAT-DAC SCAN starts...   \033[0m")
     datad = {}
     datad['logs'] = logs  
-    
-    cfg_info = dat.dat_adc_qc_cfg()  
+    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
+    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac)    
+  
+    cfg_info = dat.dat_adc_qc_cfg(sha_cs=1, autocali=1)
+    dat.dat_coldadc_input_cs( mode="DACDIFF", SHAorADC = "SHA", chsenl=0x0000)
 
+    step = 0.05
+    for i in range(int(1.25/step)):
+        valp = 0.9 + i*step
+        valint = int(valp*65536/dat.ADCVREF)
+        dat.dat_set_dac(val=valint, adc=0) #set ADC_P 
+        valn = 0.9 - i*step
+        if valn <= 0:
+            valn = 0
+        valint = int(valn*65536/dat.ADCVREF)
+        dat.dat_set_dac(val=valint, adc=1) #set ADC_N 
+        time.sleep(0.01)
+        datad['DACDIFF_%04d'%i] = [dat.fembs, dat.dat_adc_qc_acq(1), cfg_info, valp-valn]
 
-    #take data for underflow
-    ##tie ADC to gnd
-    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0x0) 
-    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0x0) 
-    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_TEST_IN_SEL, 0x0)  
-    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x0)
-    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x33)
-    dat.dat_set_dac(0x0, adc=0)  #Set ADCP to 0
-    dat.dat_set_dac(0xFFFF, adc=1)  #give ADCN a positive voltage   
-    # import pyvisa  
-    # rm = pyvisa.ResourceManager()    
-    # sigconfig_done = False
-    # while not sigconfig_done:
-        # try:
-            # sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
-            # print(sig_gen.query("*IDN?"))
-            # sig_gen.write("FUNCTION DC")
-            # sig_gen.write("VOLTAGE:OFFSET -2.5V")
-            # sig_gen.write("OUTP ON")
-            # sigconfig_done = True
-            # print("Successfully configured signal generator")
-        # except:
-            # print("Error configuring signal generator. Trying again...")
-            # sigconfig_done = False
-        
-        # sig_gen.close()
-
-    
-    # dat.dat_coldadc_ext(ext_source='DAT_P6')
-    dat.dat_coldadc_cali_cs(mode="DIFF")
-        
-    
-    # input("Probe DACs - underflow")
-    print(hex(dat.peek(0xa00c00f0) >> 10))
-    datad['rawdata_under'] = dat.dat_adc_qc_acq(num_samples = 20) 
-    
-    # sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
-    # sig_gen.write("OUTP OFF")
-    # sig_gen.close()
-
-    
-    #take data for overflow
-    # ##tie ADC P  to DAT PDAC set to max
-    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0x0) 
-    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0x0) 
-    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_TEST_IN_SEL, 0x0)  
-    # # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x0)    
-    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x33)
-    dat.dat_coldadc_cali_cs(mode="DIFF")
-    dat.dat_set_dac(0xFFFF, adc=0)
-    dat.dat_set_dac(0x0, adc=1)
-    # input("Probe DACs - overflow")
-    print(hex(dat.peek(0xa00c00f0) >> 10))
-    datad['rawdata_over'] = dat.dat_adc_qc_acq(num_samples = 20) 
-    
-    dat.dat_set_dac(0x0, adc=0) #set ADC PDAC back to 0
-    dat.dat_set_dac(0x0, adc=1) #set ADC NDAC back to 0
-    
-    fp = fdir + "QC_OVERFLOW" + ".bin"
+    cfg_info = dat.dat_adc_qc_cfg(sha_cs=0, autocali=1)
+    dat.dat_coldadc_input_cs( mode="DACSE", SHAorADC = "SHA", chsenl=0x0000)
+    for i in range(int(2.5/step)):
+        val = i*step
+        valint = int(val*65536/dat.ADCVREF)
+        dat.dat_set_dac(val=valint, adc=0) #set ADC_P to 0 V
+        dat.dat_set_dac(val=valint, adc=1) #set ADC_N to 0 V
+        time.sleep(0.01)
+        datad['DACSE_%04d'%i] = [dat.fembs, dat.dat_adc_qc_acq(1), cfg_info, val]
+    fp = fdir + "QC_DACSCAN" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
 
     tt.append(time.time())        
-    print ("\033[92mADC overflow check is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
+    print ("\033[92mADC DAT-DAC SCAN is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
+
+#    datad = {}
+#    datad['logs'] = logs  
+#    
+#    cfg_info = dat.dat_adc_qc_cfg()  
+#
+#
+#    #take data for underflow
+#    ##tie ADC to gnd
+#    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0x0) 
+#    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0x0) 
+#    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_TEST_IN_SEL, 0x0)  
+#    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x0)
+#    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x33)
+#    dat.dat_set_dac(0x0, adc=0)  #Set ADCP to 0
+#    dat.dat_set_dac(0xFFFF, adc=1)  #give ADCN a positive voltage   
+#    # import pyvisa  
+#    # rm = pyvisa.ResourceManager()    
+#    # sigconfig_done = False
+#    # while not sigconfig_done:
+#        # try:
+#            # sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
+#            # print(sig_gen.query("*IDN?"))
+#            # sig_gen.write("FUNCTION DC")
+#            # sig_gen.write("VOLTAGE:OFFSET -2.5V")
+#            # sig_gen.write("OUTP ON")
+#            # sigconfig_done = True
+#            # print("Successfully configured signal generator")
+#        # except:
+#            # print("Error configuring signal generator. Trying again...")
+#            # sigconfig_done = False
+#        
+#        # sig_gen.close()
+#
+#    
+#    # dat.dat_coldadc_ext(ext_source='DAT_P6')
+#    dat.dat_coldadc_cali_cs(mode="DIFF")
+#        
+#    
+#    # input("Probe DACs - underflow")
+#    print(hex(dat.peek(0xa00c00f0) >> 10))
+#    datad['rawdata_under'] = dat.dat_adc_qc_acq(num_samples = 20) 
+#    
+#    # sig_gen = rm.open_resource('TCPIP::192.168.121.10::INSTR')
+#    # sig_gen.write("OUTP OFF")
+#    # sig_gen.close()
+#
+#    
+#    #take data for overflow
+#    # ##tie ADC P  to DAT PDAC set to max
+#    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_MSB, 0x0) 
+#    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_SRC_CS_P_LSB, 0x0) 
+#    # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_TEST_IN_SEL, 0x0)  
+#    # # # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x0)    
+#    # dat.cdpoke(dat.dat_on_wibslot, 0xC, 0, dat.DAT_ADC_PN_TST_SEL, 0x33)
+#    dat.dat_coldadc_cali_cs(mode="DIFF")
+#    dat.dat_set_dac(0xFFFF, adc=0)
+#    dat.dat_set_dac(0x0, adc=1)
+#    # input("Probe DACs - overflow")
+#    print(hex(dat.peek(0xa00c00f0) >> 10))
+#    datad['rawdata_over'] = dat.dat_adc_qc_acq(num_samples = 20) 
+#    
+#    dat.dat_set_dac(0x0, adc=0) #set ADC PDAC back to 0
+#    dat.dat_set_dac(0x0, adc=1) #set ADC NDAC back to 0
+#    
+#    fp = fdir + "QC_OVERFLOW" + ".bin"
+#    with open(fp, 'wb') as fn:
+#        pickle.dump(datad, fn)
+#
+#    tt.append(time.time())        
+#    print ("\033[92mADC overflow check is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
     
 if 8 in tms:#if "enob_placeholder" in tms:
     print ("\033[95mADC ENOB measurement starts...   \033[0m")
     
-    datad = {}
-    datad['logs'] = logs 
-    
-    datad['num_samples'] = 16384
-    #Replace these or input them in DAT_user_input.py as necessary:
-    datad['sine_freq'] = 1000 #Hz
-    datad['sine_low'] = 0.2 # V
-    datad['sine_high'] = 1.3 #V
-    datad['source'] = 'DAT_P6'
-    # datad['source'] = 'WIB'    
-    
-    dat.sig_gen_config("SINE", datad['sine_freq'], datad['sine_low'],  datad['sine_high'])
+    for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
+    #for freq in [8106.23]:
+    #for freq in [119686.13]:
+    #for freq in [31948]:
+        datad = {}
+        datad['logs'] = logs 
+
+        #Replace these or input them in DAT_user_input.py as necessary:
+        datad['fembs'] = dat.fembs
+        datad['waveform'] = 'SINE' 
+        datad['num_samples'] = 16384
+        datad['source'] = 'WIBSE'
+        datad['freq'] = freq #Hz
+        datad['voltage_low'] = 0.3 # V
+        datad['voltage_high'] = 1.5 #V
         
-    dat.dat_coldadc_ext(ext_source=datad['source'])
-    cfg_info = dat.dat_adc_qc_cfg() 
-    datad['raw_spybuf'] = dat.dat_adc_qc_acq() #trigger readout, save in case of issue
-    datad['rawdata'] = dat.dat_enob_acq()
-    
-    dat.sig_gen_config()
-    
-    fp = fdir + "QC_ENOB" + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump(datad, fn)
+        dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
+            
+        cfg_info = dat.dat_adc_qc_cfg() 
+        dat.dat_coldadc_input_cs(mode=datad['source'], SHAorADC = "SHA", chsenl=0x0000)
+        #dat.dat_coldadc_input_cs(mode="P6SE", SHAorADC = "SHA", chsenl=0x0000)
+        #rawdata = dat.dat_adc_qc_acq(1) #trigger readout, save in case of issue
+        datad['enobdata'] = [dat.fembs, dat.dat_enob_acq_2(sineflg=True), cfg_info, "SINE"]
+        
+        dat.sig_gen_config()
+        
+        fp = fdir + "QC_ENOB_%08dHz"%datad['freq'] + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
     tt.append(time.time())        
     print ("\033[92mADC enob measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
@@ -667,31 +493,8 @@ if 9 in tms:#if "ringosc_placeholder" in tms:
     datad = {}
     datad['logs'] = logs     
     
-    datad['ring_osc_freq'] = []
-    
-    adcs_addr=[0x08,0x09,0x0A,0x0B,0x04,0x05,0x06,0x07] 
-    
-    for chip in range(8): #turn ring osc output on
-    # for chip in range(7,-1,-1): #reverse order
-        # print(dat.cdpeek(0, adcs_addr[chip], 1, 0xAA))
-        dat.femb_i2c_wrchk(0, adcs_addr[chip], 1, 0xAA, 0x1)
-        # print(dat.cdpeek(0, adcs_addr[chip], 1, 0xAA))
-    # input("Trigger readout")    
-    for seconds in range(10):    
-        time.sleep(1) #Allow DAT ro counters to count number of pulses in 1 second
-        print(seconds+1,"seconds:")
-        for chip in range(8):       
-            dat.cdpoke(0, 0xC, 0, dat.DAT_SOCKET_SEL, chip)
-            byte3 = dat.cdpeek(0, 0xC, 0, dat.DAT_ADC_RING_OSC_COUNT_B3)
-            byte2 = dat.cdpeek(0, 0xC, 0, dat.DAT_ADC_RING_OSC_COUNT_B2)
-            byte1 = dat.cdpeek(0, 0xC, 0, dat.DAT_ADC_RING_OSC_COUNT_B1)
-            byte0 = dat.cdpeek(0, 0xC, 0, dat.DAT_ADC_RING_OSC_COUNT_B0)
-            
-            freq = (byte3 << 8*3) | (byte2 << 8*2) | (byte1 << 8*1) | byte0
-            print((freq/1000000)," MHz")
-            datad['ring_osc_freq'].append(freq)
-            # dat.cdpoke(0,  adcs_addr[chip], 1, 0xAA, 0x0)
-        
+    datad['ring_osc_freq'] = dat.dat_adc_qc_oscfreq()
+    print (datad['ring_osc_freq'])
     
     fp = fdir + "QC_RINGO" + ".bin"
     with open(fp, 'wb') as fn:
@@ -701,35 +504,34 @@ if 9 in tms:#if "ringosc_placeholder" in tms:
     print ("\033[92mADC ring oscillator frequency readout is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
 
 if 10 in tms:
-    print ("\033[95mADC gain test starts...   \033[0m")
-    
+    print ("\033[95mADC Triangle Waveform test starts...   \033[0m")
+
     datad = {}
     datad['logs'] = logs  
 
-    datad['num_samples'] = 16384
     #Replace these or input them in DAT_user_input.py as necessary:
-    datad['ramp_freq'] = 200 #Hz
-    datad['ramp_low'] = 0 # V
-    datad['ramp_high'] = 2 #V
-    datad['ramp_high'] = 2 #V
-    datad['source'] = 'DAT_P6'
-    # datad['source'] = 'WIB'    
+    datad['fembs'] = dat.fembs
+    datad['waveform'] = 'RAMP' 
+    datad['num_samples'] = 16384
+    datad['source'] = 'WIB'
+    datad['freq'] = 400 #Hz
+    datad['voltage_low'] = -0.2 # V
+    datad['voltage_high'] = 2.2 #V
     
-    dat.sig_gen_config("RAMP", datad['ramp_freq'], datad['ramp_low'],  datad['ramp_high'])    
-    dat.dat_coldadc_ext(ext_source=datad['source'])
+    dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
+        
     cfg_info = dat.dat_adc_qc_cfg() 
-
-    datad['raw_spybuf'] = dat.dat_adc_qc_acq() #trigger readout, save in case of issue
-    datad['rawdata'] = dat.dat_enob_acq()    
-
+    dat.dat_coldadc_input_cs(mode="WIBSE", SHAorADC = "SHA", chsenl=0x0000)
+    dat.dat_adc_qc_acq(1) #trigger readout, save in case of issue
+    datad['rawdata'] = [dat.fembs, dat.dat_enob_acq(sineflg=False), cfg_info, "TRIG"]
     dat.sig_gen_config()
     
-    fp = fdir + "QC_GAIN" + ".bin"
+    fp = fdir + "QC_TRIG" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
 
     tt.append(time.time())        
-    print ("\033[92mADC gain measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
+    print ("\033[92mADC Triangle waveform measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2])) 
     
 if 11 in tms:
     print ("Turn DAT off")

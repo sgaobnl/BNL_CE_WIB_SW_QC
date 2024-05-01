@@ -5,8 +5,8 @@ import numpy as np
 import pickle, struct
 import copy
 import time, datetime
-#from spymemory_decode import wib_dec
-from dunedaq_decode import wib_dec
+from spymemory_decode import wib_dec
+#from dunedaq_decode import wib_dec #based CPP
 #from spymemory_decode import avg_aligned_by_ts
 import colorama
 from colorama import Fore, Back
@@ -398,15 +398,7 @@ if 0 in tms:
     for onekey in dkeys:
         #Add confirmation of power pass?
         if ("MON_VREFP" in onekey) or ("MON_VREFN" in onekey) or ("MON_VCMI" in onekey) or ("MON_VCMO" in onekey):            
-            #show_flg = adc_refv_chk({onekey:data[onekey]})
             print(onekey + " : " + data[onekey][2])
-            # if data[onekey][2] != "PASS":
-                # print (onekey + "  : Fail")
-                # # print ("command on WIB terminal to retake data for this test item is as below :")
-                # # print ("python3 LArASIC_QC_top.py -t 0")
-                # # print ("When it is done, replace {} on the local PC".format(fp) )
-            # else:
-                # print (onekey + "  : PASS")            
         if ("DIRECT_PLS_CHK" in onekey) or ("ASICDAC_CALI_CHK" in onekey):
             cfgdata = data[onekey]
             fembs = cfgdata[0]
@@ -422,7 +414,6 @@ if 0 in tms:
             if show_flg:
                 print (onekey + "  : Fail")
                 print ("command on WIB terminal to retake data for this test item is as below :")
-                print ("python3 LArASIC_QC_top.py -t 0")
                 print ("When it is done, replace {} on the local PC".format(fp) )
 
                 import matplotlib.pyplot as plt
@@ -442,7 +433,6 @@ if 1 in tms:
     print ("-------------------------------------------------------------------------")
     print ("1: ADC power cycling measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 1")
     fp = fdir + "QC_PWR_CYCLE" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
@@ -512,56 +502,54 @@ if 1 in tms:
             plt.plot()
             plt.show()
     #debugging:    
-    current_diffs = {}
-    pkeys = list(data['PwrCycle_0'][4].keys())
-    for onekey in pkeys:
-        current_diffs[onekey+'PwrCycle_2_minus_PwrCycle_0'] = data['PwrCycle_2'][4][onekey][1] - data['PwrCycle_0'][4][onekey][1]
-        current_diffs[onekey+'PwrCycle_3_minus_PwrCycle_0'] = data['PwrCycle_3'][4][onekey][1] - data['PwrCycle_0'][4][onekey][1]
-    print(current_diffs)    
+    #current_diffs = {}
+    #pkeys = list(data['PwrCycle_0'][4].keys())
+    #for onekey in pkeys:
+    #    current_diffs[onekey+'PwrCycle_2_minus_PwrCycle_0'] = data['PwrCycle_2'][4][onekey][1] - data['PwrCycle_0'][4][onekey][1]
+    #    current_diffs[onekey+'PwrCycle_3_minus_PwrCycle_0'] = data['PwrCycle_3'][4][onekey][1] - data['PwrCycle_0'][4][onekey][1]
+    #print(current_diffs)    
     print ("#########################################################################")    
     
 if 2 in tms:
     print ("-------------------------------------------------------------------------")
-    print ("2: ADC I2C communication checkout  ")
-    print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 2")
-    fp = fdir + "QC_I2C_COMM" + ".bin"
-    print ("When it is done, replace {} on the local PC".format(fp) )
-    if os.path.isfile(fp):
-        with open(fp, 'rb') as fn:
-            data = pickle.load( fn)
-    
-        dkeys = list(data.keys())
-        
-        logsd = data["logs"]
-        dkeys.remove("logs")
-    else:
-        print(Fore.RED + fp + " not found.")
-        exit()
-        
-    
-    # print(dkeys)
-    for onekey in dkeys:
-        if "POR_CHKREG_FAIL" in dkeys:
-            if data[onekey] is None: #pass
-                print("\033[92mPOR register checkout passed.   \033[0m")
-            else:
-                print("\033[91mPOR register checkout failed.   \033[0m")
-                print("Register printout:")
-                reg_addr1=range(0x80,0xB3)
-                reg_addr2=range(1,5)                     
-                for adc_no in range(8):
-                    print("ADC 0")
-                    for i, reg_addr in enumerate(list(reg_addr1)):
-                        print("Register 0x%x: 0x%x"%(reg_addr, data[onekey][adc_no][0][i]))
-                    for i, reg_addr in enumerate(list(reg_addr2)):
-                        print("Register 0x%x: 0x%x"%(reg_addr, data[onekey][adc_no][1][i]))                   
+    #print ("2: ADC I2C communication checkout  ")
+    #print ("command on WIB terminal to retake data for this test item is as bellow :")
+    #fp = fdir + "QC_I2C_COMM" + ".bin"
+    #print ("When it is done, replace {} on the local PC".format(fp) )
+    #if os.path.isfile(fp):
+    #    with open(fp, 'rb') as fn:
+    #        data = pickle.load( fn)
+    #
+    #    dkeys = list(data.keys())
+    #    
+    #    logsd = data["logs"]
+    #    dkeys.remove("logs")
+    #else:
+    #    print(Fore.RED + fp + " not found.")
+    #    exit()
+    #    
+    #
+    ## print(dkeys)
+    #for onekey in dkeys:
+    #    if "POR_CHKREG_FAIL" in dkeys:
+    #        if data[onekey] is None: #pass
+    #            print("\033[92mPOR register checkout passed.   \033[0m")
+    #        else:
+    #            print("\033[91mPOR register checkout failed.   \033[0m")
+    #            print("Register printout:")
+    #            reg_addr1=range(0x80,0xB3)
+    #            reg_addr2=range(1,5)                     
+    #            for adc_no in range(8):
+    #                print("ADC 0")
+    #                for i, reg_addr in enumerate(list(reg_addr1)):
+    #                    print("Register 0x%x: 0x%x"%(reg_addr, data[onekey][adc_no][0][i]))
+    #                for i, reg_addr in enumerate(list(reg_addr2)):
+    #                    print("Register 0x%x: 0x%x"%(reg_addr, data[onekey][adc_no][1][i]))                   
                 
 if 3 in tms:
     print ("-------------------------------------------------------------------------")
     print ("3: ADC reference voltage measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 3")
     fp = fdir + "QC_REFV" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
@@ -576,7 +564,6 @@ if 3 in tms:
         print(Fore.RED + fp + " not found.")
         exit()
         
-    
     print(dkeys)    
     for onekey in dkeys:
         if ("MON_VREFP" in onekey) or ("MON_VREFN" in onekey) or ("MON_VCMI" in onekey) or ("MON_VCMO" in onekey):  
@@ -594,9 +581,6 @@ if 3 in tms:
                 0b1000000, 0b1010000, 0b1100000, 0b1110000, 0b1111111, 
                 0b10000000, 0b10010000, 0b10100000, 0b10110000, 0b11000000, 0b11010000, 0b11100000, 0b11110000, 0b11111111]            
             one_hots = [0b1, 0b10, 0b100, 0b1000, 0b10000, 0b100000, 0b1000000, 0b10000000]      
-            debug = True
-            if debug:
-                dacs = list(range(0x100))          
             vrefp_dacs = [[data['refv_dacs'][dac]['MON_VREFP'][1][adc] for dac in range(len(dacs))] for adc in range(8)]
             vrefn_dacs = [[data['refv_dacs'][dac]['MON_VREFN'][1][adc] for dac in range(len(dacs))] for adc in range(8)]
             vcmi_dacs = [[data['refv_dacs'][dac]['MON_VCMI'][1][adc] for dac in range(len(dacs))] for adc in range(8)]
@@ -627,6 +611,7 @@ if 3 in tms:
                 one_lsb_vcmo = (vcmo_dacs[adc][-1] - vcmo_dacs[adc][0]) / 255
                 
                 # one_lsb = data['refv_dacs'][-1]['MON_VREFP'][1][adc] - data['refv_dacs'][0]['MON_VREFP'][1][adc]
+                debug = False
                 for i, dac in enumerate(dacs[1:]):
                     if debug or dac in one_hots: #one hot concept does not apply in debug mode since we test all codes
                         # print("dac",hex(dac),"one hot",i,"major carry",i-1)
@@ -667,6 +652,7 @@ if 3 in tms:
                 vcmo_inls = [] 
                 
                 #for debug:
+                debug = False
                 vrefp_inl_total = 0
                 vrefn_inl_total = 0
                 vcmi_inl_total = 0
@@ -808,7 +794,6 @@ if 4 in tms:
     print ("-------------------------------------------------------------------------")
     print ("4: ADC autocalibration check  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 4")
     fp = fdir + "QC_AUTOCALI" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
@@ -827,55 +812,55 @@ if 4 in tms:
     print(dkeys) 
     if ana_adc_weightchk(data['weights']): #warn_flag
         print(Fore.RED + "Autocali check failed.")
-        import matplotlib.pyplot as plt
-        import matplotlib.ticker as ticker
-        from matplotlib.ticker import MaxNLocator
-        fig = plt.figure(figsize=(12, 6))
         default_weights = [[0xc000, 0x4000], [0xe000, 0x2000], [0xf000, 0x1000], [0xf800, 0x0800],
                             [0xfc00, 0x0400], [0xfe00, 0x0200], [0xff00, 0x0100], [0xff80, 0x0080],
                             [0xffc0, 0x0040], [0xffe0, 0x0020], [0xfff0, 0x0010], [0xfff8, 0x0008],
                             [0xfffc, 0x0004], [0xfffe, 0x0002], [0xffff, 0x0001], [0x0000, 0x0000]] #last pair are gain and offset      
-        
-        cm = plt.get_cmap('gist_rainbow')
-        dash, = plt.plot([10],[0],c='black',linestyle='dashed', label="ADC0 autocali")
-        dot, = plt.plot([10],[0],c='black',linestyle='dotted', label="ADC1 autocali")                
         for wt in range(2): #W0 or W2
-            for stage_num in range(16): 
-                
-                default_weight = default_weights[stage_num][wt]
-                linecolor = (wt << 4) | (stage_num << 0)
-                
-                plt.plot(list(range(8)),[default_weight for chip in range(8)],label="Stage %d W%d default"%(stage_num, wt*2),c=cm(linecolor/32))                    
-                for adc in range(2): #ADC0 or ADC1
-                    style = ['dashed','dotted']
-                    chips_weights = [data['weights'][chip][adc][wt][stage_num] for chip in range(8)]
-                    plt.plot(list(range(8)), chips_weights, c=cm(linecolor/32), linestyle=style[adc]) #, label="%d stage%d W%d"%(adc, stage_num, wt*2)
-        axes = plt.gca()
-        axes.get_yaxis().set_major_locator(MaxNLocator(integer=True))
-        # axes.get_yaxis().set_major_formatter(ticker.FormatStrFormatter("0x%x")) # throws an error for some reason
-        # plt.legend()
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),ncol=5)
-        # axes.add_artist(mainlegend)        
-        plt.xlim((-0.35000000000000003, 7.35))
-        plt.ylim((-3276.75, 68811.75))
-        plt.ylabel('Weight')
-        plt.xlabel('Chip #')
-        plt.title('ADC autocalibration weight readout')
+           for stage_num in range(16): 
+               default_weight = default_weights[stage_num][wt]
+       
+        if False:
+            import matplotlib.pyplot as plt
+            import matplotlib.ticker as ticker
+            from matplotlib.ticker import MaxNLocator
+            fig = plt.figure(figsize=(12, 6))
+            cm = plt.get_cmap('gist_rainbow')
+            dash, = plt.plot([10],[0],c='black',linestyle='dashed', label="ADC0 autocali")
+            dot, = plt.plot([10],[0],c='black',linestyle='dotted', label="ADC1 autocali")                
+            for wt in range(2): #W0 or W2
+                for stage_num in range(16): 
+                    default_weight = default_weights[stage_num][wt]
+                    linecolor = (wt << 4) | (stage_num << 0)
+                    
+                    plt.plot(list(range(8)),[default_weight for chip in range(8)],label="Stage %d W%d default"%(stage_num, wt*2),c=cm(linecolor/32))                    
+                    for adc in range(2): #ADC0 or ADC1
+                        style = ['dashed','dotted']
+                        chips_weights = [data['weights'][chip][adc][wt][stage_num] for chip in range(8)]
+                        plt.plot(list(range(8)), chips_weights, c=cm(linecolor/32), linestyle=style[adc]) #, label="%d stage%d W%d"%(adc, stage_num, wt*2)
+            axes = plt.gca()
+            axes.get_yaxis().set_major_locator(MaxNLocator(integer=True))
+            # axes.get_yaxis().set_major_formatter(ticker.FormatStrFormatter("0x%x")) # throws an error for some reason
+            # plt.legend()
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),ncol=5)
+            # axes.add_artist(mainlegend)        
+            plt.xlim((-0.35000000000000003, 7.35))
+            plt.ylim((-3276.75, 68811.75))
+            plt.ylabel('Weight')
+            plt.xlabel('Chip #')
+            plt.title('ADC autocalibration weight readout')
 
-        # legend1 = plt.legend([dash, dot], ["ADC0","ADC1"], loc=1)
+            # legend1 = plt.legend([dash, dot], ["ADC0","ADC1"], loc=1)
 
-        # axes.add_artist(legend1)
-        plt.tight_layout()
-        plt.show()
-        plt.close() 
+            # axes.add_artist(legend1)
+            plt.tight_layout()
+            plt.show()
+            plt.close() 
 
-        
-    
 if 5 in tms:
     print ("-------------------------------------------------------------------------")
     print ("5: ADC noise measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 5")
     fp = fdir + "QC_RMS" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
@@ -896,145 +881,144 @@ if 5 in tms:
     plt.rcParams.update({'font.size': 8})
     ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
     ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
-
     
     
-    print(dkeys)  
-    snc_label = [" 900mV "," 200mV "]
-    sdd_label = [" single "," diff "]
-    show_flg_all = False
     for onekey in dkeys:
-        if "FE_DC" in onekey or "FE_DC" in onekey:
-            for snc in [0, 1]: #900, 200
-                for sdd in [0, 1]: #single, diff (?)  
-                    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(data['fembs'], data[onekey][snc][sdd], rms_flg=True)            
-                    if snc == 0: #900mV
-                        bl = 1000 #replace with correct valueS
-                    else:
-                        bl = 8500 #replace with correct value
-                    show_flg = ana_res(data['fembs'], data[onekey][snc][sdd], par=[0, 350], rmsr=[5,25], pedr=[bl-1000,bl+1000], rms_flg=True)
-                    if show_flg:                
-                        ax1.plot(np.array(peds), marker='.', label=onekey+snc_label[snc]+sdd_label[sdd])
-                        ax2.plot(np.array(rmss), marker='.', label=onekey+snc_label[snc]+sdd_label[sdd])        
-                        show_flg_all = True
-        
-        elif "Mux_open" in onekey:
-            for sdd in [0, 1]:
-                chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(data['fembs'], data[onekey][sdd], rms_flg=True)
-       
-                bl = 8500 #replace with correct value
-                show_flg = ana_res(data['fembs'], data[onekey][sdd], par=[0, 350], rmsr=[5,25], pedr=[bl-1000,bl+1000], rms_flg=True)
-                if show_flg:
-                    ax1.plot(np.array(peds), marker='.', label=onekey+'_'+sdd_label[sdd])
-                    ax2.plot(np.array(rmss), marker='.', label=onekey+'_'+sdd_label[sdd])             
-                    show_flg_all = True
-    if show_flg_all:
-        plt.suptitle('ADC RMS noise measurement',fontsize=12)
-        # ax1.set_xlim((-10,130))
-        ax1.set_title('Pedestal')
-        ax1.set_ylabel('ADCs', fontsize=10)
-        ax1.legend()
-        # ax2.set_xlim((-10,130))
-        ax2.set_title('RMS noise')
-        ax2.set_xlabel('Channel', fontsize=10)
-        ax2.set_ylabel('ADCs', fontsize=10)
-        ax2.legend()
+        cfgdata = data[onekey]
+        fembs = cfgdata[0]
+        rawdata = cfgdata[1]
+        cfg_info = cfgdata[2]
+        chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
+        if "RMS_OUTPUT_" in onekey:
+            sdd = int(onekey[onekey.find("_SDD")+4])
+            sdf = int(onekey[onekey.find("_SDF")+4])
+            snc = int(onekey[onekey.find("_SNC")+4])
+            ax1.plot(np.array(peds), marker='.', label="FE_SDD%d_SDF%d_SNC%d"%(sdd, sdf, snc) )
+            ax2.plot(np.array(rmss), marker='.', label="FE_SDD%d_SDF%d_SNC%d"%(sdd, sdf, snc) )                    
+        else:
+            ax1.plot(np.array(peds), marker='.', label=onekey )
+            ax2.plot(np.array(rmss), marker='.', label=onekey )                    
 
-        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-        plt.plot()
-        plt.show()
-    plt.close()            
+
+    plt.suptitle('ADC RMS noise measurement',fontsize=12)
+    # ax1.set_xlim((-10,130))
+    ax1.set_title('Pedestal')
+    ax1.set_ylabel('ADCs', fontsize=10)
+    ax1.legend()
+    # ax2.set_xlim((-10,130))
+    ax2.set_title('RMS noise')
+    ax2.set_xlabel('Channel', fontsize=10)
+    ax2.set_ylabel('ADCs', fontsize=10)
+    ax2.legend()
+
+    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+    plt.plot()
+    plt.show()
+    plt.close()
+
     print ("#########################################################################")
     
 if 6 in tms:
     print ("-------------------------------------------------------------------------")
     print ("6: ADC DNL/INL measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 6")
     fp = fdir + "QC_DNL_INL" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
             data = pickle.load( fn)
-    
         dkeys = list(data.keys())
-        
         logsd = data["logs"]
         dkeys.remove("logs")
     else:
         print(Fore.RED + fp + " not found.")
         exit()
         
-    print(dkeys)     
-    
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
     plt.rcParams.update({'font.size': 8})
-    ax1 = plt.subplot2grid((3, 1), (0, 0), colspan=1, rowspan=1) #wf
-    ax2 = plt.subplot2grid((3, 1), (1, 0), colspan=1, rowspan=1) #hist (not necessary?)
-    ax3 = plt.subplot2grid((3, 1), (2, 0), colspan=1, rowspan=1) #dnl
+    ax2 = plt.subplot2grid((3, 1), (0, 0), colspan=1, rowspan=1) #hist (not necessary?)
+    ax3 = plt.subplot2grid((3, 1), (1, 0), colspan=1, rowspan=1) #dnl
+    ax1 = plt.subplot2grid((3, 1), (2, 0), colspan=1, rowspan=1) #inl
     x = np.arange(2**14)
     
     for onekey in dkeys:
-        if 'rawdata' in onekey:
-            wibdata = wib_dec(data[onekey],data['fembs'], spy_num=1, cd0cd1sync=False)[0]
-            for ch in range(128):
-                chip = ch // 16
-                ax1.plot(wibdata[0][ch],c="C%d"%(chip))
-            ax1.title.set_text('Input waveform preview')
-            ax1.set(ylabel='ADC code')
-            
         if 'histdata' in onekey:
-            for ch, ch_hist_data in enumerate(data[onekey]):
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            histdata = cfgdata[1]
+            cfg_info = cfgdata[2]
+            for ch, ch_hist_data in enumerate(histdata):
                 chip = ch // 16
-                # print (chip)
                 num_16bwords = 0x8000 / 2        
                 words16b = list(struct.unpack_from("<%dH"%(num_16bwords),ch_hist_data)) 
-                ax2.plot(x, words16b, c="C%d"%(chip))
-                tmp = 500
+                tmp = 1000
                 x1 = x[tmp:-1*tmp]
                 y = np.array(words16b[tmp:-1*tmp])
+                ax2.plot(x1, y, c="C%d"%(chip))
+
                 tot = np.sum(y)/len(x1)
                 ny = (y*1.0)/tot - 1
-                #print (tot, ny[1000:1100])
                 inl = []
                 for i in range(len(ny)):
                     inl.append(np.sum(ny[0:i+1]))
-
                 ax3.plot (x1, ny)
-                ax3.set_ylim((-1,1))
 
-            ax2.title.set_text('Histogram from '+str(data['num_samples'])+' samples')
-            ax2.set(xlabel='ADC code',ylabel='Counts per code')
-    #        ax.plot (x, inl, c="C1")
-            #ax.plot (x[2000:-2000], np.array(inl[2000:-2000])-inl[2000])
-            # plt.ylabel("LSB")
-            # plt.xlabel("ADC code / bit") 
-            ax3.set(xlabel="ADC code", ylabel="LSB")
-            ax3.title.set_text('DNL')            
+                ax1.plot(x1, inl)
+
+        ax1.title.set_text('INL')            
+        ax1.set(xlabel="ADC code", ylabel="LSB")
+
+        ax2.title.set_text('Histogram from '+str(data['num_samples'])+' samples')
+        ax2.set(xlabel='ADC code',ylabel='Counts per code')
+
+        ax3.set_ylim((-2,2))
+        ax3.set(xlabel="ADC code", ylabel="LSB")
+        ax3.title.set_text('DNL')            
     plt.tight_layout()
     plt.show()
     plt.close()
     
 if 7 in tms:
     print ("-------------------------------------------------------------------------")
-    print ("7: ADC overflow check  ")
+    print ("7: ADC DAT-DAC SCAN  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 7")
-    fp = fdir + "QC_OVERFLOW" + ".bin"
+    fp = fdir + "QC_DACSCAN" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
             data = pickle.load( fn)
-    
         dkeys = list(data.keys())
-        
         logsd = data["logs"]
         dkeys.remove("logs")
     else:
         print(Fore.RED + fp + " not found.")
         exit()
     femb = int(data['logs']['DAT_on_WIB_slot'])   
+
+
+    dacdiffs = []
+    dacses = []
+    for onekey in dkeys:
+        if "DACDIFF_" in onekey or "DACSE_" in onekey:
+            pass
+        else:
+            continue
+        cfgdata = data[onekey]
+        fembs = cfgdata[0]
+        rawdata = cfgdata[1]
+        cfg_info = cfgdata[2]
+        dacv = cfgdata[3]
+        chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
+        if "DACDIFF_" in onekey:
+            dacdiffs.append([dacv, peds, rmss])
+            print (dacv, peds[0], rmss[0])
+        else:
+            dacses.append([dacv, peds, rmss])
+            print (dacv, peds[0], rmss[0])
+            #exit()
+    exit()
+
     print(dkeys)  
     for onekey in dkeys:
         if 'rawdata_under' in onekey:
@@ -1094,8 +1078,21 @@ if 8 in tms:
     print ("-------------------------------------------------------------------------")
     print ("8: ADC ENOB measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 8")
-    fp = fdir + "QC_ENOB" + ".bin"
+    fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_1V_00008106Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_08V_00008106Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00014781Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00031948Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00200748Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00119686Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00014781Hz" + ".bin"
+    
+    
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
@@ -1108,86 +1105,64 @@ if 8 in tms:
     else:
         print(Fore.RED + fp + " not found.")
         exit()
-    femb = int(data['logs']['DAT_on_WIB_slot'])   
-    print(dkeys)   
-
-    
 
     for onekey in dkeys:
-        if 'rawdata' in onekey:     
+        if 'enobdata' in onekey:     
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            enobdata = cfgdata[1]
+            cfg_info = cfgdata[2]
+
 # Plot all waveforms, but hide all but ch0 by default since they are asynchronously captured
 # Toggle waveform visibility by clicking on the white space to the left of the channel # (this can be improved)       
 # https://learndataanalysis.org/source-code-how-to-toggle-graphs-visibility-by-clicking-legend-label-in-matplotlib/#google_vignette            
-            import matplotlib.pyplot as plt
-
+            from adc_enob import adc_enob
             
-            fig, ax = plt.subplots(figsize=(12, 6))
-
-
-            chdata = []
-            chplot = []
-            
+            chsenob = []
             # extent = (0, 16384, 0, 16384)
             x = list(range(16384))
-            for ch, raw in enumerate(data['rawdata']):
+            for ch, raw in enumerate(enobdata):
                 if raw is None:
                     continue
                 num_16bwords = 0x8000 / 2
                 words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
+                if ch == 0:
+                    ffig = True
+                else:
+                    ffig = False
 
-                chip = ch // 16
-                chdata.append(words16b)
-                if any(word == 0x0 for word in words16b):
-                    print("Channel",ch,"has a glitch")
-                chplot.append(ax.plot(words16b,label='Ch%d'%(ch))[0])#, extent=extent))
-                # if ch != 0:
-                    # chplot[-1].set_visible(False)
-                
-            # legend = plt.legend(loc='center left', bbox_to_anchor=(1, 0.5),ncol=8)
-            # box = ax.get_position()
-            # ax.set_position([box.x0, box.y0 + box.height * 0.3,
-                     # box.width, box.height * 0.7])  
-            
-            legend = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),ncol=8)
-            legends = legend.get_lines()
-            
-            for leg in legends:
-                leg.set_picker(True)
-                leg.set_pickradius(10)   
-                
-            for ch, plot in enumerate(chplot):
-                if ch != 0:
-                    plot.set_visible(False)
-                    legends[ch].set_visible(False)
-
-            graphs = {}
-            for i in range(128):
-                graphs[legends[i]] = chplot[i]
-                
-            plt.tight_layout()
-            plt.connect('pick_event',onpick)
-            plt.show()
+                if ch == 0:
+                    import matplotlib.pyplot as plt
+                    plt.plot(words16b)
+                    plt.show()
+                    plt.close()
+                ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
+                chsenob.append(ENOB)
+            exit()
+            #import matplotlib.pyplot as plt
+            #fig, ax = plt.subplots(figsize=(12, 6))
+            #plt.plot(chsenob)
+            #
+            #    
+            #plt.tight_layout()
+            #plt.show()
+            break
             
 if 9 in tms:
     print ("-------------------------------------------------------------------------")
     print ("9: ADC ring oscillator frequency readout  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 9")
     fp = fdir + "QC_RINGO" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
             data = pickle.load( fn)
-    
         dkeys = list(data.keys())
-        
         logsd = data["logs"]
         dkeys.remove("logs")
     else:
         print(Fore.RED + fp + " not found.")
         exit()
-    # femb = int(data['logs']['DAT_on_WIB_slot'])   
-    # print(dkeys) 
     
     for onekey in dkeys:
         if 'ring_osc_freq' in onekey:     
@@ -1197,10 +1172,9 @@ if 9 in tms:
                 
 if 10 in tms:
     print ("-------------------------------------------------------------------------")
-    print ("10: ADC gain test  ")
+    print ("10: ADC triangle test  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    print ("python3 LArASIC_QC_top.py -t 10")
-    fp = fdir + "QC_GAIN" + ".bin"
+    fp = fdir + "QC_TRIG" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
@@ -1214,18 +1188,19 @@ if 10 in tms:
         print(Fore.RED + fp + " not found.")
         exit()
     femb = int(data['logs']['DAT_on_WIB_slot'])   
-    print(dkeys)   
-
     
-
     for onekey in dkeys:
         if 'rawdata' in onekey:     
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+            cfg_info = cfgdata[2]
+
 # Plot all waveforms, but hide all but ch0 by default since they are asynchronously captured
 # Toggle waveform visibility by clicking on the white space to the left of the channel # (this can be improved)       
 # https://learndataanalysis.org/source-code-how-to-toggle-graphs-visibility-by-clicking-legend-label-in-matplotlib/#google_vignette            
             import matplotlib.pyplot as plt
 
-            
             fig, ax = plt.subplots(figsize=(12, 6))
 
 
@@ -1234,7 +1209,7 @@ if 10 in tms:
             
             # extent = (0, 16384, 0, 16384)
             x = list(range(16384))
-            for ch, raw in enumerate(data['rawdata']):
+            for ch, raw in enumerate(rawdata):
                 if raw is None:
                     continue
                 num_16bwords = 0x8000 / 2
