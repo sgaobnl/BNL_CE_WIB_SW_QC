@@ -24,7 +24,7 @@ rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
 #fembs = [int(sys.argv[2])]
-fembs = [3]
+fembs = [0]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
 #wibdata = wib_dec(rawdata,fembs, spy_num=1)

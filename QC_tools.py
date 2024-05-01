@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import QC_components.qc_log as log
 import QC_check as QC_check
+import csv
 from scipy import stats
 
 def ResFunc(x, par0, par1, par2, par3):
@@ -172,8 +173,7 @@ class ana_tools:
         plt.xticks(x_sticks)
         plt.grid(axis='x')
         if (rms_max < (fe_rms_med + 8)) and (rms_min > (fe_rms_med - 8)):
-            # plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
-            plt.ylim(4, 16)
+            plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
         else:
             plt.grid(axis='y')
         # fp_fig = fp+"rms_{}.png".format(fname)
@@ -193,7 +193,8 @@ class ana_tools:
         else:
             plt.grid(axis = 'y')
         fp_fig = fp+"ped_{}.png".format(fname)
-        plt.savefig(fp_fig)
+        plt.gca().set_facecolor('none')  # set background as transparent
+        plt.savefig(fp_fig, transparent = True)
         plt.close()
 
         fp_bin = fp+"RMS_{}.bin".format(fname)
@@ -218,13 +219,15 @@ class ana_tools:
         ped = []
 
         plt.figure(figsize=(12, 4))
-        offset2 = 120
+
         if period == 500:
             pulrange = 120
             pulseoffset = 30
+            offset2 = 120
         else:
-            pulrange = 500
-            pulseoffset = 300
+            pulrange = 220
+            pulseoffset = 30
+            offset2 = 220
 
         for ich in range(128):
             global_ch = nfemb * 128 + ich
@@ -261,18 +264,18 @@ class ana_tools:
                 baseline.extend(pulse[2*period:maxpos - 20 + 2*period])
 
             if maxpos < pulseoffset:
-                plot_pulse = apulse2[maxpos - pulseoffset + 380:maxpos - pulseoffset + 380 + pulrange]
+                plot_pulse = apulse2[maxpos - pulseoffset + period-offset2:maxpos - pulseoffset + period-offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos + 80:maxpos + 500 - 100]
-                baseline.extend(pulse[maxpos + 80 + period:maxpos + 500 - 100 + period])
-                baseline.extend(pulse[maxpos + 80 + 2*period:maxpos + 500 - 100 + 2*period])
+                baseline = pulse[maxpos + offset2+pulseoffset+pulseoffset:maxpos + period - 100]
+                baseline.extend(pulse[maxpos + offset2+pulseoffset+pulseoffset + period:maxpos + period - 100 + period])
+                # baseline.extend(pulse[maxpos + 180 + 2*period:maxpos + 500 - 100 + 2*period])
 
             if maxpos >= len(apulse) + pulseoffset - pulrange:
-                plot_pulse = apulse2[maxpos - pulseoffset - 120:maxpos - pulseoffset - 120 + pulrange]
+                plot_pulse = apulse2[maxpos - pulseoffset - offset2:maxpos - pulseoffset - offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[80:maxpos - 20]
-                baseline.extend(pulse[80 + period: maxpos - 20 + period])
-                baseline.extend(pulse[80 + 2*period: maxpos - 20 + 2*period])
+                baseline = pulse[180:maxpos - 20]
+                baseline.extend(pulse[180 + period: maxpos - 20 + period])
+                # baseline.extend(pulse[180 + 2*period: maxpos - 20 + 2*period])
 
             pulse_rms = np.std(baseline)
             pulse_ped = np.mean(baseline)
@@ -291,9 +294,9 @@ class ana_tools:
             pmin = np.amin(apulse)
 
             ppk_val.append(pmax)
-            ppk.append(pmax - pulse_ped)
+            # ppk.append(pmax - pulse_ped)
             npk_val.append(pmin)
-            npk.append(pmin - pulse_ped)
+            # npk.append(pmin - pulse_ped)
             # bl_rms.append(bbl_rms)
             # bl_val.append(bbl)
             bl_val.append(pulse_ped)
@@ -302,7 +305,7 @@ class ana_tools:
             rms.append(pulse_rms)
             ped.append(pulse_ped)
 
-            if ich == 0:
+            if ich == 64:
                 log.channel0_pulse[nfemb][dac] = plot_pulse - pulse_ped
 
         rms_mean = np.mean(rms)
@@ -312,12 +315,13 @@ class ana_tools:
         plt.ylim(bottom, 16384 + 1000)
         plt.xlabel("Sample Points", fontsize=14)
         plt.ylabel("ADC count", fontsize=14)
+        plt.grid(axis='y', color='gray', linestyle='--', alpha=0.5)
 
         plt.subplot(1, 2, 2)
         plt.plot(range(128), ppk_val, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
         plt.plot(range(128), bl_val, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
         plt.plot(range(128), npk_val, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
-        plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
+        plt.grid(axis='x', color='gray', linestyle='--', alpha=0.5)
 
         # pl1.plot(range(128), bl_rms)
         plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize=14)
@@ -339,7 +343,8 @@ class ana_tools:
         # plt.legend()
 
         fp_fig = fp + "pulse_{}.png".format(fname)
-        plt.savefig(fp_fig)
+        plt.gca().set_facecolor('none')  # set background as transparent
+        plt.savefig(fp_fig, transparent = True)
         plt.close()
 
         fp_bin = fp + "Pulse_{}.bin".format(fname)
@@ -437,7 +442,8 @@ class ana_tools:
         issue_inl = defaultdict(dict)
         for nfemb in fembs:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
-            fig, ax = plt.subplots(figsize=(10, 8))
+            fig, ax = plt.subplots(figsize=(6, 5))
+            issue_inl[femb_id]["Result"] = True
             for main_key, sub_dict in mon_dic.items():
                 item = 0
                 for key,mon_list in sub_dict.items():
@@ -463,19 +469,27 @@ class ana_tools:
 
                         data_list.append(mon_mean*self.fadc)
 
-                    if item == 2:
+                    if item == 8:
                         plt.plot(dac_list, data_list, marker='.', label = main_key)
                     else:
                         plt.plot(dac_list, data_list, marker='.')
                     #   INL judgement
-                    x_data = np.arange(0, 62)
-                    y_data = np.array(data_list[0:62])
+                    print(main_key)
+                    print(data_list)
+                    if main_key == 'LArASIC_DAC_25mVfC':
+                        x_data = np.array(dac_list[0:31])
+                        y_data = np.array(data_list[0:31])
+                    else:
+                        x_data = np.arange(0, 60)
+                        y_data = np.array(data_list[0:60])
+                    print(y_data)
                     coefficients = np.polyfit(x_data, y_data, deg=1)
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
-                    inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
-                    issue_inl[femb_id]["Result"] = True
-                    if inl > 1:
+                    print(fit_y)
+                    inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-3]))
+                    print(inl)
+                    if inl > 3:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False
                         # print(issue_inl)
@@ -483,7 +497,13 @@ class ana_tools:
                         # input()
             fp = savedir[nfemb] + fdir + "/mon_{}.png".format(main_key)
             plt.legend()
-            plt.savefig(fp)
+            plt.grid(True, axis='y', linestyle='--')
+            plt.ylim(0, 1400)
+            plt.xlabel("DAC Selection", fontsize=12)
+            plt.ylabel("Voltage / mV", fontsize=12)
+            plt.title("LArASIC DAC Linearity", fontsize=12)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp, transparent = True)
             plt.close(fig)
         return issue_inl
 
@@ -501,7 +521,7 @@ class ana_tools:
             check_issue = []
             for imon in mon_items_n:
                 vset_list=[]
-                fig,ax = plt.subplots(figsize=(4,3))
+                fig,ax = plt.subplots(figsize=(6,4))
                 data_dic={}
 
                 for i in range(nvset):
@@ -548,7 +568,14 @@ class ana_tools:
                 ax.set_ylabel(mon_items[imon])
                 ax.legend()
                 fp = savedir[nfemb] + fdir + "/mon_{}.png".format(mon_items[imon])
-                plt.savefig(fp)
+                plt.legend()
+                plt.grid(True, axis='y', linestyle='--')
+                plt.ylim(0, 2500)
+                plt.xlabel("V Set", fontsize=12)
+                plt.ylabel("Voltage / mV", fontsize=12)
+                plt.title("ColdADC ref_voltage {}".format(mon_items[imon]), fontsize=12)
+                plt.gca().set_facecolor('none')  # set background as transparent
+                plt.savefig(fp, transparent = True)
                 plt.close(fig)
 
             log.check_log[femb_id]["Result"] = check
@@ -584,20 +611,6 @@ class ana_tools:
                 dac_init.append(dac_list[i])
                 pk_init.append(pk_list[i])
 
-        # y_max = np.max(pk_init)
-        # y_min = np.min(pk_init)
-
-        # slope_i, intercept_i = np.polyfit(dac_init, pk_init, 1)
-
-        # INL = 0
-        # for i in range(len(dac_init)):
-        #     y_r = pk_init[i]
-        #     y_p = dac_init[i] * slope_i + intercept_i
-        #     inl = abs(y_r - y_p) / (y_max - y_min)
-        #     if inl > INL:
-        #         INL = inl
-        # return slope_i, INL
-
 #   first fit, use initial sample points
         try:
            slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
@@ -623,7 +636,7 @@ class ana_tools:
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_i + intercept_i
             inl = abs(y_r-y_p)/(y_max-y_min)
-            if inl>0.01:
+            if inl>0.04:
                if dac_list[i]<5:
                   continue
                linear_dac_max = dac_list[i-1]
@@ -726,37 +739,18 @@ class ana_tools:
             for ifemb in fembs:
                 fp = savedir[ifemb]+fdir
                 if dac==0:
+                   fname_1 = namepat.format(snc, sgs, sts, dac)
                    ped,rms = self.GetRMS(pldata, ifemb, fp, fname)
-                   # tmp = QC_check.CHKPulse(ped, 7)
-                   # log.chkflag["BL"] = (tmp[0])
-                   # log.badlist["BL"] = (tmp[1])
-                   # ped_err_flag = tmp[0]
-                   # baseline_err_status = tmp[1]
-                   # log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
-                   # tmp = QC_check.CHKPulse(rms, 350)
-                   # log.chkflag["RMS"] = (tmp[0])
-                   # log.badlist["RMS"] = (tmp[1])
-                   # rms_err_flag = tmp[0]
-                   # rms_err_status = tmp[1]
-                   # log.tmp_log[ifemb]["RMS 128-CH std"] = tmp[2]
-                   pk_list[ifemb].append(np.zeros(128))
-                   # if (ped_err_flag == False) and (rms_err_flag == False):
-                   #     log.tmp_log[ifemb]["Result"] = True
-                   # else:
-                   #     log.tmp_log[ifemb]["baseline err_status"] = baseline_err_status
-                   #     log.tmp_log[ifemb]["RMS err_status"] = rms_err_status
-                   #     log.tmp_log[ifemb]["Result"] = False
+                   if not('vdac' in fname_1):
+                       pk_list[ifemb].append(np.zeros(128))
                 else:
                    fname_1 = namepat.format(snc,sgs,sts,dac)
-                   #ppk,bpk,bl=self.GetPeaks(pldata, tmst, ifemb, fp, fname_1)
                    if ('vdac' in fname_1) and not ('000mV' in fname_1):
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
                    else:
                         ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
                    ppk_np = np.array(ppk)-np.array(bl)
-                   # bl_np = np.array(bl)
                    pk_list[ifemb].append(ppk_np)
-                   # pk_list[ifemb].append(ppk_np)
 
 
         for ifemb in fembs:
@@ -765,7 +759,7 @@ class ana_tools:
             new_pk_list = list(zip(*tmp_list))
             #print(new_pk_list[0])
 
-            dac_np = np.array(dac_list)
+            dac_np = np.array(dac_list[0:-1])
             pk_np = np.array(new_pk_list)
             fp = savedir[ifemb]+fdir
              
@@ -781,10 +775,14 @@ class ana_tools:
             for ch in range(128):
                 uplim = np.max(pk_np[ch])/2
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
+
                 if gain==0:
                    print("femb%d ch%d gain is zero"%(ifemb,ch))           
                 else:
-                   gain = 1/gain*dac_du/1000 *CC/e
+                   if ('vdac' in namepat):
+                        gain = 1/gain/1000 *CC/e
+                   else:
+                        gain = 1 / gain * dac_du / 1000 * CC / e
                 gain_list.append(gain)
                 inl_list.append(inl)
                 line_range_list.append(line_range)
@@ -792,14 +790,34 @@ class ana_tools:
                     if inl > 0.02:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
+                    if line_range < 275:
+                        check = False
+                        check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+                        print(line_range)
+                    if gain > 45:
+                        check = False
+                        check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 else:
-                    if inl > 0.01:
+                    if inl > 0.02:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
+                    if "900mV" in fname_1:
+                        if line_range < 25:
+                            check = False
+                            check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+                    else:
+                        if line_range < 55:
+                            check = False
+                            check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+                    if gain > 120:
+                        check = False
+                        check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 # max_dac_list.append(max_dac)
                 plt.plot(dac_np, pk_np[ch])
             log.tmp_log[femb_id]["INL"] = np.max(inl_list)
             log.tmp_log[femb_id]["Gain"] = np.mean(gain_list)
+            log.tmp_log[femb_id]["Gainstd"] = np.std(gain_list)
+            log.tmp_log[femb_id]["Linearangemin"] = np.min(line_range_list)
             log.check_log[femb_id]["Result"] = check
             log.check_log[femb_id]["Issue List"] = check_issue
 
@@ -810,14 +828,13 @@ class ana_tools:
 
             plt.subplot(2, 2, 2)
             # print(log.channel0_pulse[ifemb][dac])
-            for dac in dac_list[1: line_min-2]:
-                if line_min < 15:
-                    plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
-                    # plt.plot(range(120), log.channel0_pulse[ifemb][dac])
-                else:
-                    if dac % 4 == 0:
-                        plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
-                        # plt.plot(range(120), log.channel0_pulse[ifemb][dac])
+            for dac in dac_list[1: -2]:
+                plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+                # if line_min < 15:
+                #     plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+                # else:
+                #     if dac % 4 == 0:
+                #         plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
             plt.ylabel("ADC value", fontsize=14)
             plt.xlabel("Sample", fontsize=14)
             # plt.legend()
@@ -827,6 +844,9 @@ class ana_tools:
             plt.plot(range(128), gain_list, marker='.')
             plt.xlabel("Channel", fontsize=14)
             plt.ylabel("Gain", fontsize=14)
+            x_sticks = range(0, 129, 16)
+            plt.xticks(x_sticks)
+            plt.grid(axis='x')
             plt.title("Gain Distribution for the 128-Channel", fontsize=14)
 
             #   INL
@@ -835,13 +855,16 @@ class ana_tools:
             plt.xlabel("Channel", fontsize=14)
             plt.ylabel("INL", fontsize=14)
             plt.ylim(0, 0.02)
+            x_sticks = range(0, 129, 16)
+            plt.xticks(x_sticks)
+            plt.grid(axis='x')
             plt.title("INL Distribution for the 128-Channel", fontsize=14)
             # plt.plot(range(128), max_dac_list, marker='.')
             # plt.xlabel("chan")
             # plt.ylabel("linear_range")
             # plt.title("linear range")
-
-            plt.savefig(fp + 'gain_{}.png'.format(fname))
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'gain_{}.png'.format(fname), transparent = True)
             plt.close()
 
             fp_bin = fp + "Gain_{}.bin".format(fname)
@@ -856,14 +879,16 @@ class ana_tools:
             plt.ylabel("Line_range", fontsize = 14)
             plt.title(fname, fontsize = 14)
             fp = savedir[ifemb]+fdir+"Line_range_{}.png".format(fname)
-            plt.savefig(fp)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp, transparent = True)
             plt.close()
 
 
-                
-    def GetENC(self, fembs, snc, sgs, sts, sgp, savedir, fdir):
 
+                
+    def GetENC(self, fembs, fembNo, snc, sgs, sts, sgp, savedir, fdir):
         for ifemb in fembs:
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
             if sgp==0:
                fname ="{}_{}_{}".format(snc, sgs, sts)
             if sgp==1:
@@ -882,6 +907,7 @@ class ana_tools:
 
             enc_list = rms_list*gain_list
             enc_mean = np.mean(enc_list)
+            enc_std = np.std(enc_list)
 
             plt.figure(figsize=(4,3))
             xx=range(128)
@@ -889,10 +915,17 @@ class ana_tools:
             plt.ylim(enc_mean-300, enc_mean + 300)
             plt.xlabel("chan", fontsize = 14)
             plt.ylabel("ENC", fontsize = 14)
+            x_sticks = range(0, 129, 16)
+            plt.xticks(x_sticks)
+            plt.grid(axis='x')
             plt.title(fname, fontsize = 14)
             fp = savedir[ifemb]+fdir+"enc_{}.png".format(fname)
-            plt.savefig(fp)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp, transparent = True)
             plt.close()
+
+            log.tmp_log[femb_id]["ENC"] = enc_mean
+            log.tmp_log[femb_id]["ENC_std"] = enc_std
 
             fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
             with open(fp_bin, 'wb') as fn:

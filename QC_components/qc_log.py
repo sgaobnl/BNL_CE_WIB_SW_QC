@@ -46,12 +46,107 @@ report_log3 = [report_log03_01, report_log03_02, report_log03_03, report_log03_0
 # 04
 item04 = "CHK"
 report_log04_01 = defaultdict(dict)    # input information
+report_log04_01_4705 = defaultdict(dict)    # input information
+report_log04_01_4710 = defaultdict(dict)    # input information
+report_log04_01_4720 = defaultdict(dict)    # input information
+report_log04_01_4730 = defaultdict(dict)    # input information
+report_log04_01_7805 = defaultdict(dict)    # input information
+report_log04_01_7810 = defaultdict(dict)    # input information
+report_log04_01_7820 = defaultdict(dict)    # input information
+report_log04_01_7830 = defaultdict(dict)    # input information
+report_log04_01_1405 = defaultdict(dict)    # input information
+report_log04_01_1410 = defaultdict(dict)    # input information
+report_log04_01_1420 = defaultdict(dict)    # input information
+report_log04_01_1430 = defaultdict(dict)    # input information
+report_log04_01_2505 = defaultdict(dict)    # input information
+report_log04_01_2510 = defaultdict(dict)    # input information
+report_log04_01_2520 = defaultdict(dict)    # input information
+report_log04_01_2530 = defaultdict(dict)    # input information
+
+check_log04_01 = defaultdict(dict)    # input information
+check_log04_01_4705 = defaultdict(dict)    # input information
+check_log04_01_4710 = defaultdict(dict)    # input information
+check_log04_01_4720 = defaultdict(dict)    # input information
+check_log04_01_4730 = defaultdict(dict)    # input information
+check_log04_01_7805 = defaultdict(dict)    # input information
+check_log04_01_7810 = defaultdict(dict)    # input information
+check_log04_01_7820 = defaultdict(dict)    # input information
+check_log04_01_7830 = defaultdict(dict)    # input information
+check_log04_01_1405 = defaultdict(dict)    # input information
+check_log04_01_1410 = defaultdict(dict)    # input information
+check_log04_01_1420 = defaultdict(dict)    # input information
+check_log04_01_1430 = defaultdict(dict)    # input information
+check_log04_01_2505 = defaultdict(dict)    # input information
+check_log04_01_2510 = defaultdict(dict)    # input information
+check_log04_01_2520 = defaultdict(dict)    # input information
+check_log04_01_2530 = defaultdict(dict)    # input information
+
+report_log04_02_4705 = defaultdict(dict)    # input information
+report_log04_02_4710 = defaultdict(dict)    # input information
+report_log04_02_4720 = defaultdict(dict)    # input information
+report_log04_02_4730 = defaultdict(dict)    # input information
+report_log04_02_7805 = defaultdict(dict)    # input information
+report_log04_02_7810 = defaultdict(dict)    # input information
+report_log04_02_7820 = defaultdict(dict)    # input information
+report_log04_02_7830 = defaultdict(dict)    # input information
+report_log04_02_1405 = defaultdict(dict)    # input information
+report_log04_02_1410 = defaultdict(dict)    # input information
+report_log04_02_1420 = defaultdict(dict)    # input information
+report_log04_02_1430 = defaultdict(dict)    # input information
+report_log04_02_2505 = defaultdict(dict)    # input information
+report_log04_02_2510 = defaultdict(dict)    # input information
+report_log04_02_2520 = defaultdict(dict)    # input information
+report_log04_02_2530 = defaultdict(dict)    # input information
+
+check_log04_02_4705 = defaultdict(dict)    # input information
+check_log04_02_4710 = defaultdict(dict)    # input information
+check_log04_02_4720 = defaultdict(dict)    # input information
+check_log04_02_4730 = defaultdict(dict)    # input information
+check_log04_02_7805 = defaultdict(dict)    # input information
+check_log04_02_7810 = defaultdict(dict)    # input information
+check_log04_02_7820 = defaultdict(dict)    # input information
+check_log04_02_7830 = defaultdict(dict)    # input information
+check_log04_02_1405 = defaultdict(dict)    # input information
+check_log04_02_1410 = defaultdict(dict)    # input information
+check_log04_02_1420 = defaultdict(dict)    # input information
+check_log04_02_1430 = defaultdict(dict)    # input information
+check_log04_02_2505 = defaultdict(dict)    # input information
+check_log04_02_2510 = defaultdict(dict)    # input information
+check_log04_02_2520 = defaultdict(dict)    # input information
+check_log04_02_2530 = defaultdict(dict)    # input information
+
+
+report_log04_03_4720 = defaultdict(dict)
+report_log04_03_7820 = defaultdict(dict)
+report_log04_03_1420 = defaultdict(dict)
+report_log04_03_2520 = defaultdict(dict)
+
+check_log04_03_4720 = defaultdict(dict)
+check_log04_03_7820 = defaultdict(dict)
+check_log04_03_1420 = defaultdict(dict)
+check_log04_03_2520 = defaultdict(dict)
+
+report_log04_04_14201 = defaultdict(dict)
+report_log04_04_14202 = defaultdict(dict)
+report_log04_04_14203 = defaultdict(dict)
+report_log04_04_14204 = defaultdict(dict)
+report_log04_04_14205 = defaultdict(dict)
+report_log04_04_14206 = defaultdict(dict)
+
+check_log04_04_14201 = defaultdict(dict)
+check_log04_04_14202 = defaultdict(dict)
+check_log04_04_14203 = defaultdict(dict)
+check_log04_04_14204 = defaultdict(dict)
+check_log04_04_14205 = defaultdict(dict)
+check_log04_04_14206 = defaultdict(dict)
+
+
 report_log04_02 = defaultdict(dict)    # input information
 report_log04_03 = defaultdict(dict)    # input information
 report_log04_04 = defaultdict(dict)    # input information
 report_log04_05 = defaultdict(dict)    # input information
 report_log04_06 = defaultdict(dict)    # input information
-check_log04_01 = defaultdict(dict)    # input information
+
 check_log04_02 = defaultdict(dict)    # input information
 check_log04_03 = defaultdict(dict)    # input information
 check_log04_04 = defaultdict(dict)    # input information
@@ -157,8 +252,9 @@ mon_pulse = defaultdict(dict)
 # 11
 item11 = "MON_FE"
 report_log11_01 = defaultdict(dict)
-
 check_log1101 = defaultdict(dict)
+
+
 
 # 12
 item12 = "MON_ADC"
@@ -195,10 +291,13 @@ report_log14_fin_result = defaultdict(dict)
 item15 = "ADC_SYNC_PAT"
 # ADCMON_table_cell = defaultdict(dict)
 # ADCMON_table = defaultdict(dict)
+check_log1501 = defaultdict(dict)
+check_log1502 = defaultdict(dict)
+check_log1503 = defaultdict(dict)
 
 chkflag = defaultdict(dict)    # input information
 badlist = defaultdict(dict)    # input information
-tmp_log = defaultdict(dict)
+# tmp_log = defaultdict(dict)
 check_log = defaultdict(dict)
 tmp_pulse = defaultdict(dict)
 
@@ -206,6 +305,7 @@ tmp_pulse = defaultdict(dict)
 
 item16 = "PLL_PAT"
 check_log1601 = defaultdict(dict)
+report_log1601 = defaultdict(dict)
 # 06 calibration
 channel0_pulse = defaultdict(dict)
 

@@ -5,7 +5,7 @@ import time
 ag = argparse.ArgumentParser()
 ag.add_argument("fembs", help="a list of femb slots number", type=int, nargs='+')
 #ag.add_argument("-s", "--save", help="number of pulses to be saved", type=int, default=1)
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,16+1),  nargs='+', default=range(1,16+1))
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,17+1),  nargs='+', default=range(1,17+1))
 args = ag.parse_args()
 
 fembs = args.fembs
@@ -58,15 +58,15 @@ for tm in tasks:
         qc.femb_MON_3()
 
     if tm==13:
-        vdac_offset = 0.084
-        qc.vgndoft = 1.04 + vdac_offset - 0.4  # to be added later
-        qc.vdacmax = 1.04 + vdac_offset
+        vdac_offset = 0.1
+        qc.vgndoft = 0 + vdac_offset  # to be added later
+        qc.vdacmax = 0.50 + vdac_offset
         qc.femb_CALI_5()  # external calibration 900mV BL
 
     if tm==14:
-        vdac_offset = 0.084
-        qc.vgndoft = 1.04 + vdac_offset - 0.8  # to be added later
-        qc.vdacmax = 1.04 + vdac_offset
+        vdac_offset = 0.0
+        qc.vgndoft = 0 + vdac_offset  # to be added later
+        qc.vdacmax = 0.50 + vdac_offset
         qc.femb_CALI_6()  # external calibration 200mV BL
 
     if tm==15:

@@ -294,14 +294,11 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
 
         bbl_mean = int(np.mean(bl))
         bbl_err = int(np.std(bl))
-        # bbl_mean = np.mean(bl)
 
-        # log.check_log[femb_id]["{}_ppk_mean".format(fname)] = int(ppk_mean)
-        # log.check_log[femb_id]["{}_ppk_err".format(fname)] = int(ppk_err)
-        # log.check_log[femb_id]["{}_npk_mean".format(fname)] = abs(int(npk_mean))
-        # log.check_log[femb_id]["{}_npk_err".format(fname)] = int(npk_err)
+        npk_mean = int(np.mean(npk))
+        npk_err = int(np.std(npk))
 
-        tmp = QC_check.CHKPulse(ppk, 800)
+        tmp = QC_check.CHKPulse(ppk, 2000)
         print(tmp[0])
         if tmp[0] == False:
             # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
@@ -317,28 +314,39 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         check_issue.append("Pulse_PPK_issue: {}\n".format(tmp[1]))
         # log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
 
-        tmp = QC_check.CHKPulse(npk, 800)
-        print(tmp[0])
-        if tmp[0] == False:
-            # log.tmp_log[femb_id]["{}_baseline_mean".format(fname)] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
-            log.tmp_log[femb_id]["baseline_mean"] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
-            # log.tmp_log[femb_id]["{}_baseline_err".format(fname)] = '<span style="color: red;">' + str(bbl_err) + '</span>'
-            log.tmp_log[femb_id]["baseline_err"] = '<span style="color: red;">' + str(bbl_err) + '</span>'
-        else:
-            # log.tmp_log[femb_id]["{}_npk_mean".format(fname)] = str(bbl_mean)
-            log.tmp_log[femb_id]["baseline_mean"] = str(bbl_mean)
-            # log.tmp_log[femb_id]["{}_npk_err".format(fname)] = str(bbl_err)
-            log.tmp_log[femb_id]["baseline_err"] = str(bbl_err)
-        check = check and tmp[0]
-        check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
-        # log.badlist[femb_id]["Pulse_SE_NPK"]=(tmp[1])
-
         tmp = QC_check.CHKPulse(bl, 800)
         print(tmp[0])
+        if tmp[0] == False:
+            log.tmp_log[femb_id]["bbl_mean"] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
+            log.tmp_log[femb_id]["bbl_std"] = '<span style="color: red;">' + str(bbl_err) + '</span>'
+            log.tmp_log[femb_id]["issue_ch"] = '<span style="color: red;">' + str(tmp[1]) + '</span>'
+        else:
+            log.tmp_log[femb_id]["bbl_mean"] = str(bbl_mean)
+            log.tmp_log[femb_id]["bbl_std"] = str(bbl_err)
         check = check and tmp[0]
+        check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
+
+        tmp = QC_check.CHKPulse(npk, 2000)
+        print(tmp[0])
+        if tmp[0] == False:
+            log.tmp_log[femb_id]["npk_mean"] = '<span style="color: red;">' + str(npk_mean) + '</span>'
+            log.tmp_log[femb_id]["npk_std"] = '<span style="color: red;">' + str(npk_err) + '</span>'
+            log.tmp_log[femb_id]["issue_ch"] = '<span style="color: red;">' + str(tmp[1]) + '</span>'
+        else:
+            log.tmp_log[femb_id]["npk_mean"] = str(npk_mean)
+            log.tmp_log[femb_id]["npk_std"] = str(npk_err)
+        check = check and tmp[0]
+        check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
+
         check_issue.append("Pulse_BBL_issue: {}\n".format(tmp[1]))
         log.check_log[femb_id]["Result"] = check
         log.check_log[femb_id]["Issue List"] = check_issue
         log.check_log[femb_id]["Label"] = label
+        log.check_log[femb_id]["ppk_mean"] = ppk_mean
+        log.check_log[femb_id]["ppk_std"] = ppk_err
+        log.check_log[femb_id]["bbl_mean"] = bbl_mean
+        log.check_log[femb_id]["bbl_std"] = bbl_err
+        log.check_log[femb_id]["npk_mean"] = npk_mean
+        log.check_log[femb_id]["npk_std"] = npk_err
 
 

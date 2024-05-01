@@ -1,4 +1,5 @@
 import pickle
+import time
 import numpy as np
 import QC_components.qc_log as log
 from wib_cfgs import WIB_CFGS
@@ -114,8 +115,7 @@ def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sd
                                   sdf=sdf, slk0=slk0, slk1=slk1, sgp=sgp)
             adac_pls_en = 0
         time.sleep(0.001)
-        cfg_paras_rec.append(
-            (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en))
+        cfg_paras_rec.append((femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en))
         time.sleep(0.001)
         self.chk.femb_cfg(femb_id, adac_pls_en)
     time.sleep(1)

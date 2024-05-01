@@ -97,7 +97,7 @@ chk.femb_powering([])
 
 #   set FEMB voltages
 #chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
-chk.fembs_vol_set(vfe = 3.1, vcd = 3.1, vadc = 3.6)   #   this parameter can not be used in LN2
+chk.fembs_vol_set(vfe = 3.0, vcd = 3.0, vadc = 3.5)   #   this parameter can not be used in LN2
 # chk.fembs_vol_set(vfe = 4, vcd = 4, vadc = 4)
 print("Check FEMB currents")
 fembs_remove = []

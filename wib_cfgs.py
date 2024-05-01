@@ -27,7 +27,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
         # pll_ref LN 0x25   RT 0x26 rang(20~2A) scan 25-->20 25-->2A
-        self.pll = 0x23
+        self.pll = 0x21
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -657,7 +657,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         # page 1 registers default value
         #reg_dval1=[0xA3,0x00,0x00,0x00,0x33,0x33,0x33,0x33,0x0B,0x00,0xF1,0x29,0x8D,0x65,0x55,0xFF,0xFF,0xFF,0xFF,0x04,0x00,0x00,0xFF,0x2F,0xDF,0x33,0x89,0x67,0x15,0xFF,0xFF,0x00,0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x10,0x00,0xCD,0xAB,0x34,0x12]
         reg_dval1=[0xA3,0x00,0x00,0x00,0x33,0x33,0x33,0x33,0x0B,0x00,0xF1,0x29,0x8D,0x65,0x55,0xFF,0xFF,0xFF,0xFF,0x04,0x00,0x00,0xFF,0x2F,0xDF,0x33,0x89,0x67,0x15,0xFF,0xFF,0x00,0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x10,0x00]
-        
+
         # page 2 registers
         reg_addr2=range(1,5)
         # page 2 registers default value
@@ -936,10 +936,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_fe_cfg(femb_id)
         self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
-    def fembs_fe_mon(self, fembs=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1 ):
+    def fembs_fe_mon(self, fembs=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sdd = 0, dac = 30):
         if (rst_fe != 0):
             self.set_fe_reset()
-
         if (mon_type==2): #monitor bandgap 
             stb0=1
             stb1=1
@@ -952,7 +951,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             stb0=0
             stb1=0
             chn=mon_chipchn
-
         self.set_fe_reset()
         #ONlY one channel of a FEMB can set smn to 1 at a time
         if adac_pls_en == 0:
@@ -960,7 +958,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.set_fechip_global(chip=mon_chip&0x07, stb1=stb1, stb=stb0)
         else:
             self.set_fechn_reg(chip=mon_chip & 0x07, chn=chn, sts = 1, snc=snc, sg0=sg0, sg1=sg1, st0 = 1, st1 = 1, smn=1, sdf=sdf)
-            self.set_fechip_global(chip=mon_chip & 0x07, slk0 = 0, stb1=stb1, stb=stb0, s16 = 1, slk1 = 0, sdc = 0, sdd = 0, sgp = 0, swdac = 1, dac = 0x30)
+            self.set_fechip_global(chip=mon_chip & 0x07, slk0 = 0, stb1=stb1, stb=stb0, s16 = 1, slk1 = 0, sdc = 0, sdd = sdd, sgp = 0, swdac = 1, dac = dac)
         self.set_fe_sync()
         # input(2)
         self.fembs_fe_cfg(fembs)
@@ -971,7 +969,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
         # input(4)
 
-    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
+    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10, sdd = 0):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
@@ -980,7 +978,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         #step 2
         #for femb_id in femb_ids:
         #    self.femb_fe_mon(femb_id, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
-        self.fembs_fe_mon(femb_ids, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf )
+        self.fembs_fe_mon(femb_ids, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc, sg0, sg1, sdf, sdd)
+        # for dac in range(0, 63):
+        #     self.fembs_fe_mon(femb_ids, adac_pls_en, rst_fe, mon_type, mon_chip, mon_chipchn, snc,sg0, sg1, sdf, sdd, dac = dac)
         #step4
         if self.longcable:
             time.sleep(0.5)
@@ -1005,19 +1005,19 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ):
         time.sleep(0.01)
-        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
+        self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
         self.set_fe_reset()
         self.set_fe_board(sg0=sg0, sg1=sg1)
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
+        time.sleep(0.01)
         #step 2
         vdac_mons = []
 
         for vdac in vdacs:
             self.set_fechip_global(chip=mon_chip&0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
-
             self.fembs_fe_cfg(femb_ids)
             for femb_id in femb_ids:
            #     self.femb_fe_cfg(femb_id)
@@ -1035,6 +1035,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vdac_mons.append(["ASICDAC", mon_chip, vdac, sps, adcss])
+            for femb_id in femb_ids:
+                self.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x02, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
         self.wib_mon_switches()
         return vdac_mons
 

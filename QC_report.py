@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
+import csv
 import sys
 import time
 import glob
@@ -105,14 +106,14 @@ class QC_reports:
             current_page += 1
         c.save()
 
+# 1     Power Consumption
+# ================================================================================================
     def PWR_consumption_report(self):
         log.test_label.append(1)
         qc = ana_tools()
         self.CreateDIR("PWR_Meas")
         datadir = self.datadir+"PWR_Meas/"
-
 #     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
-
 #     SE Power Measurement      Power
         f_pwr = datadir+"PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
         with open(f_pwr, 'rb') as fn:
@@ -242,11 +243,13 @@ class QC_reports:
             plt.legend(loc="upper left", ncol=3, shadow=False)
             plt.xticks(x, df, fontsize=10)
             plt.ylabel('Current / A')
+            plt.title('Power Consumption')
             plt.ylim(0, 2.2)
-            plt.savefig(self.savedir[self.fembs[ifemb]] + "PWR_Meas/" + 'Power_Total.png')
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(self.savedir[self.fembs[ifemb]] + "PWR_Meas/" + 'Power_Total.png', transparent = True)
             plt.close()
 
-
+# 2     Power cycle test, only in LN2
     def PWR_cycle_report(self):
         log.test_label.append(2)
         if 'RT' in self.logs['env']:
@@ -324,30 +327,29 @@ class QC_reports:
             dict_list[i].update(pulse)
             check_list[i].update(pulse_check)
             i = i + 1
-        print(log.report_log03_01)
+        print(log.check_log03_01)
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             plt.figure(figsize=(6, 3))
             x = ["100pA", "500pA", "1nA", "5nA"]
-            y1 = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_mean0"],
-                  log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_mean0"]]
-            yer = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_err0"],
-                   log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_err0"]]
-            plt.errorbar(x, y1, yer, fmt='o', capsize=3, color='blue', linestyle='-', label='Amplitude with error bars')
-            y2 = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_mean0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_mean0"],
-                  log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_mean0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_mean0"]]
-            y2er = [log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_npk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_npk_err0"],
-                    log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_npk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_npk_err0"]]
-            plt.errorbar(x, y2, y2er, fmt='o', capsize=3, color='orange', linestyle='-',
-                         label='Pedestal with error bars')
-            plt.ylim(0, 12000)
+            y1 = [log.check_log03_02[femb_id]["ppk_mean"], log.check_log03_01[femb_id]["ppk_mean"], log.check_log03_04[femb_id]["ppk_mean"], log.check_log03_03[femb_id]["ppk_mean"]]
+            yer = [log.check_log03_02[femb_id]["ppk_std"], log.check_log03_01[femb_id]["ppk_std"], log.check_log03_04[femb_id]["ppk_std"], log.check_log03_03[femb_id]["ppk_std"]]
+            plt.errorbar(x, y1, yer, fmt='.', capsize=5, color='darkblue', linestyle='-', label='Amplitude')
+            y2 = [log.check_log03_02[femb_id]["bbl_mean"], log.check_log03_01[femb_id]["bbl_mean"], log.check_log03_04[femb_id]["bbl_mean"], log.check_log03_03[femb_id]["bbl_mean"]]
+            y2er = [log.check_log03_02[femb_id]["bbl_std"], log.check_log03_01[femb_id]["bbl_std"], log.check_log03_04[femb_id]["bbl_std"], log.check_log03_03[femb_id]["bbl_std"]]
+            plt.errorbar(x, y2, y2er, fmt='.', capsize=5, color='darkred', linestyle='-', label='Pedestal')
+            plt.ylim(0, 16385)
+            plt.grid(True, axis='y', linestyle='--')
+            for i in range(len(x)):
+                plt.text(x[i], y1[i] + 100, f'{round(y1[i], 1)}±{round(yer[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
+                plt.text(x[i], y2[i] + 100, f'{round(y2[i], 1)}±{round(y2er[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkred')
             plt.title('Postive Amplitude & Pedestal at different leakage current')
-            plt.ylabel('ADC / Count')
-            # plt.xlabel('Leakage Current')
-            plt.legend()
+            plt.ylabel('ADC Count')
+            plt.margins(x=0.15)
+            plt.legend(loc="upper left", ncol=3, shadow=False)
             fp = self.savedir[self.fembs[ifemb]] + "Leakage_Current/"
-            fp_fig = fp + "LC_pulse.png"
-            plt.savefig(fp_fig)
+            plt.gca().set_facecolor('none')     # set background as transparent
+            plt.savefig(fp + "LC_pulse.png", transparent = True)
             plt.close()
 
 
@@ -364,127 +366,128 @@ class QC_reports:
         # dict_list_SE_200 = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
         # check_list_SE_200 = [log.check_log04_01, log.check_log04_02, log.check_log04_03, log.check_log04_04]
         i = 0
+        for ifemb in range(len(self.fembs)):
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+            log.check_log04_01[femb_id]['Result'] = True
+
         for afile in files:
             with open(afile, 'rb') as fn:
                 raw = pickle.load(fn)
-            #print("analyze file: %s"%afile)
             rawdata = raw[0]
             pwr_meas = raw[1]
-            if "_SE_200" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                print(fname)
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                print(pulse)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_01[femb_id].update(pulse[femb_id])
-                    log.check_log04_01[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-            if "_SE_900" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_02[femb_id].update(pulse[femb_id])
-                    log.check_log04_02[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-            if "_SEON_" in afile:
-                pldata2 = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata2, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_03[femb_id].update(pulse[femb_id])
-                    log.check_log04_03[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-            if "_SEON" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                print(fname)
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SEON_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                print(pulse)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_03[femb_id].update(pulse[femb_id])
-                    log.check_log04_03[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-            if "_DIFF_" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_04[femb_id].update(pulse[femb_id])
-                    log.check_log04_04[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-            if "_EX_" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                log.report_log04_05.update(pulse)
-                log.check_log04_05.update(pulse_check)
-                i = i + 1
-            if "_SGP_" in afile:
-                pldata = qc.data_decode(rawdata, self.fembs)
-                if '\\' in afile:
-                    fname = afile.split("\\")[-1][:-4]
-                else:
-                    fname = afile.split("/")[-1][:-4]
-                label = fname[fname.find("0x20_") + 5:]
-                a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_' + label)
-                pulse = dict(log.tmp_log)
-                pulse_check = dict(log.check_log)
-                for ifemb in range(len(self.fembs)):
-                    femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                    log.report_log04_06[femb_id].update(pulse[femb_id])
-                    log.check_log04_06[femb_id].update(pulse_check[femb_id])
-                i = i + 1
-        for key in log.report_log04_01.keys():
-            print(key, ":", log.report_log04_01[key])
-            print('\n')
-        print(log.report_log04_02)
-        print(log.report_log04_03)
-        print(log.report_log04_04)
-        print(log.report_log04_05)
-        print(log.report_log04_06)
+# =======================================
+            pldata = qc.data_decode(rawdata, self.fembs)
+            if '\\' in afile:
+                fname = afile.split("\\")[-1][:-4]
+            else:
+                fname = afile.split("/")[-1][:-4]
+            print(fname)
+            a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/')
+            pulse = dict(log.tmp_log)
+            pulse_check = dict(log.check_log)
+            print(pulse)
+            for ifemb in range(len(self.fembs)):
+                femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+                log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] & pulse_check[femb_id]['Result']
+                plt.figure(figsize=(9, 6))
+                x = [1, 2, 3, 4]
+                if "SE_200mVBL_4_7mVfC_0_5us" in afile:
+                    log.report_log04_01_4705[femb_id].update(pulse[femb_id]); log.check_log04_01_4705[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_4_7mVfC_1_0us" in afile:
+                    log.report_log04_01_4710[femb_id].update(pulse[femb_id]); log.check_log04_01_4710[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_4_7mVfC_2_0us" in afile:
+                    log.report_log04_01_4720[femb_id].update(pulse[femb_id]); log.check_log04_01_4720[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_4_7mVfC_3_0us" in afile:
+                    log.report_log04_01_4730[femb_id].update(pulse[femb_id]); log.check_log04_01_4730[femb_id].update(pulse_check[femb_id])
+
+                if "SE_200mVBL_7_8mVfC_0_5us" in afile:
+                    log.report_log04_01_7805[femb_id].update(pulse[femb_id]); log.check_log04_01_7805[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_7_8mVfC_1_0us" in afile:
+                    log.report_log04_01_7810[femb_id].update(pulse[femb_id]); log.check_log04_01_7810[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_7_8mVfC_2_0us" in afile:
+                    log.report_log04_01_7820[femb_id].update(pulse[femb_id]); log.check_log04_01_7820[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_7_8mVfC_3_0us" in afile:
+                    log.report_log04_01_7830[femb_id].update(pulse[femb_id]); log.check_log04_01_7830[femb_id].update(pulse_check[femb_id])
+
+                if "SE_200mVBL_14_0mVfC_0_5us" in afile:
+                    log.report_log04_01_1405[femb_id].update(pulse[femb_id]); log.check_log04_01_1405[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_14_0mVfC_1_0us" in afile:
+                    log.report_log04_01_1410[femb_id].update(pulse[femb_id]); log.check_log04_01_1410[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_14_0mVfC_2_0us" in afile:
+                    log.report_log04_01_1420[femb_id].update(pulse[femb_id]); log.check_log04_01_1420[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_14_0mVfC_3_0us" in afile:
+                    log.report_log04_01_1430[femb_id].update(pulse[femb_id]); log.check_log04_01_1430[femb_id].update(pulse_check[femb_id])
+
+                if "SE_200mVBL_25_0mVfC_0_5us" in afile:
+                    log.report_log04_01_2505[femb_id].update(pulse[femb_id]); log.check_log04_01_2505[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_25_0mVfC_1_0us" in afile:
+                    log.report_log04_01_2510[femb_id].update(pulse[femb_id]); log.check_log04_01_2510[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_25_0mVfC_2_0us" in afile:
+                    log.report_log04_01_2520[femb_id].update(pulse[femb_id]); log.check_log04_01_2520[femb_id].update(pulse_check[femb_id])
+                if "SE_200mVBL_25_0mVfC_3_0us" in afile:
+                    log.report_log04_01_2530[femb_id].update(pulse[femb_id]); log.check_log04_01_2530[femb_id].update(pulse_check[femb_id])
+
+
+
+                if "SE_900mVBL_4_7mVfC_0_5us" in afile:
+                    log.report_log04_02_4705[femb_id].update(pulse[femb_id]); log.check_log04_02_4705[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_4_7mVfC_1_0us" in afile:
+                    log.report_log04_02_4710[femb_id].update(pulse[femb_id]); log.check_log04_02_4710[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_4_7mVfC_2_0us" in afile:
+                    log.report_log04_02_4720[femb_id].update(pulse[femb_id]); log.check_log04_02_4720[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_4_7mVfC_3_0us" in afile:
+                    log.report_log04_02_4730[femb_id].update(pulse[femb_id]); log.check_log04_02_4730[femb_id].update(pulse_check[femb_id])
+
+                if "SE_900mVBL_7_8mVfC_0_5us" in afile:
+                    log.report_log04_02_7805[femb_id].update(pulse[femb_id]); log.check_log04_02_7805[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_7_8mVfC_1_0us" in afile:
+                    log.report_log04_02_7810[femb_id].update(pulse[femb_id]); log.check_log04_02_7810[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_7_8mVfC_2_0us" in afile:
+                    log.report_log04_02_7820[femb_id].update(pulse[femb_id]); log.check_log04_02_7820[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_7_8mVfC_3_0us" in afile:
+                    log.report_log04_02_7830[femb_id].update(pulse[femb_id]); log.check_log04_02_7830[femb_id].update(pulse_check[femb_id])
+
+                if "SE_900mVBL_14_0mVfC_0_5us" in afile:
+                    log.report_log04_02_1405[femb_id].update(pulse[femb_id]); log.check_log04_02_1405[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_14_0mVfC_1_0us" in afile:
+                    log.report_log04_02_1410[femb_id].update(pulse[femb_id]); log.check_log04_02_1410[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_14_0mVfC_2_0us" in afile:
+                    log.report_log04_02_1420[femb_id].update(pulse[femb_id]); log.check_log04_02_1420[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_14_0mVfC_3_0us" in afile:
+                    log.report_log04_02_1430[femb_id].update(pulse[femb_id]); log.check_log04_02_1430[femb_id].update(pulse_check[femb_id])
+
+                if "SE_900mVBL_25_0mVfC_0_5us" in afile:
+                    log.report_log04_02_2505[femb_id].update(pulse[femb_id]); log.check_log04_02_2505[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_25_0mVfC_1_0us" in afile:
+                    log.report_log04_02_2510[femb_id].update(pulse[femb_id]); log.check_log04_02_2510[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_25_0mVfC_2_0us" in afile:
+                    log.report_log04_02_2520[femb_id].update(pulse[femb_id]); log.check_log04_02_2520[femb_id].update(pulse_check[femb_id])
+                if "SE_900mVBL_25_0mVfC_3_0us" in afile:
+                    log.report_log04_02_2530[femb_id].update(pulse[femb_id]); log.check_log04_02_2530[femb_id].update(pulse_check[femb_id])
+
+                if "SGP_200mVBL_4_7" in afile:
+                    log.report_log04_03_4720[femb_id].update(pulse[femb_id]); log.check_log04_03_4720[femb_id].update(pulse_check[femb_id])
+                if "SGP_200mVBL_7_8" in afile:
+                    log.report_log04_03_7820[femb_id].update(pulse[femb_id]); log.check_log04_03_7820[femb_id].update(pulse_check[femb_id])
+                if "SGP_200mVBL_14_0" in afile:
+                    log.report_log04_03_1420[femb_id].update(pulse[femb_id]); log.check_log04_03_1420[femb_id].update(pulse_check[femb_id])
+                if "SGP_200mVBL_25_0" in afile:
+                    log.report_log04_03_2520[femb_id].update(pulse[femb_id]); log.check_log04_03_2520[femb_id].update(pulse_check[femb_id])
+                #   different items plot together
+                if "SEON_200mVBL" in afile:
+                    log.report_log04_04_14201[femb_id].update(pulse[femb_id]); log.check_log04_04_14201[femb_id].update(pulse_check[femb_id])
+                if "SEON_900mVBL" in afile:
+                    log.report_log04_04_14202[femb_id].update(pulse[femb_id]); log.check_log04_04_14202[femb_id].update(pulse_check[femb_id])
+                if "DIFF_200mVBL" in afile:
+                    log.report_log04_04_14203[femb_id].update(pulse[femb_id]); log.check_log04_04_14203[femb_id].update(pulse_check[femb_id])
+                if "DIFF_900mVBL" in afile:
+                    log.report_log04_04_14204[femb_id].update(pulse[femb_id]); log.check_log04_04_14204[femb_id].update(pulse_check[femb_id])
+                if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000000mV" in afile:
+                    log.report_log04_04_14205[femb_id].update(pulse[femb_id]); log.check_log04_04_14205[femb_id].update(pulse_check[femb_id])
+                if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000050mV" in afile:
+                    log.report_log04_04_14206[femb_id].update(pulse[femb_id]); log.check_log04_04_14206[femb_id].update(pulse_check[femb_id])
+
+
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + fdir+"/"
             if 'vdac' in fname:
@@ -494,205 +497,169 @@ class QC_reports:
                 qc.GetPeaks(pldata, ifemb, fp, fname)
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             # plot 1
-            plt.figure(figsize=(9, 6))
+            plt.figure(figsize=(6, 4))
             x = [1, 2, 3, 4]
             x_sticks = ()
-            SE_200_4_7mV_ppk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_200_4_7mV_ppkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_ppk_err0"]]
-            SE_200_4_7mV_npk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_npk_mean0"]]
-            SE_200_4_7mV_npkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_0_5us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_1_0us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_4_7mVfC_3_0us_0x10_npk_err0"]]
-            SE_200_7_8mV_ppk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_200_7_8mV_ppkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_ppk_err0"]]
-            SE_200_7_8mV_npk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_npk_mean0"]]
-            SE_200_7_8mV_npkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_0_5us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_1_0us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_01[femb_id]["CHK_SE_200mVBL_7_8mVfC_3_0us_0x10_npk_err0"]]
-            SE_200_14_0mV_ppk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_200_14_0mV_ppkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_ppk_err0"]]
-            SE_200_14_0mV_npk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_npk_mean0"]]
-            SE_200_14_0mV_npkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_0_5us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_1_0us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_2_0us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_14_0mVfC_3_0us_0x10_npk_err0"]]
-            SE_200_25_0mV_ppk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_ppk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_200_25_0mV_ppkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_ppk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_ppk_err0"]]
-            SE_200_25_0mV_npk = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_npk_mean0"],
-                                 log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_npk_mean0"]]
-            SE_200_25_0mV_npkerr = [log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_0_5us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_1_0us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_2_0us_0x10_npk_err0"],
-                                    log.report_log04_01[femb_id]["CHK_SE_200mVBL_25_0mVfC_3_0us_0x10_npk_err0"]]
-            plt.errorbar(x, SE_200_4_7mV_ppk, yerr=SE_200_4_7mV_ppkerr, linestyle='-', alpha=0.7, label='SE_200_4_7mV_ppk')
-            plt.errorbar(x, SE_200_4_7mV_npk, yerr=SE_200_4_7mV_npkerr, linestyle='-', alpha=0.7,label='SE_200_4_7mV_npk')
-            plt.errorbar(x, SE_200_7_8mV_ppk, yerr=SE_200_7_8mV_ppkerr, linestyle='-', alpha=0.7, label='SE_200_7_8mV_ppk')
-            plt.errorbar(x, SE_200_7_8mV_npk, yerr=SE_200_7_8mV_npkerr, linestyle='-', alpha=0.7,label='SE_200_7_8mV_npk')
-            plt.errorbar(x, SE_200_14_0mV_ppk, yerr=SE_200_14_0mV_ppkerr, linestyle='--', alpha=0.7,label='SE_200_14_0mV_ppk')
-            plt.errorbar(x, SE_200_14_0mV_npk, yerr=SE_200_14_0mV_npkerr, linestyle='--', alpha=0.7,label='SE_200_14_0mV_npk')
-            plt.errorbar(x, SE_200_25_0mV_ppk, yerr=SE_200_25_0mV_ppkerr, linestyle='--', alpha=0.7,label='SE_200_25_0mV_ppk')
-            plt.errorbar(x, SE_200_25_0mV_npk, yerr=SE_200_25_0mV_npkerr, linestyle='--', alpha=0.7,label='SE_200_25_0mV_npk')
+            SE_200_4_7mV_ppk = [log.check_log04_01_4705[femb_id]["ppk_mean"]-log.check_log04_01_4705[femb_id]["bbl_mean"], log.check_log04_01_4710[femb_id]["ppk_mean"]-log.check_log04_01_4710[femb_id]["bbl_mean"], log.check_log04_01_4720[femb_id]["ppk_mean"]-log.check_log04_01_4720[femb_id]["bbl_mean"], log.check_log04_01_4730[femb_id]["ppk_mean"]-log.check_log04_01_4730[femb_id]["bbl_mean"]]
+            SE_200_4_7mV_ppkerr = [log.check_log04_01_4705[femb_id]["ppk_std"], log.check_log04_01_4710[femb_id]["ppk_std"], log.check_log04_01_4720[femb_id]["ppk_std"], log.check_log04_01_4730[femb_id]["ppk_std"]]
+
+            SE_200_7_8mV_ppk = [
+                log.check_log04_01_7805[femb_id]["ppk_mean"] - log.check_log04_01_7805[femb_id]["bbl_mean"],
+                log.check_log04_01_7810[femb_id]["ppk_mean"] - log.check_log04_01_7810[femb_id]["bbl_mean"],
+                log.check_log04_01_7820[femb_id]["ppk_mean"] - log.check_log04_01_7820[femb_id]["bbl_mean"],
+                log.check_log04_01_7830[femb_id]["ppk_mean"] - log.check_log04_01_7830[femb_id]["bbl_mean"]]
+
+            SE_200_7_8mV_ppkerr = [log.check_log04_01_7805[femb_id]["ppk_std"], log.check_log04_01_7810[femb_id]["ppk_std"], log.check_log04_01_7820[femb_id]["ppk_std"], log.check_log04_01_7830[femb_id]["ppk_std"]]
+
+            SE_200_14_0mV_ppk = [
+                log.check_log04_01_1405[femb_id]["ppk_mean"] - log.check_log04_01_1405[femb_id]["bbl_mean"],
+                log.check_log04_01_1410[femb_id]["ppk_mean"] - log.check_log04_01_1410[femb_id]["bbl_mean"],
+                log.check_log04_01_1420[femb_id]["ppk_mean"] - log.check_log04_01_1420[femb_id]["bbl_mean"],
+                log.check_log04_01_1430[femb_id]["ppk_mean"] - log.check_log04_01_1430[femb_id]["bbl_mean"]]
+            SE_200_14_0mV_ppkerr = [log.check_log04_01_1405[femb_id]["ppk_std"],
+                                   log.check_log04_01_1410[femb_id]["ppk_std"],
+                                   log.check_log04_01_1420[femb_id]["ppk_std"],
+                                   log.check_log04_01_1430[femb_id]["ppk_std"]]
+
+            SE_200_25_0mV_ppk = [
+                log.check_log04_01_2505[femb_id]["ppk_mean"] - log.check_log04_01_2505[femb_id]["bbl_mean"],
+                log.check_log04_01_2510[femb_id]["ppk_mean"] - log.check_log04_01_2510[femb_id]["bbl_mean"],
+                log.check_log04_01_2520[femb_id]["ppk_mean"] - log.check_log04_01_2520[femb_id]["bbl_mean"],
+                log.check_log04_01_2530[femb_id]["ppk_mean"] - log.check_log04_01_2530[femb_id]["bbl_mean"]]
+            SE_200_25_0mV_ppkerr = [log.check_log04_01_2505[femb_id]["ppk_std"],
+                                   log.check_log04_01_2510[femb_id]["ppk_std"],
+                                   log.check_log04_01_2520[femb_id]["ppk_std"],
+                                   log.check_log04_01_2530[femb_id]["ppk_std"]]
+
+            plt.errorbar(x, SE_200_4_7mV_ppk, yerr=SE_200_4_7mV_ppkerr, color='darkred', linestyle='-', capsize=5,alpha=0.7, label='SE_200_4_7mV_ppk')
+            plt.errorbar(x, SE_200_7_8mV_ppk, yerr=SE_200_7_8mV_ppkerr, color='darkorange', linestyle='-', capsize=5,alpha=0.7, label='SE_200_7_8mV_ppk')
+            plt.errorbar(x, SE_200_14_0mV_ppk, yerr=SE_200_14_0mV_ppkerr, color='darkgreen', linestyle='-', capsize=5,alpha=0.7,label='SE_200_14_0mV_ppk')
+            plt.errorbar(x, SE_200_25_0mV_ppk, yerr=SE_200_25_0mV_ppkerr, color='darkblue', linestyle='-', capsize=5,alpha=0.7,label='SE_200_25_0mV_ppk')
             plt.legend()
             plt.xlabel("Peak Time", fontsize=12)
-            plt.ylabel("Baseline", fontsize=12)
-            # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
+            plt.ylabel("ADC count", fontsize=12)
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
-            plt.grid(axis='x')
+            plt.grid(True, axis='y', linestyle='--')
+            plt.ylim(0, 6000)
             plt.title("SE 200 Gain Pulse Mean ErrorBar", fontsize=12)
-            plt.savefig(fp + 'SE_200_Gain_Pulse_ErrorBar.png')
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')     # set background as transparent
+            plt.savefig(fp + 'SE_200_Gain_Pulse_ErrorBar.png', transparent = True)
             plt.close()
             # plot 2
-            plt.figure(figsize=(9, 6))
+            plt.figure(figsize=(6, 4))
             x = [1, 2, 3, 4]
             x_sticks = ()
-            SE_900_4_7mV_ppk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_900_4_7mV_ppkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_ppk_err0"]]
-            SE_900_4_7mV_npk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_npk_mean0"]]
-            SE_900_4_7mV_npkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_0_5us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_1_0us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_4_7mVfC_3_0us_0x10_npk_err0"]]
-            SE_900_7_8mV_ppk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_900_7_8mV_ppkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_ppk_err0"]]
-            SE_900_7_8mV_npk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_npk_mean0"]]
-            SE_900_7_8mV_npkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_0_5us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_1_0us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_02[femb_id]["CHK_SE_900mVBL_7_8mVfC_3_0us_0x10_npk_err0"]]
-            SE_900_14_0mV_ppk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_900_14_0mV_ppkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_ppk_err0"]]
-            SE_900_14_0mV_npk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_npk_mean0"]]
-            SE_900_14_0mV_npkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_0_5us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_1_0us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_2_0us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_14_0mVfC_3_0us_0x10_npk_err0"]]
-            SE_900_25_0mV_ppk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_ppk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_ppk_mean0"]]
-            SE_900_25_0mV_ppkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_ppk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_ppk_err0"]]
-            SE_900_25_0mV_npk = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_npk_mean0"],
-                                 log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_npk_mean0"]]
-            SE_900_25_0mV_npkerr = [log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_0_5us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_1_0us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_2_0us_0x10_npk_err0"],
-                                    log.report_log04_02[femb_id]["CHK_SE_900mVBL_25_0mVfC_3_0us_0x10_npk_err0"]]
-            plt.errorbar(x, SE_900_4_7mV_ppk, yerr=SE_900_4_7mV_ppkerr, linestyle='-', alpha=0.7, label='SE_900_4_7mV_ppk')
-            plt.errorbar(x, SE_900_4_7mV_npk, yerr=SE_900_4_7mV_npkerr, linestyle='-', alpha=0.7,label='SE_900_4_7mV_npk')
-            plt.errorbar(x, SE_900_7_8mV_ppk, yerr=SE_900_7_8mV_ppkerr, linestyle='-', alpha=0.7, label='SE_900_7_8mV_ppk')
-            plt.errorbar(x, SE_900_7_8mV_npk, yerr=SE_900_7_8mV_npkerr, linestyle='-', alpha=0.7,label='SE_900_7_8mV_npk')
-            plt.errorbar(x, SE_900_14_0mV_ppk, yerr=SE_900_14_0mV_ppkerr, linestyle='--', alpha=0.7,label='SE_900_14_0mV_ppk')
-            plt.errorbar(x, SE_900_14_0mV_npk, yerr=SE_900_14_0mV_npkerr, linestyle='--', alpha=0.7,label='SE_900_14_0mV_npk')
-            plt.errorbar(x, SE_900_25_0mV_ppk, yerr=SE_900_25_0mV_ppkerr, linestyle='--', alpha=0.7,label='SE_900_25_0mV_ppk')
-            plt.errorbar(x, SE_900_25_0mV_npk, yerr=SE_900_25_0mV_npkerr, linestyle='--', alpha=0.7,label='SE_900_25_0mV_npk')
+            SE_900_4_7mV_ppk = [log.check_log04_02_4705[femb_id]["ppk_mean"] - log.check_log04_02_4705[femb_id]["bbl_mean"],
+                                log.check_log04_02_4710[femb_id]["ppk_mean"] - log.check_log04_02_4710[femb_id]["bbl_mean"],
+                                log.check_log04_02_4720[femb_id]["ppk_mean"] - log.check_log04_02_4720[femb_id]["bbl_mean"],
+                                log.check_log04_02_4730[femb_id]["ppk_mean"] - log.check_log04_02_4730[femb_id]["bbl_mean"]]
+            SE_900_4_7mV_ppkerr = [log.check_log04_02_4705[femb_id]["ppk_std"],
+                                   log.check_log04_02_4710[femb_id]["ppk_std"],
+                                   log.check_log04_02_4720[femb_id]["ppk_std"],
+                                   log.check_log04_02_4730[femb_id]["ppk_std"]]
+            SE_900_4_7mV_npk = [log.check_log04_02_4705[femb_id]["npk_mean"] - log.check_log04_02_4705[femb_id]["bbl_mean"],
+                                log.check_log04_02_4710[femb_id]["npk_mean"] - log.check_log04_02_4710[femb_id]["bbl_mean"],
+                                log.check_log04_02_4720[femb_id]["npk_mean"] - log.check_log04_02_4720[femb_id]["bbl_mean"],
+                                log.check_log04_02_4730[femb_id]["npk_mean"] - log.check_log04_02_4730[femb_id]["bbl_mean"]]
+            SE_900_4_7mV_npkerr = [log.check_log04_02_4705[femb_id]["npk_std"],
+                                   log.check_log04_02_4710[femb_id]["npk_std"],
+                                   log.check_log04_02_4720[femb_id]["npk_std"],
+                                   log.check_log04_02_4730[femb_id]["npk_std"]]
+            SE_900_7_8mV_ppk = [log.check_log04_02_7805[femb_id]["ppk_mean"] - log.check_log04_02_7805[femb_id]["bbl_mean"],
+                                log.check_log04_02_7810[femb_id]["ppk_mean"] - log.check_log04_02_7810[femb_id]["bbl_mean"],
+                                log.check_log04_02_7820[femb_id]["ppk_mean"] - log.check_log04_02_7820[femb_id]["bbl_mean"],
+                                log.check_log04_02_7830[femb_id]["ppk_mean"] - log.check_log04_02_7830[femb_id]["bbl_mean"]]
+            SE_900_7_8mV_ppkerr = [log.check_log04_02_7805[femb_id]["ppk_std"],
+                                   log.check_log04_02_7810[femb_id]["ppk_std"],
+                                   log.check_log04_02_7820[femb_id]["ppk_std"],
+                                   log.check_log04_02_7830[femb_id]["ppk_std"]]
+            SE_900_7_8mV_npk = [log.check_log04_02_7805[femb_id]["npk_mean"] - log.check_log04_02_7805[femb_id]["bbl_mean"],
+                                log.check_log04_02_7810[femb_id]["npk_mean"] - log.check_log04_02_7810[femb_id]["bbl_mean"],
+                                log.check_log04_02_7820[femb_id]["npk_mean"] - log.check_log04_02_7820[femb_id]["bbl_mean"],
+                                log.check_log04_02_7830[femb_id]["npk_mean"] - log.check_log04_02_7830[femb_id]["bbl_mean"]]
+            SE_900_7_8mV_npkerr = [log.check_log04_02_7805[femb_id]["npk_std"],
+                                   log.check_log04_02_7810[femb_id]["npk_std"],
+                                   log.check_log04_02_7820[femb_id]["npk_std"],
+                                   log.check_log04_02_7830[femb_id]["npk_std"]]
+            SE_900_14_0mV_ppk = [log.check_log04_02_1405[femb_id]["ppk_mean"] - log.check_log04_02_1405[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1410[femb_id]["ppk_mean"] - log.check_log04_02_1410[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1420[femb_id]["ppk_mean"] - log.check_log04_02_1420[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1430[femb_id]["ppk_mean"] - log.check_log04_02_1430[femb_id]["bbl_mean"]]
+            SE_900_14_0mV_ppkerr = [log.check_log04_02_1405[femb_id]["ppk_std"],
+                                    log.check_log04_02_1410[femb_id]["ppk_std"],
+                                    log.check_log04_02_1420[femb_id]["ppk_std"],
+                                    log.check_log04_02_1430[femb_id]["ppk_std"]]
+            SE_900_14_0mV_npk = [log.check_log04_02_1405[femb_id]["npk_mean"] - log.check_log04_02_1405[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1410[femb_id]["npk_mean"] - log.check_log04_02_1410[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1420[femb_id]["npk_mean"] - log.check_log04_02_1420[femb_id]["bbl_mean"],
+                                 log.check_log04_02_1430[femb_id]["npk_mean"] - log.check_log04_02_1430[femb_id]["bbl_mean"]]
+            SE_900_14_0mV_npkerr = [log.check_log04_02_1405[femb_id]["npk_std"],
+                                    log.check_log04_02_1410[femb_id]["npk_std"],
+                                    log.check_log04_02_1420[femb_id]["npk_std"],
+                                    log.check_log04_02_1430[femb_id]["npk_std"]]
+            SE_900_25_0mV_ppk = [log.check_log04_02_2505[femb_id]["ppk_mean"] - log.check_log04_02_2505[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2510[femb_id]["ppk_mean"] - log.check_log04_02_2510[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2520[femb_id]["ppk_mean"] - log.check_log04_02_2520[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2530[femb_id]["ppk_mean"] - log.check_log04_02_2530[femb_id]["bbl_mean"]]
+            SE_900_25_0mV_ppkerr = [log.check_log04_02_2505[femb_id]["ppk_std"],
+                                    log.check_log04_02_2510[femb_id]["ppk_std"],
+                                    log.check_log04_02_2520[femb_id]["ppk_std"],
+                                    log.check_log04_02_2530[femb_id]["ppk_std"]]
+            SE_900_25_0mV_npk = [log.check_log04_02_2505[femb_id]["npk_mean"] - log.check_log04_02_2505[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2510[femb_id]["npk_mean"] - log.check_log04_02_2510[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2520[femb_id]["npk_mean"] - log.check_log04_02_2520[femb_id]["bbl_mean"],
+                                 log.check_log04_02_2530[femb_id]["npk_mean"] - log.check_log04_02_2530[femb_id]["bbl_mean"]]
+            SE_900_25_0mV_npkerr = [log.check_log04_02_2505[femb_id]["npk_std"],
+                                    log.check_log04_02_2510[femb_id]["npk_std"],
+                                    log.check_log04_02_2520[femb_id]["npk_std"],
+                                    log.check_log04_02_2530[femb_id]["npk_std"]]
+            plt.errorbar(x, SE_900_4_7mV_ppk, yerr=SE_900_4_7mV_ppkerr, capsize=5, color='darkred', linestyle='-', alpha=0.7, label='SE_900_4_7mV_ppk')
+            plt.errorbar(x, SE_900_4_7mV_npk, yerr=SE_900_4_7mV_npkerr, capsize=5, color='darkred', linestyle='--', alpha=0.7,label='SE_900_4_7mV_npk')
+            plt.errorbar(x, SE_900_7_8mV_ppk, yerr=SE_900_7_8mV_ppkerr, capsize=5, color='darkorange', linestyle='-', alpha=0.7, label='SE_900_7_8mV_ppk')
+            plt.errorbar(x, SE_900_7_8mV_npk, yerr=SE_900_7_8mV_npkerr, capsize=5, color='darkorange', linestyle='--', alpha=0.7,label='SE_900_7_8mV_npk')
+            plt.errorbar(x, SE_900_14_0mV_ppk, yerr=SE_900_14_0mV_ppkerr, capsize=5, color='darkgreen', linestyle='-', alpha=0.7,label='SE_900_14_0mV_ppk')
+            plt.errorbar(x, SE_900_14_0mV_npk, yerr=SE_900_14_0mV_npkerr, capsize=5, color='darkgreen', linestyle='--', alpha=0.7,label='SE_900_14_0mV_npk')
+            plt.errorbar(x, SE_900_25_0mV_ppk, yerr=SE_900_25_0mV_ppkerr, capsize=5, color='darkblue', linestyle='-', alpha=0.7,label='SE_900_25_0mV_ppk')
+            plt.errorbar(x, SE_900_25_0mV_npk, yerr=SE_900_25_0mV_npkerr, capsize=5, color='darkblue', linestyle='--', alpha=0.7,label='SE_900_25_0mV_npk')
             plt.legend()
             plt.xlabel("Peak Time", fontsize=12)
-            plt.ylabel("Baseline", fontsize=12)
+            plt.ylabel("ADC Count", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
-            plt.grid(axis='x')
+            plt.grid(True, axis='y', linestyle='--')
+            plt.ylim(-9000, 9000)
             plt.title("SE 900 Gain Pulse Mean ErrorBar", fontsize=12)
-            plt.savefig(fp + 'SE_900_Gain_Pulse_ErrorBar.png')
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')     # set background as transparent
+            plt.savefig(fp + 'SE_900_Gain_Pulse_ErrorBar.png', transparent = True)
             plt.close()
             # plot 3
-            plt.figure(figsize=(9, 6))
+            plt.figure(figsize=(6, 4))
             x = [1, 2, 3, 4]
             x_sticks = ()
-            SGP1_200_ppk = [log.report_log04_06[femb_id]["CHK_SGP_200mVBL_4_7mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_7_8mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_14_0mVfC_2_0us_0x10_ppk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_25_0mVfC_2_0us_0x10_ppk_mean0"]]
-            SGP1_200_ppkerr = [log.report_log04_06[femb_id]["CHK_SGP_200mVBL_4_7mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_7_8mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_14_0mVfC_2_0us_0x10_ppk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_25_0mVfC_2_0us_0x10_ppk_err0"]]
-            SGP1_200_npk = [log.report_log04_06[femb_id]["CHK_SGP_200mVBL_4_7mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_7_8mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_14_0mVfC_2_0us_0x10_npk_mean0"],
-                                log.report_log04_06[femb_id]["CHK_SGP_200mVBL_25_0mVfC_2_0us_0x10_npk_mean0"]]
-            SGP1_200_npkerr = [log.report_log04_06[femb_id]["CHK_SGP_200mVBL_4_7mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_7_8mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_14_0mVfC_2_0us_0x10_npk_err0"],
-                                   log.report_log04_06[femb_id]["CHK_SGP_200mVBL_25_0mVfC_2_0us_0x10_npk_err0"]]
-            plt.errorbar(x, SGP1_200_ppk, yerr=SGP1_200_ppkerr, linestyle='-', alpha=0.7, label='SGP1_200_ppk')
-            plt.errorbar(x, SGP1_200_npk, yerr=SGP1_200_npkerr, linestyle='-', alpha=0.7, label='SGP1_200_npk')
+            SGP1_200_ppk = [log.check_log04_03_4720[femb_id]["ppk_mean"]-log.check_log04_03_4720[femb_id]["bbl_mean"],
+                                log.check_log04_03_7820[femb_id]["ppk_mean"]-log.check_log04_03_7820[femb_id]["bbl_mean"],
+                                log.check_log04_03_1420[femb_id]["ppk_mean"]-log.check_log04_03_1420[femb_id]["bbl_mean"],
+                                log.check_log04_03_2520[femb_id]["ppk_mean"]-log.check_log04_03_2520[femb_id]["bbl_mean"]]
+            SGP1_200_ppkerr = [log.check_log04_03_4720[femb_id]["ppk_std"],
+                                   log.check_log04_03_7820[femb_id]["ppk_std"],
+                                   log.check_log04_03_1420[femb_id]["ppk_std"],
+                                   log.check_log04_03_2520[femb_id]["ppk_std"]]
+            plt.errorbar(x, SGP1_200_ppk, yerr=SGP1_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen', label='SGP1_200_ppk')
             plt.legend()
             plt.xlabel("Peak Time", fontsize=12)
-            plt.ylabel("Baseline", fontsize=12)
+            plt.ylabel("ADC Count", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.xticks(x, ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
-            plt.grid(axis='x')
-            plt.title("SGP1 200 Pulse Mean ErrorBar", fontsize=12)
-            plt.savefig(fp + 'SGP1_200_fC_Pulse.png')
+            plt.grid(True, axis='y', linestyle='--')
+            for i in range(len(x)):
+                plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkgreen')
+            plt.title("SGP1 200 Pulse Response", fontsize=12)
+            plt.ylim(0, 17000)
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'SGP1_200_fC_Pulse.png', transparent = True)
             plt.close()
         self.Gather_PNG_PDF(fp)
 
@@ -845,8 +812,9 @@ class QC_reports:
             plt.title("DIFF 900 mV RMS Distribution", fontsize=12)
             plt.savefig(fp + '900mV_All_Configuration.png')
             plt.close()
-            plt.figure(figsize=(9, 6))
-            x = [1, 2, 3, 4]
+            # error bar plot
+            plt.figure(figsize=(6, 4))
+            x = [0.5, 1, 2, 3]
             x_sticks = ()
             SE_200_4_7mV = [log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_1_0us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_3_0us"]]
             SE_200_7_8mV = [log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_1_0us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_3_0us"]]
@@ -866,25 +834,28 @@ class QC_reports:
             SE_900_25_0mV_err = [log.report_log057_fembrmsstd[ifemb]["SE_900mVBL_25_0mVfC_0_5us"], log.report_log057_fembrmsstd[ifemb]["SE_900mVBL_25_0mVfC_1_0us"], log.report_log057_fembrmsstd[ifemb]["SE_900mVBL_25_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SE_900mVBL_25_0mVfC_3_0us"]]
             # for key in log.report_log056_fembrms[ifemb]:
             #     if "SE_200" in key:
-            plt.errorbar(x, SE_200_4_7mV, yerr=SE_200_4_7mV_err, linestyle='-', alpha=0.7, color = (1, 0, 0), label = 'SE_200_4_7mV')
-            plt.errorbar(x, SE_200_7_8mV, yerr=SE_200_7_8mV_err, linestyle='-', alpha=0.7, color = (0.9, 0, 0), label = 'SE_200_7_8mV')
-            plt.errorbar(x, SE_200_14_0mV, yerr=SE_200_14_0mV_err, linestyle='-', alpha=0.7, color = (0.8, 0, 0), label = 'SE_200_14_0mV')
-            plt.errorbar(x, SE_200_25_0mV, yerr=SE_200_25_0mV_err, linestyle='-', alpha=0.7, color = (0.7, 0, 0), label = 'SE_200_25_0mV')
-            plt.errorbar(x, SE_900_4_7mV, yerr=SE_900_4_7mV_err, linestyle='--', alpha=0.7, color = (0.5, 0, 0.5), label = 'SE_900_4_7mV')
-            plt.errorbar(x, SE_900_7_8mV, yerr=SE_900_7_8mV_err, linestyle='--', alpha=0.7, color = (0.7, 0.3, 0), label = 'SE_900_7_8mV')
-            plt.errorbar(x, SE_900_14_0mV, yerr=SE_900_14_0mV_err, linestyle='--', alpha=0.7, color = (0.8, 0.6, 1.0), label = 'SE_900_14_0mV')
-            plt.errorbar(x, SE_900_25_0mV, yerr=SE_900_25_0mV_err, linestyle='--', alpha=0.7, color = (0.8, 0.4, 0.8), label = 'SE_900_25_0mV')
+            plt.errorbar(x, SE_200_4_7mV, yerr=SE_200_4_7mV_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkred', label = 'SE_200_4_7mV')
+            plt.errorbar(x, SE_200_7_8mV, yerr=SE_200_7_8mV_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkorange', label = 'SE_200_7_8mV')
+            plt.errorbar(x, SE_200_14_0mV, yerr=SE_200_14_0mV_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkgreen', label = 'SE_200_14_0mV')
+            plt.errorbar(x, SE_200_25_0mV, yerr=SE_200_25_0mV_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkblue', label = 'SE_200_25_0mV')
+            plt.errorbar(x, SE_900_4_7mV, yerr=SE_900_4_7mV_err,capsize=5, linestyle='--', alpha=0.7, color = 'darkred', label = 'SE_900_4_7mV')
+            plt.errorbar(x, SE_900_7_8mV, yerr=SE_900_7_8mV_err,capsize=5, linestyle='--', alpha=0.7, color = 'darkorange', label = 'SE_900_7_8mV')
+            plt.errorbar(x, SE_900_14_0mV, yerr=SE_900_14_0mV_err,capsize=5, linestyle='--', alpha=0.7, color = 'darkgreen', label = 'SE_900_14_0mV')
+            plt.errorbar(x, SE_900_25_0mV, yerr=SE_900_25_0mV_err,capsize=5, linestyle='--', alpha=0.7, color = 'darkblue', label = 'SE_900_25_0mV')
             plt.legend()
-            plt.xlabel("Peak Time", fontsize=12)
+            plt.xlabel("Peaking Time / us", fontsize=12)
             plt.ylabel("RMS", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
-            plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
+            plt.xticks(x, ['0.5', '1', '2', '3'])
+            plt.ylim(0, 70)
             plt.grid(axis='x')
             plt.title("SE 200 & 900 mV RMS ErrorBar", fontsize=12)
-            plt.savefig(fp + 'SE_200_900_mV_RMS_ErrorBar.png')
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'SE_200_900_mV_RMS_ErrorBar.png', transparent = True)
             plt.close()
-            plt.figure(figsize=(9, 6))
-            x = [1, 2, 3, 4]
+            plt.figure(figsize=(6, 4))
+            x = [4.7, 7.8, 14, 25]
             SEON_200_2_0us = [log.report_log056_fembrms[ifemb]["SEON_200mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_25_0mVfC_2_0us"]]
             SEON_900_2_0us = [log.report_log056_fembrms[ifemb]["SEON_900mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_25_0mVfC_2_0us"]]
             DIFF_200_2_0us = [log.report_log056_fembrms[ifemb]["DIFF_200mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_25_0mVfC_2_0us"]]
@@ -895,34 +866,40 @@ class QC_reports:
             DIFF_900_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_25_0mVfC_2_0us"]]
             # for key in log.report_log056_fembrms[ifemb]:
             #     if "SE_200" in key:
-            plt.errorbar(x, SEON_200_2_0us, yerr=SEON_200_2_0us_err, linestyle='-', alpha=0.7, color = 'red', label = 'SEON_200_2_0us')
-            plt.errorbar(x, SEON_900_2_0us, yerr=SEON_900_2_0us_err, linestyle='--', alpha=0.7, color = 'green', label = 'SEON_900_2_0us')
-            plt.errorbar(x, DIFF_200_2_0us, yerr=DIFF_200_2_0us_err, linestyle='-', alpha=0.7, color = 'blue', label = 'DIFF_200_2_0us')
-            plt.errorbar(x, DIFF_900_2_0us, yerr=DIFF_900_2_0us_err, linestyle='--', alpha=0.7, color = 'orange', label = 'DIFF_900_2_0us')
+            plt.errorbar(x, SEON_200_2_0us, yerr=SEON_200_2_0us_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkred', label = 'SEON_200_2_0us')
+            plt.errorbar(x, SEON_900_2_0us, yerr=SEON_900_2_0us_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkgreen', label = 'SEON_900_2_0us')
+            plt.errorbar(x, DIFF_200_2_0us, yerr=DIFF_200_2_0us_err,capsize=5, linestyle='--', alpha=1, color = 'darkblue', label = 'DIFF_200_2_0us')
+            plt.errorbar(x, DIFF_900_2_0us, yerr=DIFF_900_2_0us_err,capsize=5, linestyle='--', alpha=1, color = 'darkorange', label = 'DIFF_900_2_0us')
             plt.legend()
-            plt.xlabel("Gain", fontsize=12)
+            plt.xlabel("Gain / mV/fC", fontsize=12)
             plt.ylabel("RMS", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
-            plt.xticks(x, ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
+            plt.xticks(x, ['4.7', '7.8', '14', '25'])
             plt.grid(axis='x')
+            plt.ylim(0, 60)
             plt.title("SEON DIFF 200 & 900 mV RMS ErrorBar", fontsize=12)
-            plt.savefig(fp + 'SEON_DIFF_200_900_mV_RMS_ErrorBar.png')
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'SEON_DIFF_200_900_mV_RMS_ErrorBar.png', transparent = True)
             plt.close()
-            plt.figure(figsize=(9, 6))
-            x = [1, 2, 3, 4]
+            plt.figure(figsize=(6, 4))
+            x = [1, 5, 10, 50]
             SELC_200_2_0us = [log.report_log056_fembrms[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_100pA"], log.report_log056_fembrms[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_500pA"], log.report_log056_fembrms[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_1nA"], log.report_log056_fembrms[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_5nA"]]
             SELC_200_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_100pA"], log.report_log057_fembrmsstd[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_500pA"], log.report_log057_fembrmsstd[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_1nA"], log.report_log057_fembrmsstd[ifemb]["SELC_200mVBL_14_0mVfC_2_0us_5nA"]]
             # for key in log.report_log056_fembrms[ifemb]:
             #     if "SE_200" in key:
-            plt.errorbar(x, SELC_200_2_0us, yerr=SELC_200_2_0us_err, linestyle='-', alpha=0.7, color = 'blue', label = 'SELC_200_2_0us')
+            plt.errorbar(x, SELC_200_2_0us, yerr=SELC_200_2_0us_err, capsize=5, linestyle='-', alpha=0.7, color = 'blue', label = 'SELC_200_2_0us')
             plt.legend()
-            plt.xlabel("Channel", fontsize=12)
-            plt.ylabel("SELC_200_2_0us", fontsize=12)
+            plt.xlabel("Leakage Current / pA", fontsize=12)
+            plt.ylabel("RMS", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
-            plt.xticks(x, ['100 pA', '500 pA', '1 nA', '5 nA'])
+            plt.xticks(x, ['100', '500', '1 000', '5 000'])
             plt.grid(axis='x')
-            plt.title("SELC_200_2_0us", fontsize=12)
-            plt.savefig(fp + 'SELC_200_2us_ErrorBar.png')
+            plt.ylim(0, 40)
+            plt.title("Single-Ended RMS at different Leakage Current", fontsize=12)
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'SELC_200_2us_ErrorBar.png', transparent = True)
             plt.close()
         self.Gather_PNG_PDF(fp)
         log.report_log05_fin_result = section_status
@@ -942,67 +919,111 @@ class QC_reports:
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0601.update(inl_gain)
         log.check_log0601.update(inl_gain_check)
-        a_func.GetENC(self.fembs, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0602.update(inl_gain)
         log.check_log0602.update(inl_gain_check)
-        a_func.GetENC(self.fembs, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0603.update(inl_gain)
         log.check_log0603.update(inl_gain_check)
-        a_func.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0604.update(inl_gain)
         log.check_log0604.update(inl_gain_check)
-        a_func.GetENC(self.fembs, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0605.update(inl_gain)
         log.check_log0605.update(inl_gain_check)
-        a_func.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+        print(log.report_log0605)
+        print(log.check_log0605)
         for ifemb in self.fembs:
             report_dir = self.savedir[ifemb] + "CALI1_DIFF/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
+
+
+
             inl_set = [log.report_log0601[femb_id]["INL"], log.report_log0602[femb_id]["INL"], log.report_log0603[femb_id]["INL"], log.report_log0604[femb_id]["INL"]]
             gain_set = [log.report_log0601[femb_id]["Gain"], log.report_log0602[femb_id]["Gain"], log.report_log0603[femb_id]["Gain"], log.report_log0604[femb_id]["Gain"]]
+            gain_std = [log.report_log0601[femb_id]["Gainstd"], log.report_log0602[femb_id]["Gainstd"], log.report_log0603[femb_id]["Gainstd"], log.report_log0604[femb_id]["Gainstd"]]
+            ENC_set = [log.report_log0601[femb_id]["ENC"], log.report_log0602[femb_id]["ENC"], log.report_log0603[femb_id]["ENC"], log.report_log0604[femb_id]["ENC"]]
+            ENC_std = [log.report_log0601[femb_id]["ENC_std"], log.report_log0602[femb_id]["ENC_std"], log.report_log0603[femb_id]["ENC_std"], log.report_log0604[femb_id]["ENC_std"]]
             plt.figure(figsize=(10, 4))
             plt.subplot(1, 2, 1)
-            plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label = 'INL')
-            plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'DIFF')
-            plt.xlabel("Chip", fontsize=12)
-            plt.ylabel("ADC", fontsize=12)
-            plt.grid(axis='x')
-            plt.legend()
-            plt.title("Channel Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
-            plt.subplot(1, 2, 2)
-            plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label = 'Gain')
-            plt.plot(2, log.report_log0601[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'DIFF')
-            plt.xlabel("Chip", fontsize=12)
-            plt.ylabel("ADC", fontsize=12)
+            plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label = 'INL_SE_OFF')
+            plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
+            plt.xlabel("Voltage Gain", fontsize=12)
+            plt.ylabel("INL value", fontsize=12)
             plt.grid(axis='x')
             plt.legend()
             plt.title("INL in 4.7 7.8 14 25 mV/fC", fontsize=12)
+
+            plt.subplot(1, 2, 2)
+            plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label = 'Gain_SE_OFF')
+            plt.plot(2, log.report_log0605[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'Gain_DIFF')
+            plt.xlabel("Voltage Gain", fontsize=12)
+            plt.ylabel("Gain", fontsize=12)
+            plt.grid(axis='x')
+            plt.legend()
+            plt.title("Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
             plt.savefig(report_dir + 'Cali1.png')
             plt.close()
+
+            plt.figure(figsize=(6,4))
+            x = ["4.7", "7.8", "14", "25"]
+            plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
+                         alpha=0.7, label='Amplitude Gain')
+            plt.ylim(0, 120)
+            plt.xlabel("Gain Setting", fontsize = 14)
+            plt.ylabel("Amplitude Gain / e-/bit", fontsize = 14)
+            plt.xticks(x, ["4.7", "7.8", "14", "25"])
+            plt.grid(True, axis='y', linestyle='--')
+            plt.margins(x=0.15)
+            for i in range(len(x)):
+                plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
+            plt.title("Amplitude Gain in 4.7 7.8 14 25 mV/fC", fontsize = 14)
+            plt.gca().set_facecolor('none')
+            plt.savefig(report_dir + 'SE_Gain.png', transparent = True)
+            plt.close()
+
+            plt.figure(figsize=(6,4))
+            x = ["4.7", "7.8", "14", "25"]
+            plt.errorbar(x, ENC_set, yerr=ENC_std, color='darkblue', linestyle='-', capsize=5,
+                         alpha=0.7, label='ENC')
+            plt.ylim(0, 1200)
+            plt.xlabel("Gain Setting", fontsize = 14)
+            plt.ylabel("ENC / e-", fontsize = 14)
+            plt.xticks(x, ["4.7", "7.8", "14", "25"])
+            plt.grid(True, axis='y', linestyle='--')
+            plt.margins(x=0.15)
+            for i in range(len(x)):
+                plt.text(x[i], ENC_set[i] + 50, f'{round(ENC_set[i], 1)}±{round(ENC_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
+            plt.title("ENC in 4.7 7.8 14 25 mV/fC", fontsize = 14)
+            plt.gca().set_facecolor('none')
+            plt.savefig(report_dir + 'SE_ENC.png', transparent = True)
+            plt.close()
+
 
     #   7  CALI_report_2
     def CALI_report_2(self):
@@ -1013,19 +1034,19 @@ class QC_reports:
         self.CreateDIR("CALI2")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0701.update(inl_gain)
         log.check_log0701.update(inl_gain_check)
-        qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
         self.CreateDIR("CALI2_DIFF")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0702.update(inl_gain)
         log.check_log0702.update(inl_gain_check)
-        qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
         for ifemb in self.fembs:
             report_dir = self.savedir[ifemb] + "CALI2_DIFF/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
@@ -1061,12 +1082,12 @@ class QC_reports:
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
         print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
+        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "4_7mVfC", "2_0us", dac_list,20,10)
+        qc.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 1, self.savedir, "CALI3/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0801.update(inl_gain)
         log.check_log0801.update(inl_gain_check)
-        qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
 
     #   9  CALI_report_4
     def CALI_report_4(self):
@@ -1077,11 +1098,11 @@ class QC_reports:
         datadir = self.datadir+"CALI4/"
         print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0901.update(inl_gain)
         log.check_log0901.update(inl_gain_check)
-        qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
         # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
         # self.CreateDIR("CALI4_DIFF")
         # datadir = self.datadir+"CALI4/"
@@ -1115,12 +1136,12 @@ class QC_reports:
         for ifemb in self.fembs:
             report_dir = self.savedir[ifemb] + "MON_FE/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-            log.report_log10_01[femb_id]["bandgap"] = bandgap[femb_id]
-            log.report_log10_01[femb_id]["temperature"] = temp[femb_id]
-            log.report_log10_01[femb_id]["200mVBL_sdf1"] = sdf1_200[femb_id]
-            log.report_log10_01[femb_id]["200mVBL_sdf0"] = sdf0_200[femb_id]
-            log.report_log10_01[femb_id]["900mVBL_sdf1"] = sdf1_900[femb_id]
-            log.report_log10_01[femb_id]["900mVBL_sdf0"] = sdf0_900[femb_id]
+            log.report_log10_01[femb_id]["bandgap"] = bandgap[femb_id]["Result"]
+            log.report_log10_01[femb_id]["temperature"] = temp[femb_id]["Result"]
+            log.report_log10_01[femb_id]["200mVBL_sdf1"] = sdf1_200[femb_id]["Result"]
+            log.report_log10_01[femb_id]["200mVBL_sdf0"] = sdf0_200[femb_id]["Result"]
+            log.report_log10_01[femb_id]["900mVBL_sdf1"] = sdf1_900[femb_id]["Result"]
+            log.report_log10_01[femb_id]["900mVBL_sdf0"] = sdf0_900[femb_id]["Result"]
             if ((bandgap[femb_id]) and (temp[femb_id]) and (sdf1_200[femb_id]) and (sdf0_200[femb_id]) and (sdf1_900[femb_id]) and (sdf0_900[femb_id])):
                 log.check_log1001[femb_id]['Result'] = True
             else:
@@ -1129,7 +1150,7 @@ class QC_reports:
             plt.subplot(1, 3, 1)
             plt.plot(range(8), log.mon_pulse["bandgap"][femb_id], marker='o', linestyle='-', alpha=0.7, label = 'Bandgap')
             plt.plot(range(8), log.mon_pulse["temperature"][femb_id], marker='o', linestyle='-', alpha=0.7, label = 'temperature')
-            plt.xlabel("Chip", fontsize=12)
+            plt.xlabel("FEMB Chip", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
             plt.grid(axis='x')
             plt.legend()
@@ -1138,7 +1159,7 @@ class QC_reports:
             x_sticks = range(0, 129, 16)
             plt.plot(range(128), log.mon_pulse["200mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf0')
             plt.plot(range(128), log.mon_pulse["900mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf0')
-            plt.xlabel("Channel", fontsize=12)
+            plt.xlabel("FEMB Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
@@ -1154,7 +1175,8 @@ class QC_reports:
             plt.grid(axis='x')
             plt.legend()
             plt.title("200mVBL_900mVBL_sdf1", fontsize=12)
-            plt.savefig(report_dir + 'FE_Mon.png')
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(report_dir + 'FE_Mon.png', transparent = True)
             plt.close()
 
 
@@ -1207,32 +1229,34 @@ class QC_reports:
     def CALI_report_5(self):
         log.test_label.append(13)
         qc=ana_tools()
-        dac_list = range(0, 390, 25)
+        dac_list = list(range(125, 600, 25))
+        dac_list.append(0)
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
         print("analyze CALI5 900mVBL 14_0mVfC External")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log1301.update(inl_gain)
         log.check_log1301.update(inl_gain_check)
-        qc.GetENC(self.fembs, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
         # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI5/")
 
     #   14  Calibration for External Pulse 200 mV Baseline
     def CALI_report_6(self):
         log.test_label.append(14)
         qc=ana_tools()
-        dac_list = range(0, 790, 50)
+        dac_list = list(range(25, 500, 25))
+        dac_list.append(0)
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
         print("analyze CALI6 200mVBL 14_0mVfC External")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
+        qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log1401.update(inl_gain)
         log.check_log1401.update(inl_gain_check)
-        qc.GetENC(self.fembs, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
         # self.GenCALIPDF("200mVBL", "14_0mVfC", "2_0us", 0, "CALI6/")
 
     #   15  ADC DC Noise
@@ -1254,28 +1278,24 @@ class QC_reports:
             else:
                 fname = afile.split("/")[-1][:-4]
             for ifemb in self.fembs:
+                femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
                 fp = self.savedir[ifemb] + fdir+"/"
-                # if 'vdac' in fname:
-                #     ppk, npk, bl = qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-                # else:
-                #     ppk, npk, bl = qc.GetPeaks(pldata, ifemb, fp, fname)
-                if 'vdac' in fname:
-                    vped,vrms = qc.GetRMS(pldata, ifemb, fp, fname)
-                else:
-                    ped,rms = qc.GetRMS(pldata, ifemb, fp, fname)
-                if "noSHA_SE" in fname:
-                    if np.std(ped) < 1:
-                        issue = "True"
+                ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
+                if 'DC_Noise' in fname:
+                    if np.max(rms) > 2:
+                        log.check_log1501[femb_id]['Result'] = "False"
                     else:
-                        issue = "False"
+                        log.check_log1501[femb_id]['Result'] = "True"
+                if "SHA_SE" in fname:
+                    if np.max(rms) > 4:
+                        log.check_log1502[femb_id]['Result'] = "False"
+                    else:
+                        log.check_log1502[femb_id]['Result'] = "True"
                 if "SHA_DIFF" in fname:
-                    print(ped[0])
-                    print(ped[1])
-                    print(ped[2])
-                    print(ped[3])
-                    print(len(ped))
-                    print(ped)
-                    print(rms)
+                    if np.max(rms) > 4:
+                        log.check_log1503[femb_id]['Result'] = "False"
+                    else:
+                        log.check_log1503[femb_id]['Result'] = "True"
 
 #   16  PLL SCAN
     def PLL_scan_report(self, fdir):
@@ -1303,6 +1323,7 @@ class QC_reports:
                 fname = afile.split("/")[-1][:-4]
 
             for ifemb in self.fembs:
+                femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
                 fp = self.savedir[ifemb] + fdir+"/"
                 ped,rms=qc.GetRMS(pldata, ifemb, fp, fname)
                 if not(max(rms) == 0):
@@ -1310,6 +1331,7 @@ class QC_reports:
                 for i in ped:
                     if not((int(i) == 10901) or (int(i) == 5482)):
                         check = False
+                log.report_log1601[femb_id][fname] = check
 
             self.Gather_PNG_PDF(fp)
             print(check)
@@ -1318,6 +1340,7 @@ class QC_reports:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
 
             log.check_log1601[femb_id]["Result"] = check
+
 
 
 

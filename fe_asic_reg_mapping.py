@@ -41,10 +41,12 @@ class FE_ASIC_REG_MAPPING:
     def set_fechip(self, chip=0,
                  sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, smn=0, sdf=0,
                  slk0=0, stb1=0, stb=0, s16=1, slk1=0, sdc=0, sdd=0, sgp=0, swdac=0, dac=0):
+        self.set_fechip_global(chip, slk0, stb1, stb, s16, slk1, sdc, sdd, sgp, swdac, dac)
         for chn in range(16):
             self.set_fechn_reg(chip, chn, sts, snc, sg0, sg1, st0, st1, smn, sdf)
+        self.set_fechip_global(chip, slk0, stb1, stb, s16, slk1, sdc, sdd, sgp, swdac, dac)
 
-        self.set_fechip_global (chip, slk0, stb1, stb, s16, slk1, sdc, sdd, sgp, swdac, dac)
+
 #        self.set_fe_sync()
 
 ####sec_board sets registers of a whole board 
