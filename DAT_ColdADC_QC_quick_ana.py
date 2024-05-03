@@ -1089,8 +1089,8 @@ if 8 in tms:
     fp = fdir + "QC_ENOB_00200748Hz" + ".bin"
     fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
     fp = fdir + "QC_ENOB_00119686Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     fp = fdir + "QC_ENOB_00014781Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
     
     print ("When it is done, replace {} on the local PC".format(fp) )
@@ -1126,26 +1126,32 @@ if 8 in tms:
                     continue
                 num_16bwords = 0x8000 / 2
                 words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
-                if ch == 0:
-                    ffig = True
-                else:
-                    ffig = False
+                #if ch == 0:
+                #    ffig = True
+                #else:
+                #    ffig = False
 
-                if ch == 0:
-                    import matplotlib.pyplot as plt
-                    plt.plot(words16b)
-                    plt.show()
-                    plt.close()
-                ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
-                chsenob.append(ENOB)
+                #if ch == 0:
+                if True:
+                    ffig = False
+                    if np.max(words16b) != np.min(words16b) : 
+                        print (ch, hex(np.max(words16b)), hex(int(np.mean(words16b))), hex(np.min(words16b)))
+                        #import matplotlib.pyplot as plt
+                        #plt.plot(words16b)
+                    
+                        #plt.show()
+                        #plt.close()
             exit()
-            #import matplotlib.pyplot as plt
-            #fig, ax = plt.subplots(figsize=(12, 6))
-            #plt.plot(chsenob)
-            #
-            #    
-            #plt.tight_layout()
-            #plt.show()
+                #ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
+                #chsenob.append(ENOB)
+            #exit()
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(figsize=(12, 6))
+            plt.plot(chsenob)
+            
+                
+            plt.tight_layout()
+            plt.show()
             break
             
 if 9 in tms:

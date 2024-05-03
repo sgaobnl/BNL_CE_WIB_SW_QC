@@ -1376,11 +1376,14 @@ class DAT_CFGS(WIB_CFGS):
                         return ch_data
                 self.poke(0xa00c0074, 0x0)
                 data = self.adc_histbuf() #block read
-                if sineflg:
-                    if self.enobdata_check(ch, data): #check if data is good
-                        break
-                else:
-                    break
+                if not self.enobdata_check(ch, data): #check if data is good
+                    print ("data of ch#%d is bad"%ch)
+                break
+                #if sineflg:
+                #    if self.enobdata_check(ch, data): #check if data is good
+                #        break
+                #else:
+                #    break
             
             ch_data.append(data)
         return ch_data        
