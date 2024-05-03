@@ -1136,11 +1136,11 @@ if 8 in tms:
                     ffig = False
                     if np.max(words16b) != np.min(words16b) : 
                         print (ch, hex(np.max(words16b)), hex(int(np.mean(words16b))), hex(np.min(words16b)))
-                        #import matplotlib.pyplot as plt
-                        #plt.plot(words16b)
+                        import matplotlib.pyplot as plt
+                        plt.plot(words16b)
                     
-                        #plt.show()
-                        #plt.close()
+                        plt.show()
+                        plt.close()
             exit()
                 #ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
                 #chsenob.append(ENOB)
