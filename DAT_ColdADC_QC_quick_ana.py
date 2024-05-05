@@ -1090,7 +1090,7 @@ if 8 in tms:
     fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
     fp = fdir + "QC_ENOB_00119686Hz" + ".bin"
     fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00014781Hz" + ".bin"
+    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
     
     print ("When it is done, replace {} on the local PC".format(fp) )
@@ -1138,14 +1138,13 @@ if 8 in tms:
                     plt.close()
                 ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
                 chsenob.append(ENOB)
-            exit()
-            #import matplotlib.pyplot as plt
-            #fig, ax = plt.subplots(figsize=(12, 6))
-            #plt.plot(chsenob)
-            #
-            #    
-            #plt.tight_layout()
-            #plt.show()
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(figsize=(12, 6))
+            plt.plot(chsenob)
+            
+                
+            plt.tight_layout()
+            plt.show()
             break
             
 if 9 in tms:
