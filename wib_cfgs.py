@@ -342,13 +342,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def wib_mon_adcs(self):
-        time.sleep(0.001)
         rdreg = self.peek(0xA00C0004)
-        time.sleep(0.001)
         #set bit19(mon_adc_start) to 1 and then to 0 to start monitring ADC conversion
         self.poke(0xA00C0004,(rdreg&0xfff7ffff)|0x80000) #Set bit19 to 1
         self.poke(0xA00C0004,rdreg&0xfff7ffff) #set bit19 to 0
-        time.sleep(0.001)
         while True:
             rdreg = self.peek(0xA00C0090)
             mon_adc_busy = (rdreg>>19)&0x01 
@@ -717,16 +714,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x99, wrdata=vrefn)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9a, wrdata=vcmo)
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9b, wrdata=vcmi)
-            if autocali:
+            if autocali&0x01:
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0)
-                time.sleep(0.01)
+                time.sleep(0.005)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x03)
-        if autocali&0x01:
-            print ("ADC ADC automatic calbiraiton process ...")
-            time.sleep(0.5) #wait for ADC automatic calbiraiton process to complete
-            for adc_no in range(8):
-                c_id    = self.adcs_paras[adc_no][0]
-                self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x00)
         if autocali&0x02: #output ADC back-end data pattern
             for adc_no in range(8):
                 c_id    = self.adcs_paras[adc_no][0]
@@ -737,6 +728,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0xAA)
         self.adc_flg[femb_id]=False
 
+    def femb_autocali_off(self, femb_id):
+        print ("ADC ADC automatic calbiraiton process ...")
+        #time.sleep(0.5) #wait for ADC automatic calbiraiton process to complete
+        for adc_no in range(8):
+            c_id    = self.adcs_paras[adc_no][0]
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0x9f, wrdata=0x00)
+
     def fembs_fe_cfg(self, fembs):
         fe_adac_ens = [False, False, False, False]
         for femb_id in fembs:
@@ -744,7 +742,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
                 self.adac_cali_quo[femb_id]=False
                 fe_adac_ens[femb_id] = True
-
         #reset LARASIC chips
         for femb_id in fembs:
             self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
@@ -880,7 +877,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #self.poke(0xA00C0008, link_mask)
             #link_mask = self.peek(0xA00C0008 )
             #time.sleep(0.01)
-
             if self.cd_flg[femb_id]:
                 self.femb_cd_cfg(femb_id)
             if self.adc_flg[femb_id]:
@@ -889,7 +885,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_fe_cfg(femb_id)
             if adac_pls_en and (not (self.adac_cali_quo[femb_id])) :
                 self.femb_adac_cali(femb_id)
-            time.sleep(0.005)
+#            time.sleep(0.005)
 
             #self.femb_cd_sync()
             if self.i2cerror:
@@ -985,7 +981,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         if self.longcable:
             time.sleep(0.5)
         else:
-            time.sleep(0.01)
+            time.sleep(0.002)
         adcss = []
         self.wib_mon_adcs() #get rid of previous result
         for i in range(sps):
@@ -1004,14 +1000,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ):
-        time.sleep(0.01)
+        # time.sleep(0.01)
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
         self.set_fe_reset()
         self.set_fe_board(sg0=sg0, sg1=sg1)
         #step 1
         #reset all FEMBs on WIB
         self.femb_cd_rst()
-        time.sleep(0.01)
+        # time.sleep(0.01)
         #step 2
         vdac_mons = []
 
@@ -1027,7 +1023,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.01)
+                time.sleep(0.002)
                 pass
             adcss = []
             self.wib_mon_adcs() #get rid of previous result
@@ -1070,7 +1066,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.05)
+                time.sleep(0.1)
             self.wib_mon_adcs() #get rid of previous result
             adcss = []
             for i in range(sps):
@@ -1134,7 +1130,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             if self.longcable:
                 time.sleep(0.5)
             else:
-                time.sleep(0.05)
+                time.sleep(0.05)        # this is important, which can effect the voltage acquired
 
             self.wib_mon_adcs() #get rid of previous result
             for i in range(sps):

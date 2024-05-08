@@ -286,7 +286,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         check_issue = []
 
         report_addr = ReportDir[fembs[ifemb]] + doc
-        print(report_addr)
         ppk, npk, bl = qc_tools.GetPeaks(pls_rawdata, fembs[ifemb], report_addr, fname, funcfit=False)
 
         ppk_mean = int(np.mean(ppk))
@@ -299,7 +298,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         npk_err = int(np.std(npk))
 
         tmp = QC_check.CHKPulse(ppk, 2000)
-        print(tmp[0])
         if tmp[0] == False:
             # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
             log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
@@ -315,7 +313,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         # log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
 
         tmp = QC_check.CHKPulse(bl, 800)
-        print(tmp[0])
         if tmp[0] == False:
             log.tmp_log[femb_id]["bbl_mean"] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
             log.tmp_log[femb_id]["bbl_std"] = '<span style="color: red;">' + str(bbl_err) + '</span>'
@@ -327,7 +324,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
 
         tmp = QC_check.CHKPulse(npk, 2000)
-        print(tmp[0])
         if tmp[0] == False:
             log.tmp_log[femb_id]["npk_mean"] = '<span style="color: red;">' + str(npk_mean) + '</span>'
             log.tmp_log[femb_id]["npk_std"] = '<span style="color: red;">' + str(npk_err) + '</span>'

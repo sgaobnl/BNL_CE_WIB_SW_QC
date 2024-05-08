@@ -433,7 +433,7 @@ def final_report(datareport, fembs, fembNo):
                     Head03 = '### ' + '</span>' + '<span id="item3"> Chapter_3 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM 03 Leakage Current Pulse Response' + '    < Fail >' + '</span>'  + '\n'
                 file.write(Head03 + '\n')
                 file.write("------\n")
-                file.write("![ped](./Leakage_Current/LC_pulse.png)" + "\n")
+                file.write("![ped](./Leakage_Current/LC_pulse.png)" + "\n\n")
 
                 log.check_log03_table_01[femb_id]['title'] = " | Leakage <bar> Current | 100 pA | 500 pA | 1 nA | 5 nA | \n"
                 log.check_log03_table_01[femb_id]['table line'] = " | --- | --- | --- | --- | --- | \n"
@@ -766,27 +766,41 @@ def final_report(datareport, fembs, fembNo):
                 file.write("![ped](./{}/Cali1.png)".format(log.item062) + "\n\n")
 
                 file.write('### 6_1 Calibration SE 200 mVBL    4_7 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
+                file.write('<img src="./{}/enc_200mVBL_4_7mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_4_7mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n\n")  # width="200"
+                # file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
                 file.write("![ped](./{}/gain_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
-                file.write("![ped](./{}/ped_200mVBL_4_7mVfC_2_0us.png)".format(log.item061) + "\n")
 
                 file.write('### 6_2 Calibration SE 200 mVBL    7_8 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
+                file.write('<img src="./{}/enc_200mVBL_7_8mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_7_8mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n\n")  # width="200"
+                # file.write("![ped](./{}/enc_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
                 file.write("![ped](./{}/gain_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
-                file.write("![ped](./{}/ped_200mVBL_7_8mVfC_2_0us.png)".format(log.item061) + "\n")
 
                 file.write('### 6_3 Calibration SE 200 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
+                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n\n")  # width="200"
+                # file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
                 file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
-                file.write("![ped](./{}/ped_200mVBL_14_0mVfC_2_0us.png)".format(log.item061) + "\n")
 
                 file.write('### 6_4 Calibration SE 200 mVBL    25_0 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "![ped](./{}/Line_range_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "\n")
+                file.write('<img src="./{}/enc_200mVBL_25_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_25_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item061) + "\n\n")  # width="200"
                 file.write("![ped](./{}/gain_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "\n")
-                file.write("![ped](./{}/ped_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "\n")
 
                 file.write('### 6_5 Calibration DIFF 200 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "![ped](./{}/Line_range_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "\n")
+                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item062) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item062) + "\n\n")  # width="200"
                 file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "\n")
 
 #   07      Calibration 02:
@@ -802,12 +816,20 @@ def final_report(datareport, fembs, fembNo):
 
                 # SE    900 mVBL    14_0 mVfC       2 us
                 file.write('### Calibration 021 SE 900 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "![ped](./{}/Line_range_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
+                file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item071) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item071) + "\n\n")  # width="200"
+
+                # file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "![ped](./{}/Line_range_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
                 file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
-                file.write("![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item071) + "\n")
                 #DIFF  900 mVBL    14 mVfC     2 us
                 file.write('### Calibration 022 DIFF 900 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "![ped](./{}/Line_range_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "\n")
+                file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item072) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                    log.item072) + "\n\n")  # width="200"
+                # file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "![ped](./{}/Line_range_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "\n")
                 file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item072) + "\n")
 
 #   08      Calibration 03:
@@ -890,6 +912,7 @@ def final_report(datareport, fembs, fembNo):
                     '<img src="./{}/mon_VREFN.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
                 file.write(
                     '<img src="./{}/mon_VREFP.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
+                file.write('\n')
 
 #   13      Calibration 04:
             if 13 in log.test_label:

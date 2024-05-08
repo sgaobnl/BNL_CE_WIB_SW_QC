@@ -130,7 +130,7 @@ def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input 
     print("start check pulse")
     para_np = np.array(para)
 
-    para_med = np.median(para_np)
+    para_med = np.mean(para_np)
     tmp_std = np.std(para_np)
 
     refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
@@ -140,12 +140,19 @@ def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input 
     bad_chan=[]
     bad_chip=[]
 #   半高全宽
-    for ch in range(128):
-        if abs(para_np[ch]-para_med)> para_range:
-           flag = False
-           bad_chan.append(ch)
-           bad_chip.append(ch//16)
-           #
+    if para_med < 100:
+        for ch in range(128):
+            if abs(para_np[ch]-para_med)/para_med> para_range:
+               flag = False
+               bad_chan.append(ch)
+               bad_chip.append(ch//16)
+    else:
+        for ch in range(128):
+            if abs(para_np[ch]-para_med)> para_range:
+               flag = False
+               bad_chan.append(ch)
+               bad_chip.append(ch//16)
+               #
 
 
     return flag,[bad_chan,bad_chip], para_med, tmp_std

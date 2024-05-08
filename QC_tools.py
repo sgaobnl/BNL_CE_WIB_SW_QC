@@ -313,7 +313,7 @@ class ana_tools:
         bottom = -1000
         plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
         plt.ylim(bottom, 16384 + 1000)
-        plt.xlabel("Sample Points", fontsize=14)
+        plt.xlabel("Time (512 ns / step)", fontsize=14)
         plt.ylabel("ADC count", fontsize=14)
         plt.grid(axis='y', color='gray', linestyle='--', alpha=0.5)
 
@@ -326,7 +326,7 @@ class ana_tools:
         # pl1.plot(range(128), bl_rms)
         plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize=14)
         plt.ylim(bottom, 16384 + 1000)
-        plt.xlabel("chan", fontsize=14)
+        plt.xlabel("Channel", fontsize=14)
         plt.xticks(np.arange(0, 129, 16))
         plt.ylabel("ADC count", fontsize=14)
         plt.legend()
@@ -435,7 +435,6 @@ class ana_tools:
             # fp = savedir[nfemb] + fdir + "/mon_{}.png".format(fname)
             # fig.savefig(fp)
             # plt.close(fig)
-        print(issue_log)
         return issue_log, pulse_log
 
     def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fembNo):
@@ -453,6 +452,7 @@ class ana_tools:
                     mon_data = mon_list[0]
                     sps = mon_data[0][3]
                     item = item + 1
+                    print(dac_list)
                     for i in range(len(dac_list)):
                         sps_list=[]
                         for j in range(sps):
@@ -474,22 +474,17 @@ class ana_tools:
                     else:
                         plt.plot(dac_list, data_list, marker='.')
                     #   INL judgement
-                    print(main_key)
-                    print(data_list)
                     if main_key == 'LArASIC_DAC_25mVfC':
                         x_data = np.array(dac_list[0:31])
                         y_data = np.array(data_list[0:31])
                     else:
                         x_data = np.arange(0, 60)
                         y_data = np.array(data_list[0:60])
-                    print(y_data)
                     coefficients = np.polyfit(x_data, y_data, deg=1)
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
-                    print(fit_y)
                     inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-3]))
-                    print(inl)
-                    if inl > 3:
+                    if inl > 1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False
                         # print(issue_inl)
@@ -505,6 +500,7 @@ class ana_tools:
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp, transparent = True)
             plt.close(fig)
+            print(issue_inl)
         return issue_inl
 
 
@@ -630,13 +626,16 @@ class ana_tools:
         y_min = pk_list[0]
         y_max = pk_list[-1]
         linear_dac_max=dac_list[-1]
-
+        if 'CALI5' in fp or 'CALI6' in fp:
+            inl_th = 0.08
+        else:
+            inl_th = 0.018
         index=len(dac_init)-1
         for i in range(len(dac_list)):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_i + intercept_i
             inl = abs(y_r-y_p)/(y_max-y_min)
-            if inl>0.04:
+            if inl>inl_th:
                if dac_list[i]<5:
                   continue
                linear_dac_max = dac_list[i-1]
@@ -758,8 +757,10 @@ class ana_tools:
             tmp_list = pk_list[ifemb]
             new_pk_list = list(zip(*tmp_list))
             #print(new_pk_list[0])
-
-            dac_np = np.array(dac_list[0:-1])
+            if 'vdac' in fname_1:
+                dac_np = np.array(dac_list[0:-1])
+            else:
+                dac_np = np.array(dac_list)
             pk_np = np.array(new_pk_list)
             fp = savedir[ifemb]+fdir
              
@@ -773,7 +774,8 @@ class ana_tools:
             #   peak - dac linear
             plt.subplot(2, 2, 1)
             for ch in range(128):
-                uplim = np.max(pk_np[ch])/2
+                uplim = np.max(pk_np[ch])*7/8
+                lodac = np.max(pk_np[ch])*1/8
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
 
                 if gain==0:
@@ -787,18 +789,17 @@ class ana_tools:
                 inl_list.append(inl)
                 line_range_list.append(line_range)
                 if ('vdac' in namepat):
-                    if inl > 0.02:
+                    if inl > 0.1:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
-                    if line_range < 275:
+                    if line_range < 200:
                         check = False
                         check_issue.append("ch {} line range issue: {}".format(ch, line_range))
-                        print(line_range)
                     if gain > 45:
                         check = False
                         check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 else:
-                    if inl > 0.02:
+                    if inl > 0.01:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
                     if "900mV" in fname_1:
@@ -874,7 +875,10 @@ class ana_tools:
             plt.figure(figsize=(4,3))
             xx=range(128)
             plt.plot(xx, line_range_list, marker='.')
-            plt.ylim(0, 70)
+            if 'vdac' in namepat:
+                plt.ylim(0, 700)
+            else:
+                plt.ylim(0, 70)
             plt.xlabel("Channel", fontsize = 14)
             plt.ylabel("Line_range", fontsize = 14)
             plt.title(fname, fontsize = 14)

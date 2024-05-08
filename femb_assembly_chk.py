@@ -11,7 +11,7 @@ import components.assembly_report as a_repo
 import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
-LAr_Dalay = 5
+LAr_Dalay = 1
 
 ####### Input FEMB slots #######
 if len(sys.argv) < 2:
@@ -105,6 +105,16 @@ fembs_remove = []
 for ifemb in fembs:
     chk.femb_powering_single(ifemb, 'on')
 
+
+chk.femb_cd_rst()
+cfg_paras_rec = []
+for i in range(8):
+    chk.adcs_paras[i][8]=1   # enable  auto
+for femb_id in fembs:
+    # chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
+    # adac_pls_en = 0
+    # cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), False))
+    chk.femb_cfg(femb_id, False )
 #####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
 pwr_meas1 = chk.get_sensors()

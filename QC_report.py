@@ -324,10 +324,19 @@ class QC_reports:
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_'+label)
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
-            dict_list[i].update(pulse)
-            check_list[i].update(pulse_check)
+            if "100" in fname:
+                dict_list[1].update(pulse)
+                check_list[1].update(pulse_check)
+            elif "500" in fname:
+                dict_list[0].update(pulse)
+                check_list[0].update(pulse_check)
+            elif "1n" in fname:
+                dict_list[3].update(pulse)
+                check_list[3].update(pulse_check)
+            else:
+                dict_list[2].update(pulse)
+                check_list[2].update(pulse_check)
             i = i + 1
-        print(log.check_log03_01)
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             plt.figure(figsize=(6, 3))
@@ -343,8 +352,9 @@ class QC_reports:
             for i in range(len(x)):
                 plt.text(x[i], y1[i] + 100, f'{round(y1[i], 1)}±{round(yer[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
                 plt.text(x[i], y2[i] + 100, f'{round(y2[i], 1)}±{round(y2er[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkred')
-            plt.title('Postive Amplitude & Pedestal at different leakage current')
+            plt.title('Postive Pulse Response')
             plt.ylabel('ADC Count')
+            plt.xlabel('leakage current')
             plt.margins(x=0.15)
             plt.legend(loc="upper left", ncol=3, shadow=False)
             fp = self.savedir[self.fembs[ifemb]] + "Leakage_Current/"
@@ -381,16 +391,14 @@ class QC_reports:
                 fname = afile.split("\\")[-1][:-4]
             else:
                 fname = afile.split("/")[-1][:-4]
-            print(fname)
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/')
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
-            print(pulse)
             for ifemb in range(len(self.fembs)):
                 femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
                 log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] & pulse_check[femb_id]['Result']
-                plt.figure(figsize=(9, 6))
-                x = [1, 2, 3, 4]
+                # plt.figure(figsize=(9, 6))
+                # x = [1, 2, 3, 4]
                 if "SE_200mVBL_4_7mVfC_0_5us" in afile:
                     log.report_log04_01_4705[femb_id].update(pulse[femb_id]); log.check_log04_01_4705[femb_id].update(pulse_check[femb_id])
                 if "SE_200mVBL_4_7mVfC_1_0us" in afile:
@@ -536,12 +544,12 @@ class QC_reports:
             plt.errorbar(x, SE_200_14_0mV_ppk, yerr=SE_200_14_0mV_ppkerr, color='darkgreen', linestyle='-', capsize=5,alpha=0.7,label='SE_200_14_0mV_ppk')
             plt.errorbar(x, SE_200_25_0mV_ppk, yerr=SE_200_25_0mV_ppkerr, color='darkblue', linestyle='-', capsize=5,alpha=0.7,label='SE_200_25_0mV_ppk')
             plt.legend()
-            plt.xlabel("Peak Time", fontsize=12)
+            plt.xlabel("Peaking Time", fontsize=12)
             plt.ylabel("ADC count", fontsize=12)
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(0, 6000)
-            plt.title("SE 200 Gain Pulse Mean ErrorBar", fontsize=12)
+            plt.title("SE 200 Pulse Response ErrorBar", fontsize=12)
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')     # set background as transparent
             plt.savefig(fp + 'SE_200_Gain_Pulse_ErrorBar.png', transparent = True)
@@ -623,13 +631,13 @@ class QC_reports:
             plt.errorbar(x, SE_900_25_0mV_ppk, yerr=SE_900_25_0mV_ppkerr, capsize=5, color='darkblue', linestyle='-', alpha=0.7,label='SE_900_25_0mV_ppk')
             plt.errorbar(x, SE_900_25_0mV_npk, yerr=SE_900_25_0mV_npkerr, capsize=5, color='darkblue', linestyle='--', alpha=0.7,label='SE_900_25_0mV_npk')
             plt.legend()
-            plt.xlabel("Peak Time", fontsize=12)
+            plt.xlabel("Peaking Time", fontsize=12)
             plt.ylabel("ADC Count", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(-9000, 9000)
-            plt.title("SE 900 Gain Pulse Mean ErrorBar", fontsize=12)
+            plt.title("SE 900 Pulse Response ErrorBar", fontsize=12)
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')     # set background as transparent
             plt.savefig(fp + 'SE_900_Gain_Pulse_ErrorBar.png', transparent = True)
@@ -648,14 +656,14 @@ class QC_reports:
                                    log.check_log04_03_2520[femb_id]["ppk_std"]]
             plt.errorbar(x, SGP1_200_ppk, yerr=SGP1_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen', label='SGP1_200_ppk')
             plt.legend()
-            plt.xlabel("Peak Time", fontsize=12)
+            plt.xlabel("Gain Setting", fontsize=12)
             plt.ylabel("ADC Count", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.xticks(x, ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.grid(True, axis='y', linestyle='--')
             for i in range(len(x)):
-                plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkgreen')
-            plt.title("SGP1 200 Pulse Response", fontsize=12)
+                plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkorange')
+            plt.title("SGP1 200 Pulse Response ErrorBar", fontsize=12)
             plt.ylim(0, 17000)
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -686,13 +694,13 @@ class QC_reports:
             for ifemb in self.fembs:
                 fp = self.savedir[ifemb]+"RMS/"
                 ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
-                tmp = QC_check.CHKPulse(ped, 600)
+                tmp = QC_check.CHKPulse(ped, 800)
                 log.chkflag["BL"] = (tmp[0])
                 log.badlist["BL"] = (tmp[1])
                 ped_status = tmp[0]
                 baseline_err_content = tmp[1]
                 log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
-                tmp = QC_check.CHKPulse(rms, 8)
+                tmp = QC_check.CHKPulse(rms, 0.3)
                 log.chkflag["RMS"] = (tmp[0])
                 log.badlist["RMS"] = (tmp[1])
                 rms_status = tmp[0]
@@ -714,10 +722,8 @@ class QC_reports:
                     log.report_log05_tablecell[ifemb][fname] = "<span style = 'color:red;'> {} </span>".format(keyword)
                 log.report_log052_pedestal[ifemb][fname] = ped
                 log.report_log053_rms[ifemb][fname] = rms
-        print(log.report_log056_fembrms)
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + "RMS/"
-            print(log.report_log05_tablecell[ifemb])
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             log.report_log0500[ifemb]['Result'] = check
             log.report_log0500[ifemb]['Issue List'] = check_list
@@ -956,8 +962,6 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0605.update(inl_gain)
         log.check_log0605.update(inl_gain_check)
-        print(log.report_log0605)
-        print(log.check_log0605)
         for ifemb in self.fembs:
             report_dir = self.savedir[ifemb] + "CALI1_DIFF/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
@@ -1029,7 +1033,7 @@ class QC_reports:
     def CALI_report_2(self):
         log.test_label.append(7)
         qc=ana_tools()
-        dac_list = range(0,64,2)
+        dac_list = range(0,32,1)
         datadir = self.datadir + "CALI2/"
         self.CreateDIR("CALI2")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
@@ -1081,7 +1085,7 @@ class QC_reports:
         dac_list = range(0,64)
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
-        print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
+        print("analyze CALI3 200mVBL 4_7mVfC sgp=1")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "4_7mVfC", "2_0us", dac_list,20,10)
         qc.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 1, self.savedir, "CALI3/")
         inl_gain = dict(log.tmp_log)
@@ -1093,12 +1097,12 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc=ana_tools()
-        dac_list = range(0,64)
+        dac_list = range(0,32)
         self.CreateDIR("CALI4")
         datadir = self.datadir+"CALI4/"
-        print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
-        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
+        print("analyze CALI4 900mVBL 4_7mVfC sgp=1")
+        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "4_7mVfC", "2_0us", dac_list, 10, 4)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "4_7mVfC", "2_0us", 1, self.savedir, "CALI4/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0901.update(inl_gain)
@@ -1229,7 +1233,7 @@ class QC_reports:
     def CALI_report_5(self):
         log.test_label.append(13)
         qc=ana_tools()
-        dac_list = list(range(125, 600, 25))
+        dac_list = list(range(125, 325, 25))
         dac_list.append(0)
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
@@ -1246,7 +1250,7 @@ class QC_reports:
     def CALI_report_6(self):
         log.test_label.append(14)
         qc=ana_tools()
-        dac_list = list(range(25, 500, 25))
+        dac_list = list(range(125, 500, 25))
         dac_list.append(0)
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
@@ -1334,7 +1338,6 @@ class QC_reports:
                 log.report_log1601[femb_id][fname] = check
 
             self.Gather_PNG_PDF(fp)
-            print(check)
 
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
