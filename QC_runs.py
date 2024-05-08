@@ -20,7 +20,9 @@ class QC_Runs:
         self.vdacmax = 0.8
         self.vstep = 20
         self.chk = WIB_CFGS()
-
+        self.LAr_Dalay = 3.5
+        self.sdd0 = 0
+        self.sdf0 = 0
         self.sncs = ["900mVBL", "200mVBL"]
         self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
         self.pts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
@@ -166,6 +168,10 @@ class QC_Runs:
             self.chk.fe_flg[femb_id] = True
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
+        if (self.sdd0 != sdd) or (self.sdf0 != sdf):
+            time.sleep(self.LAr_Dalay)
+        self.sdd0 = sdd
+        self.sdf0 = sdf
         if autocali&0x01:
             print ("SSSSSSSSKKKKKKKKKKKKKKKKKK")
             time.sleep(0.5)
@@ -257,7 +263,6 @@ class QC_Runs:
         fp = datadir + "PWR_SE_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
-
         ####### SE with LArASIC buffer on #######
         #self.chk.femb_cd_rst()
         dac = 0x00
@@ -270,8 +275,7 @@ class QC_Runs:
         dac = 0x20
         sts=1
         fp = datadir + "PWR_SE_ON_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False) 
-
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
         ####### DIFF #######
         #self.chk.femb_cd_rst()
         dac = 0x00
@@ -286,8 +290,7 @@ class QC_Runs:
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False) 
-        
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
     def pwr_cycle(self):
 
         if self.logs['env']=='RT':
