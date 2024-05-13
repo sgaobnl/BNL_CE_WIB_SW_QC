@@ -841,10 +841,10 @@ def final_report(datareport, fembs, fembNo):
             # SE    200 mVBL    4_7 mVfC       2 us    SGP1
                 file.write(Head08 + '\n')
                 file.write('### Calibration 03 SE SGP1 200 mVBL    4_7 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_200mVBL_4_7mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_200mVBL_4_7mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
+                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
                 # file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
-                file.write("![ped](./{}/gain_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
+                file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
             # # DIFF  900 mVBL    4_7 mVfC     2 us
             # file.write('### Calibration 022 DIFF 900 mVBL    4_7 mVfC    2 us' + '\n')
             # file.write("![ped](./{}/enc_900mVBL_4_7mVfC_2_0us.png)".format(log.item072) + "![ped](./{}/ped_900mVBL_4_7mVfC_2_0us.png)".format(log.item072) + "\n")
@@ -858,9 +858,9 @@ def final_report(datareport, fembs, fembNo):
                     Head09 = '### ' + '</span>' + '<span id="item9"> Chapter_9 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_09_Cali_4 SE 900 SGP1' + '    < Fail >' + '</span>' + '\n'
                 file.write(Head09 + '\n')
                 file.write('### Calibration 04 SE SGP1 900 mVBL    4_7 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_900mVBL_4_7mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_900mVBL_4_7mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n\n")  # width="200"
-                file.write("![ped](./{}/gain_900mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item091) + "\n")
+                file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n")  # width="200"
+                file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n\n")  # width="200"
+                file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item091) + "\n")
             # DIFF  900 mVBL    14 mVfC     2 us
             # file.write('### Calibration 022 DIFF 900 mVBL    14_0 mVfC    2 us' + '\n')
             # file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item092) + "![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item092) + "\n")

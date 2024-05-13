@@ -130,8 +130,11 @@ def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input 
     print("start check pulse")
     para_np = np.array(para)
 
-    para_med = np.mean(para_np)
     tmp_std = np.std(para_np)
+    if tmp_std > 170:
+        para_med = (np.max(para_np)+np.min(para_np))/2
+    else:
+        para_med = np.mean(para_np)
 
     refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
     fit_range = errbar * np.std(refine_para)

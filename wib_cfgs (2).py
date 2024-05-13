@@ -27,7 +27,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
         # pll_ref LN 0x25   RT 0x26 rang(20~2A) scan 25-->20 25-->2A
-        self.pll = 0x25
+        self.pll = 0x21
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -220,13 +220,13 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if i not in fembs:
                     fembs_off.append(i)
 
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
+                print ("FEMB%d is off"%femb_off_id)
             if len(fembs_off) > 0 :
-                for femb_off_id in fembs_off:
-                    self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
-                    print ("FEMB%d is off"%femb_off_id)
-                time.sleep(1)
-                for femb_off_id in fembs_off:
-                    self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                time.sleep(2)
+            for femb_off_id in fembs_off:
+                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
            
             #enable WIB data link
             self.wib_femb_link_en(fembs)
@@ -241,11 +241,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         else:
             for femb_off_id in range(4):
-                self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
-            time.sleep(1)
-            for femb_off_id in range(4):
                 self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
                 print ("FEMB%d is off"%femb_off_id)
+            time.sleep(3)
            # for femb_off_id in range(4):
            #     self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
            # time.sleep(1)
@@ -371,6 +369,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
         self.fastcmd(cmd= 'reset')
         self.adac_cali_quo = [False,False,False,False]
+        time.sleep(0.05)
         self.cd_flg=[True, True, True, True]
         self.adc_flg=[True, True, True, True]
         self.fe_flg=[True, True, True, True]

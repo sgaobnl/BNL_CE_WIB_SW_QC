@@ -259,22 +259,32 @@ class ana_tools:
                 plot_pulse = apulse[maxpos - pulseoffset:maxpos - pulseoffset + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
                 # baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
-                baseline = pulse[:maxpos - 20]
-                baseline.extend(pulse[period:maxpos - 20 + period])
-                baseline.extend(pulse[2*period:maxpos - 20 + 2*period])
+                if maxpos < 70:
+                    baseline = pulse[:maxpos - 20]
+                else:
+                    baseline = pulse[maxpos - 50:maxpos - 20]
+                baseline.extend(pulse[maxpos - 50 + period:maxpos - 20 + period])
+                # baseline.extend(pulse[period:maxpos - 20 + period])
+                # baseline.extend(pulse[2*period:maxpos - 20 + 2*period])
+                if npulse > 2:
+                    baseline.extend(pulse[maxpos - 50 + 2*period:maxpos - 20 + 2*period])
 
             if maxpos < pulseoffset:
                 plot_pulse = apulse2[maxpos - pulseoffset + period-offset2:maxpos - pulseoffset + period-offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos + offset2+pulseoffset+pulseoffset:maxpos + period - 100]
-                baseline.extend(pulse[maxpos + offset2+pulseoffset+pulseoffset + period:maxpos + period - 100 + period])
+                baseline = pulse[maxpos + period - 50:maxpos + period - 20]
+                # baseline = pulse[maxpos + offset2+pulseoffset+pulseoffset:maxpos + period - 100]
+                # baseline.extend(pulse[maxpos + offset2+pulseoffset+pulseoffset + period:maxpos + period - 100 + period])
+                baseline.extend(pulse[maxpos + period - 50 + period:maxpos + period - 20 + period])
                 # baseline.extend(pulse[maxpos + 180 + 2*period:maxpos + 500 - 100 + 2*period])
 
             if maxpos >= len(apulse) + pulseoffset - pulrange:
                 plot_pulse = apulse2[maxpos - pulseoffset - offset2:maxpos - pulseoffset - offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[180:maxpos - 20]
-                baseline.extend(pulse[180 + period: maxpos - 20 + period])
+                baseline = pulse[maxpos - 50:maxpos - 20]
+                # baseline = pulse[180:maxpos - 20]
+                # baseline.extend(pulse[180 + period: maxpos - 20 + period])
+                baseline.extend(pulse[maxpos - 50 + period: maxpos - 20 + period])
                 # baseline.extend(pulse[180 + 2*period: maxpos - 20 + 2*period])
 
             pulse_rms = np.std(baseline)
@@ -474,12 +484,12 @@ class ana_tools:
                     else:
                         plt.plot(dac_list, data_list, marker='.')
                     #   INL judgement
-                    if main_key == 'LArASIC_DAC_25mVfC':
+                    if main_key == 'AAAAAAAAA':
                         x_data = np.array(dac_list[0:31])
                         y_data = np.array(data_list[0:31])
                     else:
-                        x_data = np.arange(0, 60)
-                        y_data = np.array(data_list[0:60])
+                        x_data = dac_list[0:-1]
+                        y_data = np.array(data_list[0:-1])
                     coefficients = np.polyfit(x_data, y_data, deg=1)
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
@@ -705,8 +715,6 @@ class ana_tools:
         log.check_log.clear()
         log.chkflag.clear()
         log.badlist.clear()
-        check = True
-        check_issue = []
         dac_v = {}  # mV/bit
         dac_v['4_7mVfC']=18.66
         dac_v['7_8mVfC']=14.33
@@ -724,6 +732,7 @@ class ana_tools:
             fname = '{}_{}_{}'.format(snc,sgs,sts)
 
         pk_list = [[],[],[],[]]
+        print(dac_list)
         for dac in dac_list:
             fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
             with open(fdata, 'rb') as fn:
@@ -756,11 +765,13 @@ class ana_tools:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
             tmp_list = pk_list[ifemb]
             new_pk_list = list(zip(*tmp_list))
+            check = True
+            check_issue = []
             #print(new_pk_list[0])
-            if 'vdac' in fname_1:
-                dac_np = np.array(dac_list[0:-1])
-            else:
-                dac_np = np.array(dac_list)
+            # if 'vdac' in fname_1:
+            #     dac_np = np.array(dac_list[0:-1])
+            # else:
+            dac_np = np.array(dac_list)
             pk_np = np.array(new_pk_list)
             fp = savedir[ifemb]+fdir
              
@@ -807,7 +818,7 @@ class ana_tools:
                             check = False
                             check_issue.append("ch {} line range issue: {}".format(ch, line_range))
                     else:
-                        if line_range < 55:
+                        if line_range < 50:
                             check = False
                             check_issue.append("ch {} line range issue: {}".format(ch, line_range))
                     if gain > 120:

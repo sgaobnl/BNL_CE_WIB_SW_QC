@@ -923,22 +923,7 @@ class QC_reports:
         self.CreateDIR("CALI1_DIFF")
         dac_list = range(0,64,1)
         datadir = self.datadir+"CALI1/"
-        print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
-        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
-        inl_gain = dict(log.tmp_log)
-        inl_gain_check = dict(log.check_log)
-        log.report_log0601.update(inl_gain)
-        log.check_log0601.update(inl_gain_check)
-        datadir = self.datadir+"CALI1/"
-        print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
-        inl_gain = dict(log.tmp_log)
-        inl_gain_check = dict(log.check_log)
-        log.report_log0602.update(inl_gain)
-        log.check_log0602.update(inl_gain_check)
-        datadir = self.datadir+"CALI1/"
+
         print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
@@ -946,7 +931,23 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0603.update(inl_gain)
         log.check_log0603.update(inl_gain_check)
-        datadir = self.datadir+"CALI1/"
+        dac_list = range(0, 64, 4)
+        print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
+        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
+        inl_gain = dict(log.tmp_log)
+        inl_gain_check = dict(log.check_log)
+        log.report_log0601.update(inl_gain)
+        log.check_log0601.update(inl_gain_check)
+
+        print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
+        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
+        inl_gain = dict(log.tmp_log)
+        inl_gain_check = dict(log.check_log)
+        log.report_log0602.update(inl_gain)
+        log.check_log0602.update(inl_gain_check)
+
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
@@ -1043,6 +1044,7 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0701.update(inl_gain)
         log.check_log0701.update(inl_gain_check)
+        dac_list = range(0, 32, 4)
         self.CreateDIR("CALI2_DIFF")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
@@ -1082,12 +1084,12 @@ class QC_reports:
     def CALI_report_3(self):
         log.test_label.append(8)
         qc=ana_tools()
-        dac_list = range(0,64)
+        dac_list = range(0,64,8)
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
-        print("analyze CALI3 200mVBL 4_7mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "4_7mVfC", "2_0us", dac_list,20,10)
-        qc.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 1, self.savedir, "CALI3/")
+        print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
+        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
+        qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0801.update(inl_gain)
@@ -1097,12 +1099,12 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc=ana_tools()
-        dac_list = range(0,32)
+        dac_list = range(0,32,8)
         self.CreateDIR("CALI4")
         datadir = self.datadir+"CALI4/"
-        print("analyze CALI4 900mVBL 4_7mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "4_7mVfC", "2_0us", dac_list, 10, 4)
-        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "4_7mVfC", "2_0us", 1, self.savedir, "CALI4/")
+        print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
+        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0901.update(inl_gain)
@@ -1171,8 +1173,8 @@ class QC_reports:
             plt.title("200mVBL_900mVBL_sdf0", fontsize=12)
             plt.subplot(1, 3, 3)
             x_sticks = range(0, 129, 16)
-            plt.plot(range(128), log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf1')
-            plt.plot(range(128), log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf1')
+            plt.plot(range(24), log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf1')
+            plt.plot(range(24), log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf1')
             plt.xlabel("Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
             plt.xticks(x_sticks)
@@ -1215,7 +1217,7 @@ class QC_reports:
         log.test_label.append(12)
         self.CreateDIR("MON_ADC")
         datadir = self.datadir+"MON_ADC/"
-        fp = datadir+"LArASIC_ColdADC_mon.bin"
+        fp = datadir+"ColdADC_mon.bin"
         with open(fp, 'rb') as fn:
              raw = pickle.load(fn)
         print("analyze file: %s"%fp)
@@ -1234,11 +1236,21 @@ class QC_reports:
         log.test_label.append(13)
         qc=ana_tools()
         dac_list = list(range(125, 325, 25))
-        dac_list.append(0)
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
         print("analyze CALI5 900mVBL 14_0mVfC External")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
+
+        #   Get RMS
+        datafiles = datadir+'CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin'
+        with open(datafiles, 'rb') as fn:
+            raw = pickle.load(fn)
+        rawdata=raw[0]
+        pldata = qc.data_decode(rawdata, self.fembs)
+        for ifemb in self.fembs:
+            fp = self.savedir[ifemb]+"CALI5/"
+            ped, rms = qc.GetRMS(pldata, ifemb, fp, "900mVBL_14_0mVfC_2_0us")
+
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1251,11 +1263,19 @@ class QC_reports:
         log.test_label.append(14)
         qc=ana_tools()
         dac_list = list(range(125, 500, 25))
-        dac_list.append(0)
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
         print("analyze CALI6 200mVBL 14_0mVfC External")
         qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
+        #   Get RMS
+        datafiles = datadir+'CALI6_SE_200mVBL_14_0mVfC_2_0us_RMS.bin'
+        with open(datafiles, 'rb') as fn:
+            raw = pickle.load(fn)
+        rawdata=raw[0]
+        pldata = qc.data_decode(rawdata, self.fembs)
+        for ifemb in self.fembs:
+            fp = self.savedir[ifemb]+"CALI6/"
+            ped, rms = qc.GetRMS(pldata, ifemb, fp, "200mVBL_14_0mVfC_2_0us")
         qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)

@@ -120,7 +120,6 @@ class QC_Runs:
                print ("FEMB {} is turned off".format(i))        
            else:
                pwr_sts = False
-        print ("KKKKKKKKKKKK", pwr_sts)
 
         return pwr_sts
 
@@ -270,7 +269,7 @@ class QC_Runs:
         dac = 0x00
         sts=0
         fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1)
 
         #   SE on Power Rail
         a_func.monitor_power_rail("SE_ON", self.fembs, datadir, 1)
@@ -285,7 +284,7 @@ class QC_Runs:
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1    # enable differential interface
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1)
 
         #   DIFF Power Rail
         a_func.monitor_power_rail("DIFF", self.fembs, datadir, 1)
@@ -294,6 +293,10 @@ class QC_Runs:
         fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
     def pwr_cycle(self):
+
+        if self.logs['env']=='RT':
+           print ("Test is at room temperature, ignore power cycle test")
+           return
 
         datadir = self.save_dir+"PWR_Cycle/"
         try:
@@ -316,7 +319,7 @@ class QC_Runs:
             dac = 0
             sts = 0
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True)
+            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp) 
             dac = 0x20 
             sts = 1
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
@@ -325,10 +328,9 @@ class QC_Runs:
             self.pwr_fembs('off')
             pwr_info = self.chk.get_sensors()
             pwr_status = self.check_pwr_off(pwr_info)
-            time.sleep(3)
 
             nn=0
-            while not pwr_status:
+            while nn<5 or pwr_status==False:
                   time.sleep(1)
                   nn=nn+1
                   pwr_info = self.chk.get_sensors()
@@ -342,7 +344,7 @@ class QC_Runs:
         dac = 0
         sts = 0
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
+        self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1) 
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
@@ -351,10 +353,9 @@ class QC_Runs:
         self.pwr_fembs('off')
         pwr_info = self.chk.get_sensors()
         pwr_status = self.check_pwr_off(pwr_info)
-        time.sleep(3)
 
         nn=0
-        while not pwr_status:
+        while nn<5 or pwr_status==False:
               time.sleep(1)
               nn=nn+1
               pwr_info = self.chk.get_sensors()
@@ -368,7 +369,7 @@ class QC_Runs:
         dac = 0
         sts = 0
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1) 
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
@@ -1016,7 +1017,6 @@ class QC_Runs:
         self.chk.wib_fe_mon(femb_ids=self.fembs)
 
     def femb_MON_3(self, sps=5):
-        t0 = time.time_ns()
         datadir = self.save_dir+"MON_ADC/"
         try:
             os.makedirs(datadir)
@@ -1055,7 +1055,6 @@ class QC_Runs:
         fp = datadir + "ColdADC_mon.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_adc_default, mon_adc, self.logs], fn)
-        print (int((time.time_ns() - t0)/1e9), "AAAAAAAAA")
 
 if __name__=='__main__':
                         
