@@ -692,6 +692,10 @@ FE_DAC_TP_set <= reg39_p;
 
 FE_DAC_TP_data(7 downto 0) <= reg40_p;
 FE_DAC_TP_data(15 downto 8) <= reg41_p;
+FE_DAC_TP_CMD <= "0100" when reg42_p(7) = '1' else "0011";
+DAC_TP_CMD 	  <= "0100" when reg42_p(6) = '1' else "0011";
+DAC_ADC_N_CMD <= "0100" when reg42_p(5) = '1' else "0011";
+DAC_ADC_P_CMD <= "0100" when reg42_p(4) = '1' else "0011";
 
 --DAC_other_set <= reg42_p(2 downto 0);
 DAC_TP_set <= reg42_p(2);
@@ -1260,7 +1264,7 @@ DAC_ADC_P_inst : entity work.DAC8411 --AD5683R
 	 	 clk         	=> CLK_25MHz,         
 		 reset			=> reset,	
 		 start			=> DAC_ADC_P_set,
-		 #start			=> DAC_other_set(0),
+		 --start			=> DAC_other_set(0),
 		 DATA				=> DAC_ADC_P_data,
 		 CMD				=> DAC_ADC_P_CMD,
 		 SCLK				=> DAC_ADC_P_SCK,
