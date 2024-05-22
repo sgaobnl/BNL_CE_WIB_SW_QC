@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-import os
+import os, sys, pickle
 import numpy as np
 # import csv
 import json
@@ -52,9 +52,17 @@ def linear_fit(x: list, y: list):
     peakinl = np.max(inl)
     return slope, yintercept, peakinl
 
-def decodeRawData(fembs, rawdata, rms_flg=False):
+def createDirs(FE_IDs: list, output_dir: str):
+    # FE_IDs: list of the IDs of the 8 LArASIC
+    for FE in FE_IDs:
+        try:
+            os.makedirs('/'.join([output_dir, FE]))
+        except OSError:
+            pass
+    
+
+def decodeRawData(fembs, rawdata):
     wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
-    # data = [wibdata[0]][fembs[0]]#, wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
     tmpdata = [wibdata[fembs[0]]][0] # data of the 128 channels for the 8 chips
     # split data of the 8 chips:
     ## 1 ASIC: 16 channels
@@ -68,122 +76,240 @@ def decodeRawData(fembs, rawdata, rms_flg=False):
         data.append(onechipData)
     return data
 
+def getMaxAmpIndices(oneCHdata: list):
+    index_list = []
+    imax_np = np.where(np.array(oneCHdata) >= 0.8*np.max(np.array(oneCHdata)))[0]
+    #
+    new_list = []
+    for ii in range(1, len(imax_np)):
+        if imax_np[ii]==imax_np[ii-1]+1:
+            new_list.append(True)
+        else:
+            new_list.append(False)
+    new_list.append(False)
+    #
+    diff_index = np.where(np.array(new_list) == False)[0]
+    for i in range(len(diff_index)):
+        range_index = []
+        if i==0:
+            range_index = [i, diff_index[i]]
+        else:
+            range_index = [diff_index[i-1]+1, diff_index[i]]
+        # print(range_index)
+        mean_imax = np.mean(imax_np[range_index[0] : range_index[1]+1])
+        if oneCHdata[int(mean_imax)] < oneCHdata[int(mean_imax)+1]:
+            index_list.append(int(mean_imax)+1)
+        else:
+            index_list.append(int(mean_imax))
+    return index_list
+
 def getpedestal_rms(oneCHdata: list):
     '''
     pktime : 2us
-    sampling: every 500ns (clock)
-    --> number of samples from the pedestal to the peak : 4 samples
+    sampling: every 500ns (clock) --> 1 bin (time) = 500ns
+    --> number of samples (point) from the pedestal to the peak : 4 samples
     ===> take data 10 samples before the peak (5 + some ~margins)
     '''
     data = np.array(oneCHdata)
+    imax = getMaxAmpIndices(data)
     # find peak
-    imax = np.where(data==np.max(data))[0][0]
-    ilastped = imax - 20
-    inextped = imax + 150
-    baseline = np.concatenate([data[ilastped-100:ilastped], data[inextped : inextped + 100]])
-    # baseline = data[ilastped-100:ilastped]
-    ped = np.mean(baseline)
-    rms = np.std(baseline)
+    # imax = np.where(data==np.max(data))[0][0]
+    ilastped = imax[0] - 20
+    # inextped = imax + 150
+    # baseline = np.concatenate([data[ilastped-100:ilastped], data[inextped : inextped + 100]])
+    baseline = data[ilastped-100:ilastped]
+    ped = np.round(np.mean(baseline), 4)
+    rms = np.round(np.std(baseline), 4)
     return [ped, rms]
 
 def getpulse(oneCHdata: list):
     data = np.array(oneCHdata)
-    imax = np.where(data==np.max(data))[0][0]
-    pulserange = data[imax-50 : imax+100]
+    # imax = np.where(data>=0.95*np.max(data))[0] # only peaks >= 0.95*maximum are selected for the averaging
+    imax = getMaxAmpIndices(oneCHdata=data)
+    iimax = 0
+    pulserange = np.array([])
+    for i in range(len(imax)):
+        if len(data[imax[i]-120 : imax[i]+200])!=0:
+            pulserange = data[imax[i]-120 : imax[i]+200]
+            iimax = i
+            break
+    Npulses = 1
+    for i in range(iimax, len(imax)):
+        tmprange = data[imax[i]-120 : imax[i]+200]
+        if len(tmprange)!=len(pulserange):
+            pass
+        else:
+            Npulses += 1
+            pulserange += tmprange
+    pulserange = pulserange / Npulses
     return pulserange
 
 # Analyze one LArASIC
-class ASIC_ana:
-    def __init__(self, dataASIC: list, output_dir: str, chipID: str):
-        ## one can get the chipID from the logs
-        ##
+class LArASIC_ana:
+    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK'):
+        ## chipID : from the logs
         self.data = dataASIC
         self.chipID = chipID
+        self.param = param
         self.output_dir = output_dir
-        # self.getPedestal_RMS()
-        # self.getwaveforms()
+        self.tms = tms
+        self.Items = {
+                    0: 'INIT_CHK',
+                    1: 'PWR',
+                    2: 'CHKRES',
+                    3: 'MON',
+                    4: 'PWR_CYCLE',
+                    5: 'RMS',
+                    61: 'CALI_ASICDAC',
+                    62: 'CALI_DATDAC',
+                    63: 'CALI_DIRECT',
+                    7: 'DLY_RUN',
+                    8: 'Cap_Meas'
+                    }
 
-    def getPedestal_RMS(self, makePlot=False):
-        ## return [pedestal, rms]
-        peds = []
-        rms = []
-        Nch = len(self.data)
-        for ich in range(Nch):
+    def PedestalRMS(self, range_peds=[300, 3000], range_rms=[5,25]):
+        '''
+            inputs: range of pedestal and range of rms
+            output:
+                return: {
+                        'pedestal': {'data': [], 'result_qc': [], 'link_to_img': ''}, 
+                        'rms': {'data': [], 'result_qc': [], 'link_to_img': ''}
+                        }
+                to be saved:
+                    - plots of pedestal and rms --> .png
+        '''
+        pedestals, result_qc_ped = [], []
+        rms, result_qc_rms = [], []
+        for ich in range(16):
+            bool_ped = True
+            bool_rms = True
             [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich])
-            peds.append(tmpped)
+            if (tmpped > range_peds[0]) & (tmpped < range_peds[1]):
+                bool_ped = True
+            else:
+                bool_ped = False
+            if (tmprms > range_rms[0]) & (tmprms < range_rms[1]):
+                bool_rms = True
+            else:
+                bool_rms = False
+            result_qc_ped.append(bool_ped)
+            result_qc_rms.append(bool_rms)
+            pedestals.append(tmpped)
             rms.append(tmprms)
 
-        if makePlot:
-            # Pedestal
-            plt.figure()
-            plt.plot(peds, label='Pedestal')
-            meanped = np.mean(peds)
-            plt.xlim([-0.5,16])
-            plt.ylim([meanped-500 , meanped+500])
-            plt.xlabel('CH number')
-            plt.ylabel('ADC count')
-            plt.title('Pedestal')
-            plt.legend()
-            plt.grid()
-            plt.savefig('/'.join([self.output_dir, 'pedestal_{}.png'.format(self.chipID)]))
-
-            # RMS
-            plt.figure()
-            plt.plot(rms, label='RMS')
-            plt.ylim([0, 50])
-            plt.xlabel('CH number')
-            plt.ylabel('ADC count')
-            plt.title('RMS')
-            plt.legend()
-            plt.grid()
-            plt.savefig('/'.join([self.output_dir, 'rms_{}.png'.format(self.chipID)]))
-
-        # selection
-        #
-        out = {'pedestal': peds, 'rms': rms, 'pedestal_passed': True, 'rms_passed': True}
-        return out
-
-    def getwaveforms(self, makePlot=False):
-        rangepulses = []
-        for ich in range(len(self.data)):
-            tmppulserange = getpulse(oneCHdata=self.data[ich])
-            rangepulses.append(tmppulserange)
+        out_dict = {'pedestal': {'data': pedestals, 'result_qc': result_qc_ped},
+                    'rms': {'data': rms, 'result_qc': result_qc_rms}
+                    }
         
-        if makePlot:
-            plt.figure()
-            for ich in range(16):
-                plt.plot(rangepulses[ich], label='CH{}'.format(ich))
-            plt.xlabel('Time (ns)')
-            plt.ylabel('ADC count')
-            plt.title('Wave forms')
-            plt.legend()
-            plt.grid()
-            plt.savefig('/'.join([self.output_dir, 'waveforms_{}.png'.format(self.chipID)]))
-
-        return rangepulses
-
-    def get_ppeak(self, waveforms: list, pedestals: list):
-        positive_peaks = []
-        for ich in range(16):
-            ppeak = np.max(waveforms[ich]) - pedestals[ich]
-            positive_peaks.append(ppeak)
-        # selection
+        # plot of pedestal
+        plt.figure()
+        plt.plot(pedestals, label='Pedestal')
+        plt.xlabel('Channels')
+        plt.ylabel('ADC bit')
+        plt.ylim([range_peds[0], range_peds[1]])
+        plt.title('Pedestal')
+        plt.legend(loc="upper right")
+        plt.grid()
+        plt.savefig('/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)]))
         #
-        out = {'positive_peaks': positive_peaks, 'ppeak_passed': True}
-        return out
+        # plot of rms
+        plt.figure()
+        plt.plot(rms, label='RMS')
+        plt.xlabel('Channels')
+        plt.ylabel('ADC bit')
+        plt.ylim([range_rms[0], range_rms[1]])
+        plt.title('RMS')
+        plt.legend(loc="upper right")
+        plt.grid()
+        plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
+        
+        out_dict['pedestal']['link_to_img'] = '/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
+        out_dict['rms']['link_to_img'] = '/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
+        return out_dict
     
-    def runAll(self, defCriteria=True):
+    def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True):
         '''
-            defCriteria==True: we need the data (list of numbers) in order to make distributions of each parameter and define the selection criteria (range)
+            inputs:
+                - range pulse amplitude
+                - pedestals
+            return: {
+                    'pospeak': {'data': [], 'result_qc': [], 'link_to_img': ''},
+                    'negpeak': {'data': [], 'result_qc': [], 'link_to_img': ''},
+                    'waveform_img': ''
+                    }
         '''
-        if defCriteria:
-            ped_rms = self.getPedestal_RMS(makePlot=False)
-            pedestals = ped_rms['pedestal']
-            rms = ped_rms['rms']
-            waveforms = self.getwaveforms(makePlot=False)
-            ppeaks = self.get_ppeak(waveforms=waveforms, pedestals=pedestals)['positive_peaks']
-            return [pedestals, rms, ppeaks]
+        ppeaks, result_qc_ppeak = [], []
+        npeaks, result_qc_npeak = [], []
+        for ich in range(16):
+            pulseData = getpulse(oneCHdata=self.data[ich])
+            pospeak = np.round(np.max(pulseData) - pedestals[ich], 4)
+            negpeak = np.round(pedestals[ich] - np.min(pulseData), 4)
+            if isPosPeak:
+                bool_ppeak = True
+                if (pospeak > range_pulseAmp[0]) & (pospeak < range_pulseAmp[1]):
+                    bool_ppeak = True
+                else:
+                    bool_ppeak = False
+                result_qc_ppeak.append(bool_ppeak)
+            else:
+                bool_npeak = True
+                if (negpeak > range_pulseAmp[0]) & (negpeak < range_pulseAmp[1]):
+                    bool_npeak = True
+                else:
+                    bool_npeak = False
+                result_qc_npeak.append(bool_npeak)
+            ppeaks.append(pospeak)
+            npeaks.append(negpeak)
+
+        out_dict = {'pospeak': {'data': ppeaks, 'result_qc': result_qc_ppeak},
+                    'negpeak': {'data': npeaks, 'result_qc': result_qc_npeak}}
+        
+        # pulse response - averaged waveform
+        plt.figure()
+        for ich in range(16):
+            avg_pulse = getpulse(oneCHdata=self.data[ich])
+            plt.plot(avg_pulse, label='CH{}'.format(ich))
+        plt.xlabel('Time')
+        plt.ylabel('ADC bit')
+        plt.title('Averaged Waveform')
+        plt.legend(loc="upper right")
+        plt.grid()
+        plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
+        out_dict['waveform_img'] = '/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
+
+        # pulse amplitude
+        plt.figure()
+        if isPosPeak:
+            plt.plot(ppeaks, label='Positive peaks')
         else:
-            # make plots
-            # save results in files
-            pass
+            plt.plot(npeaks, label='Negative peaks')
+        plt.ylim([range_pulseAmp[0], range_pulseAmp[1]])
+        plt.xlabel('Channels')
+        plt.ylabel('ADC bit')
+        plt.title('Pulse amplitude')
+        plt.legend(loc="upper right")
+        plt.grid()
+        plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
+        if isPosPeak:
+            out_dict['pospeak']['link_to_img'] = '/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+            out_dict['negpeak']['link_to_img'] = ''
+        else:
+            out_dict['pospeak']['link_to_img'] = ''
+            out_dict['negpeak']['link_to_img'] = '/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+        return out_dict
+    
+    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True):
+        '''
+            inputs:
+                ** range_peds: range pedestal
+                ** range_rms: range rms
+                ** range_pulseAmp: range pulse amplitude
+            return: [dict_pedestal_rms, dict_pulse_response]
+        '''
+        pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms)
+        pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
+        return [pedrms, pulseResponse]
+    
+if __name__ == '__main__':
+    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
