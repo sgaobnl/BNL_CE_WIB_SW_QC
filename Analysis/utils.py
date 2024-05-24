@@ -211,6 +211,7 @@ class LArASIC_ana:
         plt.legend(loc="upper right")
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)]))
+        plt.close()
         #
         # plot of rms
         plt.figure()
@@ -222,6 +223,7 @@ class LArASIC_ana:
         plt.legend(loc="upper right")
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
+        plt.close()
         
         out_dict['pedestal']['link_to_img'] = '/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
         out_dict['rms']['link_to_img'] = '/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
@@ -275,6 +277,7 @@ class LArASIC_ana:
         plt.legend(loc="upper right")
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
+        plt.close()
         out_dict['waveform_img'] = '/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
 
         # pulse amplitude
@@ -290,6 +293,7 @@ class LArASIC_ana:
         plt.legend(loc="upper right")
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
+        plt.close()
         if isPosPeak:
             out_dict['pospeak']['link_to_img'] = '/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
             out_dict['negpeak']['link_to_img'] = ''
@@ -304,11 +308,11 @@ class LArASIC_ana:
                 ** range_peds: range pedestal
                 ** range_rms: range rms
                 ** range_pulseAmp: range pulse amplitude
-            return: [dict_pedestal_rms, dict_pulse_response]
+            return: {"pedrms": pedrms, "pulseResponse": pulseResponse}
         '''
         pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms)
         pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
-        return [pedrms, pulseResponse]
+        return {"pedrms": pedrms, "pulseResponse": pulseResponse}
     
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
