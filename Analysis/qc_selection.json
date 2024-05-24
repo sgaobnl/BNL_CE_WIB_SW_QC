@@ -1,0 +1,15 @@
+{
+    "QC_INIT_CHK": {
+        "ASICDAC_CALI_CHK": {
+            "pedestal": [300,3000],
+            "rms": [5,25],
+            "pulseAmp": [7000,10000]
+        },
+        "DIRECT_PLS_CHK" : {
+            "pedestal" : [300,3000],
+            "rms" : [5,25],
+            "pulseAmp": [9000,16000]
+        },
+        "isPosPeak": true
+    }
+}
