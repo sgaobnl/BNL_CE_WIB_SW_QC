@@ -16,7 +16,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "ADC_000000001_000000002_000000003_000000004_000000005_000000006_000000007_000000008"
+fsubdir = "ADC_x000000001_000000002_000000003_000000004_000000005_000000006_000000007_000000008"
 #fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
 froot = os.getcwd() + "\\tmp_data\\"
 
@@ -1017,8 +1017,6 @@ if 7 in tms:
             dacses.append([dacv, peds, rmss])
             print (dacv, peds[0], rmss[0])
             #exit()
-    exit()
-
     print(dkeys)  
     for onekey in dkeys:
         if 'rawdata_under' in onekey:
@@ -1078,74 +1076,83 @@ if 8 in tms:
     print ("-------------------------------------------------------------------------")
     print ("8: ADC ENOB measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
-    #fp = fdir + "QC_ENOB_1V_00008106Hz" + ".bin"
-    #fp = fdir + "QC_ENOB_08V_00008106Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00014781Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00031948Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00200748Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00119686Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
-    fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
+    ##fp = fdir + "QC_ENOB_1V_00008106Hz" + ".bin"
+    ##fp = fdir + "QC_ENOB_08V_00008106Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00031948Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00072002Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00119686Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00200748Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00358104Hz" + ".bin"
+    #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
-    
-    print ("When it is done, replace {} on the local PC".format(fp) )
-    if os.path.isfile(fp):
-        with open(fp, 'rb') as fn:
-            data = pickle.load( fn)
-    
-        dkeys = list(data.keys())
+    #for freq in [8106.23, 14781.95, 31948.09,]:
+    for freq in [8106.23]:
+        fp = fdir + "QC_ENOB_%08dHz"%(int(freq)) + ".bin"
+        print ("When it is done, replace {} on the local PC".format(fp) )
+        if os.path.isfile(fp):
+            with open(fp, 'rb') as fn:
+                data = pickle.load( fn)
         
-        logsd = data["logs"]
-        dkeys.remove("logs")
-    else:
-        print(Fore.RED + fp + " not found.")
-        exit()
-
-    for onekey in dkeys:
-        if 'enobdata' in onekey:     
-            cfgdata = data[onekey]
-            fembs = cfgdata[0]
-            enobdata = cfgdata[1]
-            cfg_info = cfgdata[2]
-
-# Plot all waveforms, but hide all but ch0 by default since they are asynchronously captured
-# Toggle waveform visibility by clicking on the white space to the left of the channel # (this can be improved)       
-# https://learndataanalysis.org/source-code-how-to-toggle-graphs-visibility-by-clicking-legend-label-in-matplotlib/#google_vignette            
-            from adc_enob import adc_enob
+            dkeys = list(data.keys())
             
-            chsenob = []
-            # extent = (0, 16384, 0, 16384)
-            x = list(range(16384))
-            for ch, raw in enumerate(enobdata):
-                if raw is None:
-                    continue
-                num_16bwords = 0x8000 / 2
-                words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
-                if ch == 0:
-                    ffig = True
-                else:
-                    ffig = False
-
-                if ch == 0:
-                    import matplotlib.pyplot as plt
-                    plt.plot(words16b)
-                    plt.show()
-                    plt.close()
-                ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
-                chsenob.append(ENOB)
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots(figsize=(12, 6))
-            plt.plot(chsenob)
-            
+            logsd = data["logs"]
+            dkeys.remove("logs")
+        else:
+            print(Fore.RED + fp + " not found.")
+            exit()
+    
+        for onekey in dkeys:
+            if 'enobdata' in onekey:     
+                cfgdata = data[onekey]
+                fembs = cfgdata[0]
+                enobdata = cfgdata[1]
+                cfg_info = cfgdata[2]
+    
+    # Plot all waveforms, but hide all but ch0 by default since they are asynchronously captured
+    # Toggle waveform visibility by clicking on the white space to the left of the channel # (this can be improved)       
+    # https://learndataanalysis.org/source-code-how-to-toggle-graphs-visibility-by-clicking-legend-label-in-matplotlib/#google_vignette            
+                from adc_enob import adc_enob
                 
-            plt.tight_layout()
-            plt.show()
-            break
+                chsenob = []
+                # extent = (0, 16384, 0, 16384)
+                x = list(range(16384))
+                for ch, raw in enumerate(enobdata):
+                    if raw is None:
+                        continue
+                    num_16bwords = 0x8000 / 2
+                    words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
+                    #if ch == 0:
+                    #    ffig = True
+                    #else:
+                    #    ffig = False
+    
+                    if ch == 1:
+                        import matplotlib.pyplot as plt
+                        plt.plot(words16b)
+                        plt.show()
+                        plt.close()
+                        ffig = True
+                    else:
+                        ffig = False
+                    ENOB, NAD, SFDR, SINAD, psd_dbfs, points_dbfs = adc_enob(chndata=words16b, fs=1953125, Ntot=2**12, Vfullscale=1.4, Vinput=1.2, ffig=ffig)
+                    chsenob.append(ENOB)
+                import matplotlib.pyplot as plt
+                fig, ax = plt.subplots(figsize=(8, 6))
+                plt.plot(chsenob)
+                plt.ylim((0,12))
+                plt.title ("ENOB")
+                plt.ylabel('ENOB / bit')
+                plt.xlabel('Frequence / Hz')
+
+                plt.grid()
+                    
+                plt.tight_layout()
+                plt.show()
+                break
             
 if 9 in tms:
     print ("-------------------------------------------------------------------------")
@@ -1200,7 +1207,7 @@ if 10 in tms:
 # https://learndataanalysis.org/source-code-how-to-toggle-graphs-visibility-by-clicking-legend-label-in-matplotlib/#google_vignette            
             import matplotlib.pyplot as plt
 
-            fig, ax = plt.subplots(figsize=(12, 6))
+            fig, ax = plt.subplots(figsize=(8, 16))
 
 
             chdata = []
@@ -1240,9 +1247,11 @@ if 10 in tms:
                     legends[ch].set_visible(False)
 
             graphs = {}
-            for i in range(128):
+            #for i in range(128):
+            for i in [0]:
                 graphs[legends[i]] = chplot[i]
                 
             plt.tight_layout()
+            plt.ylim((-1000,17000))
             plt.connect('pick_event',onpick)
             plt.show()

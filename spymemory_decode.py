@@ -123,7 +123,7 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
     #        exit()
     
             if tryi == 0:
-                if (len(f_heads) < pkgn-2):
+                if (len(f_heads) < pkgn-2) and (len(f_heads) < 30):
                     print ("Invalid data length...")
                     return False
                 w_sofs, tmsts = zip(*f_heads)

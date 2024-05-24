@@ -46,13 +46,36 @@ if 1:
         for fe_chn in range(16):
     
             fechndata = datd[fe*16+fe_chn]
-            #plt.plot(fechndata)
+            #if fe == 5 and (fe_chn in [11, 12, 13]):
+            #if fe == 6 and (fe_chn in [3, 4, 5]):
+            #if fe == 3 and (fe_chn in [0, 1]):
+            #if fe == 4 and (fe_chn in [3, 4,5]):
+            #if fe == 7 and (fe_chn in [0, 1,2]):
+            #if fe == 3  :
+            if True :
+            #if fe == 4 and (fe_chn in [0, 8, 10]):
+            #if fe == 1 and (fe_chn in [5, 6,7]):
+            #if fe == 2 : #femb1
+            #if fe == 2 and (fe_chn in [11, 12]):
+            #if fe == 6 and (fe_chn in [0, 1]):
+            #if fe == 3 and (fe_chn in [0, 1]):
+            #if fe == 0 and (fe_chn in [3, 4, 5]):
+                plt.plot(fechndata, label="%d"%fe_chn)
+            #if fe == 6 and fe_chn==4:
+            #    plt.plot(fechndata)
+            #if fe == 6 and fe_chn==5:
+            #    plt.plot(fechndata)
     #        print (np.std(fechndata))
 #            rms.append(np.std(fechndata))
 #            pkp.append(np.max(fechndata))
             rms.append(np.mean(fechndata))
             if fe==0 and fe_chn==2:
                 print (np.mean(fechndata))
+    plt.legend()
+    plt.grid()
+    plt.show()
+    plt.close()
+    exit()
 
     plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
