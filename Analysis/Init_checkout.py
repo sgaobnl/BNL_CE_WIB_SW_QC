@@ -130,29 +130,18 @@ class INIT_CHECK:
         with open('/'.join([self.root_path, self.data_dir, self.init_chk_filename]), 'rb') as fn:
             self.raw_data = pickle.load(fn)
         ## get the logs
-        self.get_logs()
-        self.FE_IDs = [self.logs_dict['FE{}'.format(i)] for i in range(8)]
+        self.logs_dict = self.raw_data['logs']
         ##----- Create Folders for the outputs -----
-        createDirs(FE_IDs=self.FE_IDs, output_dir=output_dir)
-        self.FE_output_DIRs = ['/'.join([output_dir, FE_ID]) for FE_ID in self.FE_IDs]
+        createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
+        self.FE_output_DIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
         ## --- OUTPUT DICTIONARY
         self.out_dict = dict()
-        for FE_ID in self.FE_IDs:
+        for ichip in range(8):
+            FE_ID = self.logs_dict['FE{}'.format(ichip)]
             self.out_dict[FE_ID] = dict()
             for param in self.items_to_check:
                 if param!='logs':
                     self.out_dict[FE_ID][param] = dict()
-
-    def get_logs(self):
-        logs = self.raw_data['logs']
-        # FE IDs
-        FE_ID_dict = dict()
-        for k, elt in logs.items():
-            if 'FE' in k:
-                FE_ID_dict[k] = elt
-        self.logs_dict = {'date': logs['date'], 'env': logs['env'], 'testsite': logs['testsite']}
-        for k, fe in FE_ID_dict.items():
-            self.logs_dict[k] = fe
 
     def WIB_PWR(self):
         pass
@@ -161,42 +150,73 @@ class INIT_CHECK:
         pass
 
     def FE_PWRON(self):
-        pass
+        '''
+            Voltages: VDDA, VDDO, and VDDP
+            raw data format:
+            {
+                'FE0_VDDA': [voltage(V), current(mA), power(mW)],
+                'FE0_VDDO': [voltage(V), current(mA), power(mW)],
+                'FE0_VDDP': [voltage(V), current(mA), power(mW)],
+                'FE1_VDDA': [V, I, P],
+                'FE1_VDDO': [V, I, P],
+                'FE1_VDDP': [V, I, P],
+                ...
+            }
+            output data format:
+            {
+                'FE_PWRON': {
+                    'chipID_0': {
+                        'V': [VDDA_V, VDDO_V, VDDP_V],
+                        'I': [VDDA_I, VDDO_I, VDDP_I],
+                        'P': [VDDA_P, VDDO_P, VDDP_P],
+                        'units': ['V', 'mA', 'mW']
+                    },
+                    'chipID_1': {....},
+                    ...
+                }
+            }
+            Note: FE{}_VPPP in the code refers to VDDP
+        '''
+        FE_PWRON_data = self.raw_data['FE_PWRON']
+        voltage_params = ['VDDA', 'VDDO', 'VDDP']
+        # organize the data
+        out_dict = {self.logs_dict['FE{}'.format(ichip)]:{} for ichip in range(8)}
+        for ichip in range(8):
+            VDDA_V = FE_PWRON_data['FE{}_VDDA'.format(ichip)][0]
+            VDDA_I = FE_PWRON_data['FE{}_VDDA'.format(ichip)][1]
+            VDDA_P = FE_PWRON_data['FE{}_VDDA'.format(ichip)] [2]
+            VDDO_V = FE_PWRON_data['FE{}_VDDO'.format(ichip)][0]
+            VDDO_I = FE_PWRON_data['FE{}_VDDO'.format(ichip)][1]
+            VDDO_P = FE_PWRON_data['FE{}_VDDO'.format(ichip)] [2]
+            VDDP_V = FE_PWRON_data['FE{}_VPPP'.format(ichip)][0]
+            VDDP_I = FE_PWRON_data['FE{}_VPPP'.format(ichip)][1]
+            VDDP_P = FE_PWRON_data['FE{}_VPPP'.format(ichip)] [2]
+            oneChip_data =  {
+                                'V' : [VDDA_V, VDDO_V, VDDP_V],
+                                'I': [VDDA_I, VDDO_I, VDDP_I],
+                                'P': [VDDA_P, VDDO_P, VDDP_P],
+                                'units': ['V', 'mA', 'mW']
+                            }
+            out_dict[self.logs_dict['FE{}'.format(ichip)]] = oneChip_data
+        return {'FE_PWRON': out_dict}
 
     def ADC_PWRON(self):
         pass
 
     def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK'):
-        # param = 'ASICDAC_CALI_CHK'
+        printItem(item=param)
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
         wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
         # out_list = []
         out_dict = dict()
         for ichip in range(8):
-            chipID = self.FE_IDs[ichip]
+            chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.FE_output_DIRs[ichip]
             asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
-            # out_list.append(data_asic)
             out_dict[chipID] = data_asic
-        # return {param: out_list}
         return {param: out_dict}
-
-    def DIRECT_PLS_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True):
-        param = 'DIRECT_PLS_CHK'
-        fembs = self.raw_data[param][0]
-        rawdata = self.raw_data[param][1]
-        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
-        self.direct_pls_chk_list = []
-        for ichip in range(8):
-            # ichip = 0 # will be used in a loop
-            # output_dir = '/'.join([self.output_dir, self.logs_dict['FE{}'.format(ichip)]])
-            chipID = self.FE_IDs[ichip]
-            output_dir = self.FE_output_DIRs[ichip]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_dir, chipID=chipID, param=param)
-            data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
-            self.direct_pls_chk_list.append(data_asic)
     
     def runAnalysis(self, in_params={}):
         '''
@@ -205,6 +225,8 @@ class INIT_CHECK:
                             'isPosPeak': True/False
                             }
         '''
+        self.FE_PWRON()
+
         params = ['ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK']
         
         for param in params:
@@ -212,7 +234,8 @@ class INIT_CHECK:
             range_rms = in_params[param]['rms']
             range_pulseAmp = in_params[param]['pulseAmp']
             data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param)
-            for FE_ID in self.FE_IDs:
+            for ichip in range(8):
+                FE_ID = self.logs_dict['FE{}'.format(ichip)]
                 self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
                 self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']
                 self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
@@ -220,8 +243,9 @@ class INIT_CHECK:
         ## ----- INCLUDE THE ANALYSIS OF OTHER PARAMETERS HERE -----------
 
         ## --- THIS BLOCK SHOULD BE THE LAST PART OF THE METHOD runAnalysis
-        for i in range(8):
-            dumpJson(output_path=self.FE_output_DIRs[i], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[self.FE_IDs[i]])
+        for ichip in range(8):
+            FE_ID = self.logs_dict['FE{}'.format(ichip)]
+            dumpJson(output_path=self.FE_output_DIRs[ichip], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
