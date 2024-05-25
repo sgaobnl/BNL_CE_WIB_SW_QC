@@ -24,7 +24,7 @@ def printItem(item: str):
         Print one item.
     '''
     print('--'*20)
-    print('*\t{}\t\t*'.format(item))
+    print('\t*',' '*2,'{}'.format(item),' '*2,'*')
     print('--'*20)
 
 def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
@@ -37,6 +37,8 @@ def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
     '''
     with open('/'.join([output_path, output_name + '.json']), 'w+') as fn:
         json.dump(data_to_dump, fn)
+        ## ------- MODIFIY THE WAY TO WRITE THE DATA ON THE FILE
+        ## ==> ORGANIZE THE DATA BY WRITING EACH key: value ON A NEW LINE
 
 def linear_fit(x: list, y: list):
     '''
@@ -52,9 +54,9 @@ def linear_fit(x: list, y: list):
     peakinl = np.max(inl)
     return slope, yintercept, peakinl
 
-def createDirs(FE_IDs: list, output_dir: str):
-    # FE_IDs: list of the IDs of the 8 LArASIC
-    for FE in FE_IDs:
+def createDirs(logs_dict: dict, output_dir: str):
+    for ife in range(8):
+        FE = logs_dict['FE{}'.format(ife)]
         try:
             os.makedirs('/'.join([output_dir, FE]))
         except OSError:
