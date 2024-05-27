@@ -149,7 +149,7 @@ class INIT_CHECK:
     def WIB_LINK(self):
         pass
 
-    def FE_PWRON(self):
+    def FE_PWRON(self, range_V=[1.8, 1.82]):
         '''
             Voltages: VDDA, VDDO, and VDDP
             raw data format:
@@ -177,6 +177,7 @@ class INIT_CHECK:
             }
             Note: FE{}_VPPP in the code refers to VDDP
         '''
+        printItem(item="FE_PWRON")
         FE_PWRON_data = self.raw_data['FE_PWRON']
         voltage_params = ['VDDA', 'VDDO', 'VDDP']
         # organize the data
@@ -191,8 +192,21 @@ class INIT_CHECK:
             VDDP_V = FE_PWRON_data['FE{}_VPPP'.format(ichip)][0]
             VDDP_I = FE_PWRON_data['FE{}_VPPP'.format(ichip)][1]
             VDDP_P = FE_PWRON_data['FE{}_VPPP'.format(ichip)] [2]
+            qc_Voltage = [True, True, True]
+            if (VDDA_V>=range_V[0]) & (VDDA_V<range_V[1]):
+                qc_Voltage[0] = True
+            else:
+                qc_Voltage[0] = False
+            if (VDDO_V>=range_V[0]) & (VDDO_V<range_V[1]):
+                qc_Voltage[1] = True
+            else:
+                qc_Voltage[1] = False
+            if (VDDP_V>=range_V[0]) & (VDDP_V<range_V[1]):
+                qc_Voltage[2] = True
+            else:
+                qc_Voltage[2] = False
             oneChip_data =  {
-                                'V' : [VDDA_V, VDDO_V, VDDP_V],
+                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": qc_Voltage},
                                 'I': [VDDA_I, VDDO_I, VDDP_I],
                                 'P': [VDDA_P, VDDO_P, VDDP_P],
                                 'units': ['V', 'mA', 'mW']
@@ -225,20 +239,25 @@ class INIT_CHECK:
                             'isPosPeak': True/False
                             }
         '''
-        self.FE_PWRON()
-
-        params = ['ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK']
+        params = ['ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK', 'FE_PWRON']
         
         for param in params:
-            range_peds = in_params[param]['pedestal']
-            range_rms = in_params[param]['rms']
-            range_pulseAmp = in_params[param]['pulseAmp']
-            data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param)
-            for ichip in range(8):
-                FE_ID = self.logs_dict['FE{}'.format(ichip)]
-                self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
-                self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']
-                self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
+            if param=="FE_PWRON":
+                range_V = in_params[param]['V']
+                FE_pwr_dict = self.FE_PWRON(range_V=range_V)
+                for ichip in range(8):
+                    FE_ID = self.logs_dict['FE{}'.format(ichip)]
+                    self.out_dict[FE_ID][param] = FE_pwr_dict[param][FE_ID]
+            elif (param=='ASICDAC_CALI_CHK') or (param=='DIRECT_PLS_CHK'):
+                range_peds = in_params[param]['pedestal']
+                range_rms = in_params[param]['rms']
+                range_pulseAmp = in_params[param]['pulseAmp']
+                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param)
+                for ichip in range(8):
+                    FE_ID = self.logs_dict['FE{}'.format(ichip)]
+                    self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
+                    self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']
+                    self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
         
         ## ----- INCLUDE THE ANALYSIS OF OTHER PARAMETERS HERE -----------
 
