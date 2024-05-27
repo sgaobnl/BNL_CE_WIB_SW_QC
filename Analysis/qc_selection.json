@@ -1,5 +1,8 @@
 {
     "QC_INIT_CHK": {
+        "FE_PWRON": {
+            "V" : [1.8, 1.82]
+        },
         "ASICDAC_CALI_CHK": {
             "pedestal": [300,3000],
             "rms": [5,25],
