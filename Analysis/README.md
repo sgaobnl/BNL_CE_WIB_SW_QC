@@ -45,7 +45,12 @@ This README file will include all informations about the scripts like: <br/>
 {
     "WIB_PWR" : {},
     "WIB_LINK" : {},
-    "FE_PWRON" : {},
+    "FE_PWRON" : {
+        "V": {"data": [], "qc_result": []},
+        "I": [],
+        "P": [],
+        "units": ["V", "mA", "mW"]
+    },
     "ADC_PWRON" : {},
     "ASICDAC_CALI_CHK" : {
                             "pedestal": {"data": [], "result_qc": [], "link_to_img":""},
