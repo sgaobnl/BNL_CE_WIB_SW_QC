@@ -75,10 +75,6 @@ else:
 
 logs = {}
 logsd, fdir =  dat_user_input(infile_mode=True,  froot = "./tmp_data/",  itemized_flg=itemized_flg)
-#if itemized_flg:
-#    if not os.path.exists(fdir):
-#        print ("\033[91m Please perform a full test instead of the itemized tests, exit anyway\033[0m")
-#        exit()
 
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
@@ -133,9 +129,6 @@ if 0 in tms:
     dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
     chkdata = dat.dat_asic_chk()
     datad.update(chkdata)
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
-    print ("FE mapping to be done")
     print ("FE mapping to be done")
     print ("FE mapping to be done")
 
