@@ -707,6 +707,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             vcmo    = self.adcs_paras[adc_no][6] 
             vcmi    = self.adcs_paras[adc_no][7] 
             autocali= self.adcs_paras[adc_no][8] 
+            #autocali= 2
             #start_data
             self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=2, reg_addr=0x01, wrdata=0x0c)
             #offset_binary_output_data_format
@@ -815,7 +816,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                         #self.femb_powering(fembs =[])
                         #print ("Turn all FEMBs off, exit anyway")
                         print ("exit anyway")
-                        exit()
+                        #exit()
                     else:
                         time.sleep(0.01)
             i = i + 1
@@ -871,7 +872,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     #self.femb_powering(fembs =[])
                     #print ("Turn all FEMBs off, exit anyway")
                     print ("exit anyway")
-                    exit()
+                    #exit()
                 else:
                     time.sleep(0.01)
             i = i + 1
@@ -932,7 +933,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if refi > 25:
                     #self.femb_powering(fembs =[])
                     print ( "\033[91m" + "I2C failed! exit anyway, please check connection!" + "\033[0m")
-                    exit()
+                    #exit()
             else:
                 print (f"FEMB{femb_id} is configurated")
                 break

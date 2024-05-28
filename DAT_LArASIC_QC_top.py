@@ -39,7 +39,7 @@ print ("\033[96m 9: Turn DAT on \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63,7,8,9,10, 22],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
 args = ag.parse_args()   
 tms = args.task
 
@@ -75,10 +75,10 @@ else:
 
 logs = {}
 logsd, fdir =  dat_user_input(infile_mode=True,  froot = "./tmp_data/",  itemized_flg=itemized_flg)
-if itemized_flg:
-    if not os.path.exists(fdir):
-        print ("\033[91m Please perform a full test instead of the itemized tests, exit anyway\033[0m")
-        exit()
+#if itemized_flg:
+#    if not os.path.exists(fdir):
+#        print ("\033[91m Please perform a full test instead of the itemized tests, exit anyway\033[0m")
+#        exit()
 
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
@@ -90,7 +90,6 @@ if dat_sn  == 2:
     Vref = 1.5738
 logs.update(logsd)
 
-#tms=[0]
 if 0 not in tms :
     pwr_meas = dat.get_sensors()
     for key in pwr_meas:
@@ -113,7 +112,10 @@ if 10 in tms:
     dat.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
     dat.femb_powering([dat.dat_on_wibslot])
     dat.data_align_pwron_flg = True
-    time.sleep(10)
+    time.sleep(5)
+
+if 22 in tms: #debugging
+    chkdata = dat.dat_asic_chk()
 
 if 0 in tms:
     print ("Init check after chips are installed")

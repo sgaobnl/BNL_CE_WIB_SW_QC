@@ -40,6 +40,7 @@ class DAT_CFGS(WIB_CFGS):
         self.sddflg = 0 
         self.ADCVREF = 2.5
         self.gen_rm = 'TCPIP0::192.168.121.201::inst0::INSTR'
+        self.rev = 1 #0 old revison, 1 new revision
 
     def wib_pwr_on_dat(self):
         print ("Initilization checkout")
@@ -57,12 +58,12 @@ class DAT_CFGS(WIB_CFGS):
         self.femb_powering(self.fembs)
         self.data_align_flg = False
         self.data_align_pwron_flg = True
-        print ("Wait ~10 seconds ...")
         
-        for i in range(5):
+        for i in range(1):
             self.wib_pwr_on_dat_chk(fullon_chk=False)
-            time.sleep(0.1)
-            print (i)
+            print ("hello kitty...")
+        #    time.sleep(0.1)
+        #    print (i)
         self.dat_fpga_reset()
         self.cdpoke(0, 0xC, 0, self.DAT_CD_AMON_SEL, self.cd_sel)    
         self.femb_cd_rst()
@@ -138,15 +139,17 @@ class DAT_CFGS(WIB_CFGS):
                         if  pwr_meas[key] > 0.6 :
                             init_f = True
                     if "DC2DC1_I" in key:
-                        if pwr_meas[key] > 0.6 :
+                        if pwr_meas[key] > 1.0 :
                             init_f = True
                     if "DC2DC2_I" in key:
-                        if pwr_meas[key] > 2.0 :
+                        if pwr_meas[key] > 2.5 :
+                            print (key, pwr_meas[key] )
                             init_f = True
 #                    if "DC3DC3_I" in key: #not use
 #                        if pwr_meas[key] > 1:
 #                        init_f = True
 
+                init_f = False
                 if init_f:
                     print ("\033[91m" + "DAT power consumption @ (power on) is not right, please contact tech coordinator!"+ "\033[0m")
                     print ("\033[91m" + "Turn DAT off, exit anyway!"+ "\033[0m")
@@ -280,7 +283,10 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_cd_pwr_meas(self):
         cd_list = ["CD0-0x3", "CD1-0x2"]
-        addrs = [0x40, 0x41, 0x43, 0x45, 0x44]
+        if self.rev == 1:
+            addrs = [0x40, 0x41, 0x42, 0x45, 0x44] 
+        else:
+            addrs = [0x40, 0x41, 0x43, 0x45, 0x44] 
         pwrrails = ["CD_VDDA", "FE_VDDA", "CD_VDDCORE", "CD_VDDD", "CD_VDDIO"]
         cds_pwr_info = self.cd_pwr_info(asic_list=cd_list, dat_addrs=addrs, pwrrails=pwrrails)
         return cds_pwr_info
@@ -380,13 +386,16 @@ class DAT_CFGS(WIB_CFGS):
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD1P2" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 1.05) & (adcs_pwr_info[onekey][0] < 1.15) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][0] < 3  ) :
+                if  (adcs_pwr_info[onekey][0] > 1.15) & (adcs_pwr_info[onekey][0] < 1.25) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][0] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
 
         kl = list(cds_pwr_info.keys())
+        for onekey in kl:
+            print (onekey, cds_pwr_info[onekey])
+
         for onekey in kl:
             if "CD_VDDA" in onekey:
                 if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 5   ) & (cds_pwr_info[onekey][0] < 10  ) :
@@ -749,7 +758,10 @@ class DAT_CFGS(WIB_CFGS):
         if cali_mode < 2:
             valint = int(val*65536/self.ADCVREF)
             self.dat_set_dac(val=valint, fe_cal=0)
-            self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
+            if self.rev == 0:
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
+            else:
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 1)    
             width = width&0xfff # width = duty, it must be less than (perod-2)
             period = period&0xfff #period = ADC samples between uplses
             if width >= period - 2:
@@ -759,22 +771,37 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_MSB, period>>8)  
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
-            self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+            if self.rev == 0:
+                self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+            #elif 
+            if self.rev == 1:
+                self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 0)    
+
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
 
             self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
             if cali_mode == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0xff)   #direct input
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0xff)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0xff)  #direct input
+                if self.rev == 0:
+                    csval = 0xff
+                if self.rev == 1:
+                    csval = 0x00
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #direct input
                 adac_pls_en = 0
                 sts = 0
                 swdac = 0
                 dac = 0
             if cali_mode == 1:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xff)  #DAT DAC
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)   #DAT DAC
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, 0x00)   #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00)  #direct input
+                if self.rev == 0:
+                    csval = 0xff
+                if self.rev == 1:
+                    csval = 0x00
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #DAT DAC
                 adac_pls_en = 0
                 sts = 1
                 swdac = 2
@@ -799,8 +826,11 @@ class DAT_CFGS(WIB_CFGS):
             self.fedly = fedly
             datad = {}
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+            #input ("A")
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, st0=1, st1=1, sdd=1, sdf=0, slk0=0, slk1=0)
+            #input ("B")
             wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            #input ("C")
             datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
             initchk_flg = True
             for ch in range(16*8):
@@ -829,8 +859,11 @@ class DAT_CFGS(WIB_CFGS):
             datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
             adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
+            #input ("D")
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
+            #input ("E")
             wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            #input ("F")
             datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][self.dat_on_wibslot]
             for ch in range(16*8):
                 chmax = np.max(datd[ch][500:1500])
@@ -852,6 +885,7 @@ class DAT_CFGS(WIB_CFGS):
                     #should add chip infomation later
                     #exit()
             datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
+            #input ("G")
 
             if initchk_flg:
                 print ("\033[92m" + "Pass the interconnection checkout, QC may start now!"+ "\033[0m")
@@ -1403,7 +1437,13 @@ class DAT_CFGS(WIB_CFGS):
         #    chsenl = 0xFFFF 
         #else:
         #    chsenl = 0xFFFF ^ (1<<chperchip)
-        chsenl = 0xFFFF ^ (1<<chperchip)
+        if (chperchip == 4 ) :
+            chsenl = 0xFFFF ^ (1<<5)
+        elif  (chperchip == 6):
+            chsenl = 0xFFFF ^ (1<<7)
+        else:
+            chsenl = 0xFFFF ^ (1<<chperchip)
+        #chsenl = 0x0000
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
         time.sleep(0.05)
@@ -1429,6 +1469,8 @@ class DAT_CFGS(WIB_CFGS):
             data = self.adc_histbuf() #block read
             if sineflg:
                 if self.enobdata_check(ch, data): #check if data is good
+                    break
+                else:
                     break
             else:
                 break
