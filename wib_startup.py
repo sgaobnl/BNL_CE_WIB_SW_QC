@@ -3,7 +3,8 @@ import time
 import sys
 
 print ("this script ONLY runs once after power cycle or reboot!")
-ynstr = input ("Do you want to run this scrit (y/n)?: ")
+#ynstr = input ("Do you want to run this scrit (y/n)?: ")
+ynstr = "y"
 
 if ("Y" in ynstr) or ("y" in ynstr):
     chk = WIB_CFGS()

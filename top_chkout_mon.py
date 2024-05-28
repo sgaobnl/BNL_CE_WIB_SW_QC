@@ -57,13 +57,32 @@ for femb_id in fembs:
                       ]
 
 #LArASIC register configuration
-    chk.set_fe_board(sts=0, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
-    adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
-    cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
-#step 3
-    chk.femb_cfg(femb_id, adac_pls_en )
+    chk.set_fe_board(sts=0, snc=0,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=0,dac=0x20 )
 
-if True: # FE monitoring 
+    mon_chip = 1
+    mon_chn = 0
+    while True:
+
+        slk = int(input ("slk = ") )
+        dac = 0x20
+        chk.set_fechip_global(chip=mon_chip&0x07, sgp=1, swdac=1, sdd=0,dac=dac, slk0=slk%2, slk1=slk//2)
+        chk.set_fechn_reg(chip=mon_chip&0x07, chn=mon_chn, sts=0, snc=0, sg0=0, sg1=0, smn=0, sdf=0) 
+        mon_chn = int(input ("chn = ") )
+        #mon_chn = 4
+        chk.set_fechn_reg(chip=mon_chip&0x07, chn=mon_chn, sts=1, snc=1, sg0=1, sg1=1, smn=1, sdf=1) 
+        chk.set_fe_sync()    
+        print (chk.regs_int8)
+    
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
+    #step 3
+        chk.fe_flg[femb_id] = True
+        chk.femb_cfg(femb_id, adac_pls_en )
+    
+        chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+
+
+if False: # FE monitoring 
     if True: # FE monitoring 
         chips = 8
         sps=10

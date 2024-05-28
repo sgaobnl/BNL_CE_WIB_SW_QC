@@ -813,10 +813,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     prg_flg = True
                     print ("\033[91m" + "FEMB{}, LArASIC readback status is {}, {} diffrent from 0xFF".format(femb_id, sts_cd1, sts_cd2) + "\033[0m")
                     if i > 10:
-                        #self.femb_powering(fembs =[])
-                        #print ("Turn all FEMBs off, exit anyway")
+                        self.femb_powering(fembs =[])
+                        print ("Turn all FEMBs off, exit anyway")
                         print ("exit anyway")
-                        #exit()
+                        exit()
                     else:
                         time.sleep(0.01)
             i = i + 1
@@ -861,7 +861,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
             sts_cd1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
             sts_cd2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
-            print (hex(sts_cd1 ), hex(sts_cd2))
 
             if (sts_cd1&0xff == 0xff) and (sts_cd2&0xff == 0xff):
                 print ("FEs are configurated")
@@ -869,10 +868,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 print ("\033[91m" + "LArASIC readback status are {} {}, diffrent from 0xFF".format(sts_cd1, sts_cd2) + "\033[0m")
                 if i > 10:
-                    #self.femb_powering(fembs =[])
-                    #print ("Turn all FEMBs off, exit anyway")
+                    self.femb_powering(fembs =[])
+                    print ("Turn all FEMBs off, exit anyway")
                     print ("exit anyway")
-                    #exit()
+                    exit()
                 else:
                     time.sleep(0.01)
             i = i + 1
@@ -931,9 +930,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.wib_i2c_adj(n=50)
                     print ("Reconfigure FEMB due to i2c error!")
                 if refi > 25:
-                    #self.femb_powering(fembs =[])
+                    self.femb_powering(fembs =[])
                     print ( "\033[91m" + "I2C failed! exit anyway, please check connection!" + "\033[0m")
-                    #exit()
+                    print ("exit anyway")
+                    exit()
             else:
                 print (f"FEMB{femb_id} is configurated")
                 break
@@ -1274,6 +1274,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     synctry = synctry+1
                     if synctry > 100:
                         print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                        self.femb_powering(fembs =[])
+                        print ("exit anyway")
                         exit()
                     if synctry%10 == 0:
                         print ("perform data synchronzation again...")

@@ -19,10 +19,6 @@ class DAT_CFGS(WIB_CFGS):
         super().__init__()
         self.cd_sel = 0
         self.dat_on_wibslot = 0
-#        if self.dat_on_wibslot  == 0:
-#            self.Vref = 1.583
-#        else:
-#            self.Vref = 1.589
         self.fembs = [self.dat_on_wibslot]
         self.data_align_flg = False
         self.data_align_pwron_flg = True
@@ -36,11 +32,12 @@ class DAT_CFGS(WIB_CFGS):
         self.AD_LSB = 2564/4096 #mV/bit #need to update accoring to board
         self.imon_R = 5#5kOhm resistor for DAT current monitor
         self.monadc_avg = 1
-        self.fedly= 3
+        self.fedly= 1
         self.sddflg = 0 
         self.ADCVREF = 2.5
         self.gen_rm = 'TCPIP0::192.168.121.201::inst0::INSTR'
         self.rev = 1 #0 old revison, 1 new revision
+        self.fe_cali_vref = 1.090 
 
     def wib_pwr_on_dat(self):
         print ("Initilization checkout")
@@ -61,9 +58,6 @@ class DAT_CFGS(WIB_CFGS):
         
         for i in range(1):
             self.wib_pwr_on_dat_chk(fullon_chk=False)
-            print ("hello kitty...")
-        #    time.sleep(0.1)
-        #    print (i)
         self.dat_fpga_reset()
         self.cdpoke(0, 0xC, 0, self.DAT_CD_AMON_SEL, self.cd_sel)    
         self.femb_cd_rst()
@@ -744,7 +738,7 @@ class DAT_CFGS(WIB_CFGS):
         #self.dat_fe_qc_rst()
         return data, cfg_info
 
-    def dat_cali_source(self, cali_mode, val=1.0, period=0x200, width=0x180, asicdac=0x10):
+    def dat_cali_source(self, cali_mode, val=1.090, period=0x200, width=0x180, asicdac=0x10, chips=0xff):
         #cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 or larger: disable cali
         if cali_mode <0 or cali_mode >3:
             print ("\033[91m" + "Wrong value for cali_mode"+ "\033[0m")
@@ -786,7 +780,7 @@ class DAT_CFGS(WIB_CFGS):
                 if self.rev == 0:
                     csval = 0xff
                 if self.rev == 1:
-                    csval = 0x00
+                    csval = (~chips)&0xff #select chips for cali
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #direct input
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #direct input
                 adac_pls_en = 0
@@ -799,7 +793,7 @@ class DAT_CFGS(WIB_CFGS):
                 if self.rev == 0:
                     csval = 0xff
                 if self.rev == 1:
-                    csval = 0x00
+                    csval =  (~chips)&0xff#select chips for cali
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #DAT DAC
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #DAT DAC
                 adac_pls_en = 0
@@ -858,7 +852,7 @@ class DAT_CFGS(WIB_CFGS):
                     #exit()
             datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
-            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.53, period=0x200, width=0x180, asicdac=0x10)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.040, period=0x200, width=0x180, asicdac=0x10)
             #input ("D")
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
             #input ("E")
