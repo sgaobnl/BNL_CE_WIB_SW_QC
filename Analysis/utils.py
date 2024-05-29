@@ -9,8 +9,12 @@ import numpy as np
 # import csv
 import json
 import matplotlib.pyplot as plt
-from spymemory_decode_copy import wib_dec
+# from spymemory_decode_copy import wib_dec
+import math
 
+from dunedaq_decode import wib_dec
+
+sys.path.append('Analysis/')
 def printTestItems(testItems: dict):
     '''
         Print the list of items to analyze.
@@ -115,12 +119,14 @@ def getpedestal_rms(oneCHdata: list):
     data = np.array(oneCHdata)
     imax = getMaxAmpIndices(data)
     # find peak
-    # imax = np.where(data==np.max(data))[0][0]
     ilastped = imax[0] - 20
-    # inextped = imax + 150
-    # baseline = np.concatenate([data[ilastped-100:ilastped], data[inextped : inextped + 100]])
-    baseline = data[ilastped-100:ilastped]
+    istart = ilastped-100
+    if istart<0:
+        istart=0
+    baseline = data[istart:ilastped]
     ped = np.round(np.mean(baseline), 4)
+    # if math.isnan(ped):
+    #     print(baseline, ilastped)
     rms = np.round(np.std(baseline), 4)
     return [ped, rms]
 
