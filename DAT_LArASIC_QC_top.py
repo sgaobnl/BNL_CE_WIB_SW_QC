@@ -34,13 +34,14 @@ print ("\033[96m 5: FE noise measurement  \033[0m")
 print ("\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m")
 print ("\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m")
 print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
+print ("\033[96m 64: FE calibration measurement ((ASIC-DAC, 4.7mV/fC) \033[0m")
 print ("\033[96m 7: FE delay run  \033[0m")
 print ("\033[96m 8: FE cali-cap measurement \033[0m")
-print ("\033[96m 9: Turn DAT on \033[0m")
+print ("\033[96m 9: Turn DAT off \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63,7,8,9,10, 22, 100],  nargs='+', default=[1,2,3,4,5,61, 62, 63,7,8])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63, 64, 7,8,9,10, 22, 100],  nargs='+', default=[1,2,3,4,5,61, 62, 63, 64, 7,8])
 args = ag.parse_args()   
 tms = args.task
 
@@ -63,9 +64,7 @@ dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
 dat.fembs = fembs
 dat.rev = int(logsd["DAT_Revision"])
-
 dat_sn = int(logsd["DAT_SN"])
-if dat.rev 
 
 if dat.rev == 0:
     if dat_sn  == 1:
@@ -78,21 +77,22 @@ if dat.rev == 1:
         
 logs.update(logsd)
 
-if 100 in tms : #100 is only for itemed testing with power operation 
+#if 100 in tms : #100 is only for itemed testing with power operation 
+if True:
     pwr_meas = dat.get_sensors()
+    on_f = False
     for key in pwr_meas:
         if "FEMB%d"%dat.dat_on_wibslot in key:
-            on_f = False
             if ("BIAS_V" in key) and (pwr_meas[key] > 4.5):
                     if ("DC2DC0_V" in key) and (pwr_meas[key] > 3.5):
                             if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
                                     if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
                                             on_f = True
-            if (not on_f) and (tms[0] != 9):
-                tms = [10] + tms #turn DAT on
-                if 9 not in tms:
-                    tms = tms + [9] #turn DAT off after testing
-                break
+                                            break
+    if (not on_f): #turn DAT on
+        tms = [10] + tms #turn DAT on
+
+
 ####### Init check information #######
 if 10 in tms:
     print ("Turn DAT on and wait 5 seconds")
@@ -127,7 +127,7 @@ if 0 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Pass init check, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 1 in tms:
     print ("FE power consumption measurement starts...")
@@ -153,7 +153,9 @@ if 1 in tms:
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 2 in tms:
     print ("FE check response measurement starts...")
@@ -230,7 +232,9 @@ if 2 in tms:
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE CHECK RESPONSE is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 3 in tms:
@@ -254,7 +258,11 @@ if 3 in tms:
         pickle.dump(data, fn)
     
     tt.append(time.time())
-    print ("FE monitoring measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+
+
 
 if 4 in tms:
     print ("FE power cycling measurement starts...")
@@ -302,7 +310,10 @@ if 4 in tms:
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE power cycling measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+
     
 if 5 in tms:
     print ("FE noise measurement starts...")
@@ -379,7 +390,10 @@ if 5 in tms:
         pickle.dump(datad, fn)
 
     tt.append(time.time())
-    print ("FE noise measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+
 
 if 61 in tms:
     if True:
@@ -456,7 +470,10 @@ if 62 in tms:
                 with open(fp, 'wb') as fn:
                     pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement (DAT-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+
       
 if 63 in tms:
     if True:
@@ -496,7 +513,9 @@ if 63 in tms:
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement (Direct-Input) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 64 in tms:
     if True:
@@ -530,7 +549,9 @@ if 64 in tms:
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement (ASIC-DAC-4.7mV/fC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 7 in tms:
@@ -553,7 +574,10 @@ if 7 in tms:
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE delay run is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+
 
 if 8 in tms:
     print ("FE cali-cap measurement starts...")
@@ -642,15 +666,18 @@ if 8 in tms:
         pickle.dump(datad, fn)
 
     tt.append(time.time())
-    print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 9 in tms:
     print ("Turn DAT off")
     dat.femb_powering([])
     tt.append(time.time())
     print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
-    print ("\033[92m  please move data in folder ({}) to the PC and perform the analysis script \033[0m".format(fdir))
-    print ("\033[92m  Well done \033[0m")
+    #print ("\033[92m  please move data in folder ({}) to the PC and perform the analysis script \033[0m".format(fdir))
+    #print ("\033[92m  Well done \033[0m")
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 22 in tms: #debugging
