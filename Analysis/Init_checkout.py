@@ -4,100 +4,13 @@
 #   Analyze the data in QC_INIT_CHK.bin
 ############################################################################################
 import os, sys
+import numpy as np
 import pickle, json
 from utils import printItem
 from utils import decodeRawData, LArASIC_ana, createDirs, dumpJson
+import matplotlib.pyplot as plt
 
-class ANALYSIS:
-    '''
-    One run on the DUNE ASIC Test board ---> 8 LArASICs
-    '''
-    def __init__(self, root_path: str, data_dir: str, main_output_dir: str):
-        self.main_output_dir = main_output_dir
-        self.input_dir = '/'.join([root_path, data_dir])
-        self.logs = self.get_logs()
-        self.FE_IDs = [self.logs['FE{}'.format(i)] for i in range(8)]
-        ##----- Create Folders for the outputs -----
-        createDirs(FE_IDs=self.FE_IDs, output_dir=main_output_dir)
-        self.FE_output_DIRs = ['/'.join([self.main_output_dir, FE_ID]) for FE_ID in self.FE_IDs]
-        ##------
-        self.ItemsFilename_dict = {
-                                        0: 'QC_INIT_CHK.bin',
-                                        1: 'QC_PWR.bin',
-                                        2: 'QC_CHKRES.bin',
-                                        3: 'QC_MON.bin',
-                                        4: 'QC_PWR_CYCLE.bin',
-                                        5: 'QC_RMS.bin',
-                                        61: 'QC_CALI_ASICDAC.bin',
-                                        62: 'QC_CALI_DATDAC.bin',
-                                        63: 'QC_CALI_DIRECT.bin',
-                                        7: 'QC_DLY_RUN.bin',
-                                        8: 'QC_Cap_Meas.bin'
-                                }
-        self.testItems_dict = {
-                                0: "Initialization checkout",
-                                 1: "FE power consumption measurement",
-                                 2: "FE response measurement checkout",
-                                 3: "FE monitoring measurement",
-                                 4: "FE power cycling measurement",
-                                 5: "FE noise measurement",
-                                 61: "FE calibration measurement (ASIC-DAC)",
-                                 62: "FE calibration measurement (DAT-DAC)",
-                                 63: "FE calibration measurement (Direct-Input)",
-                                 7: "FE delay run",
-                                 8: "FE cali-cap measurement"
-                                }
-    
-    def get_logs(self):
-        with open('/'.join([self.input_dir, 'QC_INIT_CHK.bin']), 'rb') as fn:
-            logs = pickle.load(fn)['logs']
-        return logs
-    
-    def INIT_CHK(self):
-        tms = 0
-        pass
-
-    def PWR(self):
-        tms = 1
-        pass
-
-    def CHKRES(self):
-        tms = 2
-        pass
-
-    def MON(self):
-        tms = 3
-        pass
-
-    def PWR_CYCLE(self):
-        tms = 4
-        pass
-
-    def RMS(self):
-        tms = 5
-        pass
-
-    def CALI_ASICDAC(self):
-        tms = 61
-        pass
-
-    def CALI_DATDAC(self):
-        tms = 62
-        pass
-
-    def CALI_DIRECT(self):
-        tms = 63
-        pass
-
-    def DELAY_RUN(self):
-        tms = 7
-        pass
-
-    def CALI_CAP(self):
-        tms = 8
-        pass
-
-class INIT_CHECK:
+class QC_INIT_CHECK:
     '''
         Data file: 
             QC_INIT_CHK.bin
@@ -123,11 +36,11 @@ class INIT_CHECK:
         self.item_to_analyze = "Initialization checkout"
         printItem(self.item_to_analyze)
         self.init_chk_filename = 'QC_INIT_CHK.bin'
-        self.root_path = root_path
-        self.data_dir = data_dir
+        # self.root_path = root_path
+        # self.data_dir = data_dir
         self.items_to_check = ['WIB_PWR', 'WIB_LINK', 'FE_PWRON', 'ADC_PWRON', 'ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK', 'logs']
         # load data to a dictionary
-        with open('/'.join([self.root_path, self.data_dir, self.init_chk_filename]), 'rb') as fn:
+        with open('/'.join([root_path, data_dir, self.init_chk_filename]), 'rb') as fn:
             self.raw_data = pickle.load(fn)
         ## get the logs
         self.logs_dict = self.raw_data['logs']
@@ -147,7 +60,8 @@ class INIT_CHECK:
         pass
 
     def WIB_LINK(self):
-        pass
+        link_mask = self.raw_data['WIB_LINK']
+        return link_mask
 
     def FE_PWRON(self, range_V=[1.8, 1.82]):
         '''
@@ -166,9 +80,9 @@ class INIT_CHECK:
             {
                 'FE_PWRON': {
                     'chipID_0': {
-                        'V': [VDDA_V, VDDO_V, VDDP_V],
-                        'I': [VDDA_I, VDDO_I, VDDP_I],
-                        'P': [VDDA_P, VDDO_P, VDDP_P],
+                        'V': {'data': [VDDA_V, VDDO_V, VDDP_V], 'result_qc': []},
+                        'I': {'data': [VDDA_I, VDDO_I, VDDP_I], 'result_qc': []},
+                        'P': {'data': [VDDA_P, VDDO_P, VDDP_P], 'result_qc': []},
                         'units': ['V', 'mA', 'mW']
                     },
                     'chipID_1': {....},
@@ -183,15 +97,15 @@ class INIT_CHECK:
         # organize the data
         out_dict = {self.logs_dict['FE{}'.format(ichip)]:{} for ichip in range(8)}
         for ichip in range(8):
-            VDDA_V = FE_PWRON_data['FE{}_VDDA'.format(ichip)][0]
-            VDDA_I = FE_PWRON_data['FE{}_VDDA'.format(ichip)][1]
-            VDDA_P = FE_PWRON_data['FE{}_VDDA'.format(ichip)] [2]
-            VDDO_V = FE_PWRON_data['FE{}_VDDO'.format(ichip)][0]
-            VDDO_I = FE_PWRON_data['FE{}_VDDO'.format(ichip)][1]
-            VDDO_P = FE_PWRON_data['FE{}_VDDO'.format(ichip)] [2]
-            VDDP_V = FE_PWRON_data['FE{}_VPPP'.format(ichip)][0]
-            VDDP_I = FE_PWRON_data['FE{}_VPPP'.format(ichip)][1]
-            VDDP_P = FE_PWRON_data['FE{}_VPPP'.format(ichip)] [2]
+            VDDA_V = np.round(FE_PWRON_data['FE{}_VDDA'.format(ichip)][0], 4)
+            VDDA_I = np.round(FE_PWRON_data['FE{}_VDDA'.format(ichip)][1], 4)
+            VDDA_P = np.round(FE_PWRON_data['FE{}_VDDA'.format(ichip)] [2], 4)
+            VDDO_V = np.round(FE_PWRON_data['FE{}_VDDO'.format(ichip)][0], 4)
+            VDDO_I = np.round(FE_PWRON_data['FE{}_VDDO'.format(ichip)][1], 4)
+            VDDO_P = np.round(FE_PWRON_data['FE{}_VDDO'.format(ichip)] [2], 4)
+            VDDP_V = np.round(FE_PWRON_data['FE{}_VPPP'.format(ichip)][0], 4)
+            VDDP_I = np.round(FE_PWRON_data['FE{}_VPPP'.format(ichip)][1], 4)
+            VDDP_P = np.round(FE_PWRON_data['FE{}_VPPP'.format(ichip)] [2], 4)
             qc_Voltage = [True, True, True]
             if (VDDA_V>=range_V[0]) & (VDDA_V<range_V[1]):
                 qc_Voltage[0] = True
@@ -205,12 +119,27 @@ class INIT_CHECK:
                 qc_Voltage[2] = True
             else:
                 qc_Voltage[2] = False
+            Vpassed = True
+            if False in qc_Voltage:
+                Vpassed = False
             oneChip_data =  {
-                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": qc_Voltage},
-                                'I': [VDDA_I, VDDO_I, VDDP_I],
-                                'P': [VDDA_P, VDDO_P, VDDP_P],
+                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": [Vpassed]},
+                                'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "result_qc": []},
+                                'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "result_qc" : []},
                                 'units': ['V', 'mA', 'mW']
                             }
+            output_FE = self.FE_output_DIRs[ichip]
+            for key, val in enumerate(['V', 'I', 'P']):
+                tmp_data = oneChip_data[val]['data']
+                plt.figure()
+                plt.plot(tmp_data, label=val + '({})'.format(oneChip_data['units'][key]), marker='.', markersize=12)
+                plt.xticks([0,1,2], ['VDDA', 'VDDO', 'VDDP'])
+                plt.ylabel(val + '({})'.format(oneChip_data['units'][key]))
+                plt.grid()
+                plt.legend()
+                plt.savefig('/'.join([output_FE, 'INIT_CHK_{}_PWR.png'.format(val)]))
+                plt.close()
+                oneChip_data[val]['link_to_img'] = '/'.join([output_FE, 'INIT_CHK_{}_PWR.png'.format(val)])
             out_dict[self.logs_dict['FE{}'.format(ichip)]] = oneChip_data
         return {'FE_PWRON': out_dict}
 
@@ -227,7 +156,7 @@ class INIT_CHECK:
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.FE_output_DIRs[ichip]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param)
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
@@ -277,6 +206,5 @@ if __name__ == '__main__':
     for data_dir in list_data_dir:
         # data_dir = 'FE_004003138_004003139_004003140_004003145_004003157_004003146_004003147_004003148'
         # data_dir = 'FE_002006204_002006209_002006210_002006211_002006212_002006217_002006218_002006219'
-        init_chk = INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
+        init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
         init_chk.runAnalysis(in_params=qc_selection['QC_INIT_CHK'])
-        sys.exit()
