@@ -80,27 +80,30 @@ logs.update(logsd)
 #if 100 in tms : #100 is only for itemed testing with power operation 
 if True:
     pwr_meas = dat.get_sensors()
-    on_f = False
+    on_f = True
     for key in pwr_meas:
         if "FEMB%d"%dat.dat_on_wibslot in key:
-            if ("BIAS_V" in key) and (pwr_meas[key] > 4.5):
-                    if ("DC2DC0_V" in key) and (pwr_meas[key] > 3.5):
-                            if ("DC2DC1_V" in key) and (pwr_meas[key] > 3.5):
-                                    if ("DC2DC2_V" in key) and (pwr_meas[key] > 3.5):
-                                            on_f = True
-                                            break
+            if ("BIAS_V" in key) and (pwr_meas[key] < 4.5):
+                on_f = False
+            if ("DC2DC0_V" in key) and (pwr_meas[key] < 3.5):
+                on_f = False
+            if ("DC2DC1_V" in key) and (pwr_meas[key] < 3.5):
+                on_f = False
+            if ("DC2DC2_V" in key) and (pwr_meas[key] < 3.5):
+                on_f = False
     if (not on_f): #turn DAT on
         tms = [10] + tms #turn DAT on
-
 
 ####### Init check information #######
 if 10 in tms:
     print ("Turn DAT on and wait 5 seconds")
+    tt.append(time.time())
     #set FEMB voltages
     dat.fembs_vol_set(vfe=4.0, vcd=4.0, vadc=4.0)
     dat.femb_powering([dat.dat_on_wibslot])
     dat.data_align_pwron_flg = True
     time.sleep(5)
+    print ("DAT_Power_On, it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 0 in tms:
     print ("Init check after chips are installed")
@@ -430,8 +433,10 @@ if 61 in tms:
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement (ASIC-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
-      
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+     
 if 62 in tms:
     if True:
         print ("perform DAT-DAC calibration under 14mV/fC, 2us")
@@ -677,7 +682,7 @@ if 9 in tms:
     print ("It took %d seconds in total for the entire test"%(tt[-1]-tt[0]))
     #print ("\033[92m  please move data in folder ({}) to the PC and perform the analysis script \033[0m".format(fdir))
     #print ("\033[92m  Well done \033[0m")
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("DAT_Power_Off, it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 22 in tms: #debugging
