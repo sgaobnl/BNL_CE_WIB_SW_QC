@@ -301,8 +301,8 @@ if QC_ANA_EN:
     print (datetime.datetime.utcnow(), " : Perform quick analysis")
     if not QC_TST_EN:
         print ("Please specify the path of log file")
-        #fnlog = input("\033[93m >>  \033[0m")
-        fnlog = "./tmp_data/FE_503010001_503000002_503000003_503000004_503000005_503000006_503000007_503000008/QC_Retest_1_9_.log"
+        fnlog = input("\033[93m >>  \033[0m")
+        #fnlog = "./tmp_data/FE_503010001_503000002_503000003_503000004_503000005_503000006_503000007_503000008/QC_Retest_1_9_.log"
         try:
             with open(fnlog, 'rb') as fn:
                 logs =  pickle.load(fn)
