@@ -12,9 +12,10 @@ import matplotlib.pyplot as plt
 # from spymemory_decode_copy import wib_dec
 import math
 
+sys.path.append('./decode')
 from dunedaq_decode import wib_dec
 
-sys.path.append('Analysis/')
+sys.path.append('../')
 def printTestItems(testItems: dict):
     '''
         Print the list of items to analyze.
