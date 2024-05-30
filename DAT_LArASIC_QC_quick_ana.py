@@ -46,8 +46,7 @@ def linear_fit(x, y):
     return slope, constant, peakinl, error_gain
 
 
-def plt_log(plt,logsd, onekey, data):
-    fig = plt.figure(figsize=(12,8))
+def plt_log(plt,fig, logsd, onekey, data):
     fig.suptitle("Test Result of " + onekey, weight ="bold", fontsize = 12)
     lkeys = list(logsd)
     for i in range(len(lkeys)):
@@ -359,7 +358,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
                     import matplotlib.pyplot as plt
                     plt.rcParams.update({'font.size': 8})
-                    plt_log(plt,logsd, onekey, data)
+                    fig = plt.figure(figsize=(12,8))
+                    plt_log(plt,fig, logsd, onekey, data)
                     plt_subplot(plt, fembs, rawdata)
                     plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
                     plt.plot()
@@ -424,7 +424,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
                 import matplotlib.pyplot as plt
                 plt.rcParams.update({'font.size': 8})
-                plt_log(plt,logsd, onekey, data)
+                fig = plt.figure(figsize=(12,8))
+                plt_log(plt,fig, logsd, onekey, data)
                 plt_fepwr(plt, pwr_meas)
                 plt_subplot(plt, fembs, rawdata)
                 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
@@ -498,7 +499,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
                 import matplotlib.pyplot as plt
                 plt.rcParams.update({'font.size': 8})
-                plt_log(plt,logsd, onekey, data)
+                fig = plt.figure(figsize=(12,8))
+                plt_log(plt,fig, logsd, onekey, data)
                 plt_subplot(plt, fembs, rawdata)
                 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
                 plt.plot()
@@ -529,6 +531,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         vmbgrs  = np.array(data[vbts[1]][1])
         vmtemps = np.array(data[vbts[2]][1])
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.plot(vbgrs, label=vbts[0], marker='o')
         plt.plot(vmbgrs, label=vbts[1], marker='*')
         plt.plot(vmtemps, label=vbts[2], marker='s')
@@ -554,6 +557,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
                 fes_200.append(vbls200[chn][1][fe]*AD_LSB)
                 fes_900.append(vbls900[chn][1][fe]*AD_LSB)
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.plot(fes_200, label="BL 200mV", marker='o')
         plt.plot(fes_900, label="BL 900mV", marker='*')
         for i in range(0,128,16):
@@ -571,6 +575,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         #####################ASIC-DAC analysis#####################################
         dacdkeys = ["MON_DAC_SGP1", "MON_DAC_SG0_0_SG1_0", "MON_DAC_SG0_1_SG1_0", "MON_DAC_SG0_0_SG1_1", "MON_DAC_SG0_1_SG1_1" ]
     
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.rcParams.update({'font.size': 6})
         ax1 = plt.subplot2grid((4, 2), (0, 0), colspan=1, rowspan=1)
         ax2 = plt.subplot2grid((4, 2), (1, 0), colspan=1, rowspan=1)
@@ -666,7 +672,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
                 rawdata = cfgdata[1]
                 cfg_info = cfgdata[2]
                 pwr_meas = cfgdata[3]
-                plt_log(plt,logsd, onekey, data)
+                fig = plt.figure(figsize=(12,8))
+                plt_log(plt,fig, logsd, onekey, data)
                 plt_fepwr(plt, pwr_meas)
                 plt_subplot(plt, fembs, rawdata)
                 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
@@ -690,6 +697,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         dkeys.remove("logs")
     
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.rcParams.update({'font.size': 8})
         ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
         ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
@@ -719,6 +727,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         plt.close()
     
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.rcParams.update({'font.size': 8})
         ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
         ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
@@ -765,6 +774,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
         for snc in [0, 1]:
             import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(12,8))
             plt.rcParams.update({'font.size': 8})
             ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
             ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
@@ -810,6 +820,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
                 sdd = buf//2
                 sdf = buf%2
                 import matplotlib.pyplot as plt
+                fig = plt.figure(figsize=(12,8))
                 plt.rcParams.update({'font.size': 8})
                 ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
                 ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
@@ -852,6 +863,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
         for snc in [ 0, 1]:
             import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(12,8))
             plt.rcParams.update({'font.size': 8})
             ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
             ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
@@ -912,7 +924,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
                 import matplotlib.pyplot as plt
                 plt.rcParams.update({'font.size': 8})
-                plt_log(plt,logsd, onekey, data)
+                fig = plt.figure(figsize=(12,8))
+                plt_log(plt,fig, logsd, onekey, data)
                 plt_subplot(plt, fembs, rawdata)
                 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
                 plt.plot()
@@ -989,6 +1002,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         print (caps)
     
         import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
         plt.plot(caps)
         plt.title("1pF Cap Measurement")
         plt.ylabel("Capacitance / pC")
