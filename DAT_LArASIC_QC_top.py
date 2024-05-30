@@ -83,6 +83,7 @@ if True:
     on_f = True
     for key in pwr_meas:
         if "FEMB%d"%dat.dat_on_wibslot in key:
+            print (pwr_meas[key])
             if ("BIAS_V" in key) and (pwr_meas[key] < 4.5):
                 on_f = False
             if ("DC2DC0_V" in key) and (pwr_meas[key] < 3.5):
@@ -291,16 +292,16 @@ if 4 in tms:
             adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=0, slk1=1) #900mV, 5000pA, SDD off, SDF off, ASIC-DAC
         if cseti == 4:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref-0.06, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, DAT-DAC
         if cseti == 5:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref-0.06, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=1, sdf=0 ) #200mV, 500pA, SDD on, SDF off, DAT-DAC
         if cseti == 6:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref-0.06, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=1 ) #200mV, 500pA, SDD off, SDF on, DAT-DAC
         if cseti == 7:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.54, period=500, width=400)
+            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=Vref-0.06, period=500, width=400)
             rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, Direct-input
     
         fes_pwr_info = dat.fe_pwr_meas()
@@ -565,7 +566,9 @@ if 7 in tms:
     datad['logs'] = logs
     period = 1000
     width = 800
-    val = 1.45
+    #snc=1
+
+    val = Vref-0.15
     adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
     cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
     
@@ -618,7 +621,7 @@ if 8 in tms:
             #4.7mV/fC
             sg0=1
             sg1=1
-            cali_vals=[0.1, 0.9]
+            cali_vals=[0.2, 0.9]
             dire_vals=[0.95, 1.05]
         if False:
             #7.8mV/fC
@@ -641,8 +644,7 @@ if 8 in tms:
     
     for chn in range(16):
         print ("DAC DAT cali for FE CH%02d"%chn)
-        val = 1.4
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
+        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref, period=period, width=width)
         cali_fe_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sts=sts, swdac=swdac, chn=chn) #direct input, tp=3us, sg=4.7mV
         
         for val in cali_vals:
@@ -652,16 +654,15 @@ if 8 in tms:
             datad["FECHN%02d_%04dmV_CALI"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, cali_fe_info, cfg_info]
         
         #inject directly (cali)
-        val = 1.4
         print ("inject directly (cali) for FE CH%02d"%chn)
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=val, period=period, width=width)
-        chn_sel = 0x01<<chn
+        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=Vref, period=period, width=width)
+        chn_sel = 0x0001<<chn
         dat.cdpoke(0, 0xC, 0, dat.DAT_FE_IN_TST_SEL_MSB, (chn_sel>>8)&0xff)   #direct input
         dat.cdpoke(0, 0xC, 0, dat.DAT_FE_IN_TST_SEL_LSB, chn_sel&0xff)   #direct input
         direct_fe_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sts=0, swdac=0, chn=chn) #direct input, tp=3us, sg=4.7mV
         
         for val in  dire_vals:
-            val = int(val*1000)/1000.0
+            valint = int(val*65536/dat.ADCVREF)
             dat.dat_set_dac(val=valint, fe_cal=0)
             data = dat.dat_fe_qc_acq(num_samples=5)
             datad["FECHN%02d_%04dmV_INPUT"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, direct_fe_info, cfg_info]

@@ -765,37 +765,29 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_MSB, period>>8)  
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
+            self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+
+            chncs = 0xffff
             if self.rev == 0:
-                self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
-            #elif 
-            if self.rev == 1:
-                self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 0)    
-
+                skt_en = 0xff
+            elif self.rev == 1:
+                skt_en = chips 
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, 3<<4)    
-
             self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)   
             if cali_mode == 0:
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0x00)  #direct input
-                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0xff)  #direct input
-                if self.rev == 0:
-                    csval = 0xff
-                if self.rev == 1:
-                    csval = (~chips)&0xff #select chips for cali
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #direct input
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, ~skt_en)  #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, skt_en)  #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, (chncs>>8)&0xff)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, chncs&0xff)   #direct input
                 adac_pls_en = 0
                 sts = 0
                 swdac = 0
                 dac = 0
             if cali_mode == 1:
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, 0xff)  #DAT DAC
-                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, 0x00)  #direct input
-                if self.rev == 0:
-                    csval = 0xff
-                if self.rev == 1:
-                    csval =  (~chips)&0xff#select chips for cali
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, csval)   #DAT DAC
-                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, csval)   #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_CALI_CS, skt_en)  #DAT DAC
+                self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_SOCKET_EN, ~skt_en)  #direct input disabled
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, (chncs>>8)&0xff)   #direct input
+                self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_LSB, chncs&0xff)   #direct input
                 adac_pls_en = 0
                 sts = 1
                 swdac = 2
@@ -852,7 +844,7 @@ class DAT_CFGS(WIB_CFGS):
                     #exit()
             datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], None)
 
-            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=1.040, period=0x200, width=0x180, asicdac=0x10)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=self.fe_cali_vref-0.05, period=0x200, width=0x180, asicdac=0x10)
             #input ("D")
             rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
             #input ("E")
