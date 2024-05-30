@@ -68,12 +68,12 @@ dat_sn = int(logsd["DAT_SN"])
 
 if dat.rev == 0:
     if dat_sn  == 1:
-        Vref = 1.583
+        dat.fe_cali_vref = 1.583
     if dat_sn  == 2:
-        Vref = 1.5738
+        dat.fe_cali_vref = 1.5738
 if dat.rev == 1:
     dat.fe_cali_vref = 1.090
-    Vref = dat.fe_cali_vref
+Vref = dat.fe_cali_vref
         
 logs.update(logsd)
 
@@ -92,7 +92,7 @@ if True:
                 on_f = False
             if ("DC2DC2_V" in key) and (pwr_meas[key] < 3.5):
                 on_f = False
-    if (not on_f): #turn DAT on
+    if (not on_f) and (tms[0] != 0) : #turn DAT on
         tms = [10] + tms #turn DAT on
 
 ####### Init check information #######

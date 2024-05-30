@@ -10,7 +10,7 @@ from DAT_read_cfg import dat_read_cfg
 from colorama import just_fix_windows_console
 just_fix_windows_console()
 
-QC_TST_EN =  False 
+QC_TST_EN =  True 
 QC_ANA_EN = True
 ynstr = input("\033[93m  Analyze existing data only (Y/N)? \033[0m")
 if "Y" in ynstr or "y" in ynstr:
