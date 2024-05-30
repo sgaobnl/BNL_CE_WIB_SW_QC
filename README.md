@@ -1,129 +1,22 @@
-# Update WIB system time 
-If powershell on windows machine is used as terminal. 
-```
- $cdate = get-date
- $wibdate = "date -s '$cdate'"
-ssh root@192.168.121.1  $wibdate
-```
 
-# Login WIB
-open an terminal
-```
-ssh root@192.168.121.1
-```
-pwd: fpga
+Set up RSA key on the local PC (only need to do it ONCE when first time to setup)
+PC side: Open a terminal. click “Enter” 3 times, you can find private key id_rsa and public key id_rsa.pub under $/.ssh
 
-# BNL_CE_WIB_SW_QC
- 
-These scripts are developed for standalone WIB operation on WIB 
+ssh-keygen.exe 
 
-note: 
+WIB side (ssh to WIB):
 
-at CERN, the FEMBs are always on;
+mkdir ~/.ssh/
+Copy id_rsa.pub to WIB, save it at ~/.ssh/
+mv ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
 
-the DAQ doesn't reconfigure WIB for every run, so we need to reconfigure the WIB back to its start status
+You now can log in WIB without typing password. If it doesn’t, reboot the WIB and try again.
 
-## Compile
-```
-find . -type f -exec touch {} +
-(optional: if the computer time is wrong)
-```
-
-```
-mkdir build
-make
-```
-## Available scripts
-#### 1. Set up PLL timing and I2C phase adjustment
-```
-python3 wib_startup.py
-```
-It adjusts the i2c phase by 300 steps
-
-#### 2. Power on/off FEMBs (Optional, this step can be skipped )
-```
+2. LArASIC QC based on DAT board (manual operation)
 python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
-```
-The four arguments correspond to the four slots 
-#### 3. FEMBs quick checkout
-Generate a report that includes pulse response at 200 mV 14mV/fC 2us, power consumption, and ColdADC monitoring data
+The four arguments correspond to the four slots
 
-```
-python3 femb_assembly_chk.py 0 1 2 3 save 5
-```
-Data is saved at tmp_data/. Please copy the data to PC and run the following command at the PC:
-```
-python3 ana_femb_assembly_chk.py <folder name>
-```
-e.g.
-```
-python3 ana_femb_assembly_chk.py femb0_femb1_femb2_femb3_RT_0pF
-```
-#### 4. Data taking using PLL timing
-```
-python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
-```
-#### 5. Data taking using the time master
-```
-python3 top_chkout_pls_ptc_timing.py <slot lists> save <number of events>
-```
-#### 6. Data decoder for 4. and 5.
-```
-python3 rd_demo_raw.py <file_path/file_name>   
-```
-e.g.
-```
-python3 rd_demo_raw.py tmp_data/Raw_19_06_2021_23_37_10.bin
-```
+3. FEMBs quick checkout
 
-## Run quick checkout test
-#### step 0 (optional: only run if encounter i2c errors and use PLL clock)
-```
-python3 wib_startup.py
-```
-#### step 1: power on the FEMBs if they are off
-```
-python3 top_femb_powering.py <on/off> <on/off> <on/off> <on/off>
-```
-#### step 2: run the quick checkout test (use time master, can be changed to PLL clock)
-```
-python3 top_chkout_pls_fake_timing.py <slot lists> save <number of events>
-```
-#### step 3: check the reports, saved at reports/
-
-## Run FEMB QC
-#### step 0 (optional: only run if encounter i2c errors and use PLL clock)
-```
-python3 wib_startup.py
-```
-#### step 1: quick checkout
-```
-python3 femb_assembly_chk.py 0 1 2 3 save 5
-```
-Data is saved at tmp_data/. Please copy the data to PC and run the following command at the PC:
-```
-python3 ana_femb_assembly_chk.py <folder name>
-```
-e.g.
-```
-python3 ana_femb_assembly_chk.py femb0_femb1_femb2_femb3_RT_0pF
-```
-#### step 2: run QC
-```
-python3 QC_top.py <femb list> -s <nsamples> -t <task list> 
-```
-e.g.
-```
-python3 QC_top.py 0 1 2 3 -s 5
-```
-The default task list is to run all the QC items. Data is saved at QC_data/. Please copy the data to PC and run the following command at the PC:
-```
-python3 QC_report_all.py <folder name> -n <femb list> -t <task list>
-```
-e.g.
-```
-python3 QC_report_all.py femb0_femb1_femb2_femb3_RT_0pF
-```
-Specific tasks and fembs can be specified uisng ``-t`` and ``-n`` flags.
 
 
