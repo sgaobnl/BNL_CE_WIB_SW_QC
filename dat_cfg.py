@@ -340,19 +340,19 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(fes_pwr_info.keys())
         for onekey in kl:
             if "VDDA" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 15  ) & (fes_pwr_info[onekey][0] < 25  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 15  ) & (fes_pwr_info[onekey][1] < 25  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
                     warn_flg = True
             if "VDDO" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > -0.1  ) & (fes_pwr_info[onekey][0] < 3  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > -0.1  ) & (fes_pwr_info[onekey][1] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
                     warn_flg = True
             if "VDDP" in onekey:
-                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 28  ) & (fes_pwr_info[onekey][0] < 37  ) :
+                if  (fes_pwr_info[onekey][0] > 1.75) & (fes_pwr_info[onekey][0] < 1.95) & (fes_pwr_info[onekey][1] > 28  ) & (fes_pwr_info[onekey][1] < 37  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, fes_pwr_info[onekey]))
@@ -361,30 +361,31 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(adcs_pwr_info.keys())
         for onekey in kl:
             if "VDDA2P5" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][0] < 140  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][1] < 140  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD2P5" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 15  ) & (adcs_pwr_info[onekey][0] < 25  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 15  ) & (adcs_pwr_info[onekey][1] < 25  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
 
             if "VDDIO" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][0] < 8  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][1] < 8  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD1P2" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 1.15) & (adcs_pwr_info[onekey][0] < 1.25) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][0] < 3  ) :
+                if  (adcs_pwr_info[onekey][0] > 1.05) & (adcs_pwr_info[onekey][0] < 1.15) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][1] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
+
 
         kl = list(cds_pwr_info.keys())
         for onekey in kl:
@@ -392,41 +393,42 @@ class DAT_CFGS(WIB_CFGS):
 
         for onekey in kl:
             if "CD_VDDA" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 5   ) & (cds_pwr_info[onekey][0] < 10  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 5   ) & (cds_pwr_info[onekey][1] < 10  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
             if "FE_VDDA" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.70) & (cds_pwr_info[onekey][0] < 1.90) & (cds_pwr_info[onekey][1] > -0.1  ) & (cds_pwr_info[onekey][0] < 3  ) :
+                if  (cds_pwr_info[onekey][0] > 1.70) & (cds_pwr_info[onekey][0] < 1.90) & (cds_pwr_info[onekey][1] > -0.1  ) & (cds_pwr_info[onekey][1] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
 
             if "CD_VDDCORE" in onekey:
-                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 7  ) & (cds_pwr_info[onekey][0] < 12  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 7  ) & (cds_pwr_info[onekey][1] < 12  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
             if "CD_VDDD" in onekey: 
-                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 15  ) & (cds_pwr_info[onekey][0] < 25  ) :
+                if  (cds_pwr_info[onekey][0] > 1.15) & (cds_pwr_info[onekey][0] < 1.25) & (cds_pwr_info[onekey][1] > 15  ) & (cds_pwr_info[onekey][1] < 25  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
             if "CD_VDDIO" in onekey:
-                if  (cds_pwr_info[onekey][0] > 2.20) & (cds_pwr_info[onekey][0] < 2.35) & (cds_pwr_info[onekey][1] > 40  ) & (cds_pwr_info[onekey][0] < 55  ) :
+                if  (cds_pwr_info[onekey][0] > 2.20) & (cds_pwr_info[onekey][0] < 2.35) & (cds_pwr_info[onekey][1] > 40  ) & (cds_pwr_info[onekey][1] < 55  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
                     warn_flg = True
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
-            input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
+            #input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
             self.femb_powering([])
             self.data_align_flg = False
+            print ("exit anyway")
             exit()
 
     def asic_init_por(self, duts=["FE", "ADC", "CD"]): #check status after power on

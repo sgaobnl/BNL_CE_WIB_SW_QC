@@ -17,7 +17,7 @@ if "Y" in ynstr or "y" in ynstr:
     QC_TST_EN =  False
 
 logs = {}
-logs['PC_rawdata_root'] = "./tmp_data/" #path to save raw data at PC
+logs['PC_rawdata_root'] = "D:/DAT_LArASIC_QC/Tested2/" #path to save raw data at PC
 logs['PC_WRCFG_FN'] = "./asic_info.csv"
 
 #[0, 1, 2, 3, 4,5,61, 62, 63, 64, 7,8, 9]
@@ -222,7 +222,6 @@ if QC_TST_EN:
         print ("Exit anyway")
         exit()
 
-
 #if False:
 #if True:
 if QC_TST_EN:
@@ -320,7 +319,7 @@ if QC_ANA_EN:
         fnstr = input("\033[93m Can data on WIB be deleted? (Y/N)  \033[0m")
         wib_raw_dir = """./tmp_data/FE_703000001_703000002_703000003_703000004_703000005_703000006_703000007_703000008/"""
         if "Y" in ynstr or "y" in ynstr:
-            command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(log['wib_raw_dir']]
+            command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(log['wib_raw_dir'])]
             #command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(wib_raw_dir)]
             result=subrun(command, timeout = None)
             print ("Deleted. Done")
