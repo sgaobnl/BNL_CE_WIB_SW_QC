@@ -10,7 +10,7 @@ from DAT_read_cfg import dat_read_cfg
 from colorama import just_fix_windows_console
 just_fix_windows_console()
 
-QC_TST_EN =  True 
+QC_TST_EN =  False 
 QC_ANA_EN = True
 ynstr = input("\033[93m  Analyze existing data only (Y/N)? \033[0m")
 if "Y" in ynstr or "y" in ynstr:
@@ -301,8 +301,9 @@ if QC_ANA_EN:
     print (datetime.datetime.utcnow(), " : Perform quick analysis")
     if not QC_TST_EN:
         print ("Please specify the path of log file")
-        fnlog = input("\033[93m >>  \033[0m")
+        fnlog = input("\033[93m >>  \033[0m") + "/QC.log"
         #fnlog = "./tmp_data/FE_503010001_503000002_503000003_503000004_503000005_503000006_503000007_503000008/QC_Retest_1_9_.log"
+        print (fnlog)
         try:
             with open(fnlog, 'rb') as fn:
                 logs =  pickle.load(fn)
@@ -311,16 +312,13 @@ if QC_ANA_EN:
             print ("exit anyway")
             exit()
 
-    print (logs['pc_raw_dir'])
     from DAT_LArASIC_QC_quick_ana import dat_larasic_qc_quick_ana
     dat_larasic_qc_quick_ana(fdir = logs['pc_raw_dir'])
 
     if QC_TST_EN:
         fnstr = input("\033[93m Can data on WIB be deleted? (Y/N)  \033[0m")
-        wib_raw_dir = """./tmp_data/FE_703000001_703000002_703000003_703000004_703000005_703000006_703000007_703000008/"""
         if "Y" in ynstr or "y" in ynstr:
-            command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(log['wib_raw_dir'])]
-            #command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(wib_raw_dir)]
+            command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(logs['wib_raw_dir'])]
             result=subrun(command, timeout = None)
             print ("Deleted. Done")
 
