@@ -41,6 +41,7 @@ This README file will include all informations about the scripts like: <br/>
 * QC_INIT_CHK.bin
 * qc_selection.json
 ##### Output format for each chipID :
+* **QC_INIT_CHK**
 ```json
 {
     "WIB_PWR" : {},
@@ -67,6 +68,24 @@ This README file will include all informations about the scripts like: <br/>
                                 "pospeak": {"data": [], "result_qc": [], "link_to_img": ""},
                                 "negpeak": {"data": [], "result_qc": [], "link_to_img": ""}
                         }
+    }
+}
+```
+
+* **QC_PWR**
+```json
+{
+    "200mV": {
+        "V": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "I": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "P": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "units": ["V", "mA", "mW"]
+    },
+    "900mV": {
+        "V": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "I": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "P": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "units": ["V", "mA", "mW"]
     }
 }
 ```
