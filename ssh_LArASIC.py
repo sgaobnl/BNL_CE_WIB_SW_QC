@@ -10,7 +10,7 @@ from DAT_read_cfg import dat_read_cfg
 from colorama import just_fix_windows_console
 just_fix_windows_console()
 
-QC_TST_EN =  True
+QC_TST_EN =  True 
 QC_ANA_EN = True
 ynstr = input("\033[93m  Analyze existing data only (Y/N)? \033[0m")
 if "Y" in ynstr or "y" in ynstr:
@@ -254,6 +254,7 @@ if QC_TST_EN:
         print ("Transfer data to PC...")
         fdir = resultstr[resultstr.find("save_fdir_start_")+16:resultstr.find("_end_save_fdir")] 
         #wib_raw_dir = fdir #later save it into log file
+        logs['wib_raw_dir'] = fdir
         fs = resultstr[resultstr.find("save_file_start_")+16:resultstr.find("_end_save_file")] 
         fsubdirs = fdir.split("/")
         fn = fs.split("/")[-1]
@@ -314,4 +315,13 @@ if QC_ANA_EN:
     print (logs['pc_raw_dir'])
     from DAT_LArASIC_QC_quick_ana import dat_larasic_qc_quick_ana
     dat_larasic_qc_quick_ana(fdir = logs['pc_raw_dir'])
+
+    if QC_TST_EN:
+        fnstr = input("\033[93m Can data on WIB be deleted? (Y/N)  \033[0m")
+        wib_raw_dir = """./tmp_data/FE_703000001_703000002_703000003_703000004_703000005_703000006_703000007_703000008/"""
+        if "Y" in ynstr or "y" in ynstr:
+            command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(log['wib_raw_dir']]
+            #command = ["ssh", "root@192.168.121.123", """cd BNL_CE_WIB_SW_QC; rm -rf {}""".format(wib_raw_dir)]
+            result=subrun(command, timeout = None)
+            print ("Deleted. Done")
 
