@@ -21,7 +21,6 @@ import argparse
 def dat_read_cfg(infile_mode = True, froot = "./tmp_data/" ):
     logs={}
     if infile_mode:
-        logs={}
         logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
         index_f = "./asic_info.csv"
         with open(index_f, 'r') as fp:
@@ -51,10 +50,10 @@ def dat_read_cfg(infile_mode = True, froot = "./tmp_data/" ):
                 fe_id['FE{}'.format(fe)] = festr[0:3]+"0"+festr[4:]
 
     if "CD" in logs['DUT']:
-        fsubdir = "CD_{}_{}".format(cd_id['CD0'],cd_id['CD1']) 
+        fsubdir = "{}_CD_{}_{}".format(logs['env'],cd_id['CD0'],cd_id['CD1']) 
     elif "ADC" in logs['DUT']:
-        fsubdir = "ADC_{}_{}_{}_{}_{}_{}_{}_{}".format(adc_id['ADC0'],adc_id['ADC1'], adc_id['ADC2'], adc_id['ADC3'], adc_id['ADC4'], adc_id['ADC5'], adc_id['ADC6'], adc_id['ADC7']) 
+        fsubdir = "{}_ADC_{}_{}_{}_{}_{}_{}_{}_{}".format(logs['env'],adc_id['ADC0'],adc_id['ADC1'], adc_id['ADC2'], adc_id['ADC3'], adc_id['ADC4'], adc_id['ADC5'], adc_id['ADC6'], adc_id['ADC7']) 
     elif "FE" in logs['DUT']:
-        fsubdir = "FE_{}_{}_{}_{}_{}_{}_{}_{}".format(fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
+        fsubdir = "{}_FE_{}_{}_{}_{}_{}_{}_{}_{}".format(logs['env'],fe_id['FE0'],fe_id['FE1'], fe_id['FE2'], fe_id['FE3'], fe_id['FE4'], fe_id['FE5'], fe_id['FE6'], fe_id['FE7']) 
     fdir = froot + fsubdir + "/"
     return logs,  fdir
