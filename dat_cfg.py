@@ -356,20 +356,20 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(adcs_pwr_info.keys())
         for onekey in kl:
             if "VDDA2P5" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][1] < 200  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.40) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][1] < 200  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD2P5" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 15  ) & (adcs_pwr_info[onekey][1] < 25  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.40) & (adcs_pwr_info[onekey][1] > 10  ) & (adcs_pwr_info[onekey][1] < 40  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
 
             if "VDDIO" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][1] < 8  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.40) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][1] < 8  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
@@ -415,7 +415,6 @@ class DAT_CFGS(WIB_CFGS):
                     warn_flg = True
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
-            input ("pause...")
             #input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
             self.femb_powering([])
             self.data_align_flg = False
@@ -856,7 +855,7 @@ class DAT_CFGS(WIB_CFGS):
                     c1 = True
                 if ( (datd[ch][chmaxpos-2] - datd[ch][chmaxpos-10]) > 1000) and ( (datd[ch][chmaxpos+2] - datd[ch][chmaxpos+20]) > 1000) :
                     c2 = True
-                if (chmax > 8000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
+                if (chmax > 6000) & (chped < 2000) & (chped > 300) & (chmin<100) & c1 & c2:
                     pass
                 else:
                     initchk_flg = False 
