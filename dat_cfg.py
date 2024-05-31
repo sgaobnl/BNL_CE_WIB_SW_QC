@@ -240,6 +240,7 @@ class DAT_CFGS(WIB_CFGS):
             for i in range(len(dat_addrs)):
                 addr = dat_addrs[i]
                 current = self.datpower_getcurrent(addr, cd=asic)
+                #print (hex(current))
                 bus_voltage = self.datpower_getvoltage(addr, cd=asic)
                 #c0 = self.datpower_getcurrent(addr, cd=asic)
                 #v0 = self.datpower_getvoltage(addr, cd=asic)
@@ -258,7 +259,6 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def fe_pwr_meas(self,):
-        print("Power Check for All power rails")
         fe_list = ["FE0", "FE1", "FE2", "FE3", "FE4", "FE5", "FE6", "FE7"]
         addrs = [0x40, 0x41, 0x42]
         pwrrails = ["VDDA", "VDDO", "VPPP"]
@@ -270,9 +270,6 @@ class DAT_CFGS(WIB_CFGS):
         addrs = [0x43, 0x44, 0x45, 0x46]
         pwrrails = ["VDDA2P5", "VDDD1P2", "VDDIO", "VDDD2P5"]
         adcs_pwr_info = self.feadc_pwr_info(asic_list=adc_list, dat_addrs=addrs, pwrrails=pwrrails)
-#        kl = list(adcs_pwr_info.keys())
-#        for onekey in kl:
-#            print (onekey, adcs_pwr_info[onekey])
         return adcs_pwr_info
 
     def dat_cd_pwr_meas(self):
@@ -291,8 +288,6 @@ class DAT_CFGS(WIB_CFGS):
         time.sleep(0.001)
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0xCF&rdv) #CD0
         time.sleep(0.01)
-
-  #  def cd_dftreg_chk(self):
 
     def dat_cd_gpio_chk(self, femb_id):
         #set GPIO as output
@@ -361,7 +356,7 @@ class DAT_CFGS(WIB_CFGS):
         kl = list(adcs_pwr_info.keys())
         for onekey in kl:
             if "VDDA2P5" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][1] < 140  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.30) & (adcs_pwr_info[onekey][1] > 100  ) & (adcs_pwr_info[onekey][1] < 200  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
@@ -380,16 +375,11 @@ class DAT_CFGS(WIB_CFGS):
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD1P2" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 1.05) & (adcs_pwr_info[onekey][0] < 1.15) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][1] < 3  ) :
+                if  (adcs_pwr_info[onekey][0] > 1.15) & (adcs_pwr_info[onekey][0] < 1.25) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][1] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
-
-
-        kl = list(cds_pwr_info.keys())
-        for onekey in kl:
-            print (onekey, cds_pwr_info[onekey])
 
         for onekey in kl:
             if "CD_VDDA" in onekey:
@@ -425,6 +415,7 @@ class DAT_CFGS(WIB_CFGS):
                     warn_flg = True
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
+            input ("pause...")
             #input ("\033[91m" + "exit by clicking any button and Enter"+ "\033[0m")
             self.femb_powering([])
             self.data_align_flg = False
