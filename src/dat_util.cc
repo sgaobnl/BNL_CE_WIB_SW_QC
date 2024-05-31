@@ -139,7 +139,8 @@ double datpower_getcurrent(uint8_t addr, uint8_t cd, uint8_t fe) {
 	// return bus_voltage_reg*V_LSB;
 
 	datpower_poke(addr, DAT_INA226_CURRENT, 0xAAAA, cd, fe);
-	uint16_t current_reg = datpower_peek(addr, DAT_INA226_CURRENT, cd, fe);
+	//uint16_t current_reg = datpower_peek(addr, DAT_INA226_CURRENT, cd, fe);
+	int16_t current_reg = datpower_peek(addr, DAT_INA226_CURRENT, cd, fe);
 	return current_reg*I_LSB;
 }	
 
