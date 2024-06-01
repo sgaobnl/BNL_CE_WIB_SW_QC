@@ -76,15 +76,15 @@ This README file will include all informations about the scripts like: <br/>
 ```json
 {
     "200mV": {
-        "V": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
-        "I": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
-        "P": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "V": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
+        "I": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
+        "P": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
         "units": ["V", "mA", "mW"]
     },
     "900mV": {
-        "V": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
-        "I": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
-        "P": {"config0": val, "config1": val, "config2": val, "link_to_img": ""},
+        "V": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
+        "I": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
+        "P": {"config0": val, "config1": val, "config2": val, "result_qc": true, "link_to_img": ""},
         "units": ["V", "mA", "mW"]
     }
 }
