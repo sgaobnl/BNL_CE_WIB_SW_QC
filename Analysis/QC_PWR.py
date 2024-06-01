@@ -29,7 +29,15 @@ class QC_PWR:
         createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
         self.FE_output_DIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
 
-    def FE_PWR(self):
+    def isParamInRange(self, paramVal=0, rangeParam=[0, 0]):
+        flag = True
+        if (paramVal>rangeParam[0]) & (paramVal<rangeParam[1]):
+            flag = True
+        else:
+            flag = False
+        return flag
+
+    def FE_PWR(self, selectionCriteria: dict):
         param_meanings = {
             'SDF0': 'BufferOFF',
             'SDF1': 'BufferON',
@@ -122,10 +130,40 @@ class QC_PWR:
             configs = ['SDD0_SDF0', 'SDD0_SDF1', 'SDD1_SDF0']
             tmpdata_onechip = pwr_all_chips[chip_id]
             for BL in Baselines:
+                result_qc_V = []
+                result_qc_I = []
+                result_qc_P = []
                 for config in configs:
-                    oneChip_data[BL]['V'][config] = tmpdata_onechip[BL][config]['V']
-                    oneChip_data[BL]['I'][config] = tmpdata_onechip[BL][config]['I']
-                    oneChip_data[BL]['P'][config] = tmpdata_onechip[BL][config]['P']
+                    voltage = tmpdata_onechip[BL][config]['V']
+                    current = tmpdata_onechip[BL][config]['I']
+                    pwrconsumption = tmpdata_onechip[BL][config]['P']
+                    # get the accepted ranges for the voltage, current, and power consumption
+                    rangeV = selectionCriteria[BL]['V'][config]
+                    rangeI = selectionCriteria[BL]['I'][config]
+                    rangeP = selectionCriteria[BL]['P'][config]
+                    flagV = self.isParamInRange(paramVal=voltage, rangeParam=rangeV)
+                    flagI = self.isParamInRange(paramVal=current, rangeParam=rangeI)
+                    flagP = self.isParamInRange(paramVal=pwrconsumption, rangeParam=rangeP)
+
+                    oneChip_data[BL]['V'][config] = voltage
+                    oneChip_data[BL]['I'][config] = current
+                    oneChip_data[BL]['P'][config] = pwrconsumption
+                    result_qc_V.append(flagV)
+                    result_qc_I.append(flagI)
+                    result_qc_P.append(flagP)
+                    # oneChip_data[BL]['V'][config] = tmpdata_onechip[BL][config]['V']
+                    # oneChip_data[BL]['I'][config] = tmpdata_onechip[BL][config]['I']
+                    # oneChip_data[BL]['P'][config] = tmpdata_onechip[BL][config]['P']
+                V_passed, I_passed, P_passed = True, True, True
+                if False in result_qc_V:
+                    V_passed = False
+                if False in result_qc_I:
+                    I_passed = False
+                if False in result_qc_P:
+                    P_passed = False
+                oneChip_data[BL]['V']["result_qc"] = V_passed
+                oneChip_data[BL]['I']["result_qc"] = I_passed
+                oneChip_data[BL]['P']["result_qc"] = P_passed
                 oneChip_data[BL]['V']['link_to_img'] = '/'.join([FE_output_dir, '{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])])
                 oneChip_data[BL]['I']['link_to_img'] = '/'.join([FE_output_dir, '{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])])
                 oneChip_data[BL]['P']['link_to_img'] = '/'.join([FE_output_dir, '{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])])
@@ -142,6 +180,7 @@ if __name__ =='__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     list_data_dir = os.listdir(root_path)
+    qc_selection = json.load(open("qc_selection.json"))
     for data_dir in list_data_dir:
         qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        qc_pwr.FE_PWR()
+        qc_pwr.FE_PWR(selectionCriteria=qc_selection['QC_PWR'])
