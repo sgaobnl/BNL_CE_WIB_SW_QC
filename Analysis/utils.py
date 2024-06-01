@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-import os, sys, pickle
+import os, sys, pickle, json
 import numpy as np
 # import csv
 import json
@@ -322,7 +322,46 @@ class LArASIC_ana:
         pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms)
         pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
         return {"pedrms": pedrms, "pulseResponse": pulseResponse}
+
+# Generate report for one LArASIC
+# --> All parameters for the QC
+class QC_REPORT:
+    def __init__(self, input_path: str, output_path: str):
+        self.input_path = input_path
+        self.output_path = output_path
+
+    def QC_PWR_report(self):
+        # read the json file
+        data = json.load(open('/'.join([self.input_path, 'QC_PWR_data.json'])))
+        Baselines = list(data.keys())
+        qc_param = dict()
+        qc_result_pwrConsumption = True
+        for BL in Baselines:
+            print(data[BL])
+            print(data[BL].keys())
+            params = [param for param in data[BL].keys() if param!='units']
+            print(params)
+            qc_oneBL = {param: {} for param in params}
+            qc_resultBL = True
+            for param in params:
+                qc_oneBL[param]['result_qc'] = data[BL][param]['result_qc']
+                qc_oneBL[param]['link_to_img'] = data[BL][param]['link_to_img']
+                if data[BL][param]['result_qc']==False:
+                    qc_resultBL = False
+            qc_oneBL['result_qc'] = qc_resultBL
+            qc_param[BL] = qc_oneBL
+            if qc_resultBL==False:
+                qc_result_pwrConsumption = False
+        qc_param['result_qc_pwrConsumption'] = qc_result_pwrConsumption
+        return qc_param
     
+    def dict2md(self, qc_param_dict: dict):
+        '''
+            Convert the dictionary provided in the input to a markdown table
+        '''
+
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
-    output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC/002-06204'
+    qc_report = QC_REPORT(input_path=root_path, output_path=root_path)
+    qc_report.QC_PWR_report()
