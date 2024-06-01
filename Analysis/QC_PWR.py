@@ -11,12 +11,6 @@ import json, pickle
 from utils import printItem, decodeRawData, createDirs, dumpJson
 
 class QC_PWR:
-    '''
-        output data:
-        {
-            
-        }
-    '''
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
         self.tms = 1
         self.qc_pwr_filename = 'QC_PWR.bin'
@@ -164,9 +158,14 @@ class QC_PWR:
                 oneChip_data[BL]['V']["result_qc"] = V_passed
                 oneChip_data[BL]['I']["result_qc"] = I_passed
                 oneChip_data[BL]['P']["result_qc"] = P_passed
-                oneChip_data[BL]['V']['link_to_img'] = '/'.join([FE_output_dir, '{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])])
-                oneChip_data[BL]['I']['link_to_img'] = '/'.join([FE_output_dir, '{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])])
-                oneChip_data[BL]['P']['link_to_img'] = '/'.join([FE_output_dir, '{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])])
+                # we do not need the full path to the plots because we save the json file in a folder having the chip_id as name
+                # and the plots are inside that folder
+                oneChip_data[BL]['V']['link_to_img'] = './{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])
+                oneChip_data[BL]['I']['link_to_img'] = './{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])
+                oneChip_data[BL]['P']['link_to_img'] = './{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])
+                # oneChip_data[BL]['V']['link_to_img'] = '/'.join([FE_output_dir, '{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])])
+                # oneChip_data[BL]['I']['link_to_img'] = '/'.join([FE_output_dir, '{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])])
+                # oneChip_data[BL]['P']['link_to_img'] = '/'.join([FE_output_dir, '{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])])
             dumpJson(output_path=FE_output_dir, output_name="QC_PWR_data", data_to_dump=oneChip_data)
 
     def analyzeRawData(self):
