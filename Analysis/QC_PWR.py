@@ -112,16 +112,19 @@ class QC_PWR:
             ax_p.legend()
             fig_p.savefig('/'.join([self.FE_output_DIRs[ichip], '{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])]))
             plt.close(fig=fig_p)
-
+        # print(pwr_all_chips)
+        # sys.exit()
         # update data with the link to the plots and save everything in a json file
         for ichip, chip_id in enumerate(pwr_all_chips.keys()):
             FE_output_dir = self.FE_output_DIRs[ichip]
             oneChip_data = {
-                            '200mV': {'V': {}, 'I': {}, 'P': {}, 'units': ['V', 'mA', 'mW']}, 
-                            '900mV': {'V': {}, 'I': {}, 'P': {}, 'units': ['V', 'mA', 'mW']}
+                            'V': {'200mV': {}, '900mV': {}, 'unit': 'V', 'result_qc': '', 'link_to_img': ''},
+                            'I': {'200mV': {}, '900mV': {}, 'unit': 'mA', 'result_qc': '', 'link_to_img': {}},
+                            'P': {'200mV': {}, '900mV': {}, 'unit': 'mW', 'result_qc': '', 'link_to_img': {}}              
                             }
             Baselines = ['200mV', '900mV']
             configs = ['SDD0_SDF0', 'SDD0_SDF1', 'SDD1_SDF0']
+            V_result, I_result, P_result = [], [], []
             tmpdata_onechip = pwr_all_chips[chip_id]
             for BL in Baselines:
                 result_qc_V = []
@@ -139,15 +142,12 @@ class QC_PWR:
                     flagI = self.isParamInRange(paramVal=current, rangeParam=rangeI)
                     flagP = self.isParamInRange(paramVal=pwrconsumption, rangeParam=rangeP)
 
-                    oneChip_data[BL]['V'][config] = voltage
-                    oneChip_data[BL]['I'][config] = current
-                    oneChip_data[BL]['P'][config] = pwrconsumption
+                    oneChip_data['V'][BL][config] = voltage
+                    oneChip_data['I'][BL][config] = current
+                    oneChip_data['P'][BL][config] = pwrconsumption
                     result_qc_V.append(flagV)
                     result_qc_I.append(flagI)
                     result_qc_P.append(flagP)
-                    # oneChip_data[BL]['V'][config] = tmpdata_onechip[BL][config]['V']
-                    # oneChip_data[BL]['I'][config] = tmpdata_onechip[BL][config]['I']
-                    # oneChip_data[BL]['P'][config] = tmpdata_onechip[BL][config]['P']
                 V_passed, I_passed, P_passed = True, True, True
                 if False in result_qc_V:
                     V_passed = False
@@ -155,17 +155,30 @@ class QC_PWR:
                     I_passed = False
                 if False in result_qc_P:
                     P_passed = False
-                oneChip_data[BL]['V']["result_qc"] = V_passed
-                oneChip_data[BL]['I']["result_qc"] = I_passed
-                oneChip_data[BL]['P']["result_qc"] = P_passed
-                # we do not need the full path to the plots because we save the json file in a folder having the chip_id as name
-                # and the plots are inside that folder
-                oneChip_data[BL]['V']['link_to_img'] = './{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])
-                oneChip_data[BL]['I']['link_to_img'] = './{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])
-                oneChip_data[BL]['P']['link_to_img'] = './{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])
-                # oneChip_data[BL]['V']['link_to_img'] = '/'.join([FE_output_dir, '{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])])
-                # oneChip_data[BL]['I']['link_to_img'] = '/'.join([FE_output_dir, '{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])])
-                # oneChip_data[BL]['P']['link_to_img'] = '/'.join([FE_output_dir, '{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])])
+                V_result.append(V_passed)
+                I_result.append(I_result)
+                P_result.append(P_passed)
+            v_qc = ""
+            if False in V_result:
+                v_qc = "Failed"
+            else:
+                v_qc = "Passed"
+            i_qc = ""
+            if False in I_result:
+                i_qc = "Failed"
+            else:
+                i_qc = "Passed"
+            p_qc = ""
+            if False in P_result:
+                p_qc = "Failed"
+            else:
+                p_qc = "Passed"
+            oneChip_data['V']['result_qc'] = v_qc
+            oneChip_data['I']['result_qc'] = i_qc
+            oneChip_data['P']['result_qc'] = p_qc
+            oneChip_data['V']['link_to_img'] = './{}_Voltage.png'.format(self.qc_pwr_filename.split('.')[0])
+            oneChip_data['I']['link_to_img'] = './{}_Current.png'.format(self.qc_pwr_filename.split('.')[0])
+            oneChip_data['P']['link_to_img'] = './{}_PowerConsumption.png'.format(self.qc_pwr_filename.split('.')[0])
             dumpJson(output_path=FE_output_dir, output_name="QC_PWR_data", data_to_dump=oneChip_data)
 
     def analyzeRawData(self):
