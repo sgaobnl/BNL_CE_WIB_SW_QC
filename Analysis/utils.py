@@ -45,6 +45,17 @@ def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
         ## ------- MODIFIY THE WAY TO WRITE THE DATA ON THE FILE
         ## ==> ORGANIZE THE DATA BY WRITING EACH key: value ON A NEW LINE
 
+def dumpMD(output_path: str, output_name: str, mdTable_to_dump: str):
+    '''
+        Save markdown table to *.md file.
+        inputs:
+            output_path: path to output,
+            output_name: filename WITHOUT the extension .md,
+            mdTable_to_dump: a string of the markdown table to save
+    '''
+    with open('/'.join([output_path, output_name + '.md']), 'w+') as mdfile:
+        mdfile.write(mdTable_to_dump)
+
 def linear_fit(x: list, y: list):
     '''
         Perform a linear fit on y = f(x) using numpy.polyfit degree 1.
@@ -331,37 +342,33 @@ class QC_REPORT:
         self.output_path = output_path
 
     def QC_PWR_report(self):
+        title_summary = "--- \n### POWER CONSUMPTION - SUMMARY"
         # read the json file
         data = json.load(open('/'.join([self.input_path, 'QC_PWR_data.json'])))
-        Baselines = list(data.keys())
-        qc_param = dict()
-        qc_result_pwrConsumption = True
-        for BL in Baselines:
-            print(data[BL])
-            print(data[BL].keys())
-            params = [param for param in data[BL].keys() if param!='units']
-            print(params)
-            qc_oneBL = {param: {} for param in params}
-            qc_resultBL = True
-            for param in params:
-                qc_oneBL[param]['result_qc'] = data[BL][param]['result_qc']
-                qc_oneBL[param]['link_to_img'] = data[BL][param]['link_to_img']
-                if data[BL][param]['result_qc']==False:
-                    qc_resultBL = False
-            qc_oneBL['result_qc'] = qc_resultBL
-            qc_param[BL] = qc_oneBL
-            if qc_resultBL==False:
-                qc_result_pwrConsumption = False
-        qc_param['result_qc_pwrConsumption'] = qc_result_pwrConsumption
-        return qc_param
-    
-    def dict2md(self, qc_param_dict: dict):
-        '''
-            Convert the dictionary provided in the input to a markdown table
-        '''
+        KEY_names = {'V': "Voltage", 'I': 'Current', 'P': "Power Consumption"}
+        KEY_units = {'V': 'V', 'I': 'mA', 'P': 'mW'}
+        md = ""
+        qc_results = []
+        for KEY in data.keys():
+            qc_result = data[KEY]['result_qc']
+            qc_results.append(qc_results)
+            link_to_img = data[KEY]['link_to_img']
+            KEY_title = '**<u>' + KEY_names[KEY] + ' ({}):</u> {}**'.format(KEY_units[KEY], qc_result)
+            KEY_plot = '![]({})'.format(link_to_img)
+            KEY_md = "<span>{} \n {}</span>".format(KEY_title, KEY_plot)
+            md += (KEY_md + '\n')
+        md += "---"
+        if False in qc_results:
+            title_summary += ": Failed\n"
+        else:
+            title_summary += ": Passed\n"
+        md = title_summary + md
+        dumpMD(output_path=self.output_path, output_name='QC_PWR_md', mdTable_to_dump=md)
 
+    
 if __name__ == '__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     root_path = '../../Analyzed_BNL_CE_WIB_SW_QC/002-06204'
     qc_report = QC_REPORT(input_path=root_path, output_path=root_path)
-    qc_report.QC_PWR_report()
+    pwr_qc_dict = qc_report.QC_PWR_report()
+    print(pwr_qc_dict)
