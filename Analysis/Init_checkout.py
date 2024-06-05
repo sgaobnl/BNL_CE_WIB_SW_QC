@@ -46,7 +46,13 @@ class QC_INIT_CHECK:
         self.logs_dict = self.raw_data['logs']
         ##----- Create Folders for the outputs -----
         createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
-        self.FE_output_DIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
+        FE_outputDIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
+        self.INIT_CHECK_dirs = ['/'.join([DIR, 'INIT_CHECK']) for DIR in FE_outputDIRs]
+        for d in self.INIT_CHECK_dirs:
+            try:
+                os.mkdir(d)
+            except OSError:
+                pass
         ## --- OUTPUT DICTIONARY
         self.out_dict = dict()
         for ichip in range(8):
@@ -63,7 +69,7 @@ class QC_INIT_CHECK:
         link_mask = self.raw_data['WIB_LINK']
         return link_mask
 
-    def FE_PWRON(self, range_V=[1.8, 1.82]):
+    def FE_PWRON(self, range_V=[1.8, 1.82], generateQCresult=True):
         '''
             Voltages: VDDA, VDDO, and VDDP
             raw data format:
@@ -90,6 +96,7 @@ class QC_INIT_CHECK:
                 }
             }
             Note: FE{}_VPPP in the code refers to VDDP
+            - If generateQCresult==True: the "result_qc" is saved in the output data
         '''
         printItem(item="FE_PWRON")
         FE_PWRON_data = self.raw_data['FE_PWRON']
@@ -107,34 +114,44 @@ class QC_INIT_CHECK:
             VDDP_I = np.round(FE_PWRON_data['FE{}_VPPP'.format(ichip)][1], 4)
             VDDP_P = np.round(FE_PWRON_data['FE{}_VPPP'.format(ichip)] [2], 4)
             qc_Voltage = [True, True, True]
-            if (VDDA_V>=range_V[0]) & (VDDA_V<range_V[1]):
-                qc_Voltage[0] = True
-            else:
-                qc_Voltage[0] = False
-            if (VDDO_V>=range_V[0]) & (VDDO_V<range_V[1]):
-                qc_Voltage[1] = True
-            else:
-                qc_Voltage[1] = False
-            if (VDDP_V>=range_V[0]) & (VDDP_V<range_V[1]):
-                qc_Voltage[2] = True
-            else:
-                qc_Voltage[2] = False
-            Vpassed = True
-            if False in qc_Voltage:
-                Vpassed = False
+            if generateQCresult:
+                if (VDDA_V>=range_V[0]) & (VDDA_V<range_V[1]):
+                    qc_Voltage[0] = True
+                else:
+                    qc_Voltage[0] = False
+                if (VDDO_V>=range_V[0]) & (VDDO_V<range_V[1]):
+                    qc_Voltage[1] = True
+                else:
+                    qc_Voltage[1] = False
+                if (VDDP_V>=range_V[0]) & (VDDP_V<range_V[1]):
+                    qc_Voltage[2] = True
+                else:
+                    qc_Voltage[2] = False
+                Vpassed = True
+                if False in qc_Voltage:
+                    Vpassed = False
+            # oneChip_data =  {
+            #                     'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": [Vpassed]},
+            #                     'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "result_qc": []},
+            #                     'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "result_qc" : []},
+            #                     'units': ['V', 'mA', 'mW']
+            #                 }
             oneChip_data =  {
-                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": [Vpassed]},
-                                'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "result_qc": []},
-                                'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "result_qc" : []},
-                                'units': ['V', 'mA', 'mW']
+                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "unit": "V"},
+                                'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "unit": "mA"},
+                                'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "unit": "mW"},
                             }
-            output_FE = self.FE_output_DIRs[ichip]
+            if generateQCresult:
+                oneChip_data['V']['result_qc'] = [Vpassed]
+                oneChip_data['I']['result_qc'] = []
+                oneChip_data['P']['result_qc'] = []
+            output_FE = self.INIT_CHECK_dirs[ichip]
             for key, val in enumerate(['V', 'I', 'P']):
                 tmp_data = oneChip_data[val]['data']
                 plt.figure()
-                plt.plot(tmp_data, label=val + '({})'.format(oneChip_data['units'][key]), marker='.', markersize=12)
+                plt.plot(tmp_data, label=val + '({})'.format(oneChip_data[val]['unit']), marker='.', markersize=12)
                 plt.xticks([0,1,2], ['VDDA', 'VDDO', 'VDDP'])
-                plt.ylabel(val + '({})'.format(oneChip_data['units'][key]))
+                plt.ylabel(val + '({})'.format(oneChip_data[val]['unit']))
                 plt.grid()
                 plt.legend()
                 plt.savefig('/'.join([output_FE, 'INIT_CHK_{}_PWR.png'.format(val)]))
@@ -146,7 +163,7 @@ class QC_INIT_CHECK:
     def ADC_PWRON(self):
         pass
 
-    def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK'):
+    def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK', generateQCresult=False):
         printItem(item=param)
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
@@ -155,13 +172,13 @@ class QC_INIT_CHECK:
         out_dict = dict()
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
-            output_FE = self.FE_output_DIRs[ichip]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms)
+            output_FE = self.INIT_CHECK_dirs[ichip]
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
     
-    def runAnalysis(self, in_params={}):
+    def runAnalysis(self, in_params={}, generateQCresult=False):
         '''
         input: in_params = {param0: {'pedestal': [], 'rms': [], 'pulseAmp': []},
                             param1: {'pedestal': [], 'rms': [], 'pulseAmp': []},
@@ -173,7 +190,7 @@ class QC_INIT_CHECK:
         for param in params:
             if param=="FE_PWRON":
                 range_V = in_params[param]['V']
-                FE_pwr_dict = self.FE_PWRON(range_V=range_V)
+                FE_pwr_dict = self.FE_PWRON(range_V=range_V, generateQCresult=generateQCresult)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param] = FE_pwr_dict[param][FE_ID]
@@ -181,7 +198,7 @@ class QC_INIT_CHECK:
                 range_peds = in_params[param]['pedestal']
                 range_rms = in_params[param]['rms']
                 range_pulseAmp = in_params[param]['pulseAmp']
-                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param)
+                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param, generateQCresult=generateQCresult)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
@@ -193,7 +210,7 @@ class QC_INIT_CHECK:
         ## --- THIS BLOCK SHOULD BE THE LAST PART OF THE METHOD runAnalysis
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            dumpJson(output_path=self.FE_output_DIRs[ichip], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
+            dumpJson(output_path=self.INIT_CHECK_dirs[ichip], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -207,4 +224,4 @@ if __name__ == '__main__':
         # data_dir = 'FE_004003138_004003139_004003140_004003145_004003157_004003146_004003147_004003148'
         # data_dir = 'FE_002006204_002006209_002006210_002006211_002006212_002006217_002006218_002006219'
         init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.runAnalysis(in_params=qc_selection['QC_INIT_CHK'])
+        init_chk.runAnalysis(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False)
