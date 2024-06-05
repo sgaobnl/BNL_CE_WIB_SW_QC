@@ -375,7 +375,7 @@ class DAT_CFGS(WIB_CFGS):
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
                     warn_flg = True
             if "VDDD1P2" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 1.15) & (adcs_pwr_info[onekey][0] < 1.25) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][1] < 3  ) :
+                if  (adcs_pwr_info[onekey][0] > 1.05) & (adcs_pwr_info[onekey][0] < 1.15) & (adcs_pwr_info[onekey][1] > 1  ) & (adcs_pwr_info[onekey][1] < 3  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
@@ -1066,6 +1066,7 @@ class DAT_CFGS(WIB_CFGS):
         self.cdpoke(0, 0xC, 0, self.DAT_FE_IN_TST_SEL_MSB, 0x00)    
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
         self.cdpoke(0, 0xC, 0, self.DAT_FE_TEST_SEL_INHIBIT, 0x00)    
+        time.sleep(0.2)
         datas = self.dat_monadcs()[0]
         datas_v = np.array(datas)*self.AD_LSB
         mon_datas["VBGR"] = [datas, datas_v]
@@ -1114,6 +1115,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fechip_global(chip=fe&0x07, stb1=stb1, stb=stb0)
             self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
+            time.sleep(0.2)
             datas = self.dat_monadcs()[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_Temper"] = [datas, datas_v]
@@ -1130,6 +1132,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fechip_global(chip=fe&0x07, stb1=stb1, stb=stb0)
             self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
+            time.sleep(0.2)
             datas = self.dat_monadcs()[0]
             datas_v = np.array(datas)*self.AD_LSB
             mon_datas["MON_VBGR"] = [datas, datas_v]
