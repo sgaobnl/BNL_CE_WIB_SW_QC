@@ -29,7 +29,7 @@ qc_selection :
     }
 }
 ```
-
+* ***QC_PWR.py :*** file having the class QC_PWR for the extraction of informations from raw data of the power measurement
 ---
 This README file will include all informations about the scripts like: <br/>
 * input data <br/>
@@ -47,10 +47,9 @@ This README file will include all informations about the scripts like: <br/>
     "WIB_PWR" : {},
     "WIB_LINK" : {},
     "FE_PWRON" : {
-        "V": {"data": [], "qc_result": [], "link_to_img": ""},
-        "I": {"data": [], "qc_result": [], "link_to_img": ""},
-        "P": {"data": [], "qc_result": [], "link_to_img": ""},
-        "units": ["V", "mA", "mW"]
+        "V": {"data": [VDDA_V, VDDO_V, VDDP_V], "qc_result": [], "unit": "V" ,"link_to_img": ""},
+        "I": {"data": [VDDA_I, VDDO_I, VDDP_I], "qc_result": [], "unit": "mA", "link_to_img": ""},
+        "P": {"data": [VDDA_P, VDDO_P, VDDP_P], "qc_result": [], "unit": "mW", "link_to_img": ""},
     },
     "ADC_PWRON" : {},
     "ASICDAC_CALI_CHK" : {
@@ -73,6 +72,15 @@ This README file will include all informations about the scripts like: <br/>
 ```
 
 * **QC_PWR**
+    * **Configuration**:
+        * SNC0: 900mV
+        * SNC1: 200mV
+        * SDD0: SEDC output buffer DISABLED
+        * SDD1: SEDC output buffer ENABLED
+        * SDF0: SE output buffer DISABLED
+        * SDF1: SE output buffer ENABLED
+        **The configuration SDD1 + SDF1 is not used.**
+    * **Data format:**
 ```json
 {
     "V": {"200mV": {"config0": val, "config1": val, "config2": val},
