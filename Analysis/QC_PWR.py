@@ -73,7 +73,7 @@ class QC_PWR:
                         data_by_config[FE_ID][param][keyname] = data_oneconfig[val]
         return data_by_config
 
-    def FE_PWR(self, selectionCriteria: dict):
+    def FE_PWR(self):
         print('----> Power consumption')
         data_by_config = self.getPowerConsumption()
 
@@ -245,10 +245,8 @@ if __name__ =='__main__':
     qc_selection = json.load(open("qc_selection.json"))
     for data_dir in list_data_dir:
         qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        qc_pwr.FE_PWR(selectionCriteria=qc_selection['QC_PWR'])
-        # qc_pwr.analyzeChResponse()
+        qc_pwr.FE_PWR()
         tf = datetime.datetime.now()
         print('end time : {}'.format(tf))
         deltaT = (tf - t0).total_seconds()
         print("Analysis duration : {} seconds".format(deltaT))
-        sys.exit()
