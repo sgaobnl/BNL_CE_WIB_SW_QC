@@ -78,19 +78,19 @@ This README file will include all informations about the scripts like: <br/>
     "V": {"200mV": {"config0": val, "config1": val, "config2": val},
           "900mV": {"config0": val, "config1": val, "config2": val},
           "unit": "V",
-          "result_qc": "",
+          //"result_qc": "",
           "link_to_img": ""
          },
     "I": {"200mV": {"config0": val, "config1": val, "config2": val},
           "900mV": {"config0": val, "config1": val, "config2": val},
           "unit": "mA",
-          "result_qc": "",
+          //"result_qc": "",
           "link_to_img": ""
          },
     "P": {"200mV": {"config0": val, "config1": val, "config2": val},
           "900mV": {"config0": val, "config1": val, "config2": val},
           "unit": "P",
-          "result_qc": "",
+          //"result_qc": "",
           "link_to_img": ""
          }
 }
