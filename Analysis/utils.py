@@ -40,10 +40,9 @@ def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
             output_name: filename WITHOUT the extension .json
             data_to_dump: a dictionary of the data to save
     '''
-    with open('/'.join([output_path, output_name + '.json']), 'w+') as fn:
-        json.dump(data_to_dump, fn)
-        ## ------- MODIFIY THE WAY TO WRITE THE DATA ON THE FILE
-        ## ==> ORGANIZE THE DATA BY WRITING EACH key: value ON A NEW LINE
+    with open('/'.join([output_path, output_name + '.json']), 'w+', encoding='utf-8') as fn:
+        json.dump(data_to_dump, fn, indent=4)
+        
 
 def dumpMD(output_path: str, output_name: str, mdTable_to_dump: str):
     '''
@@ -166,7 +165,8 @@ def getpulse(oneCHdata: list):
 
 # Analyze one LArASIC
 class LArASIC_ana:
-    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK'):
+    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True):
+        self.generateQCresult = generateQCresult
         ## chipID : from the logs
         self.data = dataASIC
         self.chipID = chipID
@@ -201,32 +201,37 @@ class LArASIC_ana:
         pedestals, result_qc_ped = [], []
         rms, result_qc_rms = [], []
         for ich in range(16):
+            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich])
             bool_ped = True
             bool_rms = True
-            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich])
-            if (tmpped > range_peds[0]) & (tmpped < range_peds[1]):
-                bool_ped = True
-            else:
-                bool_ped = False
-            if (tmprms > range_rms[0]) & (tmprms < range_rms[1]):
-                bool_rms = True
-            else:
-                bool_rms = False
-            result_qc_ped.append(bool_ped)
-            result_qc_rms.append(bool_rms)
+            if self.generateQCresult:
+                if (tmpped > range_peds[0]) & (tmpped < range_peds[1]):
+                    bool_ped = True
+                else:
+                    bool_ped = False
+                if (tmprms > range_rms[0]) & (tmprms < range_rms[1]):
+                    bool_rms = True
+                else:
+                    bool_rms = False
+                result_qc_ped.append(bool_ped)
+                result_qc_rms.append(bool_rms)
             pedestals.append(tmpped)
             rms.append(tmprms)
 
-        out_dict = {'pedestal': {'data': pedestals, 'result_qc': result_qc_ped},
-                    'rms': {'data': rms, 'result_qc': result_qc_rms}
+        out_dict = {'pedestal': {'data': pedestals},
+                    'rms': {'data': rms}
                     }
-        
+        if self.generateQCresult:
+            out_dict['pedestal']['result_qc'] = result_qc_ped
+            out_dict['rms']['result_qc'] = result_qc_rms
+
         # plot of pedestal
         plt.figure()
         plt.plot(pedestals, label='Pedestal')
         plt.xlabel('Channels')
         plt.ylabel('ADC bit')
-        plt.ylim([range_peds[0], range_peds[1]])
+        if self.generateQCresult:
+            plt.ylim([range_peds[0], range_peds[1]])
         plt.title('Pedestal')
         plt.legend(loc="upper right")
         plt.grid()
@@ -238,15 +243,16 @@ class LArASIC_ana:
         plt.plot(rms, label='RMS')
         plt.xlabel('Channels')
         plt.ylabel('ADC bit')
-        plt.ylim([range_rms[0], range_rms[1]])
+        if self.generateQCresult:
+            plt.ylim([range_rms[0], range_rms[1]])
         plt.title('RMS')
         plt.legend(loc="upper right")
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
         plt.close()
         
-        out_dict['pedestal']['link_to_img'] = '/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
-        out_dict['rms']['link_to_img'] = '/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
+        out_dict['pedestal']['link_to_img'] = '/'.join(['.', '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
+        out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
     def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True):
@@ -266,25 +272,30 @@ class LArASIC_ana:
             pulseData = getpulse(oneCHdata=self.data[ich])
             pospeak = np.round(np.max(pulseData) - pedestals[ich], 4)
             negpeak = np.round(pedestals[ich] - np.min(pulseData), 4)
-            if isPosPeak:
-                bool_ppeak = True
-                if (pospeak > range_pulseAmp[0]) & (pospeak < range_pulseAmp[1]):
+            if self.generateQCresult:
+                if isPosPeak:
                     bool_ppeak = True
+                    if (pospeak > range_pulseAmp[0]) & (pospeak < range_pulseAmp[1]):
+                        bool_ppeak = True
+                    else:
+                        bool_ppeak = False
+                    result_qc_ppeak.append(bool_ppeak)
                 else:
-                    bool_ppeak = False
-                result_qc_ppeak.append(bool_ppeak)
-            else:
-                bool_npeak = True
-                if (negpeak > range_pulseAmp[0]) & (negpeak < range_pulseAmp[1]):
                     bool_npeak = True
-                else:
-                    bool_npeak = False
-                result_qc_npeak.append(bool_npeak)
+                    if (negpeak > range_pulseAmp[0]) & (negpeak < range_pulseAmp[1]):
+                        bool_npeak = True
+                    else:
+                        bool_npeak = False
+                    result_qc_npeak.append(bool_npeak)
             ppeaks.append(pospeak)
             npeaks.append(negpeak)
 
-        out_dict = {'pospeak': {'data': ppeaks, 'result_qc': result_qc_ppeak},
-                    'negpeak': {'data': npeaks, 'result_qc': result_qc_npeak}}
+        out_dict = {'pospeak': {'data': ppeaks},
+                    'negpeak': {'data': npeaks}
+                   }
+        if self.generateQCresult:
+            out_dict['pospeak']['result_qc'] = result_qc_ppeak
+            out_dict['negpeak']['result_qc'] = result_qc_npeak
         
         # pulse response - averaged waveform
         plt.figure()
@@ -298,7 +309,7 @@ class LArASIC_ana:
         plt.grid()
         plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
         plt.close()
-        out_dict['waveform_img'] = '/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
+        out_dict['waveform_img'] = '/'.join(['.', '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
 
         # pulse amplitude
         plt.figure()
@@ -306,7 +317,8 @@ class LArASIC_ana:
             plt.plot(ppeaks, label='Positive peaks')
         else:
             plt.plot(npeaks, label='Negative peaks')
-        plt.ylim([range_pulseAmp[0], range_pulseAmp[1]])
+        if self.generateQCresult:
+            plt.ylim([range_pulseAmp[0], range_pulseAmp[1]])
         plt.xlabel('Channels')
         plt.ylabel('ADC bit')
         plt.title('Pulse amplitude')
@@ -315,11 +327,11 @@ class LArASIC_ana:
         plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
         plt.close()
         if isPosPeak:
-            out_dict['pospeak']['link_to_img'] = '/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+            out_dict['pospeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
             out_dict['negpeak']['link_to_img'] = ''
         else:
             out_dict['pospeak']['link_to_img'] = ''
-            out_dict['negpeak']['link_to_img'] = '/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+            out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
     def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True):
