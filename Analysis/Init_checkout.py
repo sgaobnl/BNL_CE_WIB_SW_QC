@@ -137,26 +137,14 @@ class QC_INIT_CHECK:
             #                     'units': ['V', 'mA', 'mW']
             #                 }
             oneChip_data =  {
-                                'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "unit": "V"},
-                                'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "unit": "mA"},
-                                'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "unit": "mW"},
+                                'V' : {"data": {'VDDA': VDDA_V, 'VDDO': VDDO_V, 'VDDP': VDDP_V}, "unit": "V"},
+                                'I': {"data" : {'VDDA': VDDA_I, 'VDDO': VDDO_I, 'VDDP': VDDP_I}, "unit": "mA"},
+                                'P': {"data": {'VDDA': VDDA_P, 'VDDO': VDDO_P, 'VDDP': VDDP_P}, "unit": "mW"},
                             }
             if generateQCresult:
                 oneChip_data['V']['result_qc'] = [Vpassed]
                 oneChip_data['I']['result_qc'] = []
                 oneChip_data['P']['result_qc'] = []
-            output_FE = self.INIT_CHECK_dirs[ichip]
-            for key, val in enumerate(['V', 'I', 'P']):
-                tmp_data = oneChip_data[val]['data']
-                plt.figure()
-                plt.plot(tmp_data, label=val + '({})'.format(oneChip_data[val]['unit']), marker='.', markersize=12)
-                plt.xticks([0,1,2], ['VDDA', 'VDDO', 'VDDP'])
-                plt.ylabel(val + '({})'.format(oneChip_data[val]['unit']))
-                plt.grid()
-                plt.legend()
-                plt.savefig('/'.join([output_FE, 'INIT_CHK_{}_PWR.png'.format(val)]))
-                plt.close()
-                oneChip_data[val]['link_to_img'] = '/'.join([output_FE, 'INIT_CHK_{}_PWR.png'.format(val)])
             out_dict[self.logs_dict['FE{}'.format(ichip)]] = oneChip_data
         return {'FE_PWRON': out_dict}
 
@@ -173,7 +161,7 @@ class QC_INIT_CHECK:
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.INIT_CHECK_dirs[ichip]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult)
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=False)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
@@ -201,6 +189,7 @@ class QC_INIT_CHECK:
                 data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param, generateQCresult=generateQCresult)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
+                    self.out_dict[FE_ID][param]["CFG_info"] = [] # to be added by Shanshan or Me later
                     self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
                     self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']
                     self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
