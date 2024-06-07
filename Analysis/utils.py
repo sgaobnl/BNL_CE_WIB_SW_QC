@@ -10,7 +10,7 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 # from spymemory_decode_copy import wib_dec
-import math
+import h5py
 
 sys.path.append('./decode')
 from dunedaq_decode import wib_dec
@@ -165,8 +165,9 @@ def getpulse(oneCHdata: list):
 
 # Analyze one LArASIC
 class LArASIC_ana:
-    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True):
+    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True):
         self.generateQCresult = generateQCresult
+        self.generatePlots = generatePlots
         ## chipID : from the logs
         self.data = dataASIC
         self.chipID = chipID
@@ -224,35 +225,35 @@ class LArASIC_ana:
         if self.generateQCresult:
             out_dict['pedestal']['result_qc'] = result_qc_ped
             out_dict['rms']['result_qc'] = result_qc_rms
-
-        # plot of pedestal
-        plt.figure()
-        plt.plot(pedestals, label='Pedestal')
-        plt.xlabel('Channels')
-        plt.ylabel('ADC bit')
-        if self.generateQCresult:
-            plt.ylim([range_peds[0], range_peds[1]])
-        plt.title('Pedestal')
-        plt.legend(loc="upper right")
-        plt.grid()
-        plt.savefig('/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)]))
-        plt.close()
-        #
-        # plot of rms
-        plt.figure()
-        plt.plot(rms, label='RMS')
-        plt.xlabel('Channels')
-        plt.ylabel('ADC bit')
-        if self.generateQCresult:
-            plt.ylim([range_rms[0], range_rms[1]])
-        plt.title('RMS')
-        plt.legend(loc="upper right")
-        plt.grid()
-        plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
-        plt.close()
-        
-        out_dict['pedestal']['link_to_img'] = '/'.join(['.', '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
-        out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
+        if self.generatePlots:
+            # plot of pedestal
+            plt.figure()
+            plt.plot(pedestals, label='Pedestal')
+            plt.xlabel('Channels')
+            plt.ylabel('ADC bit')
+            if self.generateQCresult:
+                plt.ylim([range_peds[0], range_peds[1]])
+            plt.title('Pedestal')
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.savefig('/'.join([self.output_dir, '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)]))
+            plt.close()
+            #
+            # plot of rms
+            plt.figure()
+            plt.plot(rms, label='RMS')
+            plt.xlabel('Channels')
+            plt.ylabel('ADC bit')
+            if self.generateQCresult:
+                plt.ylim([range_rms[0], range_rms[1]])
+            plt.title('RMS')
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
+            plt.close()
+            
+            out_dict['pedestal']['link_to_img'] = '/'.join(['.', '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
+            out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
     def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True):
@@ -297,41 +298,42 @@ class LArASIC_ana:
             out_dict['pospeak']['result_qc'] = result_qc_ppeak
             out_dict['negpeak']['result_qc'] = result_qc_npeak
         
-        # pulse response - averaged waveform
-        plt.figure()
-        for ich in range(16):
-            avg_pulse = getpulse(oneCHdata=self.data[ich])
-            plt.plot(avg_pulse, label='CH{}'.format(ich))
-        plt.xlabel('Time')
-        plt.ylabel('ADC bit')
-        plt.title('Averaged Waveform')
-        plt.legend(loc="upper right")
-        plt.grid()
-        plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
-        plt.close()
-        out_dict['waveform_img'] = '/'.join(['.', '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
+        if self.generatePlots:
+            # pulse response - averaged waveform
+            plt.figure()
+            for ich in range(16):
+                avg_pulse = getpulse(oneCHdata=self.data[ich])
+                plt.plot(avg_pulse, label='CH{}'.format(ich))
+            plt.xlabel('Time')
+            plt.ylabel('ADC bit')
+            plt.title('Averaged Waveform')
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
+            plt.close()
+            out_dict['waveform_img'] = '/'.join(['.', '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
 
-        # pulse amplitude
-        plt.figure()
-        if isPosPeak:
-            plt.plot(ppeaks, label='Positive peaks')
-        else:
-            plt.plot(npeaks, label='Negative peaks')
-        if self.generateQCresult:
-            plt.ylim([range_pulseAmp[0], range_pulseAmp[1]])
-        plt.xlabel('Channels')
-        plt.ylabel('ADC bit')
-        plt.title('Pulse amplitude')
-        plt.legend(loc="upper right")
-        plt.grid()
-        plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
-        plt.close()
-        if isPosPeak:
-            out_dict['pospeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
-            out_dict['negpeak']['link_to_img'] = ''
-        else:
-            out_dict['pospeak']['link_to_img'] = ''
-            out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+            # pulse amplitude
+            plt.figure()
+            if isPosPeak:
+                plt.plot(ppeaks, label='Positive peaks')
+            else:
+                plt.plot(npeaks, label='Negative peaks')
+            if self.generateQCresult:
+                plt.ylim([range_pulseAmp[0], range_pulseAmp[1]])
+            plt.xlabel('Channels')
+            plt.ylabel('ADC bit')
+            plt.title('Pulse amplitude')
+            plt.legend(loc="upper right")
+            plt.grid()
+            plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
+            plt.close()
+            if isPosPeak:
+                out_dict['pospeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+                out_dict['negpeak']['link_to_img'] = ''
+            else:
+                out_dict['pospeak']['link_to_img'] = ''
+                out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
     def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True):
