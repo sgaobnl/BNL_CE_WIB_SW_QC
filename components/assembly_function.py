@@ -278,14 +278,14 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ped, rms = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-        tmp = QC_check.CHKPulse(ped, 700)
+        tmp = QC_check.CHKPulse(ped, 700, type = 'pedestal')
         log.chkflag["BL"]=(tmp[0])
         log.badlist["BL"]=(tmp[1])
         ped_err_flag = tmp[0]
         baseline_err_status = tmp[1]
         log.report_log04[femb_id]["PED 128-CH std"] = tmp[2]
 
-        tmp = QC_check.CHKPulse(rms, 7)
+        tmp = QC_check.CHKPulse(rms)
         log.chkflag["RMS"]=(tmp[0])
         log.badlist["RMS"]=(tmp[1])
         rms_err_flag = tmp[0]
@@ -451,21 +451,21 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
         # with open(outfp, 'wb') as fn:
         #      pickle.dump([ppk,npk,bl], fn)
 
-        tmp = QC_check.CHKPulse(ppk)
+        tmp = QC_check.CHKPulse(ppk, 700, type = 'pedestal')
 
         log.chkflag["Pulse_SE"]["PPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["PPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(npk)
+        tmp = QC_check.CHKPulse(npk, 700, type = 'pedestal')
         log.chkflag["Pulse_SE"]["NPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["NPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(bl)
+        tmp = QC_check.CHKPulse(bl, 300, type = 'pedestal')
         log.chkflag["Pulse_SE"]["BL"]=(tmp[0])
         log.badlist["Pulse_SE"]["BL"]=(tmp[1])
 
 
-        if (log.chkflag["Pulse_SE"]["PPK"] == False) and (log.chkflag["Pulse_SE"]["NPK"] == False) and (log.chkflag["Pulse_SE"]["BL"] == False):
+        if (log.chkflag["Pulse_SE"]["PPK"] == True) and (log.chkflag["Pulse_SE"]["NPK"] == True) and (log.chkflag["Pulse_SE"]["BL"] == True):
             log.report_log07[femb_id]["Result"] = True
         else:
             log.report_log07[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE"]["PPK"]
@@ -480,24 +480,26 @@ def DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ppk, npk, bl = qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
 
-        tmp = QC_check.CHKPulse(ppk)
+        tmp = QC_check.CHKPulse(ppk, 700, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["PPK"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["PPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(npk)
+        tmp = QC_check.CHKPulse(npk, 700, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["NPK"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["NPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(bl)
+        tmp = QC_check.CHKPulse(bl, 300, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["BL"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["BL"]=(tmp[1])
+        print(log.chkflag)
+        print(log.badlist)
 
-        if (log.chkflag["Pulse_DIFF"]["PPK"] == False) and (log.chkflag["Pulse_DIFF"]["NPK"] == False) and (log.chkflag["Pulse_DIFF"]["BL"] == False):
+        if (log.chkflag["Pulse_DIFF"]["PPK"] == True) and (log.chkflag["Pulse_DIFF"]["NPK"] == True) and (log.chkflag["Pulse_DIFF"]["BL"] == True):
             log.report_log08[femb_id]["Result"] = True
         else:
-            log.report_log08[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_SE"]["PPK"]
-            log.report_log08[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_SE"]["NPK"]
-            log.report_log08[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_SE"]["BL"]
+            log.report_log08[femb_id]["Pulse_SE PPK err_status"] = log.badlist["Pulse_DIFF"]["PPK"]
+            log.report_log08[femb_id]["Pulse_SE NPK err_status"] = log.badlist["Pulse_DIFF"]["NPK"]
+            log.report_log08[femb_id]["Pulse_SE BL err_status"] = log.badlist["Pulse_DIFF"]["BL"]
             log.report_log08[femb_id]["Result"] = False
 
 

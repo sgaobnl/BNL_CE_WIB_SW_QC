@@ -294,7 +294,7 @@ if ship:
         plt.xlabel("Channel", fontsize=12)
         plt.ylabel("RMS", fontsize=12)
         plt.xticks(x_sticks)
-        plt.ylim(5, 16)
+        plt.ylim(5, 32)
         plt.grid(axis='x')
         plt.grid(axis='y')
         plt.legend()

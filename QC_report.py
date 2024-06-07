@@ -132,19 +132,16 @@ class QC_reports:
              rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
-        # log.report_log01_12.update(se_pulse)
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
         log.report_log01_12.update(pulse)
         log.check_log01_12.update(pulse_check)
-
 #     SE Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE_OFF", datadir, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
+        a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, datadir, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_13.update(power_rail)
         log.check_log01_13.update(power_rail_check)
-
 
 
 #     SE ON Power Measurement    Power
@@ -165,19 +162,17 @@ class QC_reports:
              rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_ON_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_22 SE ON Power Pulse')
-        # log.report_log01_12.update(se_pulse)
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
         log.report_log01_22.update(pulse)
         log.check_log01_22.update(pulse_check)
 
 #     SE ON Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE_ON", datadir, self.fembsID, '01_23 SE ON Power Rail')
+        a_func.monitor_power_rail_analysis("SE_ON", self.fembs, datadir, self.fembsID, '01_23 SE ON Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_23.update(power_rail)
         log.check_log01_23.update(power_rail_check)
-
 
 
 #     DIFF Power Measurement    Power
@@ -198,19 +193,18 @@ class QC_reports:
             rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", 'DIFF Power Pulse')
-        # log.report_log01_12.update(se_pulse)
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
         log.report_log01_32.update(pulse)
         log.check_log01_32.update(pulse_check)
 
-
 #     DIFF Power Rail
-        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", datadir, self.fembsID, 'DIFF Power Rail')
+        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", self.fembs, datadir, self.fembsID, 'DIFF Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_33.update(power_rail)
         log.check_log01_33.update(power_rail_check)
+
 
         # plot Power Measurement
         for ifemb in range(len(self.fembs)):
@@ -223,14 +217,11 @@ class QC_reports:
             x3 = x-0.325
             y1 = [log.check_log01_11[femb_id]["LArASIC_I"], log.check_log01_21[femb_id]["LArASIC_I"], log.check_log01_31[femb_id]["LArASIC_I"]]
             plt.bar(x1, y1, width=0.3, label = 'LArASIC_I', color = 'darkred', edgecolor = 'k', zorder = 3)
-
             plt.plot(x1, [log.check_log01_11[femb_id]["LArASIC_I"]+0.05, log.check_log01_21[femb_id]["LArASIC_I"]+0.05, log.check_log01_31[femb_id]["LArASIC_I"]+0.05], marker='^', linestyle='--', color='darkred')
             y2 = [log.check_log01_11[femb_id]["ColdADC_I"], log.check_log01_21[femb_id]["ColdADC_I"], log.check_log01_31[femb_id]["ColdADC_I"]]
             plt.bar(x2, y2, width=0.35, label='ColdADC_I', color='darkorange', edgecolor='k', zorder=3)
             y3 = [log.check_log01_11[femb_id]["COLDATA_I"], log.check_log01_21[femb_id]["COLDATA_I"], log.check_log01_31[femb_id]["COLDATA_I"]]
-
             plt.bar(x3, y3, width=0.3, label='COLDATA_I', color='cornflowerblue', edgecolor='k', zorder=3)
-
             plt.text(0, log.check_log01_11[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_11[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_11[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
             plt.text(3, log.check_log01_21[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_21[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_21[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
             plt.text(6, log.check_log01_31[femb_id]["ColdADC_I"]+0.05, 'P=' + str(round(log.check_log01_31[femb_id]["TPower"],2))+'W \n'+str(round(log.check_log01_31[femb_id]["ColdADC_I"],2)), horizontalalignment='center')
@@ -249,7 +240,9 @@ class QC_reports:
             plt.savefig(self.savedir[self.fembs[ifemb]] + "PWR_Meas/" + 'Power_Total.png', transparent = True)
             plt.close()
 
-# 2     Power cycle test, only in LN2
+
+
+# 2     Power cycle test, only in LN2, now can be used in RT and LN2
     def PWR_cycle_report(self):
         log.test_label.append(2)
         if 'RT' in self.logs['env']:
@@ -301,7 +294,7 @@ class QC_reports:
 
 #     03 04    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
     def LCCHKPULSE(self, fdir):
-        log.test_label.append(3)
+        log.test_label.append(3) # used as a label for this test item
         self.CreateDIR(fdir)
         datadir = self.datadir+fdir+"/"
         log_dict = log.report_log3
@@ -321,6 +314,8 @@ class QC_reports:
             else:
                 fname = afile.split("/")[-1][:-4]
             label = fname[fname.find("0x20_")+5:]
+            print('XXXXXXX')
+            print(label)
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_'+label)
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
@@ -352,11 +347,12 @@ class QC_reports:
             for i in range(len(x)):
                 plt.text(x[i], y1[i] + 100, f'{round(y1[i], 1)}±{round(yer[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
                 plt.text(x[i], y2[i] + 100, f'{round(y2[i], 1)}±{round(y2er[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkred')
-            plt.title('Postive Pulse Response')
+            plt.title('Postive Peak Distribution')
             plt.ylabel('ADC Count')
             plt.xlabel('leakage current')
             plt.margins(x=0.15)
             plt.legend(loc="upper left", ncol=3, shadow=False)
+            plt.tight_layout()
             fp = self.savedir[self.fembs[ifemb]] + "Leakage_Current/"
             plt.gca().set_facecolor('none')     # set background as transparent
             plt.savefig(fp + "LC_pulse.png", transparent = True)
@@ -498,11 +494,11 @@ class QC_reports:
 
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + fdir+"/"
-            if 'vdac' in fname:
-                print("vdac")
-              #qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
-            else:
-                qc.GetPeaks(pldata, ifemb, fp, fname)
+            # if 'vdac' in fname:
+            #     print("vdac")
+            #   #qc.GetPeaks(pldata, ifemb, fp, fname, period = 1000)
+            # else:
+            qc.GetPeaks(pldata, ifemb, fp, fname)
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             # plot 1
             plt.figure(figsize=(6, 4))
@@ -550,6 +546,7 @@ class QC_reports:
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(0, 6000)
             plt.title("SE 200 Pulse Response ErrorBar", fontsize=12)
+            plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')     # set background as transparent
             plt.savefig(fp + 'SE_200_Gain_Pulse_ErrorBar.png', transparent = True)
@@ -638,6 +635,7 @@ class QC_reports:
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(-9000, 9000)
             plt.title("SE 900 Pulse Response ErrorBar", fontsize=12)
+            plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')     # set background as transparent
             plt.savefig(fp + 'SE_900_Gain_Pulse_ErrorBar.png', transparent = True)
@@ -664,10 +662,40 @@ class QC_reports:
             for i in range(len(x)):
                 plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkorange')
             plt.title("SGP1 200 Pulse Response ErrorBar", fontsize=12)
+            plt.tight_layout()
             plt.ylim(0, 17000)
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'SGP1_200_fC_Pulse.png', transparent = True)
+            plt.close()
+
+            # plot 4
+            plt.figure(figsize=(6, 4))
+            x = [1, 2]
+            x_sticks = ()
+            DIFF_200_ppk = [log.check_log04_04_14203[femb_id]["ppk_mean"]-log.check_log04_04_14203[femb_id]["bbl_mean"],
+                                log.check_log04_04_14204[femb_id]["ppk_mean"]-log.check_log04_04_14204[femb_id]["bbl_mean"]]
+            DIFF_200_ppkerr = [log.check_log04_04_14203[femb_id]["ppk_std"], log.check_log04_04_14204[femb_id]["ppk_std"]]
+            plt.errorbar(x, DIFF_200_ppk, yerr=DIFF_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen', label='DIFF_ppk')
+            # ex_200_ppk = [log.check_log04_04_14205[femb_id]["ppk_mean"]-log.check_log04_04_14205[femb_id]["bbl_mean"],
+            #                     log.check_log04_04_14206[femb_id]["ppk_mean"]-log.check_log04_04_14206[femb_id]["bbl_mean"]]
+            # ex_200_ppkerr = [log.check_log04_04_14205[femb_id]["ppk_std"], log.check_log04_04_14206[femb_id]["ppk_std"]]
+            # plt.errorbar(x, ex_200_ppk, yerr=ex_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen',
+            #              label='DIFF_ppk')
+            plt.legend()
+            plt.xlabel("Gain Setting", fontsize=12)
+            plt.ylabel("ADC Count", fontsize=12)
+            # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
+            plt.xticks(x, ['200 mV/fC', '900 mV/fC'])
+            plt.grid(True, axis='y', linestyle='--')
+            # for i in range(len(x)):
+            #     plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkorange')
+            plt.title("DIFF 200/900 Pulse Response ErrorBar", fontsize=12)
+            plt.tight_layout()
+            plt.ylim(0, 17000)
+            plt.margins(x=0.15)
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.savefig(fp + 'diff_ex_200_fC_Pulse.png', transparent = True)
             plt.close()
         self.Gather_PNG_PDF(fp)
 
@@ -734,13 +762,19 @@ class QC_reports:
             log.report_log05_table[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_500pA'])
             log.report_log05_table[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_1nA'])
             log.report_log05_table[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} | {} ".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_200mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SELC_200mVBL_14_0mVfC_2_0us_5nA'])
+
             log.report_log05_table2[femb_id]["Baseline"] = "900 mV | | | | | | |"
             log.report_log05_table2[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF |"
             log.report_log05_table2[femb_id]["peak time"] = "0.5 us | 1 us | 2 us | 3 us | 2 us | 2 us |"
-            log.report_log05_table2[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_4_7mVfC_2_0us'])
-            log.report_log05_table2[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_7_8mVfC_2_0us'])
-            log.report_log05_table2[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_14_0mVfC_2_0us'])
-            log.report_log05_table2[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_25_0mVfC_2_0us'])
+            log.report_log05_table2[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_4_7mVfC_2_0us'])
+            log.report_log05_table2[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_7_8mVfC_2_0us'])
+            log.report_log05_table2[femb_id]["14 mV"] = " {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_14_0mVfC_2_0us'])
+            log.report_log05_table2[femb_id]["25 mV"] = " {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_25_0mVfC_2_0us'])
+            # log.report_log05_table2[femb_id]["4.7 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_4_7mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_4_7mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_4_7mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_4_7mVfC_2_0us'])
+            # log.report_log05_table2[femb_id]["7.8 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_7_8mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_7_8mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_7_8mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_7_8mVfC_2_0us'])
+            # log.report_log05_table2[femb_id]["14 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_14_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_14_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_14_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_14_0mVfC_2_0us'])
+            # log.report_log05_table2[femb_id]["25 mV"] = " {} | {} | {} | {} | {} | {} |".format(log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_0_5us'], log.report_log05_tablecell[ifemb]['SE_200mVBL_25_0mVfC_1_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['SE_900mVBL_25_0mVfC_3_0us'], log.report_log05_tablecell[ifemb]['SEON_900mVBL_25_0mVfC_2_0us'], log.report_log05_tablecell[ifemb]['DIFF_900mVBL_25_0mVfC_2_0us'])
+
             plt.figure(figsize=(20, 4))
             plt.subplot(1, 4, 1)
             x_sticks = range(0, 129, 16)
@@ -856,6 +890,7 @@ class QC_reports:
             plt.ylim(0, 70)
             plt.grid(axis='x')
             plt.title("SE 200 & 900 mV RMS ErrorBar", fontsize=12)
+            plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'SE_200_900_mV_RMS_ErrorBar.png', transparent = True)
@@ -863,17 +898,17 @@ class QC_reports:
             plt.figure(figsize=(6, 4))
             x = [4.7, 7.8, 14, 25]
             SEON_200_2_0us = [log.report_log056_fembrms[ifemb]["SEON_200mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_200mVBL_25_0mVfC_2_0us"]]
-            SEON_900_2_0us = [log.report_log056_fembrms[ifemb]["SEON_900mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_25_0mVfC_2_0us"]]
+            # SEON_900_2_0us = [log.report_log056_fembrms[ifemb]["SEON_900mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["SEON_900mVBL_25_0mVfC_2_0us"]]
             DIFF_200_2_0us = [log.report_log056_fembrms[ifemb]["DIFF_200mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_200mVBL_25_0mVfC_2_0us"]]
             DIFF_900_2_0us = [log.report_log056_fembrms[ifemb]["DIFF_900mVBL_4_7mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_900mVBL_7_8mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_900mVBL_14_0mVfC_2_0us"], log.report_log056_fembrms[ifemb]["DIFF_900mVBL_25_0mVfC_2_0us"]]
             SEON_200_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["SEON_200mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_200mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_200mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_200mVBL_25_0mVfC_2_0us"]]
-            SEON_900_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_25_0mVfC_2_0us"]]
+            # SEON_900_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["SEON_900mVBL_25_0mVfC_2_0us"]]
             DIFF_200_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["DIFF_200mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_200mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_200mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_200mVBL_25_0mVfC_2_0us"]]
             DIFF_900_2_0us_err = [log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_4_7mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_7_8mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_14_0mVfC_2_0us"], log.report_log057_fembrmsstd[ifemb]["DIFF_900mVBL_25_0mVfC_2_0us"]]
             # for key in log.report_log056_fembrms[ifemb]:
             #     if "SE_200" in key:
             plt.errorbar(x, SEON_200_2_0us, yerr=SEON_200_2_0us_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkred', label = 'SEON_200_2_0us')
-            plt.errorbar(x, SEON_900_2_0us, yerr=SEON_900_2_0us_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkgreen', label = 'SEON_900_2_0us')
+            # plt.errorbar(x, SEON_900_2_0us, yerr=SEON_900_2_0us_err,capsize=5, linestyle='-', alpha=0.7, color = 'darkgreen', label = 'SEON_900_2_0us')
             plt.errorbar(x, DIFF_200_2_0us, yerr=DIFF_200_2_0us_err,capsize=5, linestyle='--', alpha=1, color = 'darkblue', label = 'DIFF_200_2_0us')
             plt.errorbar(x, DIFF_900_2_0us, yerr=DIFF_900_2_0us_err,capsize=5, linestyle='--', alpha=1, color = 'darkorange', label = 'DIFF_900_2_0us')
             plt.legend()
@@ -884,6 +919,7 @@ class QC_reports:
             plt.grid(axis='x')
             plt.ylim(0, 60)
             plt.title("SEON DIFF 200 & 900 mV RMS ErrorBar", fontsize=12)
+            plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'SEON_DIFF_200_900_mV_RMS_ErrorBar.png', transparent = True)
@@ -903,6 +939,7 @@ class QC_reports:
             plt.grid(axis='x')
             plt.ylim(0, 40)
             plt.title("Single-Ended RMS at different Leakage Current", fontsize=12)
+            plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'SELC_200_2us_ErrorBar.png', transparent = True)
@@ -931,7 +968,7 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0603.update(inl_gain)
         log.check_log0603.update(inl_gain_check)
-        dac_list = range(0, 64, 4)
+        dac_list = range(0, 64, 8)
         print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
@@ -992,6 +1029,7 @@ class QC_reports:
             plt.grid(axis='x')
             plt.legend()
             plt.title("Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
+            plt.tight_layout()
             plt.savefig(report_dir + 'Cali1.png')
             plt.close()
 
@@ -999,7 +1037,7 @@ class QC_reports:
             x = ["4.7", "7.8", "14", "25"]
             plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
                          alpha=0.7, label='Amplitude Gain')
-            plt.ylim(0, 120)
+            plt.ylim(0, 130)
             plt.xlabel("Gain Setting", fontsize = 14)
             plt.ylabel("Amplitude Gain / e-/bit", fontsize = 14)
             plt.xticks(x, ["4.7", "7.8", "14", "25"])
@@ -1009,6 +1047,7 @@ class QC_reports:
                 plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
             plt.title("Amplitude Gain in 4.7 7.8 14 25 mV/fC", fontsize = 14)
             plt.gca().set_facecolor('none')
+            plt.tight_layout()
             plt.savefig(report_dir + 'SE_Gain.png', transparent = True)
             plt.close()
 
@@ -1026,6 +1065,7 @@ class QC_reports:
                 plt.text(x[i], ENC_set[i] + 50, f'{round(ENC_set[i], 1)}±{round(ENC_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
             plt.title("ENC in 4.7 7.8 14 25 mV/fC", fontsize = 14)
             plt.gca().set_facecolor('none')
+            plt.tight_layout()
             plt.savefig(report_dir + 'SE_ENC.png', transparent = True)
             plt.close()
 

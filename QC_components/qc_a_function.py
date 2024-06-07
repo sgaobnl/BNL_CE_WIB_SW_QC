@@ -12,7 +12,7 @@ import QC_components.qc_log as log
 import QC_check
 
 qc_tools = ana_tools()
-def monitor_power_rail_analysis(interface, datadir, fembNo, label = 'test'):
+def monitor_power_rail_analysis(interface,  fembs, datadir, fembNo, label = 'test'):
     log.tmp_log.clear()
     log.check_log.clear()
     log.chkflag.clear()
@@ -35,8 +35,11 @@ def monitor_power_rail_analysis(interface, datadir, fembNo, label = 'test'):
     vkeys = list(vold.keys())
     # LSB = 2.5 / 16384
     LSB = 2.048 / 16384
-    for ifemb in range(len(vfembs)):
-        femb_id = "FEMB ID {}".format(fembNo['femb%d' % vfembs[ifemb]])
+    print(vfembs)
+    print(fembNo)
+
+    for ifemb in range(len(fembs)):
+        femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         mvold = {}
         for key in vkeys:
             f0, f1, f2, f3 = zip(*vold[key])
@@ -105,55 +108,6 @@ def monitor_power_rail_analysis(interface, datadir, fembNo, label = 'test'):
         log.check_log[femb_id]["Result"] = check
         log.check_log[femb_id]["Issue List"] = check_list
         log.check_log[femb_id]["Label"] = label
-
-
-# item 1_1
-# def power_ana(fembs, fembNo, pwr_meas, env):
-#     log.tmp_log.clear()
-#     log.chkflag.clear()
-#     log.badlist.clear()
-#
-#     for ifemb in range(len(fembs)):
-#         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-#         tmp = QC_check.CHKPWR(pwr_meas, fembs[ifemb], env)
-#         log.chkflag[femb_id]["PWR"] = tmp[0]
-#         log.badlist[femb_id]["PWR"] = tmp[1]
-#
-#         bias_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
-#         LArASIC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
-#         COLDATA_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
-#         ColdADC_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
-#
-#         bias_i = round(pwr_meas['FEMB%d_BIAS_I'%fembs[ifemb]],3)
-#         LArASIC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 0)], 3)
-#         COLDATA_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 1)], 3)
-#         ColdADC_i = round(pwr_meas['FEMB{}_DC2DC{}_I'.format(fembs[ifemb], 2)], 3)
-#
-#         bias_p = round(bias_v * bias_i, 3)
-#         LArASIC_p = round(LArASIC_v * LArASIC_i, 3)
-#         COLDATA_p = round(COLDATA_v * COLDATA_i, 3)
-#         ColdADC_p = round(ColdADC_v * ColdADC_i, 3)
-#
-#         # the | is used in Markdown table
-#         log.tmp_log[femb_id]["name"] = "BIAS | LArASIC | ColdDATA | ColdADC"
-#         log.tmp_log[femb_id]["V_set/V"] = " 5 | 3 | 3 | 3.5 "
-#         log.tmp_log[femb_id]["V_meas/V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, COLDATA_v, ColdADC_v)
-#         log.tmp_log[femb_id]["I_meas/V"] = "{} | {} | {} | {}".format(abs(bias_i), LArASIC_i, COLDATA_i, ColdADC_i)
-#         log.tmp_log[femb_id]["P_meas/V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, COLDATA_p, ColdADC_p)
-#
-#         # log.report_log05[femb_id]["Power check status"] = tmp[0]
-#         log.tmp_log[femb_id]["Power"] = "{} | - |Total P | {}".format(tmp[1], round(LArASIC_p + COLDATA_p + ColdADC_p, 3))
-#     return log.tmp_log
-
-
-
-
-
-
-
-
-
-
 
 def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
     log.tmp_log.clear()
@@ -265,8 +219,8 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
     log.tmp_log[femb_id]["V_set / V"] = " 5 | 3 | 3.5 | 3 "
     log.tmp_log[femb_id]["V_meas / V"] = "{} | {} | {} | {}".format(bias_v, LArASIC_v, ColdADC_v, COLDATA_v)
     log.tmp_log[femb_id]["I_meas / A"] = "{} | {} | {} | {}".format(bias_i, LArASIC_i, ColdADC_i, COLDATA_i)
-    log.tmp_log[femb_id]["P_meas / V"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, ColdADC_p, COLDATA_p)
-    log.tmp_log[femb_id]["Total Power"] = " {} |  | | ".format(round(total_p, 2))
+    log.tmp_log[femb_id]["P_meas / W"] = "{} | {} | {} | {}".format(bias_p, LArASIC_p, ColdADC_p, COLDATA_p)
+    log.tmp_log[femb_id]["Total Power / W"] = " {} |  | | ".format(round(total_p, 2))
 
     log.check_log[femb_id]["Result"] = check
     log.check_log[femb_id]["Issue List"] = check_issue
@@ -279,7 +233,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
     log.check_log.clear()
     log.chkflag.clear()
     log.badlist.clear()
-
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         check = True
@@ -297,22 +250,21 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         npk_mean = int(np.mean(npk))
         npk_err = int(np.std(npk))
 
-        tmp = QC_check.CHKPulse(ppk, 2000)
+        if '5nA' in label:
+            pulse_range = 3000
+        else:
+            pulse_range = 1000
+
+        tmp = QC_check.CHKPulse(ppk, pulse_range, type = 'pedestal')
         if tmp[0] == False:
-            # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
             log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
-            # log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = '<span style="color: red;">' + str(ppk_err) + '</span>'
             log.tmp_log[femb_id]["ppk_std"] = '<span style="color: red;">' + str(ppk_err) + '</span>'
         else:
-            # log.tmp_log[femb_id]["{}_ppk_mean".format(fname)] = str(ppk_mean)
             log.tmp_log[femb_id]["ppk_mean"] = str(ppk_mean)
-            # log.tmp_log[femb_id]["{}_ppk_err".format(fname)] = str(ppk_err)
             log.tmp_log[femb_id]["ppk_std"] = str(ppk_err)
         check = check and tmp[0]
         check_issue.append("Pulse_PPK_issue: {}\n".format(tmp[1]))
-        # log.badlist[femb_id]["Pulse_SE_PPK"]=tmp[1]
-
-        tmp = QC_check.CHKPulse(bl, 800)
+        tmp = QC_check.CHKPulse(bl, pulse_range, type = 'pedestal')
         if tmp[0] == False:
             log.tmp_log[femb_id]["bbl_mean"] = '<span style="color: red;">' + str(bbl_mean) + '</span>'
             log.tmp_log[femb_id]["bbl_std"] = '<span style="color: red;">' + str(bbl_err) + '</span>'
@@ -322,8 +274,7 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
             log.tmp_log[femb_id]["bbl_std"] = str(bbl_err)
         check = check and tmp[0]
         check_issue.append("Pulse_NPK_issue: {}\n".format(tmp[1]))
-
-        tmp = QC_check.CHKPulse(npk, 2000)
+        tmp = QC_check.CHKPulse(npk, pulse_range, type = 'pedestal')
         if tmp[0] == False:
             log.tmp_log[femb_id]["npk_mean"] = '<span style="color: red;">' + str(npk_mean) + '</span>'
             log.tmp_log[femb_id]["npk_std"] = '<span style="color: red;">' + str(npk_err) + '</span>'

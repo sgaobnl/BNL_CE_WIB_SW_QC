@@ -96,7 +96,7 @@ class QC_Runs:
 
         #self.chk = WIB_CFGS()
         self.chk.wib_fw()
-        self.chk.fembs_vol_set(vfe=3.1, vcd=3.1, vadc=3.6)
+        self.chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
         if status=='on':
             print("Turning on FEMBs")
@@ -117,7 +117,7 @@ class QC_Runs:
            print (bias_v, fe_v, cd_v, adc_v) 
   
            if (bias_v < 1.0) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
-               print ("FEMB {} is turned off".format(i))        
+               print ("FEMB {} is turned off".format(i))
            else:
                pwr_sts = False
         print ("KKKKKKKKKKKK", pwr_sts)
@@ -230,7 +230,9 @@ class QC_Runs:
                     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, vdac], fn)
             self.chk.wib_mon_switches() #close wib_mon
         else:
-            rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0) 
+            rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
+
+            # datad[fn] = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
 
             with open(fp, 'wb') as fn:
                 pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)

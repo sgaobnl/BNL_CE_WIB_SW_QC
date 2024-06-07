@@ -37,7 +37,7 @@ time.sleep(1)
 #reset all FEMBs on WIB
 chk.wib_femb_link_en(fembs)
 
-if True:
+while True:
     chk.femb_cd_rst()
     
     cfg_paras_rec = []
@@ -64,6 +64,9 @@ if True:
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )
+    i = i+1
+    if i > 20:
+        break
 
 chk.data_align(fembs)
 

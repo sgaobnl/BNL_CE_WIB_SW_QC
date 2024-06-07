@@ -19,15 +19,14 @@ fdir = fp[0:p]
 
 with open(fp, 'rb') as fn:
     raw = pickle.load(fn)
-    
+print(fp[p+31:-4])
+dac = fp[p+31:-4]
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-#fembs = [int(sys.argv[2])]
-fembs = [0]
+fembs = [1]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
-#wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 datd = []
 fechndata = []
@@ -35,35 +34,29 @@ for i in [0]:
     wibdatai = wibdata[i]
     datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
 
-
+ref_chn = 0
 if 1:
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    for fe in range(8):
-        for fe_chn in range(16):
-    
+    for fe in [1]:#range(8):
+        for fe_chn in [ref_chn,ref_chn+2]:#range(16):
             fechndata = datd[fe*16+fe_chn]
-            #plt.plot(fechndata)
-    #        print (np.std(fechndata))
-#            rms.append(np.std(fechndata))
-#            pkp.append(np.max(fechndata))
             rms.append(np.mean(fechndata))
             rms_tmp = round(np.std(fechndata), 2)
-            # if fe==0 and fe_chn==2:
-                # print (np.mean(fechndata))
-            # print(len(fechndata))
-            if np.std(fechndata) > 12:
-                print(np.std(fechndata))
-                print(fe)
-                print(fe_chn)
-            plt.plot(range(len(fechndata)), fechndata, label = "Chip_{}, CH_{}, std = {}".format(fe, fe_chn, rms_tmp))
+            maxpos = np.argmax(fechndata[100:]) + 100
+            maxvalue = fechndata[maxpos]
+            plt.text(maxpos, maxvalue+300, '{}'.format(maxvalue))
+            if fe_chn == ref_chn:
+                plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="issue_chip{}_ch{}_{}".format(fe, fe_chn, dac))
+            else:
+                plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='pink', label="normal_chip{}_ch{}_{}".format(fe, fe_chn, dac))
 
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
-#     plt.legend()
+#
 #    plt.grid()
 #    
 #     for i in range(0,128,8):
@@ -84,30 +77,17 @@ if 1:
 #    #plt.title("ADC pedestal distribution (bypass SHA) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
-    plt.title("ADC pedestal distribution (Vrefp DAC = 0x33) ")
-#    #plt.ylabel("RMS noise / bit")
-    plt.ylabel("ADC count / bit")
-    plt.ylim((0,16000))
-    # plt.xlim((-1,130))
-    plt.xlabel("Channel")
-#    plt.grid()
-    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-    plt.show()
-    plt.close()
+plt.title("{}".format(fp))
+plt.legend()
+plt.ylabel("ADC count / bit")
+plt.ylim((0,16000))
+plt.xlabel("Channel")
+plt.grid()
+plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+plt.show()
+plt.close()
 
-#    plt.title("ADC test pattern")
-#    #plt.ylabel("RMS noise / bit")
-#    plt.ylabel("RMS noise / bit")
-#    plt.ylim((0,17000))
-#    plt.xlim((-10,130))
-#    plt.xlabel("Channel")
-#    plt.grid()
-#    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-#    plt.show()
-#    plt.close()
-
-
-    exit()
+exit()
 
 
 

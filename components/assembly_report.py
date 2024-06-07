@@ -87,7 +87,6 @@ def final_report(datareport, fembs, fembNo):
         fpmd = datareport[ifemb] + 'report_FEMB_{}.md'.format(fembNo['femb%d' % ifemb])
 
         with open(fpmd, 'w', encoding = "utf-8") as file:
-            # file.write('')
             file.write('\n')
             file.write('\n')
             file.write('# ' + summary + '\n')

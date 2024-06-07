@@ -194,6 +194,7 @@ class ana_tools:
             plt.grid(axis = 'y')
         fp_fig = fp+"ped_{}.png".format(fname)
         plt.gca().set_facecolor('none')  # set background as transparent
+        plt.tight_layout()
         plt.savefig(fp_fig, transparent = True)
         plt.close()
 
@@ -354,6 +355,7 @@ class ana_tools:
 
         fp_fig = fp + "pulse_{}.png".format(fname)
         plt.gca().set_facecolor('none')  # set background as transparent
+        plt.tight_layout()
         plt.savefig(fp_fig, transparent = True)
         plt.close()
 
@@ -508,6 +510,7 @@ class ana_tools:
             plt.ylabel("Voltage / mV", fontsize=12)
             plt.title("LArASIC DAC Linearity", fontsize=12)
             plt.gca().set_facecolor('none')  # set background as transparent
+            plt.tight_layout()
             plt.savefig(fp, transparent = True)
             plt.close(fig)
             print(issue_inl)
@@ -581,6 +584,7 @@ class ana_tools:
                 plt.ylabel("Voltage / mV", fontsize=12)
                 plt.title("ColdADC ref_voltage {}".format(mon_items[imon]), fontsize=12)
                 plt.gca().set_facecolor('none')  # set background as transparent
+                plt.tight_layout()
                 plt.savefig(fp, transparent = True)
                 plt.close(fig)
 
@@ -626,6 +630,7 @@ class ana_tools:
            ax1.set_xlabel("DAC")
            ax1.set_ylabel("Peak Value") 
            ax1.set_title("chan%d fail first gain fit"%chan)
+           plt.tight_layout()
            plt.savefig(fp+'fail_first_fit_ch%d.png'%chan)
            plt.close(fig1)
          
@@ -676,6 +681,7 @@ class ana_tools:
             ax2[1].set_xlabel("DAC")
             ax2[1].set_ylabel("Peak Value") 
             ax2[1].set_title("chan%d inl"%chan)
+            plt.tight_layout()
             plt.savefig(fp+'fail_inl_ch%d.png'%chan)
             plt.close(fig2)
             print("fail at first linear range searching: inl=%f for dac=0 is bigger than 0.03"%inl)
@@ -691,6 +697,7 @@ class ana_tools:
             ax3.set_xlabel("DAC")
             ax3.set_ylabel("Peak Value") 
             ax3.set_title("chan%d fail second gain fit"%chan)
+            plt.tight_layout()
             plt.savefig(fp+'fail_second_fit_ch%d.png'%chan)
             plt.close(fig3)
             print("fail at second gain fit")
@@ -783,7 +790,7 @@ class ana_tools:
             #   overlap channel 0 pulse from [1 - 63]
 
             #   peak - dac linear
-            plt.subplot(2, 2, 1)
+            plt.subplot(2, 2, 2)
             for ch in range(128):
                 uplim = np.max(pk_np[ch])*7/8
                 lodac = np.max(pk_np[ch])*1/8
@@ -838,7 +845,7 @@ class ana_tools:
             plt.title("Peak vs. DAC Linearity", fontsize=14)
             line_min = np.min(line_range_list)
 
-            plt.subplot(2, 2, 2)
+            plt.subplot(2, 2, 1)
             # print(log.channel0_pulse[ifemb][dac])
             for dac in dac_list[1: -2]:
                 plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
@@ -876,6 +883,7 @@ class ana_tools:
             # plt.ylabel("linear_range")
             # plt.title("linear range")
             plt.gca().set_facecolor('none')  # set background as transparent
+            plt.tight_layout()
             plt.savefig(fp + 'gain_{}.png'.format(fname), transparent = True)
             plt.close()
 
@@ -895,6 +903,7 @@ class ana_tools:
             plt.title(fname, fontsize = 14)
             fp = savedir[ifemb]+fdir+"Line_range_{}.png".format(fname)
             plt.gca().set_facecolor('none')  # set background as transparent
+            plt.tight_layout()
             plt.savefig(fp, transparent = True)
             plt.close()
 
@@ -936,6 +945,7 @@ class ana_tools:
             plt.title(fname, fontsize = 14)
             fp = savedir[ifemb]+fdir+"enc_{}.png".format(fname)
             plt.gca().set_facecolor('none')  # set background as transparent
+            plt.tight_layout()
             plt.savefig(fp, transparent = True)
             plt.close()
 

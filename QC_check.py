@@ -125,16 +125,16 @@ def CHKADC(data, nfemb, nchips, key, rtm, rterrbar, lnm, lnerrbar, env):
     return BAD,badlist
 
 
-def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input is a list
+def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # assume the input is a list
     # para_range    rms : para_range = 7     ped : para_range = 350
     print("start check pulse")
-    para_np = np.array(para)
-
+    int_para = [int(x) for x in para]
+    para_np = np.array(int_para)
     tmp_std = np.std(para_np)
-    if tmp_std > 170:
+    if type == '25mVfC':
         para_med = (np.max(para_np)+np.min(para_np))/2
     else:
-        para_med = np.mean(para_np)
+        para_med = np.median(para_np)
 
     refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
     fit_range = errbar * np.std(refine_para)
@@ -143,18 +143,18 @@ def CHKPulse(para, para_range = 7, errbar=10, refmean = 0):  # assume the input 
     bad_chan=[]
     bad_chip=[]
 #   半高全宽
-    if para_med < 100:
+    if type == 'rms':
         for ch in range(128):
-            if abs(para_np[ch]-para_med)/para_med> para_range:
+            if (abs(para_np[ch]-para_med)/para_med > para_range):
                flag = False
                bad_chan.append(ch)
                bad_chip.append(ch//16)
     else:
         for ch in range(128):
-            if abs(para_np[ch]-para_med)> para_range:
-               flag = False
-               bad_chan.append(ch)
-               bad_chip.append(ch//16)
+            if (abs(para_np[ch]-para_med) > para_range):
+                flag = False
+                bad_chan.append(ch)
+                bad_chip.append(ch//16)
                #
 
 
