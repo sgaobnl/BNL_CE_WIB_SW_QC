@@ -83,23 +83,36 @@ This README file will include all informations about the scripts like: <br/>
     * **Data format:**
 ```json
 {
-    "V": {"200mV": {"config0": val, "config1": val, "config2": val},
-          "900mV": {"config0": val, "config1": val, "config2": val},
-          "unit": "V",
-          //"result_qc": "",
-          "link_to_img": ""
-         },
-    "I": {"200mV": {"config0": val, "config1": val, "config2": val},
-          "900mV": {"config0": val, "config1": val, "config2": val},
-          "unit": "mA",
-          //"result_qc": "",
-          "link_to_img": ""
-         },
-    "P": {"200mV": {"config0": val, "config1": val, "config2": val},
-          "900mV": {"config0": val, "config1": val, "config2": val},
-          "unit": "P",
-          //"result_qc": "",
-          "link_to_img": ""
-         }
+    "config0": {
+        "CFG_info" : {},
+        "V": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "I": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val            
+        },
+        "P": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "unitPWR":
+        {
+            "V": "V",
+            "I": "mA",
+            "P": "mW"
+        },
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": []
+    },
+    "config1": {...},
+    ...
 }
 ```
+**config0, config1, etc.** are of the form `200mV_sedcBufOFF_seBuffON` where `200mV` is the value of `SNC`, `sedcBufOFF` is the value of `SDD`, and `seBufON` is the value of `SDF`
