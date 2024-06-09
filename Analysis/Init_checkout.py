@@ -57,7 +57,16 @@ class QC_INIT_CHECK:
         self.out_dict = dict()
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            self.out_dict[FE_ID] = dict()
+            self.out_dict[FE_ID] = {
+                "logs":{
+                    "date": self.logs_dict['date'],
+                    "testsite": self.logs_dict['testsite'],
+                    "env": self.logs_dict['env'],
+                    "note": self.logs_dict['note'],
+                    "DAT_SN": self.logs_dict['DAT_SN'],
+                    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+                }
+            }
             for param in self.items_to_check:
                 if param!='logs':
                     self.out_dict[FE_ID][param] = dict()
@@ -70,34 +79,6 @@ class QC_INIT_CHECK:
         return link_mask
 
     def FE_PWRON(self, range_V=[1.8, 1.82], generateQCresult=True):
-        '''
-            Voltages: VDDA, VDDO, and VDDP
-            raw data format:
-            {
-                'FE0_VDDA': [voltage(V), current(mA), power(mW)],
-                'FE0_VDDO': [voltage(V), current(mA), power(mW)],
-                'FE0_VDDP': [voltage(V), current(mA), power(mW)],
-                'FE1_VDDA': [V, I, P],
-                'FE1_VDDO': [V, I, P],
-                'FE1_VDDP': [V, I, P],
-                ...
-            }
-            output data format:
-            {
-                'FE_PWRON': {
-                    'chipID_0': {
-                        'V': {'data': [VDDA_V, VDDO_V, VDDP_V], 'result_qc': []},
-                        'I': {'data': [VDDA_I, VDDO_I, VDDP_I], 'result_qc': []},
-                        'P': {'data': [VDDA_P, VDDO_P, VDDP_P], 'result_qc': []},
-                        'units': ['V', 'mA', 'mW']
-                    },
-                    'chipID_1': {....},
-                    ...
-                }
-            }
-            Note: FE{}_VPPP in the code refers to VDDP
-            - If generateQCresult==True: the "result_qc" is saved in the output data
-        '''
         printItem(item="FE_PWRON")
         FE_PWRON_data = self.raw_data['FE_PWRON']
         voltage_params = ['VDDA', 'VDDO', 'VDDP']
@@ -130,12 +111,7 @@ class QC_INIT_CHECK:
                 Vpassed = True
                 if False in qc_Voltage:
                     Vpassed = False
-            # oneChip_data =  {
-            #                     'V' : {"data": [VDDA_V, VDDO_V, VDDP_V], "result_qc": [Vpassed]},
-            #                     'I': {"data" : [VDDA_I, VDDO_I, VDDP_I], "result_qc": []},
-            #                     'P': {"data": [VDDA_P, VDDO_P, VDDP_P], "result_qc" : []},
-            #                     'units': ['V', 'mA', 'mW']
-            #                 }
+
             oneChip_data =  {
                                 'V' : {"data": {'VDDA': VDDA_V, 'VDDO': VDDO_V, 'VDDP': VDDP_V}, "unit": "V"},
                                 'I': {"data" : {'VDDA': VDDA_I, 'VDDO': VDDO_I, 'VDDP': VDDP_I}, "unit": "mA"},
@@ -166,7 +142,7 @@ class QC_INIT_CHECK:
             out_dict[chipID] = data_asic
         return {param: out_dict}
     
-    def runAnalysis(self, in_params={}, generateQCresult=False):
+    def decode_INIT_CHK(self, in_params={}, generateQCresult=False):
         '''
         input: in_params = {param0: {'pedestal': [], 'rms': [], 'pulseAmp': []},
                             param1: {'pedestal': [], 'rms': [], 'pulseAmp': []},
@@ -174,19 +150,21 @@ class QC_INIT_CHECK:
                             }
         '''
         params = ['ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK', 'FE_PWRON']
-        
+        range_peds, range_rms, range_pulseAmp, range_V = [], [], [], []
         for param in params:
             if param=="FE_PWRON":
-                range_V = in_params[param]['V']
+                if generateQCresult:
+                    range_V = in_params[param]['V']
                 FE_pwr_dict = self.FE_PWRON(range_V=range_V, generateQCresult=generateQCresult)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param] = FE_pwr_dict[param][FE_ID]
             elif (param=='ASICDAC_CALI_CHK') or (param=='DIRECT_PLS_CHK'):
-                range_peds = in_params[param]['pedestal']
-                range_rms = in_params[param]['rms']
-                range_pulseAmp = in_params[param]['pulseAmp']
-                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=in_params['isPosPeak'], param=param, generateQCresult=generateQCresult)
+                if generateQCresult:
+                    range_peds = in_params[param]['pedestal']
+                    range_rms = in_params[param]['rms']
+                    range_pulseAmp = in_params[param]['pulseAmp']
+                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, param=param, generateQCresult=generateQCresult)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param]["CFG_info"] = [] # to be added by Shanshan or Me later
@@ -210,9 +188,7 @@ if __name__ == '__main__':
 
     qc_selection = json.load(open("qc_selection.json"))
     print(qc_selection)
-    list_data_dir = os.listdir(root_path)
+    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for data_dir in list_data_dir:
-        # data_dir = 'FE_004003138_004003139_004003140_004003145_004003157_004003146_004003147_004003148'
-        # data_dir = 'FE_002006204_002006209_002006210_002006211_002006212_002006217_002006218_002006219'
         init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.runAnalysis(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False)
+        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False)
