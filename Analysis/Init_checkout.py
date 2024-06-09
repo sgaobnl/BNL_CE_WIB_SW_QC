@@ -190,9 +190,11 @@ class QC_INIT_CHECK:
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param]["CFG_info"] = [] # to be added by Shanshan or Me later
-                    self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']
-                    self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']
-                    self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
+                    self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']['data']
+                    self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']['data']
+                    # self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
+                    self.out_dict[FE_ID][param]['pospeak'] = data_asic_forparam[param][FE_ID]['pulseResponse']['pospeak']['data']
+                    self.out_dict[FE_ID][param]['negpeak'] = data_asic_forparam[param][FE_ID]['pulseResponse']['negpeak']['data']
         
         ## ----- INCLUDE THE ANALYSIS OF OTHER PARAMETERS HERE -----------
 
