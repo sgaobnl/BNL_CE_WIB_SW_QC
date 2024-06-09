@@ -47,26 +47,45 @@ This README file will include all informations about the scripts like: <br/>
     "WIB_PWR" : {},
     "WIB_LINK" : {},
     "FE_PWRON" : {
-        "V": {"data": [VDDA_V, VDDO_V, VDDP_V], "qc_result": [], "unit": "V" ,"link_to_img": ""},
-        "I": {"data": [VDDA_I, VDDO_I, VDDP_I], "qc_result": [], "unit": "mA", "link_to_img": ""},
-        "P": {"data": [VDDA_P, VDDO_P, VDDP_P], "qc_result": [], "unit": "mW", "link_to_img": ""},
+        "V":{
+            "data": {
+                "VDDA": val,
+                "VDDO": val,
+                "VDDP": val
+            },
+            "unit": "V"
+        },
+        "I":{
+            "data": {
+                "VDDA": val,
+                "VDDO": val,
+                "VDDP": val
+            },
+            "unit": "mA"
+        },
+        "P":{
+            "data": {
+                "VDDA": val,
+                "VDDO": val,
+                "VDDP": val
+            },
+            "unit": "mW"
+        }
     },
     "ADC_PWRON" : {},
     "ASICDAC_CALI_CHK" : {
-                            "pedestal": {"data": [], "result_qc": [], "link_to_img":""},
-                            "rms" : {"data": [], "result_qc": [], "link_to_img": ""},
-                            "pulseResponse": {
-                                    "pospeak": {"data": [], "result_qc": [], "link_to_img": ""},
-                                    "negpeak": {"data": [], "result_qc": [], "link_to_img": ""}
-                            }
+        "CFG_info": [],
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": []
     },
     "DIRECT_PLS_CHK" : {
-                        "pedestal": {"data": [], "result_qc": [], "link_to_img":""},
-                        "rms" : {"data": [], "result_qc": [], "link_to_img": ""},
-                        "pulseResponse": {
-                                "pospeak": {"data": [], "result_qc": [], "link_to_img": ""},
-                                "negpeak": {"data": [], "result_qc": [], "link_to_img": ""}
-                        }
+        "CFG_info": [],
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": []
     }
 }
 ```
