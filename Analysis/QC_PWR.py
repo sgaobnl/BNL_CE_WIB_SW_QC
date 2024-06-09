@@ -9,7 +9,7 @@ import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 import json, pickle
-from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana, dumpHDF5
+from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana
 
 class QC_PWR:
     '''
@@ -73,7 +73,7 @@ class QC_PWR:
                         data_by_config[FE_ID][param][keyname] = data_oneconfig[val]
         return data_by_config
 
-    def FE_PWR(self):
+    def decode_FE_PWR(self):
         print('----> Power consumption')
         data_by_config = self.getPowerConsumption()
 
@@ -110,7 +110,16 @@ class QC_PWR:
            
             tmpdata_onechip = pwr_all_chips[chip_id]
   
-            oneChip_data = dict({})
+            oneChip_data = {
+                "logs":{
+                    "date": self.logs_dict['date'],
+                    "testsite": self.logs_dict['testsite'],
+                    "env": self.logs_dict['env'],
+                    "note": self.logs_dict['note'],
+                    "DAT_SN": self.logs_dict['DAT_SN'],
+                    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+                }
+            }
             Baselines = ['200mV', '900mV']
             params = ['V', 'I', 'P']
             params_units = {'V': 'V', 'I': 'mA', 'P': 'mW'}
@@ -161,14 +170,14 @@ class QC_PWR:
 if __name__ =='__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-    list_data_dir = os.listdir(root_path)
+    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     qc_selection = json.load(open("qc_selection.json"))
     for data_dir in list_data_dir:
         t0 = datetime.datetime.now()
         print('start time : {}'.format(t0))
         qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        qc_pwr.FE_PWR()
+        qc_pwr.decode_FE_PWR()
         tf = datetime.datetime.now()
         print('end time : {}'.format(tf))
         deltaT = (tf - t0).total_seconds()
-        print("Analysis duration : {} seconds".format(deltaT))
+        print("Decoding time : {} seconds".format(deltaT))
