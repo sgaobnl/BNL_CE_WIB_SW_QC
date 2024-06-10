@@ -879,6 +879,9 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_coldadc_input_cs(self,  mode="DACSE", SHAorADC = "SHA", chsenl=0x0000):
+        #disable FE feeding
+        self.cdpoke(0, 0xC, 0, 0x62, 0x0f) #FE_CMS_INH, CSC, CSB, CSA
+
         if "P6DIFF" in mode:
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_PN_TST_SEL, 0x22)
         elif "P6SE" in mode:
@@ -1335,6 +1338,7 @@ class DAT_CFGS(WIB_CFGS):
 
         start = time.time()
         for ch in chs:    
+            self.dat_adc_ch_cs(ch=ch)
             #indicate which channel is to be analyzed
             # self.poke(0xA00C0078, ch | (0x1<<9)) #extra bit is to make sure trigger is output over P12 LEMO
             self.poke(0xA00C0078, ch)
@@ -1411,27 +1415,30 @@ class DAT_CFGS(WIB_CFGS):
             ch_data.append(data)
         return ch_data        
 
+    def dat_adc_ch_cs(self, ch=0):
+        #select chip
+        chipno = ch//16
+        self.cdpoke(0, 0xC, 0, self.DAT_ADC_TST_SEL, ((1<<chipno)^0xFF)&0xFF)
 
-    def dat_enob_acq_ch(self, ch=0, sineflg=True):
+        #select chnnel, chsenl is low active 
         chperchip = ch%16
-        #if chperchip == 0:
-        #    chsenl = 0xFFFF 
-        #else:
-        #    chsenl = 0xFFFF ^ (1<<chperchip)
-        if (chperchip == 4 ) :
-            chsenl = 0xFFFF ^ (1<<5)
-        elif  (chperchip == 6):
-            chsenl = 0xFFFF ^ (1<<7)
+        if self.rev == 0:
+            if (chperchip == 4 ) :
+                chsenl = 0xFFFF ^ (1<<5)
+            elif  (chperchip == 6):
+                chsenl = 0xFFFF ^ (1<<7)
+            else:
+                chsenl = 0xFFFF ^ (1<<chperchip)
         else:
             chsenl = 0xFFFF ^ (1<<chperchip)
-        #chsenl = 0x0000
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, chsenl&0xFF)
         self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, (chsenl>>8)&0xFF)
         time.sleep(0.05)
-        #input ("wait")
+
+    def dat_enob_acq_ch(self, ch=0, sineflg=True):
+        self.dat_adc_ch_cs(ch=ch)
         #print("WIB ENOB 16,384 samples test")  
         #print("before running this script: configure the FEMB chips and trigger")  
-
         while True:
             self.poke(0xa00c0078, ch)
             #trigger capture
@@ -1450,9 +1457,12 @@ class DAT_CFGS(WIB_CFGS):
             data = self.adc_histbuf() #block read
             if sineflg:
                 if self.enobdata_check(ch, data): #check if data is good
+                   # input ("aaa")
                     break
                 else:
-                    break
+                   # input ("aaa")
+                    pass
+                    #break
             else:
                 break
         return data        

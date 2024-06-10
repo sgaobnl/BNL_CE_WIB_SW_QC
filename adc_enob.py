@@ -47,10 +47,17 @@ def chn_rfft_psd(chndata, fs = 2000000.0, fft_s = 2000, avg_cycle = 50):
 
 def adc_enob(chndata, fs,  avg_cycle=50, Ntot=2**12,trunc=20, Vfullscale=1.4, Vinput=1.3, ffig= False):
     f, p, psd = chn_rfft_psd(chndata=chndata, fs = fs, fft_s = Ntot, avg_cycle = avg_cycle)
+    #fig = plt.figure(figsize=(10,8))
+    #plt.rcParams.update({'font.size': 18})
+    #plt.plot(f,p)
+    #plt.show()
+    #plt.close()
+
     #Truncate DC and Nyquist bins
     #trunc = 20
     #Ntot = 2**(12)
     p = p[trunc:Ntot-trunc]
+    f = f[trunc:Ntot-trunc]
 
     #Span three bins at side of fundamental to calculate signal power
     p_aux = np.copy(p)
@@ -77,14 +84,16 @@ def adc_enob(chndata, fs,  avg_cycle=50, Ntot=2**12,trunc=20, Vfullscale=1.4, Vi
     ##### Plot normalized power spectral density in dBFS #####
     psd = psd[trunc:Ntot-trunc]
     psd_dbfs = psd - max(psd) - 20*np.log10(Vfullscale/Vinput)
-    points_dbfs = np.linspace(0,fs/2, len(psd_dbfs))
+    #points_dbfs = np.linspace(0,fs/2, len(psd_dbfs))
+    points_dbfs = f
 
     if ffig:
         fig = plt.figure(figsize=(10,8))
         plt.rcParams.update({'font.size': 18})
-        plt.plot(points_dbfs, psd_dbfs)
+        #plt.plot(points_dbfs, psd_dbfs)
+        plt.plot(f, psd_dbfs)
         #plt.title('%s Environment. %s Reference. Channel %d'%(env, refs,chnno))
-        plt.xlabel('Frequency [kHz]')
+        plt.xlabel('Frequency [Hz]')
         plt.ylabel('Amplitude [dBFS]')
         plt.annotate('SFDR = %0.2f dB \nSINAD = %0.2f dB \nENOB = %0.2f bits' %(np.around(SFDR, decimals=2), np.around(SINAD, decimals=2), np.around(ENOB, decimals = 2)), 
                      xy=(0.6,0.8),xycoords='axes fraction', textcoords='offset points', size=22, bbox=dict(boxstyle="round", fc=(1.0, 1.0, 1.0), ec="none"))

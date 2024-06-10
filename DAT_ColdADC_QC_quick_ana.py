@@ -16,7 +16,7 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "ADC_x000000001_000000002_000000003_000000004_000000005_000000006_000000007_000000008"
+fsubdir = "ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
 #fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
 froot = os.getcwd() + "\\tmp_data\\"
 
@@ -1091,6 +1091,8 @@ if 8 in tms:
     
     #for freq in [8106.23, 14781.95, 31948.09,]:
     for freq in [8106.23]:
+    #for freq in [358104]:
+    #for freq in [119686]:
         fp = fdir + "QC_ENOB_%08dHz"%(int(freq)) + ".bin"
         print ("When it is done, replace {} on the local PC".format(fp) )
         if os.path.isfile(fp):
@@ -1125,12 +1127,8 @@ if 8 in tms:
                         continue
                     num_16bwords = 0x8000 / 2
                     words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
-                    #if ch == 0:
-                    #    ffig = True
-                    #else:
-                    #    ffig = False
     
-                    if ch == 1:
+                    if ch == 9:
                         import matplotlib.pyplot as plt
                         plt.plot(words16b)
                         plt.show()

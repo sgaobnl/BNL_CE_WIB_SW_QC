@@ -10,6 +10,7 @@ from DAT_user_input import dat_user_input
 import argparse
                 
 dat =  DAT_CFGS()
+dat.rev = 1
 
 ####### Input test information #######
 #Red = '\033[91m'
@@ -455,7 +456,8 @@ if 8 in tms:#if "enob_placeholder" in tms:
     print ("\033[95mADC ENOB measurement starts...   \033[0m")
 
     source = 'WIBSE'
-    cfg_info = dat.dat_adc_qc_cfg() 
+    cfg_info = dat.dat_adc_qc_cfg(autocali=0)  #SDC off, DIFF off
+    #cfg_info = dat.dat_adc_qc_cfg(sha_cs=2, ibuf_cs=1)  #SED on, DIFF OFF
     dat.dat_coldadc_input_cs(mode=source, SHAorADC = "SHA", chsenl=0x0000)
    
     for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
@@ -477,10 +479,15 @@ if 8 in tms:#if "enob_placeholder" in tms:
         dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
         time.sleep(0.5)
             
-        #dat.dat_coldadc_input_cs(mode="P6SE", SHAorADC = "SHA", chsenl=0x0000)
+        ##dat.dat_coldadc_input_cs(mode="P6SE", SHAorADC = "SHA", chsenl=0x0000)
+        #input ("wait.......")
+
         #rawdata = dat.dat_adc_qc_acq(1) #trigger readout, save in case of issue
-        datad['enobdata'] = [dat.fembs, dat.dat_enob_acq_2(sineflg=True), cfg_info, "SINE"]
+        #fp = fdir + "QC_raw_%08dHz"%datad['freq'] + ".bin"
+        #with open(fp, 'wb') as fn:
+        #    pickle.dump(rawdata, fn)
         
+        datad['enobdata'] = [dat.fembs, dat.dat_enob_acq_2(sineflg=True), cfg_info, "SINE"]
         
         fp = fdir + "QC_ENOB_%08dHz"%datad['freq'] + ".bin"
         with open(fp, 'wb') as fn:
