@@ -135,3 +135,55 @@ This README file will include all informations about the scripts like: <br/>
 }
 ```
 **config0, config1, etc.** are of the form `200mV_sedcBufOFF_seBuffON` where `200mV` is the value of `SNC`, `sedcBufOFF` is the value of `SDD`, and `seBufON` is the value of `SDF`
+
+* **QC_CHKRES**
+```json
+{
+    "logs":{
+        "date": "",
+        "testsite": "",
+        "env": "",
+        "note": "",
+        "DAT_SN": "",
+        "WIB_slot": ""
+    },
+    "cfg0":{
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": [],
+        "CFG_Info":{
+            "param_chk": "",
+            "SDD": "",
+            "SDF": "",
+            "SLKH": "",
+            "SLK": "",
+            "SNC": "",
+            "STS": "",
+            "ST": "",
+            "SGP": "",
+            "SG": ""
+        }
+    },
+    "cfg1":{
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": [],
+        "CFG_Info":{
+            "param_chk": "",
+            "SDD": "",
+            "SDF": "",
+            "SLKH": "",
+            "SLK": "",
+            "SNC": "",
+            "STS": "",
+            "ST": "",
+            "SGP": "",
+            "SG": ""
+        }
+    },
+    ...
+}
+```
+`cfg0`, `cfg1`, etc. are of the form `CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11`
