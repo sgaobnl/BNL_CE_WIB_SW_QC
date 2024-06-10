@@ -9,8 +9,7 @@ import numpy as np
 # import csv
 import json
 import matplotlib.pyplot as plt
-# from spymemory_decode_copy import wib_dec
-import h5py
+import statsmodels.api as sm
 
 sys.path.append('./decode')
 from dunedaq_decode import wib_dec
@@ -32,7 +31,7 @@ def printItem(item: str):
     print('\t*',' '*2,'{}'.format(item),' '*2,'*')
     print('--'*20)
 
-def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
+def dumpJson(output_path: str, output_name: str, data_to_dump: dict, indent=4):
     '''
         Save data to json.
         inputs:
@@ -41,7 +40,10 @@ def dumpJson(output_path: str, output_name: str, data_to_dump: dict):
             data_to_dump: a dictionary of the data to save
     '''
     with open('/'.join([output_path, output_name + '.json']), 'w+', encoding='utf-8') as fn:
-        json.dump(data_to_dump, fn, indent=4)
+        if indent>=0:
+            json.dump(data_to_dump, fn, indent=indent)
+        else:
+            json.dump(data_to_dump, fn)
         
 
 def dumpMD(output_path: str, output_name: str, mdTable_to_dump: str):
@@ -61,8 +63,11 @@ def linear_fit(x: list, y: list):
         inputs: x and y
         outputs: slope, yintercept, peakinl
     '''
-    fit = np.polyfit(x, y, 1)
-    slope, yintercept = fit[0], fit[1]
+    # fit = np.polyfit(x, y, 1)
+    # slope, yintercept = fit[0], fit[1]
+    fit = sm.OLS(y, sm.add_constant(x)).fit()
+    slope = fit.params[1]
+    yintercept = fit.params[0]
     y_fit = np.array(x) * slope + yintercept
     delta_y = np.abs(np.array(y) - y_fit)
     inl = delta_y / (np.max(y) - np.min(y))
