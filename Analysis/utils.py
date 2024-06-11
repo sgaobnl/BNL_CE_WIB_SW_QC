@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-import os, sys, pickle, json
+import os, sys, pickle, json, math
 import numpy as np
 # import csv
 import json
@@ -136,6 +136,10 @@ def getpedestal_rms(oneCHdata: list):
     imax = getMaxAmpIndices(data)
     # find peak
     ilastped = imax[0] - 20
+    iimax = 0
+    while ilastped<=50:
+        ilastped = imax[iimax] - 20
+        iimax += 1
     istart = ilastped-100
     if istart<0:
         istart=0
