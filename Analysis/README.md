@@ -187,3 +187,59 @@ This README file will include all informations about the scripts like: <br/>
 }
 ```
 `cfg0`, `cfg1`, etc. are of the form `CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11`
+
+* **QC_PWR_CYCLE**
+```json
+{
+    "logs":{
+        "date": "",
+        "testsite": "",
+        "env": "",
+        "note": "",
+        "WIB_slot": ""
+    },
+    "PwrCycle_0":{
+        "V": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "I": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "P": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": []
+    },
+    "PwrCycle_1":{
+        "V": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "I": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "P": {
+            "VDDA": val,
+            "VDDO": val,
+            "VDDP": val
+        },
+        "pedestal": [],
+        "rms": [],
+        "pospeak": [],
+        "negpeak": []
+    },
+    ...
+}
+```
