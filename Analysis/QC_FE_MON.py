@@ -28,7 +28,6 @@ class FE_MON:
                 os.mkdir(d)
             except OSError:
                 pass
-        print(self.mon_params)
 
     def getBaselines(self):
         '''
@@ -52,6 +51,7 @@ class FE_MON:
         }
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for BL in Baselines:
+            print("Item : {}".format(BL))
             all_chips_BL = self.raw_data[BL]
             ## organize the raw_data
             ## ==> [[16channels], [16channels], ...] : each element corresponds to the data for each LArASIC
@@ -97,6 +97,7 @@ class FE_MON:
         }
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: {'unit': unitOutput} for ichip in range(8)}
         for param in params:
+            print("Item : {}".format(param))
             tmp_data = self.raw_data[param][unitChoice[unitOutput]]
             for ichip in range(8):
                 FE_ID = self.logs_dict['FE{}'.format(ichip)]
@@ -136,6 +137,7 @@ class FE_MON:
         tmpout_dict = dict()
         params = [param for param in self.mon_params if 'DAC' in param]
         for param in params:
+            print("configuration : {}".format(param))
             data = self.raw_data[param]
             dac_values = []
             dacperchip = [[] for _ in range(8)]
@@ -156,15 +158,6 @@ class FE_MON:
                     "DAC": tmpout_dict[config]["dac_values"],
                     "data": tmpout_dict[config]["all_chipsdata"][ichip]
                 }
-        #-- Code example for making the plot
-        # plt.figure()
-        # d = OUT_dict['002-06204']
-        # for key in d.keys():
-        #     plt.scatter(x=d[key]['DAC'], y=d[key]['data'], label=key)
-        # plt.legend()
-        # plt.show()
-        # plt.close()
-        # sys.exit()
         return OUT_dict
     
     def decodeFE_MON(self):
@@ -174,9 +167,6 @@ class FE_MON:
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             dac_meas_chip = dac_meas[FE_ID]
-            # print(dac_meas_chip)
-            # sys.exit()
-            # get Gain and INL
             for config in dac_meas_chip.keys():
                 GAIN, Yintercept, INL = linear_fit(x=dac_meas_chip[config]['DAC'], y=dac_meas_chip[config]['data'])
                 dac_meas_chip[config]['GAIN'] = np.round(GAIN,4)
