@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 6/11/2024 @ 18:49
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Analyze the data in QC_RMS.bin
 ############################################################################################
 

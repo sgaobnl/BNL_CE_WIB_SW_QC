@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 6/5/2024 @ 13:43
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Analyze the data in QC_CHKRES.bin
 ############################################################################################
 

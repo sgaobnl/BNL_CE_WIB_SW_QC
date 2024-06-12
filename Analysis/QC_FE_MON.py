@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 6/9/2024 @ 17:13
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Decode QC_MON.bin
 ############################################################################################
 

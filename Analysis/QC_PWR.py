@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 5/28/2024 @ 15:38
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Analyze the data in QC_PWR.bin
 ############################################################################################
 

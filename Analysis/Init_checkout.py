@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 5/3/2024 @ 15:38
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Analyze the data in QC_INIT_CHK.bin
 ############################################################################################
 import os, sys

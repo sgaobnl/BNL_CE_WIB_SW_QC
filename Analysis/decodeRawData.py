@@ -1,6 +1,6 @@
 ############################################################################################
 #   created on 6/9/2024 @ 16:16
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
+#   email: radofanantenan.razakamiandra@stonybrook.edu
 #   Run all decoding scripts
 ############################################################################################
 

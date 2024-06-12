@@ -1,7 +1,7 @@
 ############################################################################################
 #   created on 5/3/2024 @ 14:38
-#   emails: radofanantenan.razakamiandra@stonybrook.edu
-#
+#   email: radofanantenan.razakamiandra@stonybrook.edu
+#   Utility functions and classes needed for the decoding and analysis
 ############################################################################################
 
 import os, sys, json
