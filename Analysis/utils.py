@@ -125,7 +125,7 @@ def getMaxAmpIndices(oneCHdata: list):
             index_list.append(int(mean_imax))
     return index_list
 
-def getpedestal_rms(oneCHdata: list):
+def getpedestal_rms(oneCHdata: list, pureNoise=False):
     '''
     pktime : 2us
     sampling: every 500ns (clock) --> 1 bin (time) = 500ns
@@ -133,21 +133,24 @@ def getpedestal_rms(oneCHdata: list):
     ===> take data 10 samples before the peak (5 + some ~margins)
     '''
     data = np.array(oneCHdata)
-    imax = getMaxAmpIndices(data)
-    # find peak
-    ilastped = imax[0] - 20
-    iimax = 0
-    while ilastped<=50:
-        ilastped = imax[iimax] - 20
-        iimax += 1
-    istart = ilastped-100
-    if istart<0:
-        istart=0
-    baseline = data[istart:ilastped]
-    ped = np.round(np.mean(baseline), 4)
-    # if math.isnan(ped):
-    #     print(baseline, ilastped)
-    rms = np.round(np.std(baseline), 4)
+    ped, rms = 0., 0.
+    if not pureNoise:
+        imax = getMaxAmpIndices(data)
+        # find peak
+        ilastped = imax[0] - 20
+        iimax = 0
+        while ilastped<=50:
+            ilastped = imax[iimax] - 20
+            iimax += 1
+        istart = ilastped-100
+        if istart<0:
+            istart=0
+        baseline = data[istart:ilastped]
+        ped = np.round(np.mean(baseline), 4)
+        rms = np.round(np.std(baseline), 4)
+    else:
+        ped = np.round(np.mean(data), 4)
+        rms = np.round(np.std(data), 4)
     return [ped, rms]
 
 def getpulse(oneCHdata: list):
@@ -197,7 +200,7 @@ class LArASIC_ana:
                     8: 'Cap_Meas'
                     }
 
-    def PedestalRMS(self, range_peds=[300, 3000], range_rms=[5,25]):
+    def PedestalRMS(self, range_peds=[300, 3000], range_rms=[5,25], isRMSNoise=False):
         '''
             inputs: range of pedestal and range of rms
             output:
@@ -211,7 +214,7 @@ class LArASIC_ana:
         pedestals, result_qc_ped = [], []
         rms, result_qc_rms = [], []
         for ich in range(16):
-            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich])
+            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich], pureNoise=isRMSNoise)
             bool_ped = True
             bool_rms = True
             if self.generateQCresult:
@@ -345,7 +348,7 @@ class LArASIC_ana:
                 out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
-    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True):
+    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True, getPulseResponse=True, isRMSNoise=False):
         '''
             inputs:
                 ** range_peds: range pedestal
@@ -353,9 +356,15 @@ class LArASIC_ana:
                 ** range_pulseAmp: range pulse amplitude
             return: {"pedrms": pedrms, "pulseResponse": pulseResponse}
         '''
-        pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms)
-        pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
-        return {"pedrms": pedrms, "pulseResponse": pulseResponse}
+        out_dict = dict()
+        pulseResponse = dict()
+        pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms, isRMSNoise=isRMSNoise)
+        out_dict['pedrms'] = pedrms
+        if getPulseResponse:
+            pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
+            out_dict['pulseResponse'] = pulseResponse
+        # return {"pedrms": pedrms, "pulseResponse": pulseResponse}
+        return out_dict
 
 # Generate report for one LArASIC
 # --> All parameters for the QC
