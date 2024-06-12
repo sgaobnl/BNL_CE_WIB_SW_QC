@@ -79,7 +79,8 @@ class QC_INIT_CHECK:
         return link_mask
 
     def FE_PWRON(self, range_V=[1.8, 1.82], generateQCresult=True):
-        printItem(item="FE_PWRON")
+        # printItem(item="FE_PWRON")
+        print("Item: FE_PWRON")
         FE_PWRON_data = self.raw_data['FE_PWRON']
         voltage_params = ['VDDA', 'VDDO', 'VDDP']
         # organize the data
@@ -128,7 +129,8 @@ class QC_INIT_CHECK:
         pass
 
     def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK', generateQCresult=False):
-        printItem(item=param)
+        # printItem(item=param)
+        print("Item : {}".format(param))
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
         wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
