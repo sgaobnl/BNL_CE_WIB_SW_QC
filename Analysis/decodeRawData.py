@@ -9,6 +9,9 @@ from datetime import datetime
 from Init_checkout import QC_INIT_CHECK
 from QC_PWR import QC_PWR
 from QC_CHKRES import QC_CHKRES
+from QC_FE_MON import FE_MON
+from QC_PWR_CYCLE import PWR_CYCLE
+from QC_RMS import RMS
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -28,9 +31,18 @@ if __name__ == '__main__':
         # Channel response checkout
         qc_checkres = QC_CHKRES(root_path=root_path, data_dir=data_dir, output_dir=output_path)
         qc_checkres.decode_CHKRES()
+        # FE monitoring
+        fe_mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path)
+        fe_mon.decodeFE_MON()
+        # Power cycling
+        pwr_cycle = PWR_CYCLE(root_path=root_path, data_dir=data_dir, output_path=output_path)
+        pwr_cycle.decode_PwrCycle()
+        # RMS noise
+        rms = RMS(root_path=root_path, data_dir=data_dir, output_path=output_path)
+        rms.decodeRMS()
         #----------------------------
         tf = datetime.now()
         print('end time : {}'.format(tf))
         deltaT = (tf - t0).total_seconds()
         print("Decoding time : {} seconds".format(deltaT))
-        print("=x="*20)
+        print("=xx="*20)
