@@ -129,6 +129,7 @@ class QC_CHKRES:
             }
 
         for param_cfg in self.pulseResp_params:
+            print("configuration: {}".format(param_cfg))
             (cfg, cfg_chResp) = self.decodeOneConfigData(config=param_cfg)
             cfg_info = datasheetCFG[param_cfg]
             for ichip in range(8):
