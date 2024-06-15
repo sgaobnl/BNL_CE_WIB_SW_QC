@@ -36,10 +36,6 @@ This README file will include all informations about the scripts like: <br/>
 * output format <br/>
 * how to run the scripts?<br/>
 
-1. **QC_INIT_CHK:**
-##### Input data:
-* QC_INIT_CHK.bin
-* qc_selection.json
 ##### Output format for each chipID :
 * **QC_INIT_CHK**
 ```json
@@ -243,3 +239,76 @@ This README file will include all informations about the scripts like: <br/>
     ...
 }
 ```
+
+* **QC_RMS**
+```json
+{
+    "logs":{
+        "date": "",
+        "testsite": "",
+        "env": "",
+        "note": "",
+        "DAT_SN": "",
+        "WIB_slot": ""
+    },
+    "config0": {
+        "CFG": {
+            "SDD": "",
+            "SDF": "",
+            "SLKH": "",
+            "SLK": "",
+            "SNC": "",
+            "STS": "",
+            "ST": "",
+            "SGP": "",
+            "SG": ""
+        },
+        "pedestal": [],
+        "rms": []
+    },
+    "config1": {
+        "CFG": {
+            "SDD": "",
+            "SDF": "",
+            "SLKH": "",
+            "SLK": "",
+            "SNC": "",
+            "STS": "",
+            "ST": "",
+            "SGP": "",
+            "SG": ""
+        },
+        "pedestal": [],
+        "rms": []
+    },
+    ...
+}
+```
+
+* **QC_CALIBRATION**:
+    * **ASICDAC_CALI :** the output of this script is the amplitude of the positive peak = (max - pedestal). Do we need the negative peak ?
+    ```json
+    {
+        "logs":{
+            "date": "",
+            "testsite": "",
+            "env": "",
+            "note": "",
+            "DAT_SN": "",
+            "WIB_slot": ""
+        }
+        ,
+        "SNC0": {
+            "CH0" : [[dac_values], [pospeaks_values]],
+            "CH1" : [[dac_values], [pospeaks_values]],
+            ....,
+            "CH15" : [[dac_values], [pospeaks_values]],
+        },
+        "SNC1": {
+            "CH0" : [[dac_values], [pospeaks_values]],
+            "CH1" : [[dac_values], [pospeaks_values]],
+            ....,
+            "CH15" : [[dac_values], [pospeaks_values]],
+        }
+    }
+    ```
