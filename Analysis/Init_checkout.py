@@ -128,7 +128,7 @@ class QC_INIT_CHECK:
     def ADC_PWRON(self):
         pass
 
-    def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK', generateQCresult=False):
+    def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK', generateQCresult=False, generatePlots=False):
         # printItem(item=param)
         print("Item : {}".format(param))
         fembs = self.raw_data[param][0]
@@ -139,12 +139,12 @@ class QC_INIT_CHECK:
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.INIT_CHECK_dirs[ichip]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=False)
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
     
-    def decode_INIT_CHK(self, in_params={}, generateQCresult=False):
+    def decode_INIT_CHK(self, in_params={}, generateQCresult=False, generatePlots=False):
         '''
         input: in_params = {param0: {'pedestal': [], 'rms': [], 'pulseAmp': []},
                             param1: {'pedestal': [], 'rms': [], 'pulseAmp': []},
@@ -166,7 +166,7 @@ class QC_INIT_CHECK:
                     range_peds = in_params[param]['pedestal']
                     range_rms = in_params[param]['rms']
                     range_pulseAmp = in_params[param]['pulseAmp']
-                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, param=param, generateQCresult=generateQCresult)
+                data_asic_forparam = self.QC_CHK(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, param=param, generateQCresult=generateQCresult, generatePlots=generatePlots)
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param]["CFG_info"] = [] # to be added by Shanshan or Me later
@@ -193,4 +193,4 @@ if __name__ == '__main__':
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for data_dir in list_data_dir:
         init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False)
+        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
