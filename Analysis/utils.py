@@ -100,7 +100,7 @@ def decodeRawData(fembs, rawdata):
 
 def getMaxAmpIndices(oneCHdata: list):
     index_list = []
-    imax_np = np.where(np.array(oneCHdata) >= 0.8*np.max(np.array(oneCHdata)))[0]
+    imax_np = np.where(np.array(oneCHdata) >= 0.9*np.max(np.array(oneCHdata)))[0] # start from 0 if not calibration using ASICDAC
     #
     new_list = []
     for ii in range(1, len(imax_np)):
@@ -153,26 +153,56 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False):
         rms = np.round(np.std(data), 4)
     return [ped, rms]
 
-def getpulse(oneCHdata: list):
+def getpulse(oneCHdata: list, averaged=True):
+    # BEFORE June 13th : discussion with Shanshan
+    # data = np.array(oneCHdata)
+    # # imax = np.where(data>=0.95*np.max(data))[0] # only peaks >= 0.95*maximum are selected for the averaging
+    # imax = getMaxAmpIndices(oneCHdata=data)
+    # iimax = 0
+    # pulserange = np.array([])
+    # for i in range(len(imax)):
+    #     if len(data[imax[i]-120 : imax[i]+200])!=0:
+    #         pulserange = data[imax[i]-120 : imax[i]+200]
+    #         iimax = i
+    #         break
+    # Npulses = 1
+    # for i in range(iimax, len(imax)):
+    #     tmprange = data[imax[i]-120 : imax[i]+200]
+    #     if len(tmprange)!=len(pulserange):
+    #         pass
+    #     else:
+    #         Npulses += 1
+    #         pulserange += tmprange
+    # if averaged:
+    #     pulserange = pulserange / Npulses
+    # plt.figure()
+    # plt.plot(pulserange)
+    # plt.show()
+    # plt.close()
+    # sys.exit()
+    # AFTER June 13th
     data = np.array(oneCHdata)
-    # imax = np.where(data>=0.95*np.max(data))[0] # only peaks >= 0.95*maximum are selected for the averaging
-    imax = getMaxAmpIndices(oneCHdata=data)
-    iimax = 0
-    pulserange = np.array([])
-    for i in range(len(imax)):
-        if len(data[imax[i]-120 : imax[i]+200])!=0:
-            pulserange = data[imax[i]-120 : imax[i]+200]
-            iimax = i
-            break
-    Npulses = 1
-    for i in range(iimax, len(imax)):
-        tmprange = data[imax[i]-120 : imax[i]+200]
-        if len(tmprange)!=len(pulserange):
-            pass
+    # the pluses are sent every 500 bins
+    istart = 0
+    iend = [500]
+    b = True
+    while b:
+        end = iend[-1] + 500
+        if end <= len(data):
+            iend.append(iend[-1]+500)
         else:
-            Npulses += 1
-            pulserange += tmprange
-    pulserange = pulserange / Npulses
+            b = False
+    chunks_data = []
+    for i in iend:
+        chunks_data.append(data[istart : i])
+        istart = i
+    pulserange = np.zeros((1,500))[0]
+    if averaged:
+        for chunk in chunks_data:
+            pulserange = pulserange + chunk
+        pulserange = pulserange / len(chunks_data)
+    else:
+        pulserange = chunks_data[0]
     return pulserange
 
 # Analyze one LArASIC
@@ -282,7 +312,7 @@ class LArASIC_ana:
         ppeaks, result_qc_ppeak = [], []
         npeaks, result_qc_npeak = [], []
         for ich in range(16):
-            pulseData = getpulse(oneCHdata=self.data[ich])
+            pulseData = getpulse(oneCHdata=self.data[ich], averaged=True)
             pospeak = np.round(np.max(pulseData) - pedestals[ich], 4)
             negpeak = np.round(pedestals[ich] - np.min(pulseData), 4)
             if self.generateQCresult:
