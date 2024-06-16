@@ -1,0 +1,30 @@
+{
+    "QC_INIT_CHK": {
+        "FE_PWRON": {
+            "V" : [1.8, 1.82]
+        },
+        "ASICDAC_CALI_CHK": {
+            "pedestal": [300,3000],
+            "rms": [5,25],
+            "pulseAmp": [7000,10000]
+        },
+        "DIRECT_PLS_CHK" : {
+            "pedestal" : [300,3000],
+            "rms" : [5,25],
+            "pulseAmp": [9000,16000]
+        },
+        "isPosPeak": true
+    },
+    "QC_PWR" : {
+        "200mV": {
+            "V": {"SDD0_SDF0": [5.3, 5.5], "SDD0_SDF1": [5.0, 5.2], "SDD1_SDF0": [5.0, 5.2]},
+            "I": {"SDD0_SDF0": [50, 55], "SDD0_SDF1": [75, 80], "SDD1_SDF0": [85, 90]},
+            "P": {"SDD0_SDF0": [90, 100], "SDD0_SDF1": [130, 135], "SDD1_SDF0": [145, 150]}
+        },
+        "900mV": {
+            "V": {"SDD0_SDF0": [5.3, 5.5], "SDD0_SDF1": [5.0, 5.2], "SDD1_SDF0": [5.0, 5.2]},
+            "I": {"SDD0_SDF0": [50, 55], "SDD0_SDF1": [75, 80], "SDD1_SDF0": [85, 90]},
+            "P": {"SDD0_SDF0": [90, 100], "SDD0_SDF1": [130, 135], "SDD1_SDF0": [145, 150]}
+        }
+    }
+}
