@@ -12,6 +12,7 @@ from QC_CHKRES import QC_CHKRES
 from QC_FE_MON import FE_MON
 from QC_PWR_CYCLE import PWR_CYCLE
 from QC_RMS import RMS
+from QC_CALIBRATION import ASICDAC_CALI
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -40,6 +41,11 @@ if __name__ == '__main__':
         # RMS noise
         rms = RMS(root_path=root_path, data_dir=data_dir, output_path=output_path)
         rms.decodeRMS()
+        # ASICDAC Calibration
+        for tms, QC_filename in [(61, 'QC_CALI_ASICDAC.bin'), (64, 'QC_CALI_ASICDAC_47.bin')]:
+            if QC_filename in os.listdir('/'.join([root_path, data_dir])):
+                asicdac_cali = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms, QC_filename=QC_filename, generateWf=True)
+                asicdac_cali.runScript()
         #----------------------------
         tf = datetime.now()
         print('end time : {}'.format(tf))
