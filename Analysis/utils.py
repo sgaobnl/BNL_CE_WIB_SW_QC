@@ -4,17 +4,26 @@
 #   Utility functions and classes needed for the decoding and analysis
 ############################################################################################
 
-import os, sys, json
+import os, sys, json, platform
 import numpy as np
 # import csv
 import json
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-sys.path.append('./decode')
-from dunedaq_decode import wib_dec
+#_________Import the CPP module_____________
+system_info = platform.system()
+if system_info=='Linux':
+    print('IN')
+    sys.path.append('./decode')
+    from dunedaq_decode import wib_dec
+    sys.path.append('../')
+elif system_info=='Windows':
+    sys.path.append('../build')
+    from dunedaq_decode import wib_dec
+    sys.path.append('../Analysis')
+#______________xx______xx__________________
 
-sys.path.append('../')
 def printTestItems(testItems: dict):
     '''
         Print the list of items to analyze.
