@@ -6,48 +6,29 @@
 
 import os, sys, pickle
 import numpy as np
-from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, getpulse
+from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, getpulse, BaseClass
 import matplotlib.pyplot as plt
 
-class ASICDAC_CALI:
+class ASICDAC_CALI(BaseClass):
     '''
         Using the 6-bit DAC embedded on the chip to perform the calibration;
         LArASIC gain: 14mV/fC, peak time: 2$\mu$s
     '''
-    def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int):
-        self.tms = tms
-        self.filename = "QC_CALI_ASICDAC.bin"
-        printItem("ASICDAC calibration")
-        self.suffixName = 'ASICDAC'
-        with open('/'.join([root_path, data_dir, self.filename]), 'rb') as fn:
-            self.raw_data = pickle.load(fn)
-        # self.raw_data = raw_data
-        self.logs_dict = self.raw_data['logs']
-        self.cali_params = [key for key in self.raw_data.keys() if key!='logs']
-        createDirs(logs_dict=self.logs_dict, output_dir=output_path)
-        self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], 'QC_CALI']) for ichip in range(8)}
-        for FE_ID, dir in self.FE_outputDIRs.items():
-            try:
-                os.mkdir(dir)
-            except OSError:
-                pass
-        self.FE_outputPlots_DIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], 'QC_CALI', 'ASICDAC']) for ichip in range(8)}
-        for FE_ID, dir in self.FE_outputPlots_DIRs.items():
-            try:
-                os.mkdir(dir)
-            except OSError:
-                pass
+    def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int, QC_filename: str, generateWf=False):
+        printItem('ASICDAC Calibration')
+        self.generateWf = generateWf
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms, QC_filename=QC_filename, generateWaveForm=self.generateWf)
 
     def getDAC_values(self):
         params_DAC = dict()
         unique_BL = []
-        for p in self.cali_params:
+        for p in self.params:
             tmp = p.split('_')
             if tmp[1] not in unique_BL:
                 unique_BL.append(tmp[1])
         for SNC in unique_BL:
             params_DAC[SNC] = []
-            for param in self.cali_params:
+            for param in self.params:
                 if SNC in param:
                     dac = int(param.split('ASICDAC')[-1])
                     params_DAC[SNC].append((dac, param))
@@ -70,9 +51,6 @@ class ASICDAC_CALI:
                 fembs = self.raw_data[param][0]
                 raw_data = self.raw_data[param][1]
                 decodedData = decodeRawData(fembs=fembs, rawdata=raw_data)
-                # print(len(decodedData))
-                # print(len(decodedData[0]))
-                # sys.exit()
                 all_decodedData[BL].append((dac, decodedData))
         return all_decodedData
     
@@ -156,16 +134,25 @@ class ASICDAC_CALI:
         plt.close()
     #--------------------------------------------
 
-    def runScript(self, generateWf=False):
+    def runScript(self):
         params = self.getDAC_values()
         decodedData = self.decode(params_DAC=params)
-        if generateWf:
+        if self.generateWf:
             all_wf = self.organizeData_wf(decodedData=decodedData)
             for FE_ID in all_wf.keys():
                 for BL in ['SNC0', 'SNC1']:
                     for chn in range(16):
                         self.plot_waveform(all_wf_data=all_wf, chipID=FE_ID, BL=BL, chn=chn)
         self.getPosPeak(decodedData=decodedData)
+
+class DATDAC_CALI(BaseClass):
+    '''
+        Calibration using the DAC on the DAT board;
+        LArASIC gain: 14mV/fC; peak time : 2$\mu$s
+    '''
+    def __init__(self, root_path: str, data_dir: str, output_path: str, tms:int):
+        printItem("DAT-DAC calibration")
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms, QC_filename='QC_CALI_DATDAC.bin')
 
 # class Calibration:
 #     def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int):
@@ -178,13 +165,15 @@ class ASICDAC_CALI:
 # x-x---------------------------------------------------------------x-x
 def runCalibrations(root_path: str, data_dir: str, output_path: str):
     # all_tms = [61, 62, 63]
-    all_tms = [61]
-    for tms in all_tms:
-        # calib = Calibration(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
-        # calib.ASICDAC_cali()
-        asicdac = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
-        asicdac.runScript(generateWf=True)
-        # sys.exit()
+    # all_tms = [61]
+    # for tms in all_tms:
+    #     # calib = Calibration(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
+    #     # calib.ASICDAC_cali()
+
+    asicdac = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin')
+    asicdac.runScript(generateWf=True)
+    # datdac = DATDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
+    sys.exit()
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -192,5 +181,6 @@ if __name__ == '__main__':
 
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for i, data_dir in enumerate(list_data_dir):
-        runCalibrations(root_path=root_path, data_dir=data_dir, output_path=output_path)
+        if i==2:
+            runCalibrations(root_path=root_path, data_dir=data_dir, output_path=output_path)
         # sys.exit()

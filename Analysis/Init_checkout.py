@@ -7,53 +7,13 @@ import os, sys
 import numpy as np
 import pickle, json
 from utils import printItem
-from utils import decodeRawData, LArASIC_ana, createDirs, dumpJson
+from utils import decodeRawData, LArASIC_ana, createDirs, dumpJson, BaseClass
 import matplotlib.pyplot as plt
 
-class QC_INIT_CHECK:
-    '''
-        Data file: 
-            QC_INIT_CHK.bin
-        Items to check:
-            WIB_PWR, WIB_LINK, FE_PWRON, ADC_PWRON, CD_PWRON, ASICDAC_CALI_CHK, DIRECT_PLS_CHK, logs
-        output:
-            self.out_dict = {'FE_ID0': {
-                                    param0: {
-                                        'pedestal' : {'data': [], 'result_qc': [], 'link_to_img': ''},
-                                        'rms': {'data': [], 'result_qc': [], 'link_to_img': ''},
-                                        'pulseResponse': {'pospeak': {}, 'negpeak': {}, 'link_to_img': ''}
-                                    },
-                                    param1 : { same as param0 },
-                                    param2 : { TO BE DEFINED }
-                                    .... TO BE DEFINED
-                                  },
-                        'FE_ID1': { same as FE_ID0 },
-                        ...
-                        }
-    '''
+class QC_INIT_CHECK(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
-        self.tms = 0
-        self.item_to_analyze = "Initialization checkout"
-        printItem(self.item_to_analyze)
-        self.init_chk_filename = 'QC_INIT_CHK.bin'
-        # self.root_path = root_path
-        # self.data_dir = data_dir
-        self.items_to_check = ['WIB_PWR', 'WIB_LINK', 'FE_PWRON', 'ADC_PWRON', 'ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK', 'logs']
-        # load data to a dictionary
-        with open('/'.join([root_path, data_dir, self.init_chk_filename]), 'rb') as fn:
-            self.raw_data = pickle.load(fn)
-        ## get the logs
-        self.logs_dict = self.raw_data['logs']
-        ##----- Create Folders for the outputs -----
-        createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
-        FE_outputDIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
-        self.INIT_CHECK_dirs = ['/'.join([DIR, 'INIT_CHECK']) for DIR in FE_outputDIRs]
-        for d in self.INIT_CHECK_dirs:
-            try:
-                os.mkdir(d)
-            except OSError:
-                pass
-        ## --- OUTPUT DICTIONARY
+        printItem('Initialization checkout')
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=0, QC_filename='QC_INIT_CHK.bin')
         self.out_dict = dict()
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
@@ -67,7 +27,7 @@ class QC_INIT_CHECK:
                     "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
                 }
             }
-            for param in self.items_to_check:
+            for param in self.params:
                 if param!='logs':
                     self.out_dict[FE_ID][param] = dict()
 
@@ -138,7 +98,7 @@ class QC_INIT_CHECK:
         out_dict = dict()
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
-            output_FE = self.INIT_CHECK_dirs[ichip]
+            output_FE = self.FE_outputDIRs[chipID]
             asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
@@ -181,7 +141,7 @@ class QC_INIT_CHECK:
         ## --- THIS BLOCK SHOULD BE THE LAST PART OF THE METHOD runAnalysis
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            dumpJson(output_path=self.INIT_CHECK_dirs[ichip], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
+            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'

@@ -6,25 +6,13 @@
 
 import os, sys, pickle
 import numpy as np
-from utils import dumpJson, createDirs, decodeRawData, printItem, LArASIC_ana
+from utils import dumpJson, createDirs, decodeRawData, printItem, LArASIC_ana, BaseClass
 import matplotlib.pyplot as plt
 
-class RMS:
+class RMS(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
-        self.tms = 5
         printItem("FE noise measurement")
-        with open('/'.join([root_path, data_dir, 'QC_RMS.bin']), 'rb') as fn:
-            self.raw_data = pickle.load(fn)
-        self.logs_dict = self.raw_data['logs']
-        createDirs(logs_dict=self.logs_dict, output_dir=output_path)
-        FE_outputDIRs = ['/'.join([output_path, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
-        self.RMS_dirs = {self.logs_dict['FE{}'.format(ichip)]: '/'.join([FE_outputDIRs[ichip], 'RMS']) for ichip in range(8)}
-        for key, val in self.RMS_dirs.items():
-            try:
-                os.mkdir(val)
-            except OSError:
-                pass
-        self.config_keys = [key for key in self.raw_data.keys() if key!='logs']
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_RMS.bin', tms=5)
         self.CFG_datasheet = self.getCFGs()
     
     def decodeCFG(self, config: str):
@@ -49,9 +37,7 @@ class RMS:
 
     def getCFGs(self):
         cfg_dict = dict()
-        # cfg_list = [l for l in list(self.raw_data.keys()) if (l!='logs')]
-        # for config in cfg_list:
-        for config in self.config_keys:
+        for config in self.params:
             tmp_cfg = self.decodeCFG(config=config)
             cfg_dict[config]  = tmp_cfg[config]
         return cfg_dict
@@ -64,7 +50,7 @@ class RMS:
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            larasic = LArASIC_ana(dataASIC=decodedRMS[ichip], output_dir=self.RMS_dirs[FE_ID], chipID=FE_ID, tms=self.tms, param=config, generatePlots=False, generateQCresult=False)
+            larasic = LArASIC_ana(dataASIC=decodedRMS[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=config, generatePlots=False, generateQCresult=False)
             pedrms = larasic.runAnalysis(getPulseResponse=False, isRMSNoise=True)
             out_dict[FE_ID][config] = {
                 'pedestal': pedrms['pedrms']['pedestal']['data'],
@@ -74,7 +60,7 @@ class RMS:
 
     def decodeRMS(self):
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
-        for config in self.config_keys:
+        for config in self.params:
             print("configuration : {}".format(config))
             tmp = self.decode_oneRMS(config=config) 
             for ichip in range(8):
@@ -91,13 +77,12 @@ class RMS:
         for ichip in range(8):
             pedrms_dict = {"logs": logs}
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            for config in self.config_keys:
-                # pedrms_dict[FE_ID][config] = dict()
+            for config in self.params:
                 pedrms_dict[config] = dict()
                 pedrms_dict[config]['CFG'] = self.CFG_datasheet[config]
                 for key in out_dict[FE_ID][config].keys():
                     pedrms_dict[config][key] = out_dict[FE_ID][config][key]
-            dumpJson(output_path=self.RMS_dirs[FE_ID], output_name='RMS_Noise', data_to_dump=pedrms_dict)
+            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='RMS_Noise', data_to_dump=pedrms_dict)
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'

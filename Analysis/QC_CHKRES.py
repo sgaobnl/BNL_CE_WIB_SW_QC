@@ -4,34 +4,17 @@
 #   Analyze the data in QC_CHKRES.bin
 ############################################################################################
 
-from datetime import datetime
+# from datetime import datetime
 import os, sys
-import numpy as np
+# import numpy as np
 import matplotlib.pyplot as plt
-import json, pickle
-from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana
+# import json, pickle
+from utils import printItem, dumpJson, decodeRawData, LArASIC_ana, BaseClass
 
-class QC_CHKRES:
+class QC_CHKRES(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
-        self.tms = 2
-        self.qc_chres_filename = "QC_CHKRES.bin"
-        self.qc_item_to_analyze = "FE response measurement checkout"
-        printItem(self.qc_item_to_analyze)
-        # open the raw data
-        with open('/'.join([root_path, data_dir, 'QC_CHKRES.bin']), 'rb') as f:
-            self.raw_data = pickle.load(f)
-        self.logs_dict = self.raw_data['logs']
-        # create directories
-        createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
-        FE_outputDIRs = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
-        self.CHKRES_dirs = {self.logs_dict['FE{}'.format(ichip)]: '/'.join([FE_outputDIRs[ichip], 'CHKRES']) for ichip in range(8)}
-        for key, val in self.CHKRES_dirs.items():
-            try:
-                os.mkdir(val)
-            except OSError:
-                pass
-        self.pulseResp_params = [param for param in self.raw_data.keys() if param!='logs']
-
+        printItem("FE response measurement")
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=2, QC_filename='QC_CHKRES.bin')
 
     def __getConfig_dict(self, list_params: list):
         '''
@@ -102,7 +85,7 @@ class QC_CHKRES:
         for ichip in range(8):
             ASIC_ID = self.logs_dict['FE{}'.format(ichip)]
             out_dict[ASIC_ID] = dict()
-            larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.CHKRES_dirs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=False)
+            larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=False)
             data_asic = larasic.runAnalysis()
             out_dict[ASIC_ID]['pedestal'] = data_asic['pedrms']['pedestal']['data']
             out_dict[ASIC_ID]['rms'] = data_asic['pedrms']['rms']['data']
@@ -112,7 +95,7 @@ class QC_CHKRES:
     
     def decode_CHKRES(self):
         # get CONFIGURATIONs
-        datasheetCFG = self.cfgData2cfgDatasheet(config_list=self.pulseResp_params)
+        datasheetCFG = self.cfgData2cfgDatasheet(config_list=self.params)
 
         allchip_data = dict()
         for ichip in range(8):
@@ -128,7 +111,7 @@ class QC_CHKRES:
                 }
             }
 
-        for param_cfg in self.pulseResp_params:
+        for param_cfg in self.params:
             print("configuration: {}".format(param_cfg))
             (cfg, cfg_chResp) = self.decodeOneConfigData(config=param_cfg)
             cfg_info = datasheetCFG[param_cfg]
@@ -140,7 +123,7 @@ class QC_CHKRES:
         # SAVE DATA FOR EACH CHIP TO JSON FILE
         for ichip in range(8):
             ASIC_ID = self.logs_dict['FE{}'.format(ichip)]
-            dumpJson(output_path=self.CHKRES_dirs[ASIC_ID], output_name='QC_CHKRES', data_to_dump=allchip_data[ASIC_ID])
+            dumpJson(output_path=self.FE_outputDIRs[ASIC_ID], output_name='QC_CHKRES', data_to_dump=allchip_data[ASIC_ID])
 
 if __name__ == "__main__":
     root_path = '../../Data_BNL_CE_WIB_SW_QC'

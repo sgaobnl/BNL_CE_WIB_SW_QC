@@ -9,26 +9,15 @@ import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 import json, pickle
-from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana
+from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana, BaseClass
 
-class QC_PWR:
+class QC_PWR(BaseClass):
     '''
         Raw data ("QC_PWR.bin") from one DAT board -> 8x decoded data for each LArASIC
     '''
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
-        self.tms = 1
-        self.qc_pwr_filename = 'QC_PWR.bin'
-        self.item_to_analyze = "FE power consumption measurement"
-        printItem(self.item_to_analyze)
-        with open('/'.join([root_path, data_dir, self.qc_pwr_filename]), 'rb') as f:
-            self.raw_data = pickle.load(f)
-        self.logs_dict = self.raw_data['logs']
-        self.pwr_params = [key for key in list(self.raw_data.keys()) if key!='logs']
-        ##----- Create Folders for the outputs -----
-        createDirs(logs_dict=self.logs_dict, output_dir=output_dir)
-        FEoutputDIR = ['/'.join([output_dir, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
-        self.pwr_outputDIR = ['/'.join([outDIR, 'QC_PWR']) for outDIR in FEoutputDIR]
-        self.__createPWRfolders()
+        printItem('FE power consumption measurement')
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=1, QC_filename='QC_PWR.bin')
         #
         self.param_meanings = {
             'SDF0': 'seBuffOFF',
@@ -38,13 +27,6 @@ class QC_PWR:
             'SDD0': 'sedcBufOFF',
             'SDD1': 'sedcBufON'
         }
-
-    def __createPWRfolders(self):
-        for pathtofolder in self.pwr_outputDIR:
-            try:
-                os.mkdir(pathtofolder)
-            except OSError:
-                pass
 
     def isParamInRange(self, paramVal=0, rangeParam=[0, 0]):
         flag = True
@@ -56,11 +38,11 @@ class QC_PWR:
 
     def getPowerConsumption(self):
         data_by_config = {self.logs_dict['FE{}'.format(ichip)]: {} for ichip in range(8)}
-        for param in self.pwr_params:
+        for param in self.params:
             for KEY_feid in data_by_config.keys():
                 data_by_config[KEY_feid][param] = dict()
         
-        for param in self.pwr_params:
+        for param in self.params:
             print('configuration : {}'.format(param))
             data_oneconfig = self.raw_data[param][3]
             for ichip in range(8):
@@ -85,7 +67,7 @@ class QC_PWR:
                 "P": {"900mV": {}, "200mV": {}, "unit": "mW"}
             }
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            for param in self.pwr_params:
+            for param in self.params:
                 configs = [conf for conf in param.split('_') if conf!='PWR']
                 BL = self.param_meanings[configs[2]]
                 outputConfig = '_'.join([self.param_meanings[configs[0]], self.param_meanings[configs[1]]])
@@ -106,7 +88,7 @@ class QC_PWR:
         # update data with the link to the plots and save everything in a json file
         chResponseAllChips = self.analyzeChResponse()
         for ichip, chip_id in enumerate(pwr_all_chips.keys()):
-            FE_output_dir = self.pwr_outputDIR[ichip]
+            FE_output_dir = self.FE_outputDIRs[chip_id]
            
             tmpdata_onechip = pwr_all_chips[chip_id]
   
@@ -149,7 +131,7 @@ class QC_PWR:
         '''
         print('---> Channel Response')
         outdata = {self.logs_dict['FE{}'.format(ichip)]: {} for ichip in range(8)}
-        for param in self.pwr_params:
+        for param in self.params:
             print('configuration : {}'.format(param))
             fembs = self.raw_data[param][0]
             raw_data = self.raw_data[param][1]
@@ -162,7 +144,7 @@ class QC_PWR:
                 suffixFilename = '_'.join([self.param_meanings[config['SNC']], self.param_meanings[config['SDD']], self.param_meanings[config['SDF']]])
                 # suffixFilename = '_'.join(tmp_config)
                 chipID = self.logs_dict['FE{}'.format(ichip)]
-                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.pwr_outputDIR[ichip], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=False)
+                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=False)
                 data_asic = larasic.runAnalysis()
                 outdata[chipID][suffixFilename] = data_asic
         return outdata

@@ -6,25 +6,12 @@
 
 import os, pickle
 import numpy as np
-from utils import createDirs, printItem, decodeRawData, dumpJson, LArASIC_ana
+from utils import createDirs, printItem, decodeRawData, dumpJson, LArASIC_ana, BaseClass
 
-class PWR_CYCLE:
+class PWR_CYCLE(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
-        self.tms = 4
-        printItem("FE power cycling")
-        with open('/'.join([root_path, data_dir, 'QC_PWR_CYCLE.bin']), 'rb') as fn:
-            self.raw_data = pickle.load(fn)
-        self.logs_dict = self.raw_data['logs']
-        # create directories
-        createDirs(logs_dict=self.logs_dict, output_dir=output_path)
-        FE_outputDIRs = ['/'.join([output_path, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)]
-        self.PWRCYCLE_dirs = {self.logs_dict['FE{}'.format(ichip)]: '/'.join([FE_outputDIRs[ichip], 'PWR_CYCLE']) for ichip in range(8)}
-        for key, val in self.PWRCYCLE_dirs.items():
-            try:
-                os.mkdir(val)
-            except OSError:
-                pass
-        params = [p for p in self.raw_data.keys() if p!='logs']
+        printItem('FE power cycling')
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_PWR_CYCLE.bin', tms=4)
 
     def decode_pwrCons(self, pwrCons_data: dict):
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
@@ -50,7 +37,7 @@ class PWR_CYCLE:
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], output_dir=self.PWRCYCLE_dirs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=False, generateQCresult=False)
+            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=False, generateQCresult=False)
             data_asic = larasic.runAnalysis()
             tmp_out = {
                 'pedestal': data_asic['pedrms']['pedestal']['data'],
@@ -106,7 +93,7 @@ class PWR_CYCLE:
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             data = PwrCycle_data[FE_ID]
-            dumpJson(output_path=self.PWRCYCLE_dirs[FE_ID], output_name='PWR_CYCLE', data_to_dump=data)
+            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='PWR_CYCLE', data_to_dump=data)
 
 
 if __name__ == '__main__':
