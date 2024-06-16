@@ -4,7 +4,7 @@
 #   Utility functions and classes needed for the decoding and analysis
 ############################################################################################
 
-import os, sys, json, platform
+import os, sys, json, platform, pickle
 import numpy as np
 # import csv
 import json
@@ -14,7 +14,7 @@ import statsmodels.api as sm
 #_________Import the CPP module_____________
 system_info = platform.system()
 if system_info=='Linux':
-    print('IN')
+    # print('IN')
     sys.path.append('./decode')
     from dunedaq_decode import wib_dec
     sys.path.append('../')
@@ -213,6 +213,38 @@ def getpulse(oneCHdata: list, averaged=True):
     else:
         pulserange = chunks_data[0]
     return pulserange
+
+#_______BASE_CLASS________________
+class BaseClass:
+    def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int, QC_filename: str, generateWaveForm=False):
+        self.tms = tms
+        self.filename = QC_filename
+        splitted_filename = self.filename.split('_')
+        if '47.bin' in splitted_filename:
+            self.suffixName = splitted_filename[-2] + '_47'
+        else:
+            self.suffixName = splitted_filename[-1].split('.')[0]
+        # self.foldername = '_'.join(self.filename.split('_')[:2])
+        self.foldername = self.filename.split('.')[0]
+        with open('/'.join([root_path, data_dir, self.filename]), 'rb') as fn:
+            self.raw_data = pickle.load(fn)
+        # self.raw_data = raw_data
+        self.logs_dict = self.raw_data['logs']
+        self.params = [key for key in self.raw_data.keys() if key!='logs']
+        createDirs(logs_dict=self.logs_dict, output_dir=output_path)
+        self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
+        for FE_ID, dir in self.FE_outputDIRs.items():
+            try:
+                os.mkdir(dir)
+            except OSError:
+                pass
+        if generateWaveForm:
+            self.FE_outputPlots_DIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername, self.suffixName]) for ichip in range(8)}
+            for FE_ID, dir in self.FE_outputPlots_DIRs.items():
+                try:
+                    os.mkdir(dir)
+                except OSError:
+                    pass
 
 # Analyze one LArASIC
 class LArASIC_ana:
