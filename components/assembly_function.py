@@ -451,16 +451,16 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
         # with open(outfp, 'wb') as fn:
         #      pickle.dump([ppk,npk,bl], fn)
 
-        tmp = QC_check.CHKPulse(ppk, 700, type = 'pedestal')
+        tmp = QC_check.CHKPulse(ppk, 1000, type = 'pedestal')
 
         log.chkflag["Pulse_SE"]["PPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["PPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(npk, 700, type = 'pedestal')
+        tmp = QC_check.CHKPulse(npk, 1000, type = 'pedestal')
         log.chkflag["Pulse_SE"]["NPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["NPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(bl, 300, type = 'pedestal')
+        tmp = QC_check.CHKPulse(bl, 1000, type = 'pedestal')
         log.chkflag["Pulse_SE"]["BL"]=(tmp[0])
         log.badlist["Pulse_SE"]["BL"]=(tmp[1])
 
@@ -480,15 +480,15 @@ def DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ppk, npk, bl = qc_tools.GetPeaks(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
 
-        tmp = QC_check.CHKPulse(ppk, 700, type = 'pedestal')
+        tmp = QC_check.CHKPulse(ppk, 1000, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["PPK"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["PPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(npk, 700, type = 'pedestal')
+        tmp = QC_check.CHKPulse(npk, 1000, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["NPK"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["NPK"]=(tmp[1])
 
-        tmp = QC_check.CHKPulse(bl, 300, type = 'pedestal')
+        tmp = QC_check.CHKPulse(bl, 1000, type = 'pedestal')
         log.chkflag["Pulse_DIFF"]["BL"]=(tmp[0])
         log.badlist["Pulse_DIFF"]["BL"]=(tmp[1])
         print(log.chkflag)

@@ -976,15 +976,15 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0601.update(inl_gain)
         log.check_log0601.update(inl_gain_check)
-
-        print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
-        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
-        inl_gain = dict(log.tmp_log)
-        inl_gain_check = dict(log.check_log)
-        log.report_log0602.update(inl_gain)
-        log.check_log0602.update(inl_gain_check)
-
+        #
+        # print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
+        # a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+        # a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
+        # inl_gain = dict(log.tmp_log)
+        # inl_gain_check = dict(log.check_log)
+        # log.report_log0602.update(inl_gain)
+        # log.check_log0602.update(inl_gain_check)
+        #
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
@@ -993,81 +993,81 @@ class QC_reports:
         log.report_log0604.update(inl_gain)
         log.check_log0604.update(inl_gain_check)
         datadir = self.datadir+"CALI1/"
-        print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
-        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-        inl_gain = dict(log.tmp_log)
-        inl_gain_check = dict(log.check_log)
-        log.report_log0605.update(inl_gain)
-        log.check_log0605.update(inl_gain_check)
-        for ifemb in self.fembs:
-            report_dir = self.savedir[ifemb] + "CALI1_DIFF/"
-            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-
-
-
-            inl_set = [log.report_log0601[femb_id]["INL"], log.report_log0602[femb_id]["INL"], log.report_log0603[femb_id]["INL"], log.report_log0604[femb_id]["INL"]]
-            gain_set = [log.report_log0601[femb_id]["Gain"], log.report_log0602[femb_id]["Gain"], log.report_log0603[femb_id]["Gain"], log.report_log0604[femb_id]["Gain"]]
-            gain_std = [log.report_log0601[femb_id]["Gainstd"], log.report_log0602[femb_id]["Gainstd"], log.report_log0603[femb_id]["Gainstd"], log.report_log0604[femb_id]["Gainstd"]]
-            ENC_set = [log.report_log0601[femb_id]["ENC"], log.report_log0602[femb_id]["ENC"], log.report_log0603[femb_id]["ENC"], log.report_log0604[femb_id]["ENC"]]
-            ENC_std = [log.report_log0601[femb_id]["ENC_std"], log.report_log0602[femb_id]["ENC_std"], log.report_log0603[femb_id]["ENC_std"], log.report_log0604[femb_id]["ENC_std"]]
-            plt.figure(figsize=(10, 4))
-            plt.subplot(1, 2, 1)
-            plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label = 'INL_SE_OFF')
-            plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
-            plt.xlabel("Voltage Gain", fontsize=12)
-            plt.ylabel("INL value", fontsize=12)
-            plt.grid(axis='x')
-            plt.legend()
-            plt.title("INL in 4.7 7.8 14 25 mV/fC", fontsize=12)
-
-            plt.subplot(1, 2, 2)
-            plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label = 'Gain_SE_OFF')
-            plt.plot(2, log.report_log0605[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'Gain_DIFF')
-            plt.xlabel("Voltage Gain", fontsize=12)
-            plt.ylabel("Gain", fontsize=12)
-            plt.grid(axis='x')
-            plt.legend()
-            plt.title("Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
-            plt.tight_layout()
-            plt.savefig(report_dir + 'Cali1.png')
-            plt.close()
-
-            plt.figure(figsize=(6,4))
-            x = ["4.7", "7.8", "14", "25"]
-            plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
-                         alpha=0.7, label='Amplitude Gain')
-            plt.ylim(0, 130)
-            plt.xlabel("Gain Setting", fontsize = 14)
-            plt.ylabel("Amplitude Gain / e-/bit", fontsize = 14)
-            plt.xticks(x, ["4.7", "7.8", "14", "25"])
-            plt.grid(True, axis='y', linestyle='--')
-            plt.margins(x=0.15)
-            for i in range(len(x)):
-                plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
-            plt.title("Amplitude Gain in 4.7 7.8 14 25 mV/fC", fontsize = 14)
-            plt.gca().set_facecolor('none')
-            plt.tight_layout()
-            plt.savefig(report_dir + 'SE_Gain.png', transparent = True)
-            plt.close()
-
-            plt.figure(figsize=(6,4))
-            x = ["4.7", "7.8", "14", "25"]
-            plt.errorbar(x, ENC_set, yerr=ENC_std, color='darkblue', linestyle='-', capsize=5,
-                         alpha=0.7, label='ENC')
-            plt.ylim(0, 1200)
-            plt.xlabel("Gain Setting", fontsize = 14)
-            plt.ylabel("ENC / e-", fontsize = 14)
-            plt.xticks(x, ["4.7", "7.8", "14", "25"])
-            plt.grid(True, axis='y', linestyle='--')
-            plt.margins(x=0.15)
-            for i in range(len(x)):
-                plt.text(x[i], ENC_set[i] + 50, f'{round(ENC_set[i], 1)}±{round(ENC_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
-            plt.title("ENC in 4.7 7.8 14 25 mV/fC", fontsize = 14)
-            plt.gca().set_facecolor('none')
-            plt.tight_layout()
-            plt.savefig(report_dir + 'SE_ENC.png', transparent = True)
-            plt.close()
+        # print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
+        # a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        # a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+        # inl_gain = dict(log.tmp_log)
+        # inl_gain_check = dict(log.check_log)
+        # log.report_log0605.update(inl_gain)
+        # log.check_log0605.update(inl_gain_check)
+        # for ifemb in self.fembs:
+        #     report_dir = self.savedir[ifemb] + "CALI1_DIFF/"
+        #     femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
+        #
+        #
+        #
+        #     inl_set = [log.report_log0601[femb_id]["INL"], log.report_log0602[femb_id]["INL"], log.report_log0603[femb_id]["INL"], log.report_log0604[femb_id]["INL"]]
+        #     gain_set = [log.report_log0601[femb_id]["Gain"], log.report_log0602[femb_id]["Gain"], log.report_log0603[femb_id]["Gain"], log.report_log0604[femb_id]["Gain"]]
+        #     gain_std = [log.report_log0601[femb_id]["Gainstd"], log.report_log0602[femb_id]["Gainstd"], log.report_log0603[femb_id]["Gainstd"], log.report_log0604[femb_id]["Gainstd"]]
+        #     ENC_set = [log.report_log0601[femb_id]["ENC"], log.report_log0602[femb_id]["ENC"], log.report_log0603[femb_id]["ENC"], log.report_log0604[femb_id]["ENC"]]
+        #     ENC_std = [log.report_log0601[femb_id]["ENC_std"], log.report_log0602[femb_id]["ENC_std"], log.report_log0603[femb_id]["ENC_std"], log.report_log0604[femb_id]["ENC_std"]]
+        #     plt.figure(figsize=(10, 4))
+        #     plt.subplot(1, 2, 1)
+        #     plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label = 'INL_SE_OFF')
+        #     plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
+        #     plt.xlabel("Voltage Gain", fontsize=12)
+        #     plt.ylabel("INL value", fontsize=12)
+        #     plt.grid(axis='x')
+        #     plt.legend()
+        #     plt.title("INL in 4.7 7.8 14 25 mV/fC", fontsize=12)
+        #
+        #     plt.subplot(1, 2, 2)
+        #     plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label = 'Gain_SE_OFF')
+        #     plt.plot(2, log.report_log0605[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'Gain_DIFF')
+        #     plt.xlabel("Voltage Gain", fontsize=12)
+        #     plt.ylabel("Gain", fontsize=12)
+        #     plt.grid(axis='x')
+        #     plt.legend()
+        #     plt.title("Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
+        #     plt.tight_layout()
+        #     plt.savefig(report_dir + 'Cali1.png')
+        #     plt.close()
+        #
+        #     plt.figure(figsize=(6,4))
+        #     x = ["4.7", "7.8", "14", "25"]
+        #     plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
+        #                  alpha=0.7, label='Amplitude Gain')
+        #     plt.ylim(0, 130)
+        #     plt.xlabel("Gain Setting", fontsize = 14)
+        #     plt.ylabel("Amplitude Gain / e-/bit", fontsize = 14)
+        #     plt.xticks(x, ["4.7", "7.8", "14", "25"])
+        #     plt.grid(True, axis='y', linestyle='--')
+        #     plt.margins(x=0.15)
+        #     for i in range(len(x)):
+        #         plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
+        #     plt.title("Amplitude Gain in 4.7 7.8 14 25 mV/fC", fontsize = 14)
+        #     plt.gca().set_facecolor('none')
+        #     plt.tight_layout()
+        #     plt.savefig(report_dir + 'SE_Gain.png', transparent = True)
+        #     plt.close()
+        #
+        #     plt.figure(figsize=(6,4))
+        #     x = ["4.7", "7.8", "14", "25"]
+        #     plt.errorbar(x, ENC_set, yerr=ENC_std, color='darkblue', linestyle='-', capsize=5,
+        #                  alpha=0.7, label='ENC')
+        #     plt.ylim(0, 1200)
+        #     plt.xlabel("Gain Setting", fontsize = 14)
+        #     plt.ylabel("ENC / e-", fontsize = 14)
+        #     plt.xticks(x, ["4.7", "7.8", "14", "25"])
+        #     plt.grid(True, axis='y', linestyle='--')
+        #     plt.margins(x=0.15)
+        #     for i in range(len(x)):
+        #         plt.text(x[i], ENC_set[i] + 50, f'{round(ENC_set[i], 1)}±{round(ENC_std[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkblue')
+        #     plt.title("ENC in 4.7 7.8 14 25 mV/fC", fontsize = 14)
+        #     plt.gca().set_facecolor('none')
+        #     plt.tight_layout()
+        #     plt.savefig(report_dir + 'SE_ENC.png', transparent = True)
+        #     plt.close()
 
 
     #   7  CALI_report_2

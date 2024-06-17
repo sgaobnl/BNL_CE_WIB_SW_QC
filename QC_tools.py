@@ -795,6 +795,9 @@ class ana_tools:
                 uplim = np.max(pk_np[ch])*7/8
                 lodac = np.max(pk_np[ch])*1/8
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
+                if ch == 100:
+                    print(gain,inl, line_range)
+                    input()
 
                 if gain==0:
                    print("femb%d ch%d gain is zero"%(ifemb,ch))           
@@ -864,9 +867,10 @@ class ana_tools:
             plt.xlabel("Channel", fontsize=14)
             plt.ylabel("Gain", fontsize=14)
             x_sticks = range(0, 129, 16)
+            plt.ylim(0, 120)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
-            plt.title("Gain Distribution for the 128-Channel", fontsize=14)
+            plt.title("128-ch Gain Distribution", fontsize=14)
 
             #   INL
             plt.subplot(2, 2, 4)

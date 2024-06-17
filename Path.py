@@ -1,6 +1,6 @@
 import os
 
-Desk = "D:/A0-FEMB_04_"
+Desk = "D:/A0-FEMB_06_"
 Board_version_batch = "1H_Auto/"
 
 

@@ -10,9 +10,9 @@ from spymemory_decode import wib_dec
 datadir = 'D:/GitHub/DAT_QC_HERMES/BNL_CE_WIB_SW_QC/tmp_data/'
 
 snc = '200mVBL'
-sgs = '4_7mVfC'
+sgs = '14_0mVfC'
 sts = '2_0us'
-dac_list = range(0,64,4)
+dac_list = range(0,64,1)
 runi = 0
 fembs = [1]
 peakdic = defaultdict(dict)
@@ -41,20 +41,20 @@ for dac in dac_list:
         pkp = []
         peak = []
         for fe in [chip]:  # range(8):
-            for fe_chn in [ref_chn, ref_chn + 1]:  # range(16):
+            for fe_chn in [ref_chn]:  # range(16):
                 fechndata = datd[fe * 16 + fe_chn]
                 rms.append(np.mean(fechndata))
                 maxpos = np.argmax(fechndata[100:-300]) + 100
                 blvalue = fechndata[maxpos - 10]
                 maxvalue = fechndata[maxpos]
                 peakdic[fe_chn][dac] = maxvalue-blvalue
-                if dac in check_list:
+                if dac in dac_list:
                     if fe_chn == ref_chn:
                         plt.text(0, maxvalue, '{}-{}'.format(maxvalue, blvalue), color='#009900')
-                        plt.plot(range(0, 30, 1), fechndata[maxpos - 15: maxpos + 15], marker='.', alpha=1, color='green',
+                        plt.plot(range(0, 30, 1), fechndata[maxpos - 15: maxpos + 15], marker='.', alpha=1, color='lightblue',
                                  linewidth=1,
                                  label="issue_chip{}_ch{}_dac={}".format(fe, fe_chn, dac))
-                        plt.plot(15, fechndata[maxpos], marker='^', markersize=7, alpha=1, color='green',
+                        plt.plot(15, fechndata[maxpos], marker='o', markersize=7, alpha=1, color='orange',
                                  linewidth=2.0)
                     else:
                         plt.text(0 + 5, maxvalue, '{}-{}'.format(maxvalue, blvalue), color='#990000')
@@ -65,32 +65,39 @@ for dac in dac_list:
 
 print(peakdic)
 plt.title('CALI1_SE_200mVBL_4_7mVfC_2_0us', fontsize=24)
-plt.legend()
+# plt.legend()
 plt.ylabel("Amplitude / ADC bit", fontsize=20)
 plt.xlim((0, 30))
-plt.ylim((0, 14000))
-plt.xlabel("Channel", fontsize=20)
+plt.ylim((0, 16000))
+plt.xlabel("Time / 500 ns", fontsize=20)
 plt.grid()
 chip1=[]
 chip2=[]
 for i in dac_list:
     chip1.append(peakdic[ref_chn][i])
-    chip2.append(peakdic[ref_chn + 1][i])
+    # chip2.append(peakdic[ref_chn + 1][i])
 plt.subplot(1, 2, 2)
 plt.title("Linearity of the Positive Peak", fontsize=24)
-plt.plot(dac_list, chip1, marker='o', alpha=0.9,  color='#009900', linewidth = 2.0, label="issue_chip{}_ch{}".format(fe, ref_chn))
-plt.plot(dac_list, chip2, marker='o', alpha=0.9,  color='#990000', linewidth = 2.0, label="normal_chip{}_ch{}".format(fe, ref_chn+1))
-
-for i in range(len(dac_list)):
+print(chip1)
+for i in dac_list:
     print(i)
-    # print(chip1[i])
-    if dac_list[i] in check_list:
-        plt.plot(dac_list[i], chip1[i], marker='^', markersize = 15, alpha=1, color='green', linewidth=2.0)
-        plt.plot(dac_list[i], chip2[i], marker='^', markersize = 15, alpha=1, color='red', linewidth=2.0)
-plt.plot([dac_list[0],dac_list[-2]], (chip1[0], chip1[-2]), alpha=0.7, linestyle='--', color='green', linewidth=3.0, label = 'fit for the issue channel')
-plt.legend()
+    if chip1[i] < 12000:
+        plt.plot(dac_list[i], chip1[i], marker='o', alpha=0.9,  color='red', linewidth = 2.0, label="issue_chip{}_ch{}".format(fe, ref_chn))
+        print(1)
+    else:
+        print(2)
+        plt.plot(dac_list[i], chip1[i], marker='o', alpha=0.9, color='#009900', linewidth=2.0, label="issue_chip{}_ch{}".format(fe, ref_chn))
+# plt.plot(dac_list, chip2, marker='o', alpha=0.9,  color='#990000', linewidth = 2.0, label="normal_chip{}_ch{}".format(fe, ref_chn+1))
+
+# for i in range(len(dac_list)):
+#     print(i)
+#     if dac_list[i] in check_list:
+#         plt.plot(dac_list[i], chip1[i], marker='^', markersize = 15, alpha=1, color='green', linewidth=2.0)
+        # plt.plot(dac_list[i], chip2[i], marker='^', markersize = 15, alpha=1, color='red', linewidth=2.0)
+# plt.plot([dac_list[0],dac_list[-2]], (chip1[0], chip1[-2]), alpha=0.7, linestyle='--', color='orange', linewidth=2.0, label = 'fit for the issue channel')
+# plt.legend()
 plt.xlim((0, 64))
-plt.ylim(-1000, 13000)
+plt.ylim(-1000, 16000)
 plt.grid()
 # peakdic[fe_chn][dac]
 plt.title("Linearity of the Peak Value", fontsize=24)

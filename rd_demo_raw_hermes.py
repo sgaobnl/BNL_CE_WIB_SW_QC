@@ -34,7 +34,7 @@ for i in [0]:
     wibdatai = wibdata[i]
     datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
 
-ref_chn = 0
+ref_chn = 7
 if 1:
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
@@ -42,17 +42,21 @@ if 1:
     rms = []
     pkp  = []
     for fe in [1]:#range(8):
-        for fe_chn in [ref_chn,ref_chn+2]:#range(16):
-            fechndata = datd[fe*16+fe_chn]
+        for fe_chn in [ref_chn]:#range(16):
+            fechndata = np.array(datd[fe*16+fe_chn], dtype = np.int32)
             rms.append(np.mean(fechndata))
             rms_tmp = round(np.std(fechndata), 2)
             maxpos = np.argmax(fechndata[100:]) + 100
             maxvalue = fechndata[maxpos]
+            baseline = fechndata[maxpos-30]
+            print(baseline)
+            subaseline = [x - baseline for x in fechndata]
+            print(subaseline)
             plt.text(maxpos, maxvalue+300, '{}'.format(maxvalue))
             if fe_chn == ref_chn:
-                plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="issue_chip{}_ch{}_{}".format(fe, fe_chn, dac))
+                plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
             else:
-                plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='pink', label="normal_chip{}_ch{}_{}".format(fe, fe_chn, dac))
+                plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='green', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
 
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
@@ -80,8 +84,8 @@ if 1:
 plt.title("{}".format(fp))
 plt.legend()
 plt.ylabel("ADC count / bit")
-plt.ylim((0,16000))
-plt.xlabel("Channel")
+plt.ylim((-1000,6500))
+plt.xlabel("time / 500 ns")
 plt.grid()
 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
 plt.show()
