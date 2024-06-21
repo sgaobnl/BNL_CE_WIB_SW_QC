@@ -952,7 +952,7 @@ if 6 in tms:
                 chip = ch // 16
                 num_16bwords = 0x8000 / 2        
                 words16b = list(struct.unpack_from("<%dH"%(num_16bwords),ch_hist_data)) 
-                tmp = 1000
+                tmp = 1100
                 x1 = x[tmp:-1*tmp]
                 y = np.array(words16b[tmp:-1*tmp])
                 ax2.plot(x1, y, c="C%d"%(chip))
@@ -961,6 +961,8 @@ if 6 in tms:
                 ny = (y*1.0)/tot - 1
                 inl = []
                 for i in range(len(ny)):
+                    if (np.sum(ny[0:i+1])>100):
+                        print (ch)
                     inl.append(np.sum(ny[0:i+1]))
                 ax3.plot (x1, ny)
 
@@ -1090,9 +1092,9 @@ if 8 in tms:
     #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
     #for freq in [8106.23, 14781.95, 31948.09,]:
-    for freq in [8106.23]:
+    #for freq in [8106.23]:
     #for freq in [358104]:
-    #for freq in [119686]:
+    for freq in [119686]:
         fp = fdir + "QC_ENOB_%08dHz"%(int(freq)) + ".bin"
         print ("When it is done, replace {} on the local PC".format(fp) )
         if os.path.isfile(fp):
@@ -1128,7 +1130,7 @@ if 8 in tms:
                     num_16bwords = 0x8000 / 2
                     words16b = list(struct.unpack_from("<%dH"%(num_16bwords),raw))
     
-                    if ch == 9:
+                    if ch == 57:
                         import matplotlib.pyplot as plt
                         plt.plot(words16b)
                         plt.show()

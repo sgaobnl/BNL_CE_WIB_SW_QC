@@ -222,6 +222,7 @@ if QC_TST_EN:
         print ("Exit anyway")
         exit()
 
+exit()
 #if False:
 #if True:
 if QC_TST_EN:
