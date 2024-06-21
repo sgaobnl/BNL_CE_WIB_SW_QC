@@ -652,6 +652,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def femb_adc_chkreg(self, femb_id):
+        adcbads = []
 
         print("Check femb%d COLDADC default registers' value"%femb_id)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
@@ -680,6 +681,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 nreg = nreg+1
                 if rdreg!=defreg:
                    print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
+                   if adc_no not in adcbads:
+                       adcbads.append(adc_no)
                    hasERROR = True
 
             reg_page=2
@@ -690,9 +693,11 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 nreg = nreg+1
                 if rdreg!=defreg:
                    print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
+                   if adc_no not in adcbads:
+                       adcbads.append(adc_no)
                    hasERROR = True
 
-        return hasERROR
+        return hasERROR, adcbads
 
     def femb_adc_cfg(self, femb_id):
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")

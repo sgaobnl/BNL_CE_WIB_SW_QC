@@ -79,11 +79,11 @@ logs.update(logsd)
 
 #if 100 in tms : #100 is only for itemed testing with power operation 
 if True:
+    print ("Check DAT power status")
     pwr_meas = dat.get_sensors()
     on_f = True
     for key in pwr_meas:
         if "FEMB%d"%dat.dat_on_wibslot in key:
-            print (pwr_meas[key])
             if ("BIAS_V" in key) and (pwr_meas[key] < 4.5):
                 on_f = False
             if ("DC2DC0_V" in key) and (pwr_meas[key] < 3.5):
@@ -109,20 +109,38 @@ if 10 in tms:
 if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
-    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+    pwr_meas, link_mask, init_f = dat.wib_pwr_on_dat()
     datad["WIB_PWR"] = pwr_meas
     datad["WIB_LINK"] = link_mask
-    fes_pwr_info = dat.fe_pwr_meas()
-    datad["FE_PWRON"] = fes_pwr_info
-    adcs_pwr_info = dat.adc_pwr_meas()
-    datad["ADC_PWRON"] = adcs_pwr_info
-    cds_pwr_info = dat.dat_cd_pwr_meas()
-    datad["CD_PWRON"] = cds_pwr_info
-    dat.asic_init_por(duts=["FE"])
-    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
-    chkdata = dat.dat_asic_chk()
-    datad.update(chkdata)
+    if init_f:
+        datad["FE_Fail"] = [0,1,2,3,4,5,6,7]
+        datad["QCstatus"] = "Code#E001: large current or HS link error when DAT is powered on"
+    else:
+        fes_pwr_info = dat.fe_pwr_meas()
+        datad["FE_PWRON"] = fes_pwr_info
+        adcs_pwr_info = dat.adc_pwr_meas()
+        datad["ADC_PWRON"] = adcs_pwr_info
+        cds_pwr_info = dat.dat_cd_pwr_meas()
+        datad["CD_PWRON"] = cds_pwr_info
+        warn_flg, febads, adcbads, cdbads = dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
 
+        if warn_flg:
+            datad["QCstatus"] = "Code#E002: Large current of some ASIC chips is observed"
+            datad["FE_Fail"] = febads
+            datad["ADC_Fail"] = adcbads
+            datad["CD_Fail"] = cdbads
+
+        else: #if all chips look good
+            warn_flg, febads, adcbads, cdbads = dat.asic_init_por(duts=["FE"])
+            if warn_flg:
+                datad["FE_Fail"] = febads
+                datad["ADC_Fail"] = adcbads
+                datad["CD_Fail"] = cdbads
+                datad["QCstatus"] = "Code#E003: FE Bangap Ref out of range"
+            else:
+                chkdata = dat.dat_asic_chk()
+                datad.update(chkdata)
+                datad["QCstatus"] = "Code#W004: To be anlyze at PC side"
     datad['logs'] = logs
 
     fp = fdir + "QC_INIT_CHK" + ".bin"
@@ -132,7 +150,7 @@ if 0 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! It took %d seconds"%(tt[-1]-tt[-2]))
 
 if 1 in tms:
     print ("FE power consumption measurement starts...")
