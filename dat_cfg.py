@@ -56,20 +56,28 @@ class DAT_CFGS(WIB_CFGS):
         self.data_align_flg = False
         self.data_align_pwron_flg = True
 
-        pwr_ongoing_f = True
-        while pwr_ongoing_f:
+        #pwr_ongoing_f = True
+        for i in range(30):
+            pwr_ongoing_f = True
             for femb_id in self.fembs:
-                pwr_ongoing_f = True
                 ver_id = self.cdpeek(femb_id, 0xC, 0, 0xF4) 
                 year_l = self.cdpeek(femb_id, 0xC, 0, 0xF9) 
-                year_h = self.cdpeek(femb_id, 0xC, 0, 0xFA) 
+                year_h = self.cdpeek(femb_id, 0xC, 0, 0xFA)
+                print ("DAT", hex(ver_id), hex(year_h), hex(year_l))
                 if (ver_id == 0x2B) and (year_h == 0x20) and (year_l == 0x24):
-                    pwr_ongoing_f = False 
+                    pwr_ongoing_f = False
+            if (not pwr_ongoing_f) and i > 20:
+                init_f = True
+            else:
+                init_f = False
+                break
             time.sleep(1)
 
-        init_f = self.dat_fpga_reset()
         pwr_meas = None
-        link_meas = None
+        link_mask = None
+
+        if not init_f:
+            init_f = not self.dat_fpga_reset()
 
         if not init_f: 
             self.cdpoke(0, 0xC, 0, self.DAT_CD_AMON_SEL, self.cd_sel)    
@@ -526,7 +534,8 @@ class DAT_CFGS(WIB_CFGS):
             self.set_fe_sync()
             #adac_pls_en = 0 #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
-            self.femb_cfg(femb_id, adac_pls_en )
+            if not self.femb_cfg(femb_id, adac_pls_en ):
+                return False
         if self.data_align_pwron_flg == True:
             self.data_align(self.fembs)
             self.data_align_pwron_flg = False
@@ -711,7 +720,9 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             adac_pls_en = adac_pls_en #enable LArASIC interal calibraiton pulser
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8), adac_pls_en, self.cd_sel) )
-            self.femb_cfg(femb_id, adac_pls_en )
+            if not self.femb_cfg(femb_id, adac_pls_en ):
+                return False
+
             self.sddflg=sdd
         if self.data_align_pwron_flg == True:
             self.data_align(self.fembs)
@@ -779,11 +790,13 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_fe_qc(self, num_samples=1, adac_pls_en=0, sts=0, snc=0,sg0=0, sg1=0, st0=1, st1=1, swdac=0, sdd=0, sdf=0, dac=0x00, sgp=0, slk0=0, slk1=0, chn=128):
         cfg_info = self.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, snc=snc,sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=swdac, sdd=sdd, sdf=sdf, dac=dac, sgp=sgp, slk0=slk0, slk1=slk1 )
+        if cfg_info == False:
+            return False
         data =  self.dat_fe_qc_acq(num_samples)
         #self.dat_fe_qc_rst()
         return data, cfg_info
 
-    def dat_cali_source(self, cali_mode==3, val=1.090, period=0x200, width=0x180, asicdac=0x10, chips=0xff):
+    def dat_cali_source(self, cali_mode=3, val=1.090, period=0x200, width=0x180, asicdac=0x10, chips=0xff):
         #cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 or larger: disable cali
         if cali_mode <0 or cali_mode >3:
             cali_mode=3
@@ -858,6 +871,8 @@ class DAT_CFGS(WIB_CFGS):
         datad = {}
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
         rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+        if rawdata == False:
+            return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["ASICDAC_47mV_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
@@ -865,6 +880,9 @@ class DAT_CFGS(WIB_CFGS):
         self.fedly = 1
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=self.fe_cali_vref-0.05, period=0x200, width=0x180, asicdac=0x10)
         rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
+        if rawdata == False:
+            return False
+
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
@@ -872,6 +890,9 @@ class DAT_CFGS(WIB_CFGS):
         self.fedly = 3
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
         rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)
+        if rawdata == False:
+            return False
+
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)

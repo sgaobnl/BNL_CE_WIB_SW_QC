@@ -139,8 +139,11 @@ if 0 in tms:
                 datad["QCstatus"] = "Code#E003: FE Bangap Ref out of range"
             else:
                 chkdata = dat.dat_asic_chk()
-                datad.update(chkdata)
-                datad["QCstatus"] = "Code#W004: To be anlyze at PC side"
+                if chkdata == False:
+                    datad["QCstatus"] = "Code#E005: Can't Configurate DAT"
+                else:
+                    datad.update(chkdata)
+                    datad["QCstatus"] = "Code#W004: To be anlyze at PC side"
     datad['logs'] = logs
 
     fp = fdir + "QC_INIT_CHK" + ".bin"
