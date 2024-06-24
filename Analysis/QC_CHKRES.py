@@ -82,10 +82,12 @@ class QC_CHKRES(BaseClass):
         # OUTPUT DICTIONARY
         out_dict = dict()
         decodedData = decodeRawData(fembs=fembs, rawdata=rawdata)
+        wibdata = decodedData['wf']
+        avg_wibdata = decodedData['avg_wf']
         for ichip in range(8):
             ASIC_ID = self.logs_dict['FE{}'.format(ichip)]
             out_dict[ASIC_ID] = dict()
-            larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=False)
+            larasic = LArASIC_ana(dataASIC=wibdata[ichip], avgWaveforms=avg_wibdata[ichip], output_dir=self.FE_outputDIRs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=True)
             data_asic = larasic.runAnalysis()
             out_dict[ASIC_ID]['pedestal'] = data_asic['pedrms']['pedestal']['data']
             out_dict[ASIC_ID]['rms'] = data_asic['pedrms']['rms']['data']
