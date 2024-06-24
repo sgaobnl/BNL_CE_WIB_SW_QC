@@ -74,16 +74,32 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
         chipamps = list(amps[chip*16: chip*16 + 16])
         maxcamp = np.max(chipamps)
         mincamp = np.min(chipamps)
-        chipamps.remove(maxcamp)
-        chipamps.remove(mincamp)
+        #chipamps.remove(maxcamp)
+        #chipamps.remove(mincamp)
         meanamp = np.mean(chipamps)
         rmsamp = np.std(chipamps)
-        if (abs(maxcamp-meanamp) > 3*rmsamp) or (abs(mincamp-meanamp) > 3*rmsamp ):
+        #print (maxcamp, mincamp, meanamp, rmsamp)
+        if (abs(maxcamp-meanamp) > 5*rmsamp) or (abs(mincamp-meanamp) > 5*rmsamp ):
+            #print ("Error", maxcamp, mincamp, meanamp, rmsamp)
             if chip not in bads:
                 bads.append(chip)
 
-    for tmp in [rmss, peds, amps]:
-        print (np.mean(tmp), np.std(tmp), np.max(tmp), np.min(tmp))
+#    #for tmp in [rmss, peds, amps]:
+#    for tmp in [rmss] :#, peds, amps]:
+#    #    print (np.mean(tmp), np.std(tmp), np.max(tmp), np.min(tmp))
+#
+#        import matplotlib.pyplot as plt
+#        plt.plot(chns, tmp)
+#        for i in range(0,128,16):
+#            plt.vlines(i-0.5, 0, 100, color='y')
+#
+#        plt.title("Noise", fontsize=8)
+#        plt.ylim((0,25))
+#        plt.xlabel("ADC / bit", fontsize=8)
+#        plt.ylabel("CH number", fontsize=8)
+#        plt.grid()
+#        plt.show()
+#        plt.close()
 
     for ch in range(len(chns)):
         if (amps[ch] > par[0]) and (amps[ch] < par[1]):
@@ -121,7 +137,7 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
 
     for i in range(len(kpwrs)):
         chip = int(kpwrs[i][2])
-        print (chip, kpwrs[i],pwr_meas[kpwrs[i]] )
+        #print (chip, kpwrs[i],pwr_meas[kpwrs[i]] )
         if "VDDA" in kpwrs[i]:
             vddas.append(pwr_meas[kpwrs[i]][0])
             cddas.append(pwr_meas[kpwrs[i]][1])
@@ -182,14 +198,14 @@ def dat_larasic_initchk(fdir="/."):
             pwr_meas = cfgdata[3]
     
             if ("DIRECT_PLS_CHK" in onekey) :
-                bads0 = ana_res2(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
-                bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5])
+                bads0 = ana_res2(fembs, rawdata, par=[9000,14000], rmsr=[8,21], pedr=[500,2000] )
+                bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
             if ("ASICDAC_CALI_CHK" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,3000] )
-                bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.9], cdda=[40,50], cddp=[25,35], cddo=[5,15])
+                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[8,21], pedr=[300,2000] )
+                bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.8], cdda=[40,50], cddp=[25,35], cddo=[5,15])
             if ("ASICDAC_47mV_CHK" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[2,8], pedr=[300,3000] )
-                bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5])
+                bads0 = ana_res2(fembs, rawdata, par=[5500,7500], rmsr=[2,8], pedr=[400,2000] )
+                bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
 
             for badchip in bads0:
                 if badchip not in bads:
@@ -203,8 +219,8 @@ def dat_larasic_initchk(fdir="/."):
         else:
             return "PASS", []
 
-fdir = "./tmp_data/RT_FE_207006349_207006350_207001175_207001155_207001165_207001166_207001176_207001156/"
-QCstatus, bads = dat_larasic_initchk(fdir)
-print (QCstatus)
-print (bads)
+#fdir = "./tmp_data/WC_RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+#QCstatus, bads = dat_larasic_initchk(fdir)
+#print (QCstatus)
+#print (bads)
 
