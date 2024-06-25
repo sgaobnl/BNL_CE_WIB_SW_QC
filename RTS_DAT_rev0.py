@@ -1,4 +1,5 @@
 import sys 
+import os
 import subprocess
 import time 
 import random
@@ -49,7 +50,7 @@ rts.rts_init(port=2001, host_ip='192.168.0.2')
 #rts.rts_idle()
 #exit()
 
-def MovetoSoket(duts,ids_dict, skts=[0,1,2,3,4,5,6,7]) 
+def MovetoSoket(duts,ids_dict, skts=[0,1,2,3,4,5,6,7]) :
     dut_skt = {}
     if True:
         #make sure DAT is powered off
@@ -86,7 +87,7 @@ def MovetoSoket(duts,ids_dict, skts=[0,1,2,3,4,5,6,7])
             dut_skt[ids_load[i]] = dut_run[i]
     return duts, dut_skt
 
-def DAT_QC(dut_skt) 
+def DAT_QC(dut_skt) :
 #    print ("ChIP ID under testing", dut_run)
     Sinkcover()
     while True:
@@ -113,7 +114,7 @@ def DAT_QC(dut_skt)
 
 ################STEP3#################################
 #def MovetoTray(duts, ids_load, dut_run, QCstatus, badchips) 
-def MovetoTray(duts, dut_skt, QCstatus, badchips) 
+def MovetoTray(duts, dut_skt, QCstatus, badchips) :
     print ("ChIP ID back to tray")
     ids_load = list(dut_skt.keys())
     dut_run = []
@@ -226,7 +227,7 @@ if duts != "ERROR":
 
     rts.rts_idle()
 
-print ids_dict()
+print (ids_dict())
 ids_k = list(ids_dict.keys())
 fp = rootdir + ids_k[0] + "_log.bin"
 with open(fp, 'wb') as fn:

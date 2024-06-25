@@ -74,8 +74,7 @@ def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
     logs = {}
     logs['RTS_IDs'] = dut_skt
     x = list(dut_skt.keys())
-    logs['PC_rawdata_root'] = root + 
-                              "Time_{}_DUT_{}_{}_{}_{}_{}_{}_{}_{}/".format(x[0],
+    logs['PC_rawdata_root'] = root + "Time_{}_DUT_{}_{}_{}_{}_{}_{}_{}_{}/".format(x[0],
                                                                             dut_skt[x[0]], 
                                                                             dut_skt[x[1]], 
                                                                             dut_skt[x[2]], 
@@ -116,7 +115,6 @@ def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
         if pf:
             logs['New_chips'] = True
             logs['TestIDs'] = tms
-            break
     
     if QC_TST_EN:
         print (datetime.datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)" )
