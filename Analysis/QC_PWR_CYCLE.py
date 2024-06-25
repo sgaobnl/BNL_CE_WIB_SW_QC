@@ -33,12 +33,13 @@ class PWR_CYCLE(BaseClass):
             out_dict[FE_ID] = tmp_out
         return out_dict
 
-    def decodeWF(self, decoded_wf: list, avg_wf: list, pwr_cycle_N: str):
+    def decodeWF(self, decoded_wf: list, pwr_cycle_N: str):
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
+        pwrcycleN = int(pwr_cycle_N.split('_')[1])
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], avgWaveforms=avg_wf[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=True, generateQCresult=False)
-            data_asic = larasic.runAnalysis()
+            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=True, generateQCresult=False)
+            data_asic = larasic.runAnalysis(pwrcylceN=pwrcycleN)
             tmp_out = {
                 'pedestal': data_asic['pedrms']['pedestal']['data'],
                 'rms': data_asic['pedrms']['rms']['data'],
@@ -64,12 +65,12 @@ class PWR_CYCLE(BaseClass):
             for key in pwr[FE_ID].keys():
                 PwrCycle_data[FE_ID][pwr_cycle_N][key] = pwr[FE_ID][key]
         # decoding waveform
-        # decoded_wf = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
-        decodedData = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
-        wibdata = decodedData['wf']
-        avg_wibdata = decodedData['avg_wf']
+        decoded_wf = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
+        # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
+        # wibdata = decodedData['wf']
+        # avg_wibdata = decodedData['avg_wf']
         #
-        chResp = self.decodeWF(decoded_wf=wibdata, avg_wf=avg_wibdata, pwr_cycle_N=pwr_cycle_N)
+        chResp = self.decodeWF(decoded_wf=decoded_wf, pwr_cycle_N=pwr_cycle_N)
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             for key in chResp[FE_ID].keys():
@@ -87,6 +88,7 @@ class PWR_CYCLE(BaseClass):
         }
         PwrCycle_data = {self.logs_dict['FE{}'.format(ichip)]: {"logs": logs} for ichip in range(8)}
         for ipcycle in range(N_pwrcycle):
+            # if ipcycle==4:
             pwr_cycle_N = 'PwrCycle_{}'.format(ipcycle)
             print("Item : {}".format(pwr_cycle_N))
             one_pwrcyc = self.decode_OnePwrCycle(pwr_cycle_N=pwr_cycle_N)
@@ -104,5 +106,6 @@ if __name__ == '__main__':
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for i, data_dir in enumerate(list_data_dir):
-        pwr_c = PWR_CYCLE(root_path=root_path, data_dir=data_dir, output_path=output_path)
-        pwr_c.decode_PwrCycle()
+        if i==2:
+            pwr_c = PWR_CYCLE(root_path=root_path, data_dir=data_dir, output_path=output_path)
+            pwr_c.decode_PwrCycle()
