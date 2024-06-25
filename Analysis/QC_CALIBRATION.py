@@ -6,7 +6,7 @@
 
 import os, sys, pickle
 import numpy as np
-from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, getpulse, BaseClass
+from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, getpulse_cali, BaseClass
 import matplotlib.pyplot as plt
 
 class ASICDAC_CALI(BaseClass):
@@ -38,8 +38,8 @@ class ASICDAC_CALI(BaseClass):
         '''
             output:
             {
-                SNC0: [(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...],
-                SNC1: [(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...]
+                SNC0: [[(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...], ...],
+                SNC1: [[(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...], ...]
             }
             format of decodedData_oneBL:
             [[[],[],[], ...],[[],[],[], ...],....] => 8 chips [16 channels]
@@ -50,6 +50,7 @@ class ASICDAC_CALI(BaseClass):
             for dac, param in params_DAC[BL]:
                 fembs = self.raw_data[param][0]
                 raw_data = self.raw_data[param][1]
+                # if dac!=0:
                 decodedData = decodeRawData(fembs=fembs, rawdata=raw_data)
                 all_decodedData[BL].append((dac, decodedData))
         return all_decodedData
@@ -123,11 +124,18 @@ class ASICDAC_CALI(BaseClass):
 
     def plot_waveform(self, all_wf_data: dict, chipID: str, BL: str,  chn: int):
         all_dac_chndata = all_wf_data[chipID][BL][chn]
+        # L0 = len(getpulse_cali(oneCHdata=all_dac_chndata[1][1], averaged=True, dac=all_dac_chndata[1][0]))
         plt.figure()
         for dac, chn_data in all_dac_chndata:
-            data = getpulse(oneCHdata=chn_data, averaged=True)
-            posmax = np.where(data==np.max(data))[0]
-            plt.plot(data[posmax[0]-5 : posmax[0]+100], label='DAC {}'.format(dac))
+            # print(chn, dac)
+            data = getpulse_cali(oneCHdata=chn_data, averaged=True, dac=dac)
+            posmax = 0
+            if dac==0:
+                posmax=5
+            else:
+                posmax = np.where(data==np.max(data))[0][0]
+            plt.plot(data[posmax-5 : posmax+100], label='DAC {}'.format(dac))
+            # plt.plot(data, label='DAC {}'.format(dac))
         plt.legend()
         # plt.show()
         plt.savefig('/'.join([self.FE_outputPlots_DIRs[chipID], 'Cali_ASICDAC_wf_{}_ch{}.png'.format(BL, chn)]))
@@ -153,7 +161,55 @@ class DATDAC_CALI(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str, tms:int):
         printItem("DAT-DAC calibration")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms, QC_filename='QC_CALI_DATDAC.bin')
-
+    
+    def getDAC_values(self):
+        params_DAC = dict()
+        unique_BL = []
+        for p in self.params:
+            tmp = p.split('_')
+            if tmp[1] not in unique_BL:
+                unique_BL.append(tmp[1])
+        for SNC in unique_BL:
+            params_DAC[SNC] = []
+            for param in self.params:
+                if SNC in param:
+                    # print(param)
+                    # dac = int(param.split('DATDAC')[-1])
+                    dac = param.split('_')[2]
+                    params_DAC[SNC].append((dac, param))
+        return params_DAC
+    
+    def decode(self, params_DAC: dict):
+        '''
+            output:
+            {
+                SNC0: [[(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...], ...],
+                SNC1: [[(dac_val, decodedData_oneBL), (dac_val, decodedData_oneBL), ...], ...]
+            }
+            format of decodedData_oneBL:
+            [[[],[],[], ...],[[],[],[], ...],....] => 8 chips [16 channels]
+        '''
+        all_decodedData = dict()
+        for BL in params_DAC.keys():
+            all_decodedData[BL] = []
+            for dac, param in params_DAC[BL]:
+                fembs = self.raw_data[param][0]
+                raw_data = self.raw_data[param][1]
+                decodedData = decodeRawData(fembs=fembs, rawdata=raw_data)
+                plt.figure()
+                for ichip in range(8):
+                    for chn in range(16):
+                        plt.plot(decodedData[ichip][chn])
+                plt.show()
+                plt.close()
+                sys.exit() 
+                all_decodedData[BL].append((dac, decodedData))
+        return all_decodedData
+    
+    def runCali(self):
+        params = self.getDAC_values()
+        print(params)
+        d = self.decode(params_DAC=params)
 # class Calibration:
 #     def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int):
 #         self.tms = tms
@@ -170,9 +226,13 @@ def runCalibrations(root_path: str, data_dir: str, output_path: str):
     #     # calib = Calibration(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
     #     # calib.ASICDAC_cali()
 
-    asicdac = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin')
-    asicdac.runScript(generateWf=True)
-    # datdac = DATDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
+    # asicdac = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
+    # asicdac.runScript()
+    # asicdac = ASICDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
+    # asicdac.runScript()
+    tms=63
+    datdac = DATDAC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms)
+    datdac.runCali()
     sys.exit()
 
 if __name__ == '__main__':
@@ -181,6 +241,6 @@ if __name__ == '__main__':
 
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for i, data_dir in enumerate(list_data_dir):
-        if i==2:
+        # if i==2:
             runCalibrations(root_path=root_path, data_dir=data_dir, output_path=output_path)
         # sys.exit()
