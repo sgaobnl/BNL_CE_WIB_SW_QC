@@ -57,7 +57,7 @@ if not os.path.exists(fdir):
     try:
         os.makedirs(fdir)
     except OSError:
-        print ("Error to create folder %s"%save_dir)
+        print ("Error to create folder %s"%fdir)
         sys.exit()
 
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
