@@ -10,6 +10,7 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+# from scipy import fft
 
 #_________Import the CPP module_____________
 system_info = platform.system()
@@ -92,7 +93,7 @@ def createDirs(logs_dict: dict, output_dir: str):
             pass
     
 
-def decodeRawData_before(fembs, rawdata):
+def decodeRawData(fembs, rawdata):
     wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
     tmpdata = [wibdata[fembs[0]]][0] # data of the 128 channels for the 8 chips
     # split data of the 8 chips:
@@ -107,123 +108,177 @@ def decodeRawData_before(fembs, rawdata):
         data.append(onechipData)
     return data
 
-def decodeRawData(fembs, rawdata):
-    '''
-        - Decode the raw data;
-        - Get the 128 data for all chips;
-        - Get One period;
-        - Take the average of all periods;
-        - return data, one waveform, averaged waveform for each channel
-    '''
-    # decode the raw data using wib_dec
-    wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
-    # get the data corresponding to the femb and timestamps
-    tmpdata = wibdata[fembs[0]]
-    tmstmps = wibdata[4][0] # 0-th element for 1st femb, 1st element for 2nd femb; We assume the femb is synchronized
-    # find positions of waveforms
-    firstCH_data = tmpdata[1]
-    avg0, indices, L0 = getIndicesWF(data=firstCH_data, timestamps=tmstmps)
-    avg_wf_allch = [avg0]
-    for i in range(1, 128):
-        onechdata = tmpdata[i]
-        tmp_avg = np.zeros((1, L0))[0]
-        for d in indices:
-            tmp_avg = tmp_avg + onechdata[d[0] : d[1]]
-        tmp_avg = tmp_avg / len(indices)
-        avg_wf_allch.append(tmp_avg)
+# def decodeRawData_before(fembs, rawdata):
+#     '''
+#         - Decode the raw data;
+#         - Get the 128 data for all chips;
+#         - Get One period;
+#         - Take the average of all periods;
+#         - return data, one waveform, averaged waveform for each channel
+#     '''
+#     # decode the raw data using wib_dec
+#     wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
+#     # get the data corresponding to the femb and timestamps
+#     tmpdata = wibdata[fembs[0]]
+#     tmstmps = wibdata[4][0] # 0-th element for 1st femb, 1st element for 2nd femb; We assume the femb is synchronized
+#     # find positions of waveforms
+#     avg0 = np.array([])
+#     indices = []
+#     L0 = 0
+#     for i in range(128):
+#         firstCH_data = tmpdata[i]
+#         # try:
+#         avg0, indices, L0 = getIndicesWF(data=firstCH_data, timestamps=tmstmps)
+#         avg_wf_allch = [avg0]
+#         # except:
+#         #     # plt.figure()
+#         #     # plt.plot(firstCH_data)
+#         #     # plt.show()
+#         #     # plt.close()
+#         #     # sys.exit()
+#         #     print('pass to channel {}'.format(i))
+#     for i in range(1, 128):
+#         onechdata = tmpdata[i]
+#         tmp_avg = np.zeros((1, L0))[0]
+#         try:
+#             for d in indices:
+#                 tmp_avg = tmp_avg + onechdata[d[0] : d[1]]
+#         except:
+#             print(L0, indices[0])
+#             plt.figure()
+#             plt.plot(onechdata[indices[0][0] : indices[0][1]])
+#             plt.show()
+#             plt.close()
+#             sys.exit()
+#         # break
+#         tmp_avg = tmp_avg / len(indices)
+#         avg_wf_allch.append(tmp_avg)
+#     # sys.exit()
+#     # split data of the 8 chips:
+#     ## 1 ASIC: 16 channels
+#     # data = []
+#     data = {
+#         'wf' : [],
+#         'avg_wf': []
+#     }
+#     iichn = 0
+#     for nchip in range(8):
+#         onechipData = []
+#         onechip_avgWf = []
+#         for ichn in range(16):
+#             onechipData.append(list(tmpdata[iichn]))
+#             onechip_avgWf.append(list(avg_wf_allch[iichn]))
+#             iichn += 1
+#         # data.append(onechipData)
+#         data['wf'].append(onechipData)
+#         data['avg_wf'].append(onechip_avgWf)
+#     # print(len(data['wf']))
+#     # print(len(data['avg_wf']))
+#     # sys.exit()
+#     return data#, tmstmps
 
-    # split data of the 8 chips:
-    ## 1 ASIC: 16 channels
-    # data = []
-    data = {
-        'wf' : [],
-        'avg_wf': []
-    }
-    iichn = 0
-    for nchip in range(8):
-        onechipData = []
-        onechip_avgWf = []
-        for ichn in range(16):
-            onechipData.append(list(tmpdata[iichn]))
-            onechip_avgWf.append(list(avg_wf_allch[iichn]))
-            iichn += 1
-        # data.append(onechipData)
-        data['wf'].append(onechipData)
-        data['avg_wf'].append(onechip_avgWf)
-    # print(len(data['wf']))
-    # print(len(data['avg_wf']))
-    # sys.exit()
-    return data#, tmstmps
+# def getIndicesWF(data, timestamps):
+#     median = np.median(data)
+#     std = np.std(data)
+#     data_copy = data.copy()
+#     for _ in range(2):
+#         for i in range(len(data_copy)):
+#             if (data_copy[i] >= (median+std)) or (data_copy[i] <= (median-std)):
+#                 data_copy[i] = median
+#         median = np.median(data_copy)
+#         std = np.std(data_copy)
 
-def getIndicesWF(data, timestamps):
-    x = timestamps[:25]
-    y = data[:25]
-    fit = sm.OLS(y, sm.add_constant(x)).fit()
-    y_fit = timestamps * fit.params[1] + fit.params[0]
-    diff_y = np.abs(data - y_fit)
-    M = np.mean(diff_y[:25])
-    std = np.std(diff_y[:25])
-    meandata = np.mean(y)
-    data_copy = data.copy()
-    modifiedPulses = diff_y.copy()
-    indices_p = []
-    for i in range(len(modifiedPulses)):
-        if modifiedPulses[i] > (M+10*std):
-            # indices_p.append(i)
-            data_copy[i] = meandata
-    meandata = np.mean(data_copy)
-    std = np.std(data_copy)
-    for i in range(len(data)):
-        if (data[i] >= (meandata+10*std)) or (data[i]<=(meandata-10*std)):
-            indices_p.append(i)
-    i0 = indices_p[0]
-    i1 = indices_p[-1]
-    indices_p[0] = i0
-    indices_p[-1] = i1
-    # -- Need to ask this
-    ## assuming the time between the positive and negative peaks is not bigger than 200 samples (200*500ns),
-    ## let's find the blocks of indices
-    pulse_indices = []
-    pulse_indices.append(indices_p[0])
-    for i in range(1, len(indices_p)):
-        if (indices_p[i]-indices_p[i-1]) > 300:
-            pulse_indices.append(indices_p[i-1])
-            pulse_indices.append(indices_p[i])
-    pulse_indices.append(indices_p[-1])
-    # print(pulse_indices)
-    #
-    pairOfIndices = []
-    for i in range(0, len(pulse_indices), 2):
-        i0 = pulse_indices[i]-2
-        i1 = pulse_indices[i+1]+4
-        if (i0 <=2000) and (i1 <= 2000):
-            pairOfIndices.append([i0, i1])
-    # print(pairOfIndices)
-    L0 = 0
-    try:
-        L0 = pairOfIndices[0][1]-pairOfIndices[0][0]
-    except:
-        print(indices_p)
-        print(pulse_indices)
-        print(pairOfIndices)
-        plt.figure()
-        plt.plot(data[52:387])
-        plt.show()
-        plt.close()
-        sys.exit()
-    for i in range(1, len(pairOfIndices)):
-        d = pairOfIndices[i]
-        diff = L0 - (d[1]-d[0])
-        pairOfIndices[i][1] += diff
-    # print(pairOfIndices)
-    #
-    avg_wf = np.zeros((1, L0))[0]
-    for d in pairOfIndices:
-        # print(len(avg_wf), len(data[d[0] : d[1]]))
-        # print(d)
-        avg_wf = avg_wf + data[d[0] : d[1]]
-    avg_wf = avg_wf / len(pairOfIndices)
-    return avg_wf, pairOfIndices, L0
+#     mean = np.mean(data_copy)
+#     std = np.std(data_copy)
+#     # print(mean, std)
+#     tmpposp = np.where(data >= (mean+10*std))[0]
+#     posp = [tmpposp[0]-1]
+#     for i in range(1, len(tmpposp)):
+#         if tmpposp[i] != tmpposp[i-1]+1:
+#             posp.append(tmpposp[i])
+#     # print(tmpposp)
+#     # print(posp)
+
+#     tmpnegp = np.where(data <= (mean-10*std))[0]
+#     # negp = [tmpnegp[0]]
+#     # for i in range(1, len(tmpnegp)):
+#     #     if tmpnegp[i] != tmpnegp[i-1]+1:
+#     #         negp.append(tmpnegp[i])
+#     negp = [tmpnegp[-1]]
+#     for i in range(len(tmpnegp)-2, 0, -1 ):
+#         if tmpnegp[i] != tmpnegp[i+1]-1:
+#             negp.append(tmpnegp[i])
+#     negp.reverse()
+#     # print(tmpnegp)
+#     # print(negp)
+    
+#     Lposp = len(posp)
+#     Lnegp = len(negp)
+#     # print('ddd Lneg = {}, Lpos = {}'.format(Lnegp, Lposp))
+#     if Lposp > Lnegp:
+#         while Lposp > Lnegp:
+#             if posp[0]+100 < negp[0]:
+#                 posp.pop(0)
+#             elif posp[-1]+100 > len(data)-1:
+#                 posp.pop(-1)
+#             Lposp = len(posp)
+#     else:
+#         while Lposp<Lnegp:
+#             # print(negp)
+#             # print(posp)
+#             if negp[0]+100 < posp[0]:
+#                 negp.pop(0)
+#             elif negp[-1]+100 > len(data)-1:
+#                 negp.pop(-1)
+#             Lnegp = len(negp)
+#     print('Lneg = {}, Lpos = {}'.format(Lnegp, Lposp))
+#     normalOrder = True # positive peak before negative peak
+#     if posp[0]-negp[0] > 0:
+#         normalOrder = False
+#     pairOfIndices = []
+#     if normalOrder:
+#         for i in range(len(negp)):
+#             pairOfIndices.append([posp[i], negp[i]])
+#     else:
+#         for i in range(len(negp)):
+#             pairOfIndices.append([negp[i], posp[i]])
+#     # align the positions of the waveforms
+#     # print(pairOfIndices)
+#     ref_wf = data[pairOfIndices[0][0] : pairOfIndices[0][1]]
+#     max_ref_pos = np.where(ref_wf==np.max(ref_wf))[0][0]
+#     for i in range(1, len(pairOfIndices)):
+#         d = pairOfIndices[i]
+#         max_wf = np.max(data[d[0] : d[1]])
+#         max_wf_pos = np.where(data[d[0] : d[1]]==max_wf)[0][0]
+#         d_resp_ref = max_wf_pos - max_ref_pos
+#         pairOfIndices[i][0] += d_resp_ref
+#         pairOfIndices[i][1] += d_resp_ref
+#     # print(pairOfIndices)
+#     # make sure the waveforms have the same length
+#     Lref = len(data[pairOfIndices[0][0] : pairOfIndices[0][1]])
+#     for i in range(1, len(pairOfIndices)):
+#         d = pairOfIndices[i]
+#         L = len(data[d[0] : d[1]])
+#         # print(Lref, L)
+#         d_resp_ref = Lref - L
+#         pairOfIndices[i][1] += d_resp_ref
+        
+#     L0 = np.abs(pairOfIndices[0][1]- pairOfIndices[0][0])
+#     # print(L0)
+#     # print(pairOfIndices)
+#     avg_wf = np.zeros((1, L0))[0]
+#     for d in pairOfIndices:
+#         try:
+#             avg_wf = avg_wf + np.array(data[d[0] : d[1]])
+#         except:
+#             plt.figure()
+#             plt.plot(data[d[0] : d[1]])
+#             plt.plot(avg_wf, 'r')
+#             plt.show()
+#             plt.close()
+#             sys.exit()
+#     avg_wf = avg_wf / len(pairOfIndices)
+#     return avg_wf, pairOfIndices, L0
 
 
 def getMaxAmpIndices(oneCHdata: list):
@@ -260,51 +315,64 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False):
     --> number of samples (point) from the pedestal to the peak : 4 samples
     ===> take data 10 samples before the peak (5 + some ~margins)
     '''
-    data = np.array(oneCHdata)
+    data = np.array(oneCHdata[:2050])
     ped, rms = 0., 0.
     if not pureNoise:
-        imax = getMaxAmpIndices(data)
-        # find peak
-        ilastped = imax[0] - 20
-        iimax = 0
-        while ilastped<=50:
-            ilastped = imax[iimax] - 20
-            iimax += 1
-        istart = ilastped-100
+        imax = np.where(data==np.max(data))[0][0]
+        iend = imax - 20
+        istart = iend-100
         if istart<0:
-            istart=0
-        baseline = data[istart:ilastped]
-        ped = np.round(np.mean(baseline), 4)
-        rms = np.round(np.std(baseline), 4)
+            istart = 0
+        ped0, rms0 = 0, 0
+        if len(data[istart : iend])==0:
+            if imax+150 < 2050:
+                istart = imax+20
+                iend = istart+100
+                ped0 = np.mean(data[istart : iend])
+                rms0 = np.std(data[istart : iend])
+        else:
+            ped0 = np.mean(data[istart : iend])
+            rms0 = np.std(data[istart : iend])
+        
+        istart = imax + 20
+        iend = istart + 100
+        if iend > 2050:
+            iend = 2050
+        ped1 = np.mean(data[istart : iend])
+        rms1 = np.std(data[istart : iend])
+        ped = ped0
+        rms = rms0
+        if ped0 > ped1:
+            ped = ped1
+            rms = rms1
     else:
         ped = np.round(np.mean(data), 4)
         rms = np.round(np.std(data), 4)
     return [ped, rms]
 
-def getpulse(oneCHdata: list, averaged=True, timestamps=[]):
-    indices = []
-    istart = 0
-    for i in range(5):
-        ii = getIndicesWF(data=oneCHdata, timestamps=timestamps, istart=istart)
-        indices.append(ii)
-        istart = ii[1]
-    print(indices)
-    L = [d[1]-d[0] for d in indices]
-    newIndices = []
-    for i in range(len(L)):
-        if L[i]>40:
-            index = [indices[i][0], indices[i][0]+100]
-            newIndices.append(index)
-
-    imin = newIndices[0][0]
-    imax = newIndices[0][1]
-    avg_wf = np.array(oneCHdata[imin : imax])
-    i = 0
-    for i in range(1, len(newIndices)):
-        imin = newIndices[i][0]
-        imax = newIndices[i][1]
-        avg_wf = avg_wf + np.array(oneCHdata[imin : imax])
-    avg_wf = avg_wf / len(newIndices)
+def getpulse_cali(oneCHdata: list, averaged=True, dac=0):
+    chdata = []
+    for i in range(4):
+        istart = i*500
+        iend = istart + 500
+        chunkdata = oneCHdata[istart : iend]
+        maxpos = int((iend-istart)/2)
+        if dac!=0:
+            maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
+        istart = maxpos-20
+        iend = maxpos+100
+        if istart < 0:
+            istart = 0
+        wf = chunkdata[istart : iend]
+        # chdata.append(np.array(wf))
+        chdata.append(wf)
+    L = [len(d) for d in chdata]
+    imax = np.where(L==np.max(L))[0][0]
+    if imax!=0:
+        chdata[imax].pop(-1)
+    print(imax, [len(d) for d in chdata])
+    chdata = np.array(chdata)
+    avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
     return avg_wf
 
 
@@ -342,16 +410,15 @@ class BaseClass:
 
 # Analyze one LArASIC
 class LArASIC_ana:
-    def __init__(self, dataASIC: list, avgWaveforms: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True):
+    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True):
         self.generateQCresult = generateQCresult
         self.generatePlots = generatePlots
         ## chipID : from the logs
         self.data = dataASIC
-        self.avgData = avgWaveforms
         self.chipID = chipID
         self.param = param
         self.output_dir = output_dir
-        self.tms = tms
+        self.tms = tms # use this info
         self.Items = {
                     0: 'INIT_CHK',
                     1: 'PWR',
@@ -362,6 +429,7 @@ class LArASIC_ana:
                     61: 'CALI_ASICDAC',
                     62: 'CALI_DATDAC',
                     63: 'CALI_DIRECT',
+                    64: 'CALI_ASICDAC_47',
                     7: 'DLY_RUN',
                     8: 'Cap_Meas'
                     }
@@ -434,7 +502,48 @@ class LArASIC_ana:
             out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
-    def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True):
+    def getpulse(self, pwrcycleN=-1):
+        '''
+            This method is not a generalized algorithm to get the average pulses. It is tms depedent, based on what we see when plotting the waveforms.
+        '''
+        chipWF = []
+        for ich in range(16):
+            if self.tms in [0, 1, 2, 4, 61, 64]:
+                chdata = []
+                for i in range(4):
+                    istart = i*500
+                    iend = istart + 500
+                    chunkdata = self.data[ich][istart : iend]
+                    maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
+                    if self.tms==0:
+                        if 'ASICDAC' in self.param:
+                            istart = maxpos-10
+                            iend = maxpos+80
+                        elif 'DIRECT' in self.param:
+                            istart = maxpos-10
+                            iend = maxpos+200
+                    elif self.tms in [1, 2]:
+                        istart = maxpos-10
+                        iend = maxpos+80
+                    elif self.tms==4:
+                        if pwrcycleN in [2, 4]:
+                            chunkdata = self.data[ich][istart+100 : iend+100]
+                            maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
+                        istart = maxpos-10
+                        iend = maxpos+200
+                    elif self.tms in [61, 64]:
+                        if (chunkdata[maxpos] <= (np.mean(chunkdata)+10*np.std(chunkdata))):
+                            maxpos = int((iend-istart)/2)
+                        istart = maxpos-20
+                        iend = maxpos+100
+                    wf_range = chunkdata[istart : iend]
+                    chdata.append(np.array(wf_range))
+                chdata = np.array(chdata)
+                avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
+                chipWF.append(avg_wf)
+        return chipWF
+
+    def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True, pwrcycleN=-1):
         '''
             inputs:
                 - range pulse amplitude
@@ -447,11 +556,12 @@ class LArASIC_ana:
         '''
         ppeaks, result_qc_ppeak = [], []
         npeaks, result_qc_npeak = [], []
+        pulseData = self.getpulse(pwrcycleN=pwrcycleN) # get pulses of all channels
         for ich in range(16):
             # pulseData = getpulse(oneCHdata=self.data[ich], averaged=True)
-            pulseData = self.avgData[ich]
-            pospeak = np.round(np.max(pulseData) - pedestals[ich], 4)
-            negpeak = np.round(pedestals[ich] - np.min(pulseData), 4)
+            # pulseData = self.avgData[ich]
+            pospeak = np.round(np.max(pulseData[ich]) - pedestals[ich], 4)
+            negpeak = np.round(pedestals[ich] - np.min(pulseData[ich]), 4)
             if self.generateQCresult:
                 if isPosPeak:
                     bool_ppeak = True
@@ -480,10 +590,15 @@ class LArASIC_ana:
         if self.generatePlots:
             # pulse response - averaged waveform
             plt.figure()
+            BLref = pulseData[0][0]
             for ich in range(16):
-                # avg_pulse = getpulse(oneCHdata=self.data[ich], averaged=True)
-                avg_pulse = self.avgData[ich]
-                plt.plot(avg_pulse, label='CH{}'.format(ich))
+                # BL_ich = pulseData[ich][0]
+                # diff = BL_ich - BLref
+                # if diff < 0:
+                #     pulseData[ich] = pulseData[ich] + np.abs(diff)
+                # else:
+                #     pulseData[ich] = pulseData[ich] - np.abs(diff)
+                plt.plot(pulseData[ich], label='CH{}'.format(ich))
             plt.xlabel('Time')
             plt.ylabel('ADC bit')
             plt.title('Averaged Waveform')
@@ -516,7 +631,7 @@ class LArASIC_ana:
                 out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
-    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True, getPulseResponse=True, isRMSNoise=False):
+    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True, getPulseResponse=True, isRMSNoise=False, pwrcylceN=-1):
         '''
             inputs:
                 ** range_peds: range pedestal
@@ -529,7 +644,7 @@ class LArASIC_ana:
         pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms, isRMSNoise=isRMSNoise)
         out_dict['pedrms'] = pedrms
         if getPulseResponse:
-            pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp)
+            pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp, pwrcycleN=pwrcylceN)
             out_dict['pulseResponse'] = pulseResponse
         # return {"pedrms": pedrms, "pulseResponse": pulseResponse}
         return out_dict
