@@ -25,7 +25,7 @@ if __name__ == '__main__':
         #-----------------------------
         # Initialization checkout
         init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.decode_INIT_CHK(generateQCresult=False, generatePlots=False)
+        init_chk.decode_INIT_CHK(generateQCresult=False, generatePlots=True)
         # Power consumption measurement
         qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
         qc_pwr.decode_FE_PWR()
