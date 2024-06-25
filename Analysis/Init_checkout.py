@@ -93,16 +93,16 @@ class QC_INIT_CHECK(BaseClass):
         print("Item : {}".format(param))
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
-        # wibdata, timestamps = decodeRawData(fembs=fembs, rawdata=rawdata)
-        decodedData = decodeRawData(fembs=fembs, rawdata=rawdata)
-        wibdata = decodedData['wf']
-        avg_wibdata = decodedData['avg_wf']
+        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
+        # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata)
+        # wibdata = decodedData['wf']
+        # avg_wibdata = decodedData['avg_wf']
         # out_list = []
         out_dict = dict()
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.FE_outputDIRs[chipID]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], avgWaveforms=avg_wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots)
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
