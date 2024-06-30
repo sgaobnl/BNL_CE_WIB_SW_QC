@@ -153,7 +153,7 @@ if 0 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! It took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! It took %d seconds"%(tt[-1]-tt[-2]))
 
 if 1 in tms:
     print ("FE power consumption measurement starts...")
@@ -181,7 +181,7 @@ if 1 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 2 in tms:
     print ("FE check response measurement starts...")
@@ -260,7 +260,7 @@ if 2 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 3 in tms:
@@ -286,7 +286,7 @@ if 3 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 
@@ -338,7 +338,7 @@ if 4 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
     
 if 5 in tms:
@@ -418,7 +418,7 @@ if 5 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 61 in tms:
@@ -458,7 +458,7 @@ if 61 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
      
 if 62 in tms:
     if True:
@@ -500,7 +500,7 @@ if 62 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
       
 if 63 in tms:
@@ -543,7 +543,7 @@ if 63 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 64 in tms:
     if True:
@@ -579,7 +579,7 @@ if 64 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 7 in tms:
@@ -606,7 +606,7 @@ if 7 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 
 if 8 in tms:
@@ -696,7 +696,7 @@ if 8 in tms:
     tt.append(time.time())
     print ("save_fdir_start_%s_end_save_fdir"%fdir)
     print ("save_file_start_%s_end_save_file"%fp)
-    print ("Done! Pass!, it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("Done! Pass! it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 9 in tms:
     print ("Turn DAT off")

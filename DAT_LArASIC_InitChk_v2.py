@@ -68,6 +68,12 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
     badchs = []
     bads = []
     chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
+
+#    import matplotlib.pyplot as plt
+#    plt.plot(wfs[0])
+#    plt.plot(wfs[20])
+#    plt.show()
+#    plt.close()
     amps = np.array(pkps) - np.array(peds)
 
     for chip in range(8):
@@ -84,7 +90,8 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
             if chip not in bads:
                 bads.append(chip)
 
-#    for tmp in [rmss, peds, amps]:
+    #for tmp in [rmss, peds, amps]:
+#    for tmp in [amps]:
 ##    for tmp in [rmss] :#, peds, amps]:
 #    #    print (np.mean(tmp), np.std(tmp), np.max(tmp), np.min(tmp))
 #
@@ -107,21 +114,21 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
         else:
             if ch not in badchs:
                 badchs.append(ch)
-            #print ("par", ch)
+            print ("par", ch)
             
         if (peds[ch] > pedr[0]) and (peds[ch] < pedr[1]):
             pass
         else:
             if ch not in badchs:
                 badchs.append(ch)
-            #print ("ped", ch)
+            print ("ped", ch, peds[ch], pedr[0], pedr[1])
 
         if (rmss[ch] > rmsr[0]) and (rmss[ch] < rmsr[1]):
             pass
         else:
             if ch not in badchs:
                 badchs.append(ch)
-            #print ("ped", ch)
+            print ("rms", ch, rmss[ch], rmsr[0], rmsr[1])
     for badch in badchs:
         if (badch//16) not in bads:
             bads.append(badch//16)
@@ -192,6 +199,45 @@ def dat_larasic_initchk(fdir="/."):
     if "Code#E003" in QCstatus:
         return QCstatus, sorted(data["FE_Fail"])
     if "Code#W004" in QCstatus:
+        amps_d = {}
+        for onekey in ["ASICDAC_47mV_CHK","ASICDAC_47mV_CHK_x10", "ASICDAC_47mV_CHK_x18"]:
+            print (onekey)
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+            cfg_info = cfgdata[2]
+            pwr_meas = cfgdata[3]
+            chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
+            amps = np.array(pkps) - np.array(peds)
+            amps_d[onekey] = amps
+
+        amps_0x20_18 = amps_d["ASICDAC_47mV_CHK"] - amps_d["ASICDAC_47mV_CHK_x18"]
+        amps_0x18_10 = amps_d["ASICDAC_47mV_CHK_x18"] - amps_d["ASICDAC_47mV_CHK_x10"]
+
+        deltas = np.abs(amps_0x20_18 - amps_0x18_10)
+        print (deltas)
+        exit()
+        
+        for ch in range(128):
+            print (ch, amps_0x20_18[ch], amps_0x18_10[ch]) 
+        import matplotlib.pyplot as plt
+        plt.plot(amps_0x20_18)
+        plt.plot(amps_0x18_10)
+#        for i in range(0,128,16):
+#            plt.vlines(i-0.5, 0, 100, color='y')
+#
+#        plt.title("Noise", fontsize=8)
+#       # plt.ylim((0,25))
+#       # plt.xlabel("ADC / bit", fontsize=8)
+#       # plt.ylabel("CH number", fontsize=8)
+        plt.grid()
+        plt.show()
+        plt.close()
+
+
+
+
+
         bads = []
         for onekey in ["DIRECT_PLS_CHK", "ASICDAC_CALI_CHK", "ASICDAC_47mV_CHK", "DIRECT_PLS_RMS", "ASICDAC_CALI_RMS", "ASICDAC_47mV_RMS"]:
             print (onekey)
@@ -200,25 +246,25 @@ def dat_larasic_initchk(fdir="/."):
             rawdata = cfgdata[1]
             cfg_info = cfgdata[2]
             pwr_meas = cfgdata[3]
-    
+
             if ("DIRECT_PLS_CHK" in onekey) :
-                bads0 = ana_res2(fembs, rawdata, par=[9000,14000], rmsr=[5,25], pedr=[500,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[9000,14000], rmsr=[8,25], pedr=[500,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
             if ("ASICDAC_CALI_CHK" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[8.5,25], pedr=[300,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.8], cdda=[40,50], cddp=[25,35], cddo=[5,15])
             if ("ASICDAC_47mV_CHK" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[5500,7500], rmsr=[2,10], pedr=[400,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[5500,7500], rmsr=[2,8], pedr=[400,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
 
             if ("DIRECT_PLS_RMS" in onekey) :
-                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[5,25], pedr=[500,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[8,25], pedr=[500,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
             if ("ASICDAC_CALI_RMS" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[5,25], pedr=[300,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[8,25], pedr=[300,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.8], cdda=[40,50], cddp=[25,35], cddo=[5,15])
             if ("ASICDAC_47mV_RMS" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[000,1000], rmsr=[2,10], pedr=[400,2000] )
+                bads0 = ana_res2(fembs, rawdata, par=[000,1000], rmsr=[2,8], pedr=[400,2000] )
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[0,5])
 
             for badchip in bads0:
@@ -232,8 +278,9 @@ def dat_larasic_initchk(fdir="/."):
             return QCstatus, sorted(bads)
         else:
             return "PASS", []
-if False:
-    fdir = "./tmp_data/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+if True:
+    fdir = "C:/DAT_LArASIC_QC/Tested/Time_20240628185432_DUT_0080_1081_2082_3083_4084_5085_6086_7087/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+    #fdir = "./tmp_data/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
     QCstatus, bads = dat_larasic_initchk(fdir)
     print (QCstatus)
     print (bads)

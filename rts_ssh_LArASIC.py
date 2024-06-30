@@ -6,6 +6,8 @@ import filecmp
 import pickle
 import os
 from DAT_read_cfg import dat_read_cfg
+from DAT_LArASIC_InitChk import dat_larasic_initchk
+import random
 
 from colorama import just_fix_windows_console
 just_fix_windows_console()
@@ -34,7 +36,7 @@ def subrun(command, timeout = 30, check=True, exitflg = True):
     except subprocess.TimeoutExpired as e:
         print ("No reponse in %d seconds"%(timeout))
         if exitflg:
-            print (result.stdout)
+            #print (result.stdout)
             print ("Timoout FAIL!")
             print ("Exit anyway")
             return None
@@ -69,20 +71,33 @@ def Sinkcover():
             print ("Please close the covers and continue...")
 
 def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
+    #if True:
+    #    x = random.randint(0,24)
+    #    #x = 10
+    #    #x = int(input("a numer:"))
+    #    #if x >= 20:
+    #    #    return ("Code#E001", [])
+    #    if x >= 8:
+    #        #b = int(input("PASS a numer:"))
+    #        #return ("PASS", [b])
+    #        return ("PASS", [])
+    #    else:
+    #        return ("Code#W004", [x])
+
     QC_TST_EN =  True 
     
     logs = {}
     logs['RTS_IDs'] = dut_skt
     x = list(dut_skt.keys())
-    logs['PC_rawdata_root'] = root + "Time_{}_DUT_{}_{}_{}_{}_{}_{}_{}_{}/".format(x[0],
-                                                                            dut_skt[x[0]], 
-                                                                            dut_skt[x[1]], 
-                                                                            dut_skt[x[2]], 
-                                                                            dut_skt[x[3]], 
-                                                                            dut_skt[x[4]], 
-                                                                            dut_skt[x[5]], 
-                                                                            dut_skt[x[6]], 
-                                                                            dut_skt[x[7]] 
+    logs['PC_rawdata_root'] = root + "Time_{}_DUT_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}/".format(x[0],
+                                                                            dut_skt[x[0]][1]*1000 + dut_skt[x[0]][0], 
+                                                                            dut_skt[x[1]][1]*1000 + dut_skt[x[1]][0], 
+                                                                            dut_skt[x[2]][1]*1000 + dut_skt[x[2]][0], 
+                                                                            dut_skt[x[3]][1]*1000 + dut_skt[x[3]][0], 
+                                                                            dut_skt[x[4]][1]*1000 + dut_skt[x[4]][0], 
+                                                                            dut_skt[x[5]][1]*1000 + dut_skt[x[5]][0], 
+                                                                            dut_skt[x[6]][1]*1000 + dut_skt[x[6]][0], 
+                                                                            dut_skt[x[7]][1]*1000 + dut_skt[x[7]][0] 
                                                                             ) 
     logs['PC_WRCFG_FN'] = "./asic_info.csv"
     
@@ -137,7 +152,22 @@ def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
                     logs['WIB_Pingable'] = log
                     break
     
-    
+    if QC_TST_EN:
+        print (datetime.datetime.utcnow(), " : sync WIB time")
+        # Get the current date and time
+        now = datetime.datetime.utcnow()
+        # Format it to match the output of the `date` command
+        formatted_now = now.strftime('%a %b %d %H:%M:%S UTC %Y')
+        command = ["ssh", "root@192.168.121.123", "date -s \'{}\'".format(formatted_now)]
+        result=subrun(command, timeout = 30)
+        if result != None:
+            print ("WIB Time: ", result.stdout)
+            print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+            logs['WIB_UTC_Date_Time'] = result.stdout
+        else:
+            print ("FAIL!")
+            return None
+   
     if QC_TST_EN:
         print (datetime.datetime.utcnow(), " : Load WIB bin file(it takes < 30s)" )
         command = ["ssh", "root@192.168.121.123", "fpgautil -b /boot/wib_top_0506.bin"]
@@ -168,21 +198,6 @@ def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
             return None
    
     
-    if QC_TST_EN:
-        print (datetime.datetime.utcnow(), " : sync WIB time")
-        # Get the current date and time
-        now = datetime.datetime.utcnow()
-        # Format it to match the output of the `date` command
-        formatted_now = now.strftime('%a %b %d %H:%M:%S UTC %Y')
-        command = ["ssh", "root@192.168.121.123", "date -s \'{}\'".format(formatted_now)]
-        result=subrun(command, timeout = 30)
-        if result != None:
-            print ("WIB Time: ", result.stdout)
-            print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-            logs['WIB_UTC_Date_Time'] = result.stdout
-        else:
-            print ("FAIL!")
-            return None
 
     
     
@@ -227,6 +242,7 @@ def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
     if QC_TST_EN:
         print (datetime.datetime.utcnow(), " : Start DUT (%s) QC.(takes < 1200s)"%DUT)
         for testid in tms:
+        #for testid in [0]:
             print (datetime.datetime.utcnow(), " : New Test Item Starts, please wait...")
             print (tms_items[testid])
             if "FE" in DUT:

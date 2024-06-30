@@ -36,9 +36,9 @@ def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):
                 tmp = tmp[:-1]
                 logs[tmp[0]] = tmp[1]
 
-        if True:
+        if False:
             print ("Tester  :  ", "\033[91m {} \033[0m".format(logs['tester']))
-            csvfile = input ("\033[92m Is tester updated? (Y/N) : \033[0m" )
+            #csvfile = input ("\033[92m Is tester updated? (Y/N) : \033[0m" )
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:
@@ -71,7 +71,8 @@ def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):
                 print ("\033[92m LArASIC5  : {} \033[0m".format(logs['FE5']))
                 print ("\033[92m LArASIC6  : {} \033[0m".format(logs['FE6']))
                 print ("\033[92m LArASIC7  : {} \033[0m".format(logs['FE7']))
-            csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
+            #csvfile = input ("\033[95m Is asic_info.csv updated? (Y/N) : \033[0m" )
+            csvfile = "Y"
             if ("Y" in csvfile) or ("y" in csvfile):
                 pass
             else:
@@ -185,7 +186,7 @@ def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):
                 return False
 
 
-    while True:
+    while False:
         ccflg=input("\033[93m Do covers of shielding box close? (Y/N) : \033[0m")
         if ("Y" in ccflg) or ("y" in ccflg):
             break

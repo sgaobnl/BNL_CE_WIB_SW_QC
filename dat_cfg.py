@@ -867,35 +867,75 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_asic_chk(self):
-        self.fedly = 1
         datad = {}
+
+        self.fedly = 1
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
-        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
         if rawdata == False:
             return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["ASICDAC_47mV_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        self.fedly = 1
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=self.fe_cali_vref-0.05, period=0x200, width=0x180, asicdac=0x10)
-        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x10)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
         if rawdata == False:
             return False
+        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+        fes_pwr_info =  self.fe_pwr_meas()
+        datad["ASICDAC_47mV_CHK_x10"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x18)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+        if rawdata == False:
+            return False
+        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+        fes_pwr_info =  self.fe_pwr_meas()
+        datad["ASICDAC_47mV_CHK_x18"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=1, sg1=1, sdd=0)
+        if rawdata == False:
+            return False
+        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+        fes_pwr_info =  self.fe_pwr_meas()
+        datad["ASICDAC_47mV_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+
+
+        self.fedly = 1
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=0, val=self.fe_cali_vref-0.05, period=0x200, width=0x180, asicdac=0x10)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1) #direct FE input
+        if rawdata == False:
+            return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        self.fedly = 3
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
-        rawdata = self.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en,  snc=1) #direct FE input
         if rawdata == False:
             return False
+        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+        fes_pwr_info =  self.fe_pwr_meas()
+        datad["DIRECT_PLS_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
+        self.fedly = 3
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)
+        if rawdata == False:
+            return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
         datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=0, sg1=0, sdd=1)
+        if rawdata == False:
+            return False
+        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+        fes_pwr_info =  self.fe_pwr_meas()
+        datad["ASICDAC_CALI_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
         self.fedly = 1
         return datad

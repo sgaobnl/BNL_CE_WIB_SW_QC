@@ -8,27 +8,33 @@ class RTS_CFG():
         self.msg = None
 
     def rts_init(self, port=2001, host_ip='192.168.0.2'): # default port for socket 
-        try: 
-            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-            print ("Socket successfully created")
-        except socket.error as err: 
-            print ("socket creation failed with error %s" %(err))
-         
-        # connecting to the server 
-        self.s.connect((host_ip, port))
+        while True:
+            try: 
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+                print ("Socket successfully created")
+            except socket.error as err: 
+                print ("socket creation failed with error %s" %(err))
+             
+            # connecting to the server 
+            self.s.connect((host_ip, port))
  
-        print("the socket has successfully connected to ",host_ip) 
-        self.msg=self.s.recv(1024).decode()
-        self.msg = self.msg.strip()
-        
-        if self.msg != "RTS ready":
-            print("***ERROR! Bad responce from server: [",self.msg,"]")
-            self.s.close()
-            exit()
-            #return None
-
-        self.MotorOn() #
-        self.JumpToCamera() #
+            print("the socket has successfully connected to ",host_ip) 
+            self.msg=self.s.recv(1024).decode()
+            self.msg = self.msg.strip()
+            
+            if self.msg != "RTS ready":
+                print("***ERROR! Bad responce from server: [",self.msg,"]")
+                self.s.close()
+                while True:
+                    tmp = input ("Exit (E) or Retry (R):")
+                    if "E" in  tmp:
+                        exit()
+                    elif "R" in tmp:
+                        break
+                    else:
+                        pass
+            else:
+                break
         return self.msg
 
     def MotorOn(self): #
@@ -40,7 +46,10 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode() 
                 self.msg = self.msg.strip()
                 print (self.msg)
-                break
+                if "On" in self.msg:
+                    break
+                else:
+                    time.sleep(1)
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
@@ -54,7 +63,10 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode() 
                 self.msg = self.msg.strip()
                 print (self.msg)
-                break
+                if msg in self.msg:
+                    break
+                else:
+                    time.sleep(1)
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
@@ -68,7 +80,10 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode()
                 self.msg = self.msg.strip()
                 print (self.msg)
-                break
+                if "Off" in self.msg:
+                    break
+                else:
+                    time.sleep(1)
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
@@ -76,6 +91,7 @@ class RTS_CFG():
     def MoveChipFromTrayToSocket(self, tray_nr, col_nr, row_nr, DAT_nr, socket_nr):
         while True:
             try:
+                print ("Move Chip From Tray#{},col#{},row#{} To DAT#{},Socket{}".format(tray_nr, col_nr, row_nr, DAT_nr, socket_nr))
                 self.msg = "MoveChipFromTrayToSocket"
                 self.s.send(self.msg.encode())
                 self.s.send(b"\r\n")
@@ -98,8 +114,11 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode()
                 self.msg = self.msg.strip()
                 print("msg: ", self.msg)
-                status = int(self.msg)
-                break
+                try:
+                    status = int(self.msg)
+                    break
+                except:
+                    time.sleep(1)
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
@@ -109,6 +128,7 @@ class RTS_CFG():
     def MoveChipFromSocketToTray(self, DAT_nr, socket_nr, tray_nr, col_nr, row_nr):
         while True:
             try:
+                print ("Move Chip From DAT#{},Socket{} To Tray#{},col#{},row#{}".format(DAT_nr, socket_nr, tray_nr, col_nr, row_nr))
                 self.msg = "MoveChipFromSocketToTray"
                 self.s.send(self.msg.encode())
                 self.s.send(b"\r\n")
@@ -131,6 +151,12 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode()
                 self.msg = self.msg.strip()
                 print("msg: ", self.msg)
+                try:
+                    status = int(self.msg)
+                    break
+                except:
+                    time.sleep(1)
+
                 status = int(self.msg)
                 break
             except ConnectionAbortedError:
@@ -138,10 +164,11 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
         return status
 
-    def MoveChipFromTrayToTray(self, stray_nr, scol_nr, srow_nr, dtray_nr, dcol_nr, drow_nr,):
+    def MoveChipFromTrayToTray(self, stray_nr, scol_nr, srow_nr, dtray_nr, dcol_nr, drow_nr):
         i = 0
         origpos = False
         while True:
+            print ("Move Chip From  Tray#{},col#{},row#{} To Tray#{},col#{},row#{}".format(stray_nr, scol_nr, srow_nr, dtray_nr, dcol_nr, drow_nr))
             i = i + 1
             self.msg = "MoveChipFromTrayToTray"
             self.s.send(self.msg.encode())
@@ -168,7 +195,13 @@ class RTS_CFG():
             self.msg = self.s.recv(1024).decode()
             self.msg = self.msg.strip()
             print("msg: ", self.msg)
-            status = int(self.msg)
+            try:
+                status = int(self.msg)
+                break
+            except:
+                time.sleep(1)
+                continue
+
             if status >=0 :
                 break
             else:
@@ -197,7 +230,12 @@ class RTS_CFG():
                 self.msg = self.s.recv(1024).decode()
                 self.msg = self.msg.strip()
                 print (self.msg)
-                break
+                print ("Wait 5 seconds")
+                if "Quiet" in self.msg:
+                    time.sleep(5)
+                    break
+                else:
+                    time.sleep(1)
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
