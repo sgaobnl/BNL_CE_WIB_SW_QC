@@ -15,21 +15,31 @@ from rts_ssh_LArASIC import rts_ssh_LArASIC
 ############################################################
 BypassRTS = False
 
+logs = []
+
 trayid = "b001t0001"
-status = 0
-print ("start trayID: {}".format(trayid))
-duts = list(range(0,90,1))
-#duts = list(range(0,8,1))
-duts = sorted(duts)
-ids_dict = {} #good chips ID with time that chips are moved from tray to socket
-ids_dict_good = {} #good chips ID with time that chips are moved from socket to tray
-ids_dict_bad = {} #good chips ID with time that chips are moved from socket to tray
-#skts=[0,1,2,3,4,5,6,7]
 trayno =2
 badtrayno = 1 #some issue with tray#1
 bad_dut_order=0
 datno =2
 rootdir = "C:/DAT_LArASIC_QC/Tested/"
+
+logs["TrayID"] = trayid
+logs["TrayNo"] = 2
+logs["BadTrayNo"] = 1
+logs["Bad_dut_order"] = bad_dut_order
+logs["DATNo"] = 2
+logs["rootdir"] = rootdir
+
+print ("start trayID: {}".format(trayid))
+status = 0
+duts = list(range(0,90,1))
+duts = sorted(duts)
+logs["duts"] = duts 
+ids_dict = {} #good chips ID with time that chips are moved from tray to socket
+ids_dict_good = {} #good chips ID with time that chips are moved from socket to tray
+ids_dict_bad = {} #good chips ID with time that chips are moved from socket to tray
+
 if not os.path.exists(rootdir):
     try:
         os.makedirs(rootdir)
@@ -400,8 +410,12 @@ while (len(duts) > 0) or (len(skts) != 8):
     ids_k = list(ids_dict.keys())
     if len(ids_k) > 0:
         fp = rootdir + ids_k[0] + "_log.bin"
+        logs["RTS_MSG_R2S_P"] = ids_dict
+        logs["RTS_MSG_S2R_P"] = ids_dict_good
+        logs["RTS_MSG_S2R_F"] = ids_dict_bad
+
         with open(fp, 'wb') as fn:
-            logs = [ids_dict, ids_dict_good, ids_dict_bad]
+            #logs = [ids_dict, ids_dict_good, ids_dict_bad]
             pickle.dump(logs, fn)
 
 #    print (duts, dut_skt, bad_dut_order)
