@@ -17,12 +17,32 @@ BypassRTS = False
 
 logs = []
 
-trayid = "b001t0001"
+while True
+    print ("Read TrayID from the tray")
+    bno = input("Input TrayID (-1 to exit): ")
+    if len(bno) ==9:
+        if (bno[0] == "B" ) and (bno[4] == "T" ) :
+            try:
+                int(bno[1:4])
+                int(bno[5:9])
+                break
+            except BaseException as e:
+                print ("Wrong Tray ID, please input again")
+        else:
+            print ("Wrong Tray ID, please input again")
+    elif bno[0:2] == "-1":
+        sys.exit()
+    else:
+        print ("Wrong Tray ID length")
+        sys.exit()
+
+trayid = bno
+#trayid = "B001T0001"
 trayno =2
 badtrayno = 1 #some issue with tray#1
 bad_dut_order=0
 datno =2
-rootdir = "C:/DAT_LArASIC_QC/Tested/"
+rootdir = "C:/DAT_LArASIC_QC/Tested/" + trayid + "/"
 
 logs["TrayID"] = trayid
 logs["TrayNo"] = 2
@@ -46,6 +66,10 @@ if not os.path.exists(rootdir):
     except OSError:
         print ("Error to create folder %s"%rootdir)
         sys.exit()
+else:
+    print ("File exist, please make sure the tray ID is unique")
+    print ("Exit anyway")
+    sys.exit()
 
 ############################################################
 rts = RTS_CFG()
@@ -372,7 +396,7 @@ def MovetoTray(duts, dut_skt, QCstatus, badchips, bad_dut_order) :
                                 break
                         bad_dut_order +=1
                     else:
-                        ids_goods[rts.msg] = (chipi, skt)
+                        ids_goods[rts.msg] = (chipi,tmpi) 
                     tmpi = tmpi + 1
 
             return duts, dut_skt, bad_dut_order, ids_goods, ids_bads
