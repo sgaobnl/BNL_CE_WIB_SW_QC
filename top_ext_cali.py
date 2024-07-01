@@ -69,15 +69,21 @@ chk.data_align(fembs)
 time.sleep(0.5)
 
 chk.wib_cali_dac(dacvol=0.5)
+
+dac0_sel=0
+dac1_sel=0
+dac2_sel=0
+dac3_sel=0
 for fembid in fembs:
     if fembid == 0:
-        chk.wib_mon_switches(dac0_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        dac0_sel=1
     if fembid == 1:
-        chk.wib_mon_switches(dac1_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        dac1_sel=1
     if fembid == 2:
-        chk.wib_mon_switches(dac2_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        dac2_sel=1
     if fembid == 3:
-        chk.wib_mon_switches(dac3_sel=1, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        dac3_sel=1
+    chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel, dac2_sel=dac2_sel, dac3_sel=dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
 cp_period=1000
 cp_high_time = int(cp_period*32*3/4)
 chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
