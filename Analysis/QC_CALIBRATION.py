@@ -367,7 +367,7 @@ class DATDAC_CALI(BaseClass):
             }
         
         # Pedestal
-        pedestals = dict()
+        pedestals = dict() ###@@@@@@@@@@@@@@@@@@@@@@ NOT CORRECT. NEED TO USE RAW DATA, NOT AVERAGED WHEN GETTING THE RMS. We need to take into accound the random noise
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             pedestals[FE_ID] = dict()
