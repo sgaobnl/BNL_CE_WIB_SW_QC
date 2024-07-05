@@ -198,7 +198,8 @@ class LLC():
                         self.script_rd(script=x[1], cmds=cmds)
                     else:
                         print ("Error - file(%s) has an invalid RUN command: %s"%(fn, cmdline))
-                        exit()
+                        return None
+                        #exit()
                 cmdline = f.readline() 
             return cmds
 
@@ -329,13 +330,15 @@ class LLC():
                 byte_ptr = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(bufs_bytes[femb*2])            
                 if not ctypes.memmove(byte_ptr, buf, DAQ_SPY_SIZE):
                     print('memmove failed')
-                    exit()
+                    return None
+                    #exit()
 	                
                 self.wib.bufread(buf,femb*2+1) #read first COLDATA's buffer
                 byte_ptr = (ctypes.c_char*DAQ_SPY_SIZE).from_buffer(bufs_bytes[femb*2+1])            
                 if not ctypes.memmove(byte_ptr, buf, DAQ_SPY_SIZE):
                     print('memmove failed')
-                    exit()
+                    return None
+                    #exit()
             else: 
                 bufs_bytes[femb*2] = None
                 bufs_bytes[femb*2+1] = None

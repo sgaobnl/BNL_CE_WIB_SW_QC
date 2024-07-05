@@ -525,6 +525,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
         self.cd_flg[femb_id]=False
+        return True
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=cd1_0x27)
@@ -767,6 +768,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=0x34)
                 self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=0x12)
         self.adc_flg[femb_id]=False
+        return True
 
     def fembs_fe_cfg(self, fembs):
         fe_adac_ens = [False, False, False, False]
@@ -820,8 +822,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     if i > 10:
                         self.femb_powering(fembs =[])
                         print ("Turn all FEMBs off, exit anyway")
-                        print ("exit anyway")
-                        exit()
+                        return False
                     else:
                         time.sleep(0.01)
             i = i + 1
@@ -875,8 +876,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if i > 10:
                     self.femb_powering(fembs =[])
                     print ("Turn all FEMBs off, exit anyway")
-                    print ("exit anyway")
-                    exit()
+                    return False
                 else:
                     time.sleep(0.01)
             i = i + 1
@@ -884,6 +884,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         if fe_adac_en:
             self.femb_adac_cali(femb_id)
             fe_adac_en = False
+        return True
 
     def femb_adac_cali(self, femb_id, phase0x07=[0,0,0,0,0,0,0,0]):
         for chip in range(8):
@@ -897,51 +898,46 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
 
     def femb_cfg(self, femb_id, adac_pls_en = False):
-        refi= 0
-        while True:
-            #note032123: to be optimized 
-            #link_mask=self.peek(0xA00C0008) 
-            #if femb_id == 0:
-            #    link_mask = link_mask&0xfffffff0
-            #if femb_id == 1:
-            #    link_mask = link_mask&0xffffff0f
-            #if femb_id == 2:
-            #    link_mask = link_mask&0xfffff0ff
-            #if femb_id == 3:
-            #    link_mask = link_mask&0xffff0fff
-            #self.poke(0xA00C0008, link_mask)
-            #link_mask = self.peek(0xA00C0008 )
-            #time.sleep(0.01)
-
-            if self.cd_flg[femb_id]:
-                self.femb_cd_cfg(femb_id)
-            if self.adc_flg[femb_id]:
-                self.femb_adc_cfg(femb_id)
-            if self.fe_flg[femb_id]:
-                self.femb_fe_cfg(femb_id)
-            if adac_pls_en and (not (self.adac_cali_quo[femb_id])) :
-                self.femb_adac_cali(femb_id)
-            time.sleep(0.005)
-
-            #self.femb_cd_sync()
-            if self.i2cerror:
-                self.cd_flg[femb_id] = True
-                self.adc_flg[femb_id] =True
-                self.fe_flg[femb_id] =True
+        if self.cd_flg[femb_id]:
+            if not self.femb_cd_cfg(femb_id):
+                return False
+        if self.adc_flg[femb_id]:
+            if not self.femb_adc_cfg(femb_id):
+                return False
+        if self.fe_flg[femb_id]:
+            if not self.femb_fe_cfg(femb_id):
+                return False
+        
+        if self.i2cerror:
+            trysum = 0
+            tryi = 0
+            while trysum < 100:
                 self.i2cerror = False
-                refi += 1
-                print ("add i2c phase 50 steps")
-                if refi > 3:
+                trysum = trysum + 1 
+                if trysum%5 == 0:
+                    print ("add i2c phase 50 steps")
                     self.wib_i2c_adj(n=50)
-                    print ("Reconfigure FEMB due to i2c error!")
-                if refi > 25:
-                    self.femb_powering(fembs =[])
-                    print ( "\033[91m" + "I2C failed! exit anyway, please check connection!" + "\033[0m")
-                    print ("exit anyway")
-                    exit()
-            else:
-                print (f"FEMB{femb_id} is configurated")
-                break
+                time.sleep(0.2)
+                self.femb_cd_cfg(femb_id)
+                self.femb_adc_cfg(femb_id)
+                self.femb_fe_cfg(femb_id)
+                if self.i2cerror:
+                    tryi = 0
+                else:
+                    tryi += 1
+                if tryi >= 5:
+                    break
+            if trysum >= 100:
+                self.femb_powering(fembs =[])
+                print ( "\033[91m" + "I2C failed! exit anyway, please check connection!" + "\033[0m")
+                return False
+
+        if adac_pls_en and (not (self.adac_cali_quo[femb_id])) :
+            self.femb_adac_cali(femb_id)
+
+        print (f"FEMB{femb_id} is configurated")
+
+        return True
 
     def femb_fe_mon(self, femb_id=0, adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1 ):
         if (rst_fe != 0):
@@ -1280,8 +1276,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     if synctry > 100:
                         print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
                         self.femb_powering(fembs =[])
-                        print ("exit anyway")
-                        exit()
+                        return False
                     if synctry%10 == 0:
                         print ("perform data synchronzation again...")
                         self.data_align(fembs)
