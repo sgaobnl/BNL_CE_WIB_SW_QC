@@ -4,7 +4,7 @@ import pickle
 import os
 import shutil
 
-class RTS_CFG():
+class RTS_MANIP():
     def __init__(self):
         self.manip_fp = None
         self.qclog_fp = None
@@ -32,7 +32,6 @@ class RTS_CFG():
             return False
 
     def manip_extract(self,  rts_r, rts_msg): # default port for socket 
-        print ("XXXXXXXXXXXXXXXXX")
         pic_dir = self.rootdir + "images/"
         if not os.path.exists(pic_dir):
             print (pic_dir)
@@ -48,8 +47,10 @@ class RTS_CFG():
         x = f.find("_log.bin")
         msg0 = f[x-14:x]
         x = rts_r.find(msg0)
-        msg_full = rts_r[x:100000]
+        msg_full = rts_r[x:]
         msg_rls = msg_full.splitlines()
+        print (len(msg_rls))
+
 
         r2s_p = sorted(list(rts_msg['RTS_MSG_R2S_P'].keys()))
         s2r_p = sorted(list(rts_msg['RTS_MSG_S2R_P'].keys()))
@@ -57,18 +58,16 @@ class RTS_CFG():
 
 
         msgs = r2s_p + s2r_p + s2r_f
-        msg_d = {}
+        print (len(msgs))
 
         #save related RTS operation information 
         with open(self.rootdir + "manip.csv", "w") as fn:
             for msg in msgs:
                 for x in msg_rls:
                     if msg in x:
-                        msg_d[msg] = x
                         fn.write(x + "\n")
                         self.pic_copy(x, pic_dir) 
                         break
-        return msg_d
 
 #    def rts_manip(self, msg, dst): 
     def pic_copy(self, msg, dst): 
@@ -76,12 +75,10 @@ class RTS_CFG():
         for tmp in tmps:
             if "images" in tmp:
                 src_pic = tmp
-                k = src_pic.find("20240701")
-                src_pic = src_pic[k:]
-                src_pic = "D:\\dat_tmp\\0621\\images\\" + src_pic
-                print (src_pic)
-
-                
+#                k = src_pic.find("20240701")
+#                src_pic = src_pic[k:]
+#                src_pic = "D:\\dat_tmp\\0621\\images\\" + src_pic
+#                print (src_pic)
                 try:
                     shutil.copy2(src_pic, dst)
                 except BaseException as e:
@@ -93,7 +90,7 @@ class RTS_CFG():
                         print (e)
 
     def read_rtsmsgfp(self): # default port for socket 
-        for root, dirs, files in os.walk(a.rootdir):
+        for root, dirs, files in os.walk(self.rootdir):
             break
 
         for f in files:
@@ -114,9 +111,9 @@ class RTS_CFG():
 
 
 if __name__ == "__main__":
-    a = RTS_CFG()
-    a.manip_fp = "D:/dat_tmp/0621/manip.csv"
-    a.rootdir = "D:/dat_tmp/0621/B001T0001/"
+    a = RTS_MANIP()
+    a.manip_fp = "C:/Users/coldelec/RTS/manip.csv"
+    a.rootdir = "C:/DAT_LArASIC_QC/Tested/B009T0002/"
     rts_r = a.read_manipfp()
 
     rts_msg = a.read_rtsmsgfp()

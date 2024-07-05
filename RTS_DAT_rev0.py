@@ -15,10 +15,10 @@ from rts_ssh_LArASIC import rts_ssh_LArASIC
 ############################################################
 BypassRTS = False
 
-logs = []
+logs = {}
 
-while True
-    print ("Read TrayID from the tray")
+while True:
+    print ("Read TrayID (BxxxTxxxx) from the tray")
     bno = input("Input TrayID (-1 to exit): ")
     if len(bno) ==9:
         if (bno[0] == "B" ) and (bno[4] == "T" ) :
@@ -159,7 +159,7 @@ def RTS_debug (info, status=None, trayno=None, trayc=None, trayr=None, datno=Non
         if len(userinput) > 0:
             if "444" in userinput :
                 rts.JumpToCamera()
-                rts.Shutdown()
+                rts.rts_shutdown()
                 print ("Exit anyway")
                 exit()
 #            elif "1" in userinput[0] :
@@ -320,7 +320,7 @@ def MovetoTray(duts, dut_skt, QCstatus, badchips, bad_dut_order) :
         tmps = sorted(tmps)
         duts = tmps + duts
 
-        return duts, {}, bad_dut_order
+        return duts, {}, bad_dut_order, ids_goods, ids_bads
     else:
         if "Code#" in QCstatus:
             tmpi = 0
@@ -352,7 +352,7 @@ def MovetoTray(duts, dut_skt, QCstatus, badchips, bad_dut_order) :
                     ids_bads[rts.msg] = (chipi, skt)
                     bad_dut_order +=1
                     tmpi = tmpi + 1
-            return duts,dut_skt, bad_dut_order
+            return duts,dut_skt, bad_dut_order, ids_goods, ids_bads
 
         if "PASS" in QCstatus:
             tmpi = 0
@@ -396,7 +396,7 @@ def MovetoTray(duts, dut_skt, QCstatus, badchips, bad_dut_order) :
                                 break
                         bad_dut_order +=1
                     else:
-                        ids_goods[rts.msg] = (chipi,tmpi) 
+                        ids_goods[rts.msg] = (chipi,tmpi)
                     tmpi = tmpi + 1
 
             return duts, dut_skt, bad_dut_order, ids_goods, ids_bads
@@ -439,19 +439,12 @@ while (len(duts) > 0) or (len(skts) != 8):
         logs["RTS_MSG_S2R_F"] = ids_dict_bad
 
         with open(fp, 'wb') as fn:
-            #logs = [ids_dict, ids_dict_good, ids_dict_bad]
             pickle.dump(logs, fn)
 
-#    print (duts, dut_skt, bad_dut_order)
 
 
 ids_k = list(ids_dict.keys())
 
-print ("")
-print ("**********result*************")
-print ("")
-print ("{} chips pass QC".format(len(ids_k)))
-print ("ID, (trayno, soketno)")
 for ids in ids_k:
     print (ids, ids_dict[ids])
 
@@ -460,6 +453,14 @@ if BypassRTS:
 else:
     rts.rts_shutdown()
 
+print ("save RTC infomation")
+from RTS_record import RTS_MANIP
+manip = RTS_MANIP()
+manip.manip_fp = "C:/Users/coldelec/RTS/manip.csv"
+manip.rootdir = rootdir
+rts_r = manip.read_manipfp()
+rts_msg = manip.read_rtsmsgfp()
+manip.manip_extract(rts_r, rts_msg)
 print ("Done")
 
 
