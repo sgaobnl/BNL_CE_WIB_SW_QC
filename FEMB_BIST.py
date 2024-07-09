@@ -12,7 +12,7 @@ import subprocess
 tt=0
 t1=time.time()
 #   First   is the data acquisition
-user_input_1 = "lke\nn\ny\ncom\nG9\nG10\nG11\nG12\n".encode("utf-8")# + b"6\n7\n8\n9\n"
+user_input_1 = "lke\nn\ny\ncom\nB06\nB12\nB17\nB16\n".encode("utf-8")# + b"6\n7\n8\n9\n"
 action_1 = subprocess.run(['python3', './femb_assembly_chk.py'] + ['0', '1', '2', '3', 'save', '5'],  input = user_input_1, capture_output=False, text=False)
 
 

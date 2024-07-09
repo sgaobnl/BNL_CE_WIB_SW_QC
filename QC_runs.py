@@ -6,6 +6,7 @@ import pickle
 import copy
 import os
 import time, datetime, random, statistics
+import subprocess
 import QC_components.qc_function as a_func
 import QC_components.qc_log as log
 #import TestPattern_chk as PLL_TP
@@ -195,7 +196,7 @@ class QC_Runs:
             vold = self.chk.wib_vol_mon(femb_ids=self.fembs,sps=sps)
             pwr_meas["Powerrails"] = vold
         else:
-        #    time.sleep(0.002)
+            time.sleep(0.01)
             pwr_meas = None
 
         if autocali&0x01:
@@ -237,6 +238,54 @@ class QC_Runs:
             with open(fp, 'wb') as fn:
                 pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
 
+    def merge_bin_files_to_dictbin(self, folder_path, output_file):
+
+        bin_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.bin')]
+        merged_dict = {}
+        for bin_file in bin_files:
+            file_name = os.path.basename(bin_file)
+            with open(bin_file, 'rb') as f:
+                merged_dict[file_name] = f.read()
+            # os.remove(bin_file)   # remove the raw bin_file
+        local_username = 'DUNE'
+        local_password = '216'
+        local_ip = '192.168.121.10'
+        local_path = r'D:\A0-FEMB_07_1T_Auto\{}'.format(output_file)
+
+        output_file = folder_path + output_file
+        with open(output_file, 'wb') as out:
+            for content in merged_dict.values():
+                out.write(content)
+
+        remote_hostname = '192.168.121.123'
+        remote_username = 'root'
+        remote_password = 'fpga'
+        remote_file_path = output_file
+
+        # local_username = 'DUNE'
+        # local_password = '216'
+        # local_ip = '192.168.121.10'
+        # local_path = r'D:\{}'.format(output_file)
+
+        scp_command = f'scp {remote_username}@{remote_hostname}:{remote_file_path} {local_username}@{local_ip}:{local_path}'
+
+        try:
+            completed_process = subprocess.run(
+                scp_command,
+                shell = True,
+                check = True,
+                input = f"{remote_password}\n".encode(),
+                stdout = subprocess.PIPE,
+                stderr = subprocess.PIPE,
+            )
+            print(completed_process.stdout.decode())
+            print(completed_process.stderr.decode())
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error : {e}")
+
+
+        return merged_dict
 
     def pwr_consumption(self):
         datadir = self.save_dir+"PWR_Meas/"
@@ -295,6 +344,11 @@ class QC_Runs:
         sts = 1
         fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
+
+        folder_path = datadir
+        output_file = 'power.bin'
+        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
+
     def pwr_cycle(self):
 
         datadir = self.save_dir+"PWR_Cycle/"
@@ -374,7 +428,11 @@ class QC_Runs:
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False) 
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
+
+        folder_path = datadir
+        output_file = 'power_cycle.bin'
+        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
 
 
     def femb_leakage_cur(self):
@@ -413,7 +471,11 @@ class QC_Runs:
         ####### 1 nA #######
         #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "1nA")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False) 
+        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
+
+        folder_path = datadir
+        output_file = 'leakage_cur.bin'
+        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
 
     def femb_chk_pulse(self):
         datadir = self.save_dir+"CHK/"

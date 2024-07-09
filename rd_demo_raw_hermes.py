@@ -24,7 +24,7 @@ dac = fp[p+31:-4]
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-fembs = [1]
+fembs = [3]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
 
@@ -41,28 +41,28 @@ if 1:
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    for fe in [1]:#range(8):
-        for fe_chn in [ref_chn]:#range(16):
+    for fe in [0,1,2,3,4,5,6,7]:#range(8):[0, 6]:#
+        for fe_chn in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:#range(16):[9]:#
             fechndata = np.array(datd[fe*16+fe_chn], dtype = np.int32)
             rms.append(np.mean(fechndata))
             rms_tmp = round(np.std(fechndata), 2)
             maxpos = np.argmax(fechndata[100:]) + 100
             maxvalue = fechndata[maxpos]
             baseline = fechndata[maxpos-30]
-            print(baseline)
+            # print(baseline)
             subaseline = [x - baseline for x in fechndata]
-            print(subaseline)
-            plt.text(maxpos, maxvalue+300, '{}'.format(maxvalue))
-            if fe_chn == ref_chn:
-                plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
-            else:
-                plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='green', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
-
+            # print(subaseline)
+            # plt.text(maxpos, maxvalue+300, '{}'.format(maxvalue))
+            # if fe_chn == ref_chn:
+            #     plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
+            # else:
+            #     plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='green', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
+            plt.plot(range(len(fechndata)),fechndata)
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #
 #    plt.grid()
-#    
+#
 #     for i in range(0,128,8):
 #         plt.vlines(i-0.5, -1, 17000, color='y')
 #
@@ -82,9 +82,9 @@ if 1:
 #    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
 plt.title("{}".format(fp))
-plt.legend()
+# plt.legend()
 plt.ylabel("ADC count / bit")
-plt.ylim((-1000,6500))
+# plt.ylim((-1000,6500))
 plt.xlabel("time / 500 ns")
 plt.grid()
 plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])

@@ -124,7 +124,7 @@ def final_report(datareport, fembs, fembNo):
             # check_list.append(check_status05)
 
         if 6 in log.test_label:
-            dict_list06 = [log.check_log0601[femb_id], log.check_log0602[femb_id], log.check_log0603[femb_id], log.check_log0604[femb_id], log.check_log0605[femb_id]]
+            dict_list06 = [log.check_log0601[femb_id], log.check_log0602[femb_id], log.check_log0603[femb_id], log.check_log0604[femb_id]]#, log.check_log0605[femb_id]]
 
             check_list06 = []
             for dict_i in dict_list06:
@@ -135,7 +135,7 @@ def final_report(datareport, fembs, fembNo):
             check_list.append(check_status06)
 
         if 7 in log.test_label:
-            dict_list07 = [log.check_log0701[femb_id], log.check_log0702[femb_id]]
+            dict_list07 = [log.check_log0701[femb_id]]#, log.check_log0702[femb_id]]
 
             check_list07 = []
             for dict_i in dict_list07:
@@ -812,7 +812,7 @@ def final_report(datareport, fembs, fembNo):
 
                 file.write(Head07 + '\n')
 
-                file.write("![ped](./{}/Cali2.png)".format(log.item072) + "\n\n")
+                # file.write("![ped](./{}/Cali2.png)".format(log.item072) + "\n\n")
 
                 # SE    900 mVBL    14_0 mVfC       2 us
                 file.write('### Calibration 021 SE 900 mVBL    14_0 mVfC    2 us' + '\n')

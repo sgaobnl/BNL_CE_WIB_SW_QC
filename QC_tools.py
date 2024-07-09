@@ -238,8 +238,10 @@ class ana_tools:
             hasError = False
             pulse = []
             pulse2 = []
-
             for itr in range(nevent):
+                # print(data[itr])
+                # print(nfemb)
+                # input()
                 evtdata = np.array(data[itr][nfemb][ich])
                 tstart = data[itr][4] // 0x20
                 for tt in range(int(period - (tstart % period)), len(evtdata) - period - offset2 - 1, period):
@@ -253,39 +255,56 @@ class ana_tools:
             apulse2 = allpls2 / npulse
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
+            if dac == 48:
+                # print(len(evtdata))
+                if ich == 70:
+                # print(allpls)
+                    print(evtdata)
+                    print(ich)
+                    print(dac)
+                    plt.figure(figsize=(8, 6))
+                    plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
+                    plt.show()
+
+                if ich == 1:
+                    print(evtdata)
+                    print(ich)
+                    print(dac)
+                    plt.figure(figsize=(8, 6))
+                    plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
+                    # plt.show()
+
+
 
             data_type = apulse.dtype
             plt.subplot(1, 2, 1)
             if maxpos >= pulseoffset and maxpos < len(apulse) + pulseoffset - pulrange:
                 plot_pulse = apulse[maxpos - pulseoffset:maxpos - pulseoffset + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                # baseline = np.array(apulse[:maxpos-20], apulse[maxpos+80:])
                 if maxpos < 70:
                     baseline = pulse[:maxpos - 20]
                 else:
-                    baseline = pulse[maxpos - 50:maxpos - 20]
-                baseline.extend(pulse[maxpos - 50 + period:maxpos - 20 + period])
-                # baseline.extend(pulse[period:maxpos - 20 + period])
-                # baseline.extend(pulse[2*period:maxpos - 20 + 2*period])
+                    baseline = pulse[maxpos - 40:maxpos - 20]
+                baseline.extend(pulse[maxpos - 40 + period:maxpos - 20 + period])
                 if npulse > 2:
-                    baseline.extend(pulse[maxpos - 50 + 2*period:maxpos - 20 + 2*period])
+                    baseline.extend(pulse[maxpos - 40 + 2*period:maxpos - 20 + 2*period])
 
             if maxpos < pulseoffset:
                 plot_pulse = apulse2[maxpos - pulseoffset + period-offset2:maxpos - pulseoffset + period-offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos + period - 50:maxpos + period - 20]
+                baseline = pulse[maxpos + period - 40:maxpos + period - 20]
                 # baseline = pulse[maxpos + offset2+pulseoffset+pulseoffset:maxpos + period - 100]
                 # baseline.extend(pulse[maxpos + offset2+pulseoffset+pulseoffset + period:maxpos + period - 100 + period])
-                baseline.extend(pulse[maxpos + period - 50 + period:maxpos + period - 20 + period])
+                baseline.extend(pulse[maxpos + period - 40 + period:maxpos + period - 20 + period])
                 # baseline.extend(pulse[maxpos + 180 + 2*period:maxpos + 500 - 100 + 2*period])
 
             if maxpos >= len(apulse) + pulseoffset - pulrange:
                 plot_pulse = apulse2[maxpos - pulseoffset - offset2:maxpos - pulseoffset - offset2 + pulrange]
                 plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos - 50:maxpos - 20]
+                baseline = pulse[maxpos - 40:maxpos - 20]
                 # baseline = pulse[180:maxpos - 20]
                 # baseline.extend(pulse[180 + period: maxpos - 20 + period])
-                baseline.extend(pulse[maxpos - 50 + period: maxpos - 20 + period])
+                baseline.extend(pulse[maxpos - 40 + period: maxpos - 20 + period])
                 # baseline.extend(pulse[180 + 2*period: maxpos - 20 + 2*period])
 
             pulse_rms = np.std(baseline)
@@ -613,6 +632,7 @@ class ana_tools:
                 log.ADCMON_table_cell[femb_id]["VREFN_chip6"], log.ADCMON_table_cell[femb_id]["VREFN_chip7"])
 
     def CheckLinearty(self, dac_list, pk_list, updac, lodac, chan, fp):
+    #   first sample and fit
     #   the updac range need to be ensured
         dac_init=[]
         pk_init=[]
@@ -621,10 +641,11 @@ class ana_tools:
                 dac_init.append(dac_list[i])
                 pk_init.append(pk_list[i])
 
-#   first fit, use initial sample points
+    #   first fit, use initial sample points
         try:
            slope_i,intercept_i=np.polyfit(dac_init,pk_init,1)
         except:
+            # we suggest here report an issue
            fig1,ax1 = plt.subplots()
            ax1.plot(dac_init,pk_init, marker='.')
            ax1.set_xlabel("DAC")
@@ -651,11 +672,11 @@ class ana_tools:
             y_p = dac_list[i]*slope_i + intercept_i
             inl = abs(y_r-y_p)/(y_max-y_min)
             if inl>inl_th:
-               if dac_list[i]<5:
-                  continue
-               linear_dac_max = dac_list[i-1]
-               index=i
-               break
+                if dac_list[i]<5:
+                    continue
+                linear_dac_max = dac_list[i-1]
+                index=i
+                break
         # print(linear_dac_max)
         # print(index)
 
@@ -690,7 +711,7 @@ class ana_tools:
         # print(dac_list[:index])
 #   second linear fit, with all linear area
         try:
-            slope_f,intercept_f=np.polyfit(dac_init[:index],pk_init[:index],1)
+            slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
         except:
             fig3,ax3 = plt.subplots()
             ax3.plot(dac_list[:index],pk_list[:index],marker='.')
@@ -749,23 +770,23 @@ class ana_tools:
             pwr_meas = raw[1]
             wibdata = self.data_decode(rawdata, fembs)
             pldata = wibdata
-            #tmst = np.array(tmst)
 
             for ifemb in fembs:
                 fp = savedir[ifemb]+fdir
                 if dac==0:
-                   fname_1 = namepat.format(snc, sgs, sts, dac)
-                   ped,rms = self.GetRMS(pldata, ifemb, fp, fname)
-                   if not('vdac' in fname_1):
-                       pk_list[ifemb].append(np.zeros(128))
+                    fname_1 = namepat.format(snc, sgs, sts, dac)
+                    ped,rms = self.GetRMS(pldata, ifemb, fp, fname)
+                    if not('vdac' in fname_1):
+                        pk_list[ifemb].append(np.zeros(128))
                 else:
-                   fname_1 = namepat.format(snc,sgs,sts,dac)
-                   if ('vdac' in fname_1) and not ('000mV' in fname_1):
-                        ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
-                   else:
-                        ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
-                   ppk_np = np.array(ppk)-np.array(bl)
-                   pk_list[ifemb].append(ppk_np)
+                    fname_1 = namepat.format(snc,sgs,sts,dac)
+                    if ('vdac' in fname_1):
+                        if not ('000mV' in fname_1):
+                            ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
+                    else:
+                        ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
+                    ppk_np = np.array(ppk)-np.array(bl)
+                    pk_list[ifemb].append(ppk_np)
 
 
         for ifemb in fembs:
@@ -774,10 +795,6 @@ class ana_tools:
             new_pk_list = list(zip(*tmp_list))
             check = True
             check_issue = []
-            #print(new_pk_list[0])
-            # if 'vdac' in fname_1:
-            #     dac_np = np.array(dac_list[0:-1])
-            # else:
             dac_np = np.array(dac_list)
             pk_np = np.array(new_pk_list)
             fp = savedir[ifemb]+fdir
@@ -792,19 +809,15 @@ class ana_tools:
             #   peak - dac linear
             plt.subplot(2, 2, 2)
             for ch in range(128):
-                uplim = np.max(pk_np[ch])*7/8
-                lodac = np.max(pk_np[ch])*1/8
+                uplim = np.max(pk_np[ch])*4/5
+                lodac = np.max(pk_np[ch])*1/5
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
-                if ch == 100:
-                    print(gain,inl, line_range)
-                    input()
-
                 if gain==0:
-                   print("femb%d ch%d gain is zero"%(ifemb,ch))           
+                    print("femb%d ch%d gain is zero"%(ifemb,ch))
                 else:
-                   if ('vdac' in namepat):
+                    if ('vdac' in namepat):
                         gain = 1/gain/1000 *CC/e
-                   else:
+                    else:
                         gain = 1 / gain * dac_du / 1000 * CC / e
                 gain_list.append(gain)
                 inl_list.append(inl)
@@ -827,13 +840,34 @@ class ana_tools:
                         if line_range < 25:
                             check = False
                             check_issue.append("ch {} line range issue: {}".format(ch, line_range))
-                    else:
+                        if gain > 43:
+                            check = False
+                            check_issue.append("ch {} Gain issue at 14_0 mVfC: {}".format(ch, line_range))
+
+                    elif '200mV' in fname_1:
+                        if line_range < 50:
+                            check = False
+                            check_issue.append("ch {} Line range issue at 4_7 mVfC: {}".format(ch, line_range))
+                        if '4_7' in fname_1:
+                            if gain > 135:
+                                check = False
+                                check_issue.append("ch {} Gain issue at 4_7 mVfC: {}".format(ch, line_range))
+                        if '7_8' in fname_1:
+                            if gain > 78:
+                                check = False
+                                check_issue.append("ch {} Gain issue at 7_8 mVfC: {}".format(ch, line_range))
+                        if '14_0' in fname_1:
+                            if gain > 45:
+                                check = False
+                                check_issue.append("ch {} Gain issue at 14_0 mVfC: {}".format(ch, line_range))
+                        if '25_0' in fname_1:
+                            if gain > 26:
+                                check = False
+                                check_issue.append("ch {} Gain issue at 25_0 mVfC: {}".format(ch, line_range))
+
                         if line_range < 50:
                             check = False
                             check_issue.append("ch {} line range issue: {}".format(ch, line_range))
-                    if gain > 120:
-                        check = False
-                        check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 # max_dac_list.append(max_dac)
                 plt.plot(dac_np, pk_np[ch])
             log.tmp_log[femb_id]["INL"] = np.max(inl_list)

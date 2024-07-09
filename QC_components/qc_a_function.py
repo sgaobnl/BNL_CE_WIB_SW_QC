@@ -35,8 +35,6 @@ def monitor_power_rail_analysis(interface,  fembs, datadir, fembNo, label = 'tes
     vkeys = list(vold.keys())
     # LSB = 2.5 / 16384
     LSB = 2.048 / 16384
-    print(vfembs)
-    print(fembNo)
 
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])

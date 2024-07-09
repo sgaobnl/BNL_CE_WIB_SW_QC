@@ -95,6 +95,10 @@ chk.wib_fw()
 print("Power off FEMBs to initial the test")
 chk.femb_powering([])
 
+RP = 1
+if RP == 1:
+    chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
+
 #   set FEMB voltages
 #chk.fembs_vol_set(vfe = paras.voltage_FE, vcd = paras.voltage_COLDATA, vadc = paras.voltage_ColdADC)
 chk.fembs_vol_set(vfe = 3.0, vcd = 3.0, vadc = 3.5)   #   this parameter can not be used in LN2
@@ -225,7 +229,7 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 time.sleep(LAr_Dalay)
 chk.data_align(fembs)
-
+print(111111111)
 # data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
@@ -262,6 +266,7 @@ if ship:
             chk.femb_cfg(femb_id, adac_pls_en )
         time.sleep(LAr_Dalay)
         chk.data_align(fembs)
+        print(111111111)
 
         # data acquire
         rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
@@ -393,18 +398,19 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )     # enable the Pulse
 time.sleep(LAr_Dalay)
 chk.data_align(fembs)
-
+print(111111111)
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
-
+print(2222222222222)
 #   data analysis
-a_func.se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname)
+
 
 if save:
     fp = datadir + fname
     with open(fp, 'wb') as fn:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
+a_func.se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname)
 
 ##############################################
 #      PART 04 DIFF Performance Measurement  #

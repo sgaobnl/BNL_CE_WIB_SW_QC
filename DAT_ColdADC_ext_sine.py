@@ -1,4 +1,4 @@
-import time
+import time, datetime
 import sys
 import numpy as np
 import pickle
@@ -8,18 +8,25 @@ from dat_cfg import DAT_CFGS
                 
 dat =  DAT_CFGS()
 dat.fembs = [0]
+dat.en_ref10MHz(ref_en = True)
 
 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-cfg_info = dat.dat_adc_qc_cfg(diff_en=0)
+cfg_info = dat.dat_adc_qc_cfg(diff_en=1)
 #dat.en_ref10MHz(ref_en=True)
-dat.dat_coldadc_ext(ext_source ="WIB")
+dat.dat_coldadc_ext(ext_source ="P6")
+#dat.dat_coldadc_ext(ext_source ="P6")
 dat.dat_set_dac(0000, adc=0) #set ADC_P to 0 V
 dat.dat_set_dac(0000, adc=1) #set ADC_N to 0 V
+#dat.dat_coldadc_cali_cs()
+
+time.sleep(1)
+
 fdir = "./tmp_data/"
-rawdata =  dat.dat_adc_qc_acq(1)
+rawdata =  dat.dat_adc_qc_acq(50)
 datad = {}
-datad["TRI"] = rawdata 
-fp = fdir + "LN_QC_se.bin"
+datad["SINE"] = rawdata 
+ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+fp = fdir + "LN_QC_sine_" + ts + ".bin"
 with open(fp, 'wb') as fn:
     pickle.dump(datad, fn)
 

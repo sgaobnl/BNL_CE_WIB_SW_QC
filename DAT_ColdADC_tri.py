@@ -10,7 +10,7 @@ dat =  DAT_CFGS()
 dat.fembs = [0]
 
 adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-cfg_info = dat.dat_adc_qc_cfg(diff_en=0)
+cfg_info = dat.dat_adc_qc_cfg(diff_en=0, autocali=1)
 #dat.en_ref10MHz(ref_en=True)
 dat.dat_coldadc_ext(ext_source ="WIB")
 dat.dat_set_dac(0000, adc=0) #set ADC_P to 0 V
