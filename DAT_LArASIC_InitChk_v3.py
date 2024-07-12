@@ -17,9 +17,74 @@ from spymemory_decode import wib_dec
 #print(Back.RED + 'Red background text')
 
 def data_ana(fembs, rawdata, rms_flg=False):
-    wibdata = wib_dec(rawdata,fembs, spy_num=5, cd0cd1sync=False)[0]
+    wibdatas = wib_dec(rawdata,fembs, spy_num=5, cd0cd1sync=False)
+    dat_tmts_l = []
+    dat_tmts_h = []
+    for wibdata in wibdatas:
+        dat_tmts_l.append(wibdata[5][fembs[0]*2][0]) #LSB of timestamp = 16ns
+        dat_tmts_h.append(wibdata[5][fembs[0]*2+1][0])
+
+    period = 512
+    dat_tmtsl_oft = (np.array(dat_tmts_l)//32)%period #ADC sample rate = 16ns*32 = 512ns
+    dat_tmtsh_oft = (np.array(dat_tmts_h)//32)%period #ADC sample rate = 16ns*32 = 512ns
+
+    print (dat_tmts_l, dat_tmts_h)
+
     
-    datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+    import matplotlib.pyplot as plt
+    print ("example 1: align the data...")
+    for i in range(len(wibdatas)):
+        wibdata = wibdatas[i]
+        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+        #for achn in range(len(datd)):
+        for achn in [0]:
+            chndata = datd[achn]
+            if achn<64:
+                oft = dat_tmtsl_oft[i]
+            else:
+                oft = dat_tmtsh_oft[i]
+            x = np.arange(oft, len(chndata) + oft, 1)
+            plt.plot(x,chndata)
+    plt.show()
+    plt.close()
+
+    #for achn in range(len(datd)):
+    print ("concatenate spy buffers according to timestamp")
+    for achn in [0]:
+        conchndata = []
+
+        for i in range(len(wibdatas)):
+            if achn<64:
+                oft = dat_tmtsl_oft[i]
+            else:
+                oft = dat_tmtsh_oft[i]
+
+            wibdata = wibdatas[i]
+            datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+            chndata = datd[achn] 
+            lench = len(chndata)
+            tmp = period-oft
+            conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
+        import matplotlib.pyplot as plt
+        plt.plot(conchndata)
+        plt.show()
+        plt.close()
+
+        sumdata = np.array(conchndata[0:period])
+        for k in range(1,len(conchndata)//period):
+            sumdata +=  np.array(conchndata[k*period:(k+1)*period])
+        print ("average the data %d times"%(len(conchndata)//period))
+        avgdata = sumdata/(len(conchndata)//period)
+        import matplotlib.pyplot as plt
+        plt.plot(avgdata, label="Averaging plot")
+        plt.plot(conchndata[0:period], label="one period of original waveform")
+        plt.legend()
+        #plt.plot(list(avgdata[300:]) + list(avgdata[0:300]) )
+        plt.show()
+        plt.close()
+
+
+    exit()
 
     chns =[]
     rmss = []
@@ -244,7 +309,7 @@ def dat_larasic_initchk(fdir="/."):
             return "PASS", []
 
 if __name__=="__main__":
-    fdir = "C:/DAT_LArASIC_QC/Tested/B010T0001/Time_20240710105218_DUT_0000_1001_2002_3003_4004_5005_6006_7007/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+    fdir = "D:/DAT_LArASIC_QC//B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
     QCstatus, bads = dat_larasic_initchk(fdir)
     print (QCstatus)
     print (bads)
