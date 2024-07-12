@@ -12,9 +12,11 @@ from rts_ssh_LArASIC import DAT_power_off
 from rts_ssh_LArASIC import Sinkcover
 from rts_ssh_LArASIC import rts_ssh_LArASIC
 
-############################################################
-BypassRTS = False
 
+
+############################################################
+
+BypassRTS = False
 logs = {}
 
 while True:
@@ -36,6 +38,10 @@ while True:
         print ("Wrong Tray ID length")
         sys.exit()
 
+
+
+
+
 trayid = bno
 #trayid = "B001T0001"
 trayno =2
@@ -53,7 +59,7 @@ logs["rootdir"] = rootdir
 
 print ("start trayID: {}".format(trayid))
 status = 0
-duts = list(range(0,90,1))
+duts = list(range(40,90,1))
 duts = sorted(duts)
 logs["duts"] = duts 
 ids_dict = {} #good chips ID with time that chips are moved from tray to socket
@@ -69,7 +75,7 @@ if not os.path.exists(rootdir):
 else:
     print ("File exist, please make sure the tray ID is unique")
     print ("Exit anyway")
-    sys.exit()
+    #sys.exit()
 
 ############################################################
 rts = RTS_CFG()
@@ -82,7 +88,8 @@ else:
     rts.JumpToCamera()
 
 #rts.MotorOn()
-#rts.MoveChipFromSocketToTray(2, 3, 2, 11, 1)
+#rts.MoveChipFromSocketToTray(2, 12, 4, 2, 1)
+
 #rts.rts_idle()
 #rts.MotorOn()
 #rts.MoveChipFromSocketToTray(2, 4, 2, 12, 1)
@@ -459,8 +466,9 @@ manip = RTS_MANIP()
 manip.manip_fp = "C:/Users/coldelec/RTS/manip.csv"
 manip.rootdir = rootdir
 rts_r = manip.read_manipfp()
-rts_msg = manip.read_rtsmsgfp()
-manip.manip_extract(rts_r, rts_msg)
+rts_msgs = manip.read_rtsmsgfp()
+for rts_msg_wfp in rts_msgs:
+    manip.manip_extract(rts_r, rts_msg_wfp)
 print ("Done")
 
 

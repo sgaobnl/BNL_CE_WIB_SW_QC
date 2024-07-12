@@ -185,12 +185,14 @@ def dat_larasic_initchk(fdir="/."):
     fp = fdir + "QC_INIT_CHK" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
+    print (data)
     
     dkeys = list(data.keys())
     
     logsd = data["logs"]
 
     QCstatus = data["QCstatus"]
+    print (QCstatus)
 
     if "Code#E001" in QCstatus:
         return QCstatus, sorted(data["FE_Fail"])
@@ -198,6 +200,8 @@ def dat_larasic_initchk(fdir="/."):
         return QCstatus, sorted(data["FE_Fail"])
     if "Code#E003" in QCstatus:
         return QCstatus, sorted(data["FE_Fail"])
+    if "Code#E005" in QCstatus:
+        return QCstatus, [0,1,2,3,4,5,6,7]
     if "Code#W004" in QCstatus:
         amps_d = {}
         for onekey in ["ASICDAC_47mV_CHK","ASICDAC_47mV_CHK_x10", "ASICDAC_47mV_CHK_x18"]:
@@ -279,7 +283,8 @@ def dat_larasic_initchk(fdir="/."):
         else:
             return "PASS", []
 if True:
-    fdir = "C:/DAT_LArASIC_QC/Tested/Time_20240628185432_DUT_0080_1081_2082_3083_4084_5085_6086_7087/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+    #fdir = "C:/DAT_LArASIC_QC/Tested/Time_20240628185432_DUT_0080_1081_2082_3083_4084_5085_6086_7087/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+    fdir = """C:/DAT_LArASIC_QC/Tested/B010T0008/Time_20240708185257_DUT_0024_1025_2026_3027_4028_5029_6030_7031/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"""
     #fdir = "./tmp_data/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
     QCstatus, bads = dat_larasic_initchk(fdir)
     print (QCstatus)

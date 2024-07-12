@@ -141,10 +141,19 @@ if 0 in tms:
                 chkdata = dat.dat_asic_chk()
                 if chkdata == False:
                     datad["QCstatus"] = "Code#E005: Can't Configurate DAT"
+                    febads = []
+                    adcbads = []
+                    cdbads = []
+                    for chip in range(8):
+                        if  dat.fe_spi_fails[chip]:
+                            febads.append(chip)
+                    datad["FE_Fail"] = febads
+                    print ("FE_Fail(0-7):", datad["FE_Fail"])
                 else:
                     datad.update(chkdata)
                     datad["QCstatus"] = "Code#W004: To be anlyze at PC side"
     datad['logs'] = logs
+    print ("QCstatus:", datad["QCstatus"])
 
     fp = fdir + "QC_INIT_CHK" + ".bin"
     with open(fp, 'wb') as fn:

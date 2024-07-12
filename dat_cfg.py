@@ -868,6 +868,7 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_asic_chk(self):
         datad = {}
+        datad["Status"] = True
 
         self.fedly = 1
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
