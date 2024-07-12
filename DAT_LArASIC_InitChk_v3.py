@@ -17,7 +17,8 @@ from spymemory_decode import wib_dec
 #print(Back.RED + 'Red background text')
 
 def data_ana(fembs, rawdata, rms_flg=False):
-    wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
+    wibdata = wib_dec(rawdata,fembs, spy_num=5, cd0cd1sync=False)[0]
+    
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
     chns =[]
@@ -34,6 +35,13 @@ def data_ana(fembs, rawdata, rms_flg=False):
     npos64=0
     for achn in range(len(datd)):
         chndata = datd[achn]
+        import matplotlib.pyplot as plt
+        for x in range(4):
+            plt.plot(chndata[x*512+13:(x+1)*512+13])
+        plt.show()
+        plt.close()
+        exit()
+
         amax = np.max(chndata[300:-150])
         amin = np.min(chndata[300:-150])
         if achn==0:
@@ -234,8 +242,9 @@ def dat_larasic_initchk(fdir="/."):
             return QCstatus, sorted(bads)
         else:
             return "PASS", []
-if False:
-    fdir = "./tmp_data/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+
+if __name__=="__main__":
+    fdir = "C:/DAT_LArASIC_QC/Tested/B010T0001/Time_20240710105218_DUT_0000_1001_2002_3003_4004_5005_6006_7007/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
     QCstatus, bads = dat_larasic_initchk(fdir)
     print (QCstatus)
     print (bads)

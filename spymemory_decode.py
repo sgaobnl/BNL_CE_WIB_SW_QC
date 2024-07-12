@@ -324,7 +324,7 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
             else:
                 femb3 = None
     
-            wibdata.append([femb0, femb1, femb2, femb3, t0max])
+            wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, None])
         return wibdata
 
 
