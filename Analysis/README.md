@@ -286,7 +286,7 @@ This README file will include all informations about the scripts like: <br/>
 ```
 
 * **QC_CALIBRATION**:
-    * **ASICDAC_CALI :** the output of this script is the amplitude of the positive peak = (max - pedestal). Do we need the negative peak ?
+    * **ASICDAC_CALI :** the output of this script is the amplitude of the positive peak = (max - pedestal).
     ```json
     {
         "logs":{
@@ -299,16 +299,231 @@ This README file will include all informations about the scripts like: <br/>
         }
         ,
         "SNC0": {
-            "CH0" : [[dac_values], [pospeaks_values]],
-            "CH1" : [[dac_values], [pospeaks_values]],
-            ....,
-            "CH15" : [[dac_values], [pospeaks_values]],
+            "CH0": [
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1": [
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ]
         },
         "SNC1": {
-            "CH0" : [[dac_values], [pospeaks_values]],
-            "CH1" : [[dac_values], [pospeaks_values]],
-            ....,
-            "CH15" : [[dac_values], [pospeaks_values]],
+            "CH0": [
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1": [
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": 0,
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ]
+        }
+    }
+    ```
+    * **DATDAC_CALI :** decodes the DATDAC and DIRECT pulse calibration data
+    ```json
+    {
+        "logs":{
+            "date": "",
+            "testsite": "",
+            "env": "",
+            "note": "",
+            "DAT_SN": "",
+            "WIB_slot": ""
+        },
+        "SNC0": {
+            "CH0" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            ...
+        },
+        "SNC1": {
+            "CH0" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            ...
+        }
+    }
+    ```
+
+* **QC_Cap_Meas**
+    ```json
+    {
+        "CALI": {
+            "FECHN00" : {
+                "0600mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                },
+                "1400mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                }
+            },
+            "FECHN01" : {
+                "0600mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                },
+                "1400mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                }
+            },
+            ...
+        },
+        "INPUT": {
+            "FECHN00" : {
+                "1400mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                },
+                "1550mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                }
+            },
+            "FECHN00" : {
+                "1400mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                },
+                "1550mV": {
+                    "ppeak": 0,
+                    "npeak": 0,
+                    "pedestal": 0,
+                    "rms": 0
+                }
+            },
+            ...
         }
     }
     ```
