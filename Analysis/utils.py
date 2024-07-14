@@ -10,19 +10,21 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-# from scipy import fft
-
+from scipy.signal import find_peaks
+sys.path.append('../')
+from spymemory_decode import wib_dec
+sys.path.append('./Analysis')
 #_________Import the CPP module_____________
-system_info = platform.system()
-if system_info=='Linux':
-    # print('IN')
-    sys.path.append('./decode')
-    from dunedaq_decode import wib_dec
-    sys.path.append('../')
-elif system_info=='Windows':
-    sys.path.append('../build')
-    from dunedaq_decode import wib_dec
-    sys.path.append('../Analysis')
+# system_info = platform.system()
+# if system_info=='Linux':
+#     # print('IN')
+#     sys.path.append('./decode')
+#     from dunedaq_decode import wib_dec
+#     sys.path.append('../')
+# elif system_info=='Windows':
+#     sys.path.append('../build')
+#     from dunedaq_decode import wib_dec
+#     sys.path.append('../Analysis')
 #______________xx______xx__________________
 
 def printTestItems(testItems: dict):
@@ -93,9 +95,11 @@ def createDirs(logs_dict: dict, output_dir: str):
             pass
     
 
-def decodeRawData(fembs, rawdata, needTimeStamps=False):
+def decodeRawData_(fembs, rawdata, needTimeStamps=False):
     wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
     tmpdata = [wibdata[fembs[0]]][0] # data of the 128 channels for the 8 chips
+    # print(len(wibdata))
+    # tmpdata = wibdata[1][0]
     # split data of the 8 chips:
     ## 1 ASIC: 16 channels
     data = []
@@ -112,6 +116,64 @@ def decodeRawData(fembs, rawdata, needTimeStamps=False):
         return data, tmstamps, cd_tmstamps
     else:
         return data
+
+def organizeWibdata(wibdata: list):
+    ## 1 ASIC: 16 channels
+    data = []
+    iichn = 0
+    for nchip in range(8):
+        onechipData = []
+        for ichn in range(16):
+            onechipData.append(list(wibdata[0][iichn]))
+            iichn += 1
+        data.append(onechipData)
+    return data
+
+def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500):
+    tmpwibdata = wib_dec(rawdata, fembs, spy_num=5, cd0cd1sync=False)
+    #-----------------------------------------------------------------------------
+    dat_tmts_l = []
+    dat_tmts_h = []
+    for wibdata in tmpwibdata:
+        dat_tmts_l.append(wibdata[5][fembs[0]*2][0]) #LSB of timestamp = 16ns
+        dat_tmts_h.append(wibdata[5][fembs[0]*2+1][0])
+
+    # period = 500
+    dat_tmtsl_oft = (np.array(dat_tmts_l)//32)%period #ADC sample rate = 16ns*32 = 512ns
+    dat_tmtsh_oft = (np.array(dat_tmts_h)//32)%period #ADC sample rate = 16ns*32 = 512ns
+
+    #for achn in range(len(datd)):
+    all_data = []
+    # print ("concatenate spy buffers according to timestamp")
+    for achn in range(128):
+        conchndata = np.array([])
+
+        for i in range(len(tmpwibdata)):
+            if achn<64:
+                oft = dat_tmtsl_oft[i]
+            else:
+                oft = dat_tmtsh_oft[i]
+
+            wibdata = tmpwibdata[i]
+            datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+            # print('number of chn = ', len(datd))
+            chndata = datd[achn] 
+            lench = len(chndata)
+            tmp = period-oft
+            # conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
+            # print(tmp, ' ---- ', ((lench-tmp)//period)*period + tmp)
+            conchndata = np.concatenate((conchndata, chndata[tmp : ((lench-tmp)//period)*period + tmp]))
+        all_data.append(conchndata)
+
+    data = []
+    iichn = 0
+    for nchip in range(8):
+        onechipData = []
+        for ichn in range(16):
+            onechipData.append(list(all_data[iichn]))
+            iichn += 1
+        data.append(onechipData)
+    return data
 
 def getMaxAmpIndices(oneCHdata: list):
     index_list = []
@@ -140,92 +202,70 @@ def getMaxAmpIndices(oneCHdata: list):
             index_list.append(int(mean_imax))
     return index_list
 
-def getpedestal_rms(oneCHdata: list, pureNoise=False):
+def getMinAmpIndices(data: list):
+    index_list = []
+    mindata = np.min(data)
+    imin_np = np.where(np.array(data) <= (mindata+0.2*mindata))[0]
+    new_list = [False]
+    for ii in range(1, len(imin_np)):
+        if imin_np[ii]==imin_np[ii-1]+1:
+            new_list.append(True)
+        else:
+            new_list.append(False)
+    # print(imin_np)
+    # print(new_list)
+    diff = np.where(np.array(new_list)==False)[0]
+    s = []
+    for i in range(len(diff)-1):
+        s.append(new_list[diff[i]: diff[i+1]])
+    s.append(new_list[diff[-1]:])
+    indices = []
+    for i in range(len(diff)):
+        indices.append([])
+        for ii in range(len(s[i])):
+            if ii==0:
+                indices[i].append(diff[i])
+            else:
+                indices[i].append(indices[i][ii-1]+1)
+    # print(indices)
+    imin_list = []
+    for i in range(len(indices)):
+        tmp = data[indices[i][0] : indices[i][-1]]
+        # print(np.min(tmp))
+        imin = np.where(tmp==np.min(tmp))[0][0]
+        # print(imin)
+        # print('--')
+        imin_list.append(imin_np[indices[i][imin]])
+    # print(imin_list)
+    return imin_list
+
+def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
     '''
     pktime : 2us
     sampling: every 500ns (clock) --> 1 bin (time) = 500ns
     --> number of samples (point) from the pedestal to the peak : 4 samples
     ===> take data 10 samples before the peak (5 + some ~margins)
     '''
-    data = np.array(oneCHdata[:2050])
-    ped, rms = 0., 0.
-    if not pureNoise:
-        imax = np.where(data==np.max(data))[0][0]
-        iend = imax - 20
-        istart = iend-100
-        if istart<0:
-            istart = 0
-        ped0, rms0 = 0, 0
-        if len(data[istart : iend])==0:
-            if imax+150 < 2050:
-                istart = imax+20
-                iend = istart+100
-                ped0 = np.mean(data[istart : iend])
-                rms0 = np.std(data[istart : iend])
-        else:
-            ped0 = np.mean(data[istart : iend])
-            rms0 = np.std(data[istart : iend])
-        
-        istart = imax + 20
-        iend = istart + 100
-        if iend > 2050:
-            iend = 2050
-        ped1 = np.mean(data[istart : iend])
-        rms1 = np.std(data[istart : iend])
-        ped = ped0
-        rms = rms0
-        if ped0 > ped1:
-            ped = ped1
-            rms = rms1
+    ped, rms = 0.0, 0.0
+    if pureNoise:
+        ped = np.round(np.mean(oneCHdata), 4)
+        rms = np.round(np.std(oneCHdata), 4)
     else:
-        ped = np.round(np.mean(data), 4)
-        rms = np.round(np.std(data), 4)
+        posmax, pheights = find_peaks(x=oneCHdata, height=0.5*np.max(oneCHdata))
+        N_pulses = len(posmax)
+        if N_pulses>20: # the data does not have any pulse because we sent 20 pulses at max (5 spy buffers)
+            ped = np.round(np.mean(oneCHdata), 4)
+            rms = np.round(np.std(oneCHdata), 4)
+        else:
+            data = np.array([])
+            for i in range(N_pulses):
+                istart = i*period
+                iend = posmax[i]-10
+                if (iend-istart) > 0:
+                    data = np.concatenate((data, oneCHdata[istart : iend]))
+            ped = np.round(np.mean(data), 4)
+            rms = np.round(np.std(data), 4)
     return [ped, rms]
-
-def getpulse_cali(oneCHdata: list, averaged=True, dac=0, timestamps=[]):
-    # chdata = []
-    # print(len(timestamps))
-    # p = np.where(timestamps==timestamps[0])[0]
-    # print(p)
-    # plt.figure()
-    # for i in range(len(p)-1):
-    #     # print(p[i], p[i+1])
-    #     chunkdata = oneCHdata[p[i] : p[i+1]]
-    #     pp = np.where(chunkdata>=0.99*np.max(chunkdata))[0]
-    #     print(pp)
-    #     x = np.array(range(p[i],p[i+1], 1))
-    #     y = x * 0 + np.max(chunkdata)
-    #     # plt.plot(chunkdata[pp[0]-10 : pp[0]+90])
-    #     plt.plot(chunkdata)
-    #     plt.plot(y)
-    #     break
-    # plt.show()
-    # plt.close()
-    # sys.exit()
-    chdata = []
-    for i in range(4):
-        istart = i*500
-        iend = istart + 500
-        chunkdata = oneCHdata[istart : iend]
-        maxpos = int((iend-istart)/2)
-        if dac!=0:
-            maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
-        istart = maxpos-10
-        iend = maxpos+100
-        if istart < 0:
-            istart = 0
-        wf = chunkdata[istart : iend]
-        # chdata.append(np.array(wf))
-        chdata.append(wf)
-    L = [len(d) for d in chdata]
-    imax = np.where(L==np.max(L))[0][0]
-    if imax!=0:
-        chdata[imax].pop(-1)
-    # print(imax, [len(d) for d in chdata])
-    chdata = np.array(chdata)
-    avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
-    return avg_wf
-
 
 #_______BASE_CLASS________________
 class BaseClass:
@@ -261,7 +301,7 @@ class BaseClass:
 
 # Analyze one LArASIC
 class LArASIC_ana:
-    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True):
+    def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True, period=500):
         self.generateQCresult = generateQCresult
         self.generatePlots = generatePlots
         ## chipID : from the logs
@@ -284,6 +324,7 @@ class LArASIC_ana:
                     7: 'DLY_RUN',
                     8: 'Cap_Meas'
                     }
+        self.period = period
 
     def PedestalRMS(self, range_peds=[300, 3000], range_rms=[5,25], isRMSNoise=False):
         '''
@@ -299,7 +340,7 @@ class LArASIC_ana:
         pedestals, result_qc_ped = [], []
         rms, result_qc_rms = [], []
         for ich in range(16):
-            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich], pureNoise=isRMSNoise)
+            [tmpped, tmprms] = getpedestal_rms(oneCHdata=self.data[ich], pureNoise=isRMSNoise, period=self.period)
             bool_ped = True
             bool_rms = True
             if self.generateQCresult:
@@ -349,8 +390,8 @@ class LArASIC_ana:
             plt.savefig('/'.join([self.output_dir, '{}_rms_{}.png'.format(self.Items[self.tms], self.param)]))
             plt.close()
             
-            out_dict['pedestal']['link_to_img'] = '/'.join(['.', '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
-            out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
+            # out_dict['pedestal']['link_to_img'] = '/'.join(['.', '{}_pedestal_{}.png'.format(self.Items[self.tms], self.param)])
+            # out_dict['rms']['link_to_img'] = '/'.join(['.', '{}_rms_{}.png'.format(self.Items[self.tms], self.param)])
         return out_dict
     
     def getpulse(self, pwrcycleN=-1):
@@ -359,58 +400,25 @@ class LArASIC_ana:
         '''
         chipWF = []
         for ich in range(16):
-            if self.tms in [0, 1, 2, 4, 61, 64]:
-                chdata = []
-                for i in range(4):
-                    istart = i*500
-                    iend = istart + 500
-                    chunkdata = self.data[ich][istart : iend]
-                    maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
-                    if self.tms==0:
-                        if 'ASICDAC' in self.param:
-                            istart = maxpos-10
-                            iend = maxpos+80
-                        elif 'DIRECT' in self.param:
-                            istart = maxpos-10
-                            iend = maxpos+200
-                    elif self.tms in [1, 2]:
-                        istart = maxpos-10
-                        iend = maxpos+80
-                    elif self.tms==4:
-                        if pwrcycleN in [2, 4]:
-                            chunkdata = self.data[ich][istart+100 : iend+100]
-                            maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
-                        istart = maxpos-10
-                        iend = maxpos+200
-                    # elif self.tms in [61, 64]:
-                    #     if (chunkdata[maxpos] <= (np.mean(chunkdata)+10*np.std(chunkdata))):
-                    #         maxpos = int((iend-istart)/2)
-                    #     istart = maxpos-20
-                    #     iend = maxpos+100
-                    wf_range = chunkdata[istart : iend]
-                    chdata.append(np.array(wf_range))
-                chdata = np.array(chdata)
-                avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
-                chipWF.append(avg_wf)
+            # if self.tms in [0, 1, 2, 4, 61, 64]:
+            chdata = []
+            N_pulses = len(self.data[ich])//self.period
+            for i in range(N_pulses):
+            # for i in range(4):
+                istart = i*self.period
+                iend = istart + self.period
+                chunkdata = self.data[ich][istart : iend]
+                chdata.append(chunkdata)
+            chdata = np.array(chdata)
+            avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
+            chipWF.append(avg_wf)
         return chipWF
 
-    def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True, pwrcycleN=-1):
-        '''
-            inputs:
-                - range pulse amplitude
-                - pedestals
-            return: {
-                    'pospeak': {'data': [], 'result_qc': [], 'link_to_img': ''},
-                    'negpeak': {'data': [], 'result_qc': [], 'link_to_img': ''},
-                    'waveform_img': ''
-                    }
-        '''
+    def PulseResponse(self, pedestals: list, range_pulseAmp=[9000,16000], isPosPeak=True, pwrcycleN=-1, getWaveform=False):
         ppeaks, result_qc_ppeak = [], []
         npeaks, result_qc_npeak = [], []
         pulseData = self.getpulse(pwrcycleN=pwrcycleN) # get pulses of all channels
         for ich in range(16):
-            # pulseData = getpulse(oneCHdata=self.data[ich], averaged=True)
-            # pulseData = self.avgData[ich]
             pospeak = np.round(np.max(pulseData[ich]) - pedestals[ich], 4)
             negpeak = np.round(pedestals[ich] - np.min(pulseData[ich]), 4)
             if self.generateQCresult:
@@ -434,6 +442,9 @@ class LArASIC_ana:
         out_dict = {'pospeak': {'data': ppeaks},
                     'negpeak': {'data': npeaks}
                    }
+        if getWaveform:
+            out_dict['waveforms'] = pulseData
+            
         if self.generateQCresult:
             out_dict['pospeak']['result_qc'] = result_qc_ppeak
             out_dict['negpeak']['result_qc'] = result_qc_npeak
@@ -457,7 +468,7 @@ class LArASIC_ana:
             plt.grid()
             plt.savefig('/'.join([self.output_dir, '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)]))
             plt.close()
-            out_dict['waveform_img'] = '/'.join(['.', '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
+            # out_dict['waveform_img'] = '/'.join(['.', '{}_pulseResponse_{}.png'.format(self.Items[self.tms], self.param)])
 
             # pulse amplitude
             plt.figure()
@@ -474,15 +485,10 @@ class LArASIC_ana:
             plt.grid()
             plt.savefig('/'.join([self.output_dir, '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)]))
             plt.close()
-            if isPosPeak:
-                out_dict['pospeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
-                out_dict['negpeak']['link_to_img'] = ''
-            else:
-                out_dict['pospeak']['link_to_img'] = ''
-                out_dict['negpeak']['link_to_img'] = '/'.join(['.', '{}_pulseAmplitude_{}.png'.format(self.Items[self.tms], self.param)])
+
         return out_dict
     
-    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True, getPulseResponse=True, isRMSNoise=False, pwrcylceN=-1):
+    def runAnalysis(self, range_peds=[300, 3000], range_rms=[5,25], range_pulseAmp=[9000,16000], isPosPeak=True, getPulseResponse=True, isRMSNoise=False, pwrcylceN=-1, getWaveforms=False):
         '''
             inputs:
                 ** range_peds: range pedestal
@@ -495,7 +501,7 @@ class LArASIC_ana:
         pedrms = self.PedestalRMS(range_peds=range_peds, range_rms=range_rms, isRMSNoise=isRMSNoise)
         out_dict['pedrms'] = pedrms
         if getPulseResponse:
-            pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp, pwrcycleN=pwrcylceN)
+            pulseResponse = self.PulseResponse(pedestals=pedrms['pedestal']['data'], isPosPeak=isPosPeak, range_pulseAmp=range_pulseAmp, pwrcycleN=pwrcylceN, getWaveform=getWaveforms)
             out_dict['pulseResponse'] = pulseResponse
         # return {"pedrms": pedrms, "pulseResponse": pulseResponse}
         return out_dict
