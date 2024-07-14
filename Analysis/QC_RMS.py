@@ -14,6 +14,7 @@ class RMS(BaseClass):
         printItem("FE noise measurement")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_RMS.bin', tms=5)
         self.CFG_datasheet = self.getCFGs()
+        self.period = 500
     
     def decodeCFG(self, config: str):
         cfg_split = config.split('_')
@@ -46,12 +47,12 @@ class RMS(BaseClass):
         fembs = self.raw_data[config][0]
         raw_data = self.raw_data[config][1]
         cfg_info = self.raw_data[config][2]
-        decodedRMS = decodeRawData(fembs=fembs, rawdata=raw_data)
+        decodedRMS = decodeRawData(fembs=fembs, rawdata=raw_data, period=self.period)
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            larasic = LArASIC_ana(dataASIC=decodedRMS[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=config, generatePlots=False, generateQCresult=False)
-            pedrms = larasic.runAnalysis(getPulseResponse=False, isRMSNoise=True)
+            larasic = LArASIC_ana(dataASIC=decodedRMS[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=config, generatePlots=False, generateQCresult=False, period=self.period)
+            pedrms = larasic.runAnalysis(getPulseResponse=True, isRMSNoise=True)
             out_dict[FE_ID][config] = {
                 'pedestal': pedrms['pedrms']['pedestal']['data'],
                 'rms': pedrms['pedrms']['rms']['data']
