@@ -6,7 +6,7 @@
 
 import os, sys
 import numpy as np
-from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, BaseClass, getMaxAmpIndices
+from utils import printItem, dumpJson, decodeRawData, BaseClass, LArASIC_ana
 import matplotlib.pyplot as plt
 
 class QC_DLY_RUN(BaseClass):
@@ -15,6 +15,7 @@ class QC_DLY_RUN(BaseClass):
         self.generateWf = generateWf
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=7, QC_filename="QC_DLY_RUN.bin", generateWaveForm=self.generateWf)
         self.suffixName = "DLY_RUN"
+        self.period = 1000
     
     def getPhase_Period(self):
         Phase_Period = dict()
@@ -30,61 +31,16 @@ class QC_DLY_RUN(BaseClass):
         newdata = []
         for ichip in range(8):
             onechipdata = data_in[ichip]
+            FE_ID = self.logs_dict['FE{}'.format(ichip)]
+            larasic = LArASIC_ana(dataASIC=onechipdata, output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param='', generatePlots=False, generateQCresult=False, period=self.period)
+            tmpdata = larasic.runAnalysis(getPulseResponse=True, isRMSNoise=False, getWaveforms=True)
             newchipdata = {}
-            width = 500
             for chn in range(16):
-                newchipdata['CH{}'.format(chn)] = {'wf': [], 'pedestal': 0, 'rms': 0}
-                pedestal = 0
-                rms = 0
-                chdata = np.array(onechipdata[chn])
-                period = 1000
-                newchdata = []
-                num_samples = 3
-                for i in range(num_samples):
-                    istart = i*period
-                    iend = istart + period
-                    chunkdata = chdata[istart : iend]
-                    if i==0:
-                        pedestal = np.mean(chunkdata[:100])
-                        rms = np.std(chunkdata[:100])
-                    # maxpos = int((iend-istart)/2 - 50)
-                    # if dac!='4':
-                        # print(np.max(chunkdata))
-                    maxpos = np.where(chunkdata==np.max(chunkdata))[0][0]
-                    istart = maxpos-10
-                    iend = maxpos+250
-                    if istart < 0:
-                        istart = 0
-                    wf = chunkdata[istart : iend]
-                    if len(wf)!=0:
-                        newchdata.append(list(wf))
-                L = [len(d) for d in newchdata]
-                # print(L)
-                imax = np.where(L==np.median(L))[0][0]
-                if imax!=0:
-                    newchdata[imax].pop(-1)
-                sameLength = False
-                while not sameLength:
-                    pos = [i for i in range(len(L)) if L[i]!=L[imax]]
-
-                    for k in pos:
-                        if k==len(newchdata):
-                            newchdata.pop(-1)
-                        else:
-                            newchdata.pop(k)
-                    LL = [len(d) for d in newchdata]
-                    # print(LL)
-                    if len(LL)==1:
-                        sameLength = True
-                    else:
-                        pos = [i for i in range(len(LL)) if LL[i]!=LL[imax]]
-                        if len(pos)==0:
-                            sameLength = True
-                newchdata = np.array(newchdata)
-                avg_wf = np.average(np.transpose(newchdata), axis=1, keepdims=False)
-                newchipdata['CH{}'.format(chn)]['wf'] = avg_wf
-                newchipdata['CH{}'.format(chn)]['pedestal'] = pedestal
-                newchipdata['CH{}'.format(chn)]['rms'] = rms
+                newchipdata['CH{}'.format(chn)] = {
+                                                    'wf': tmpdata['pulseResponse']['waveforms'][chn], 
+                                                    'pedestal': tmpdata['pedrms']['pedestal']['data'][chn], 
+                                                    'rms': tmpdata['pedrms']['rms']['data'][chn]
+                                                }
             newdata.append(newchipdata)
         return newdata
 
@@ -97,7 +53,7 @@ class QC_DLY_RUN(BaseClass):
             fembs = __rawdata[0]
             rawdata = __rawdata[1]
             # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata, needTimeStamps=False)
-            data = self.avgWf(data_in=decodeRawData(fembs=fembs, rawdata=rawdata, needTimeStamps=False))
+            data = self.avgWf(data_in=decodeRawData(fembs=fembs, rawdata=rawdata, needTimeStamps=False, period=self.period))
             decodedData[param] = {'data': data, 'phase': Phase_Period[param]['phase'], 'period': Phase_Period[param]['period']}
         return decodedData
     
