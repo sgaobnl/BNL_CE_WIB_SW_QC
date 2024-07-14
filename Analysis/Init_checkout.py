@@ -90,10 +90,15 @@ class QC_INIT_CHECK(BaseClass):
 
     def QC_CHK(self, range_peds=[300,3000], range_rms=[5,25], range_pulseAmp=[7000,10000], isPosPeak=True, param='ASICDAC_CALI_CHK', generateQCresult=False, generatePlots=False):
         # printItem(item=param)
+        period = 500
+        if 'ASICDAC' in param:
+            period = 500
+        elif 'DIRECT' in param:
+            period = 512
         print("Item : {}".format(param))
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
-        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
+        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata, period=period)
         # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata)
         # wibdata = decodedData['wf']
         # avg_wibdata = decodedData['avg_wf']
@@ -102,7 +107,7 @@ class QC_INIT_CHECK(BaseClass):
         for ichip in range(8):
             chipID = self.logs_dict['FE{}'.format(ichip)]
             output_FE = self.FE_outputDIRs[chipID]
-            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots)
+            asic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=output_FE, chipID=chipID, param=param, tms=self.tms, generateQCresult=generateQCresult, generatePlots=generatePlots, period=period)
             data_asic = asic.runAnalysis(range_peds=range_peds, range_rms=range_rms, range_pulseAmp=range_pulseAmp, isPosPeak=isPosPeak)
             out_dict[chipID] = data_asic
         return {param: out_dict}
@@ -125,6 +130,7 @@ class QC_INIT_CHECK(BaseClass):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param] = FE_pwr_dict[param][FE_ID]
             elif (param=='ASICDAC_CALI_CHK') or (param=='DIRECT_PLS_CHK'):
+            # elif param=='DIRECT_PLS_CHK':
                 if generateQCresult:
                     range_peds = in_params[param]['pedestal']
                     range_rms = in_params[param]['rms']
@@ -148,12 +154,14 @@ class QC_INIT_CHECK(BaseClass):
 
 if __name__ == '__main__':
     root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007/'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     # root_path = 'D:/DAT_LArASIC_QC/Tested'
 
     qc_selection = json.load(open("qc_selection.json"))
-    print(qc_selection)
+    # print(qc_selection)
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
-    for data_dir in list_data_dir:
-        init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
+    for i, data_dir in enumerate(list_data_dir):
+        # if i==0:
+            init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
+            init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
