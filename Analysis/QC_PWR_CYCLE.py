@@ -12,6 +12,7 @@ class PWR_CYCLE(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
         printItem('FE power cycling')
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_PWR_CYCLE.bin', tms=4)
+        self.period = 500
 
     def decode_pwrCons(self, pwrCons_data: dict):
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
@@ -38,7 +39,7 @@ class PWR_CYCLE(BaseClass):
         pwrcycleN = int(pwr_cycle_N.split('_')[1])
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=True, generateQCresult=False)
+            larasic = LArASIC_ana(dataASIC=decoded_wf[ichip], output_dir=self.FE_outputDIRs[FE_ID], chipID=FE_ID, tms=self.tms, param=pwr_cycle_N, generatePlots=False, generateQCresult=False, period=self.period)
             data_asic = larasic.runAnalysis(pwrcylceN=pwrcycleN)
             tmp_out = {
                 'pedestal': data_asic['pedrms']['pedestal']['data'],
@@ -65,7 +66,7 @@ class PWR_CYCLE(BaseClass):
             for key in pwr[FE_ID].keys():
                 PwrCycle_data[FE_ID][pwr_cycle_N][key] = pwr[FE_ID][key]
         # decoding waveform
-        decoded_wf = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
+        decoded_wf = decodeRawData(fembs=fembs, rawdata=rawdata_wf, period=self.period)
         # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
         # wibdata = decodedData['wf']
         # avg_wibdata = decodedData['avg_wf']
@@ -106,6 +107,6 @@ if __name__ == '__main__':
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for i, data_dir in enumerate(list_data_dir):
-        if i==2:
+        # if i==0:
             pwr_c = PWR_CYCLE(root_path=root_path, data_dir=data_dir, output_path=output_path)
             pwr_c.decode_PwrCycle()
