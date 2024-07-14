@@ -15,6 +15,7 @@ class QC_CHKRES(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
         printItem("FE response measurement")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=2, QC_filename='QC_CHKRES.bin')
+        self.period = 500
 
     def __getConfig_dict(self, list_params: list):
         '''
@@ -81,13 +82,13 @@ class QC_CHKRES(BaseClass):
         fe_cfg = self.raw_data[config][3]
         # OUTPUT DICTIONARY
         out_dict = dict()
-        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata)
+        wibdata = decodeRawData(fembs=fembs, rawdata=rawdata, period=self.period)
         # wibdata = decodedData['wf']
         # avg_wibdata = decodedData['avg_wf']
         for ichip in range(8):
             ASIC_ID = self.logs_dict['FE{}'.format(ichip)]
             out_dict[ASIC_ID] = dict()
-            larasic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=self.FE_outputDIRs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=True)
+            larasic = LArASIC_ana(dataASIC=wibdata[ichip], output_dir=self.FE_outputDIRs[ASIC_ID], chipID=ASIC_ID, tms=self.tms, param=config, generateQCresult=False, generatePlots=False, period=self.period)
             data_asic = larasic.runAnalysis()
             out_dict[ASIC_ID]['pedestal'] = data_asic['pedrms']['pedestal']['data']
             out_dict[ASIC_ID]['rms'] = data_asic['pedrms']['rms']['data']
@@ -132,7 +133,7 @@ if __name__ == "__main__":
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     for i, data_dir in enumerate(list_data_dir):
-        if i==2:
+        # if i==2:
             qc_checkres = QC_CHKRES(root_path=root_path, data_dir=data_dir, output_dir=output_path)
             qc_checkres.decode_CHKRES()
         
