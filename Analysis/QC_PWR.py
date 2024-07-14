@@ -27,6 +27,7 @@ class QC_PWR(BaseClass):
             'SDD0': 'sedcBufOFF',
             'SDD1': 'sedcBufON'
         }
+        self.period = 500
 
     def isParamInRange(self, paramVal=0, rangeParam=[0, 0]):
         flag = True
@@ -135,7 +136,7 @@ class QC_PWR(BaseClass):
             print('configuration : {}'.format(param))
             fembs = self.raw_data[param][0]
             raw_data = self.raw_data[param][1]
-            decodedData = decodeRawData(fembs=fembs, rawdata=raw_data)
+            decodedData = decodeRawData(fembs=fembs, rawdata=raw_data, period=self.period)
             ## decodedData is the decoded data for 8 chips
             ## One can use it if a further analysis on the channel response is needed during the power measurement
             for ichip in range(8):
@@ -144,7 +145,7 @@ class QC_PWR(BaseClass):
                 suffixFilename = '_'.join([self.param_meanings[config['SNC']], self.param_meanings[config['SDD']], self.param_meanings[config['SDF']]])
                 # suffixFilename = '_'.join(tmp_config)
                 chipID = self.logs_dict['FE{}'.format(ichip)]
-                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=True)
+                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=False, period=self.period)
                 data_asic = larasic.runAnalysis()
                 outdata[chipID][suffixFilename] = data_asic
         return outdata
