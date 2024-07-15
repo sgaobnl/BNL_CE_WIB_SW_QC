@@ -40,6 +40,14 @@ This README file will include all informations about the scripts like: <br/>
 * **QC_INIT_CHK**
 ```json
 {
+    "logs": {
+        "date": "",
+        "testsite": "",
+        "env": "",
+        "note": "",
+        "DAT_SN": "",
+        "WIB_slot": ""
+    },
     "WIB_PWR" : {},
     "WIB_LINK" : {},
     "FE_PWRON" : {
@@ -69,6 +77,7 @@ This README file will include all informations about the scripts like: <br/>
         }
     },
     "ADC_PWRON" : {},
+    "CD_PWRON": {},
     "ASICDAC_CALI_CHK" : {
         "CFG_info": [],
         "pedestal": [],
@@ -98,6 +107,14 @@ This README file will include all informations about the scripts like: <br/>
     * **Data format:**
 ```json
 {
+    "logs": {
+        "date": "",
+        "testsite": "",
+        "env": "",
+        "note": "",
+        "DAT_SN": "",
+        "WIB_slot": ""
+    },
     "config0": {
         "CFG_info" : {},
         "V": {
@@ -132,6 +149,38 @@ This README file will include all informations about the scripts like: <br/>
 ```
 **config0, config1, etc.** are of the form `200mV_sedcBufOFF_seBuffON` where `200mV` is the value of `SNC`, `sedcBufOFF` is the value of `SDD`, and `seBufON` is the value of `SDF`
 
+* **QC_FE_MON :**
+```json
+{
+    "BL": {
+        "200mV" : [],
+        "900mV" : []
+    },
+    "VBGR_Temp": {
+        "unit" : "",
+        "VBGR" : 0,
+        "MON_Temper" : 0,
+        "MON_VBGR" : 0
+    },
+    "DAC_meas": {
+        "config0": {
+            "DAC" : [],
+            "data": [],
+            "GAIN" : 0,
+            "unit_of_gain": "mV/bit",
+            "INL" : 0
+        },
+        "config1": {
+            "DAC" : [],
+            "data": [],
+            "GAIN" : 0,
+            "unit_of_gain": "mV/bit",
+            "INL" : 0
+        },
+        ...
+    }
+}
+```
 * **QC_CHKRES**
 ```json
 {
@@ -285,7 +334,7 @@ This README file will include all informations about the scripts like: <br/>
 }
 ```
 
-* **QC_CALIBRATION**:
+* **QC_CALIBRATION**: the class used to decode the raw data is **QC_CALI**
     * **ASICDAC_CALI :** the output of this script is the amplitude of the positive peak = (max - pedestal).
     ```json
     {
@@ -460,6 +509,93 @@ This README file will include all informations about the scripts like: <br/>
     }
     ```
 
+    * **DIRECT_CALI :** decodes the DATDAC and DIRECT pulse calibration data
+    ```json
+    {
+        "logs":{
+            "date": "",
+            "testsite": "",
+            "env": "",
+            "note": "",
+            "DAT_SN": "",
+            "WIB_slot": ""
+        },
+        "SNC0": {
+            "CH0" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            ...
+        },
+        "SNC1": {
+            "CH0" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            "CH1" : [
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                {
+                    "DAC": "",
+                    "pedestal": 0,
+                    "std": 0,
+                    "posAmp": 0,
+                    "negAmp": 0
+                },
+                ...
+            ],
+            ...
+        }
+    }
+    ```
 * **QC_Cap_Meas**
     ```json
     {
@@ -527,3 +663,52 @@ This README file will include all informations about the scripts like: <br/>
         }
     }
     ```
+
+* **QC_DLY_RUN :**
+```json
+{
+    "logs" : {
+        "date" : "",
+        "testsite" : "",
+        "env" : "",
+        "note" : "",
+        "DAT_SN" : "",
+        "WIB_slot" : ""
+    },
+    "Phase0_Period1000": {
+        "phase"  : 0,
+        "period" : 1000,
+        "CH0" : {
+            "pospeak" : 0,
+            "negpeak" : 0,
+            "pedestal" : 0,
+            "rms" : 0
+        },
+        "CH1" : {
+            "pospeak" : 0,
+            "negpeak" : 0,
+            "pedestal" : 0,
+            "rms" : 0
+        },
+        ...
+    },
+    "Phase1_Period1000": {
+        "phase"  : 1,
+        "period" : 1000,
+        "CH0" : {
+            "pospeak" : 0,
+            "negpeak" : 0,
+            "pedestal" : 0,
+            "rms" : 0
+        },
+        "CH1" : {
+            "pospeak" : 0,
+            "negpeak" : 0,
+            "pedestal" : 0,
+            "rms" : 0
+        },
+        ...
+    },
+    ...
+}
+```
