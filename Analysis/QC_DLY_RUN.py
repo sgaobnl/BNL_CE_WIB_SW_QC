@@ -141,10 +141,11 @@ class QC_DLY_RUN(BaseClass):
             self.plotWaveforms(organizedData=organizedData)
 
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    root_path = '../../B010T0004'
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
     for i, data_dir in enumerate(list_data_dir):
         dly_run = QC_DLY_RUN(root_path=root_path, data_dir=data_dir, output_path=output_path, generateWf=True)
         dly_run.run_DLY_RUN()

@@ -151,10 +151,12 @@ class QC_PWR(BaseClass):
         return outdata
 
 if __name__ =='__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    root_path = '../../B010T0004'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
-    qc_selection = json.load(open("qc_selection.json"))
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
+    # qc_selection = json.load(open("qc_selection.json"))
     for data_dir in list_data_dir:
         t0 = datetime.datetime.now()
         print('start time : {}'.format(t0))

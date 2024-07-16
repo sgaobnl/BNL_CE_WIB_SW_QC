@@ -67,9 +67,6 @@ class PWR_CYCLE(BaseClass):
                 PwrCycle_data[FE_ID][pwr_cycle_N][key] = pwr[FE_ID][key]
         # decoding waveform
         decoded_wf = decodeRawData(fembs=fembs, rawdata=rawdata_wf, period=self.period)
-        # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata_wf)
-        # wibdata = decodedData['wf']
-        # avg_wibdata = decodedData['avg_wf']
         #
         chResp = self.decodeWF(decoded_wf=decoded_wf, pwr_cycle_N=pwr_cycle_N)
         for ichip in range(8):
@@ -103,9 +100,11 @@ class PWR_CYCLE(BaseClass):
 
 
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    root_path = '../../B010T0004'
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
     for i, data_dir in enumerate(list_data_dir):
         # if i==0:
             pwr_c = PWR_CYCLE(root_path=root_path, data_dir=data_dir, output_path=output_path)
