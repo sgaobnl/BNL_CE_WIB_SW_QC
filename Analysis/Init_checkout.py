@@ -6,6 +6,7 @@
 import os, sys
 import numpy as np
 import pickle, json
+from datetime import datetime
 from utils import printItem
 from utils import decodeRawData, LArASIC_ana, createDirs, dumpJson, BaseClass
 import matplotlib.pyplot as plt
@@ -99,9 +100,6 @@ class QC_INIT_CHECK(BaseClass):
         fembs = self.raw_data[param][0]
         rawdata = self.raw_data[param][1]
         wibdata = decodeRawData(fembs=fembs, rawdata=rawdata, period=period)
-        # decodedData = decodeRawData(fembs=fembs, rawdata=rawdata)
-        # wibdata = decodedData['wf']
-        # avg_wibdata = decodedData['avg_wf']
         # out_list = []
         out_dict = dict()
         for ichip in range(8):
@@ -119,9 +117,8 @@ class QC_INIT_CHECK(BaseClass):
                             'isPosPeak': True/False
                             }
         '''
-        params = ['ASICDAC_CALI_CHK', 'DIRECT_PLS_CHK', 'FE_PWRON']
         range_peds, range_rms, range_pulseAmp, range_V = [], [], [], []
-        for param in params:
+        for param in self.params:
             if param=="FE_PWRON":
                 if generateQCresult:
                     range_V = in_params[param]['V']
@@ -129,7 +126,8 @@ class QC_INIT_CHECK(BaseClass):
                 for ichip in range(8):
                     FE_ID = self.logs_dict['FE{}'.format(ichip)]
                     self.out_dict[FE_ID][param] = FE_pwr_dict[param][FE_ID]
-            elif (param=='ASICDAC_CALI_CHK') or (param=='DIRECT_PLS_CHK'):
+            # elif (param=='ASICDAC_CALI_CHK') or (param=='DIRECT_PLS_CHK'):
+            elif ('ASIC' in param) or ('DIRECT' in param):
             # elif param=='DIRECT_PLS_CHK':
                 if generateQCresult:
                     range_peds = in_params[param]['pedestal']
@@ -141,27 +139,35 @@ class QC_INIT_CHECK(BaseClass):
                     self.out_dict[FE_ID][param]["CFG_info"] = [] # to be added by Shanshan or Me later
                     self.out_dict[FE_ID][param]['pedestal'] = data_asic_forparam[param][FE_ID]['pedrms']['pedestal']['data']
                     self.out_dict[FE_ID][param]['rms'] = data_asic_forparam[param][FE_ID]['pedrms']['rms']['data']
-                    # self.out_dict[FE_ID][param]['pulseResponse'] = data_asic_forparam[param][FE_ID]['pulseResponse']
                     self.out_dict[FE_ID][param]['pospeak'] = data_asic_forparam[param][FE_ID]['pulseResponse']['pospeak']['data']
                     self.out_dict[FE_ID][param]['negpeak'] = data_asic_forparam[param][FE_ID]['pulseResponse']['negpeak']['data']
-        
-        ## ----- INCLUDE THE ANALYSIS OF OTHER PARAMETERS HERE -----------
 
         ## --- THIS BLOCK SHOULD BE THE LAST PART OF THE METHOD runAnalysis
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
 
+
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
-    # root_path = '../../B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007/'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007'
+    root_path = '../../B010T0004'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     # root_path = 'D:/DAT_LArASIC_QC/Tested'
 
     qc_selection = json.load(open("qc_selection.json"))
     # print(qc_selection)
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')] ### USE THIS LINE FOR OTHER TEST ITEMS AS WELL
     for i, data_dir in enumerate(list_data_dir):
-        # if i==0:
-            init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-            init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
+        printItem(data_dir)
+        #----------------------------
+        t0 = datetime.now()
+        init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
+        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
+        #----------------------------
+        tf = datetime.now()
+        print('end time : {}'.format(tf))
+        deltaT = (tf - t0).total_seconds()
+        print("Decoding time : {} seconds".format(deltaT))
+        print("=xx="*20)
