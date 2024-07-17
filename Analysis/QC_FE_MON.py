@@ -6,28 +6,32 @@
 
 import numpy as np
 import os, sys, pickle
-from utils import printItem, createDirs, dumpJson, linear_fit
+from utils import printItem, createDirs, dumpJson, linear_fit, BaseClass
 import matplotlib.pyplot as plt
 
-class FE_MON:
+class FE_MON(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
         self.tms = 3
-        self.qc_filename = "QC_MON.bin"
         printItem(item="FE monitoring")
-        # read raw data
-        with open('/'.join([root_path, data_dir, self.qc_filename]), 'rb') as f:
-            self.raw_data = pickle.load(f)
-        # get parameters (keys in the raw_data)
-        self.mon_params = [key for key in self.raw_data.keys() if key!='logs']
-        # get logs
-        self.logs_dict = self.raw_data['logs']
-        createDirs(logs_dict=self.logs_dict, output_dir=output_path)
-        self.FE_outputDIRs = ['/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], 'QC_FE_MON']) for ichip in range(8)]
-        for d in self.FE_outputDIRs:
-            try:
-                os.mkdir(d)
-            except OSError:
-                pass
+        super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_MON.bin', tms=self.tms)
+        self.mon_params = self.params
+        # tmpdata_dir = os.listdir('/'.join([root_path, data_dir]))[0]
+        # self.qc_filename = "QC_MON.bin"
+        # printItem(item="FE monitoring")
+        # # read raw data
+        # with open('/'.join([root_path, data_dir, tmpdata_dir, self.qc_filename]), 'rb') as f:
+        #     self.raw_data = pickle.load(f)
+        # # get parameters (keys in the raw_data)
+        # self.mon_params = [key for key in self.raw_data.keys() if key!='logs']
+        # # get logs
+        # self.logs_dict = self.raw_data['logs']
+        # createDirs(logs_dict=self.logs_dict, output_dir=output_path)
+        # self.FE_outputDIRs = ['/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], 'QC_FE_MON']) for ichip in range(8)]
+        # for d in self.FE_outputDIRs:
+        #     try:
+        #         os.mkdir(d)
+        #     except OSError:
+        #         pass
 
     def getBaselines(self):
         '''
@@ -161,6 +165,14 @@ class FE_MON:
         return OUT_dict
     
     def decodeFE_MON(self):
+        logs = {
+            "date": self.logs_dict['date'],
+            "testsite": self.logs_dict['testsite'],
+            "env": self.logs_dict['env'],
+            "note": self.logs_dict['note'],
+            "DAT_SN": self.logs_dict['DAT_SN'],
+            "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+        }
         BL = self.getBaselines()
         vbgr_temp = self.getvgbr_temp(unitOutput='mV')
         dac_meas = self.mon_dac()
@@ -173,19 +185,35 @@ class FE_MON:
                 dac_meas_chip[config]['unit_of_gain'] = 'mV/bit'
                 dac_meas_chip[config]['INL'] = np.round(INL,4)*100
             oneChipData = {
+                "logs" : logs,
                 "BL": BL[FE_ID],
                 "VBGR_Temp": vbgr_temp[FE_ID],
                 "DAC_meas": dac_meas_chip
             }
 
-            dumpJson(output_path=self.FE_outputDIRs[ichip], output_name='FE_MON', data_to_dump=oneChipData, indent=4)
+            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='FE_MON', data_to_dump=oneChipData, indent=4)
 
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
 
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
-    for data_dir in list_data_dir:
-        fe_Mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path)
-        fe_Mon.decodeFE_MON()
-        # sys.exit()
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # root_path = '../../B010T0004'
+    root_path='/media/radofana/New Volume'
+    parent_dir = ['/'.join([root_path, d]) for d in os.listdir(root_path) if 'B0' in d]
+    for p in parent_dir:
+        # list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
+        list_data_dir = [dir for dir in os.listdir(p) if (os.path.isdir('/'.join([p, dir]))) and (dir!='images')]
+        for data_dir in list_data_dir:
+            # we expect 13 elements in a folder
+            subfolder = '/'.join([p, data_dir])
+            subsubfolder = os.listdir(subfolder)[0]
+            newsubfolder = '/'.join([subfolder, subsubfolder])
+            lfiles_testItems = os.listdir(newsubfolder)
+            if len(lfiles_testItems)==13:
+                # fe_Mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path)
+                fe_Mon = FE_MON(root_path=p, data_dir=data_dir, output_path=output_path)
+                fe_Mon.decodeFE_MON()
+                # sys.exit()
+            else:
+                print(len(lfiles_testItems))
