@@ -85,13 +85,15 @@ This README file will include all informations about the scripts like: <br/>
         "pospeak": [],
         "negpeak": []
     },
+    ...,
     "DIRECT_PLS_CHK" : {
         "CFG_info": [],
         "pedestal": [],
         "rms": [],
         "pospeak": [],
         "negpeak": []
-    }
+    },
+    ....
 }
 ```
 
