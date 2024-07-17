@@ -199,12 +199,17 @@ class QC_CALI(BaseClass):
                     plt.figure()
                     for idac, DAC in enumerate(onechipData[BL]['CH{}'.format(chn)]['DAC']):
                         dacdata = onechipData[BL]['CH{}'.format(chn)]['CH'][idac]
+                        # plt.plot(dacdata, label='DAC {}'.format(DAC))
                         width = 20
-                        pospeak, h = find_peaks(x=dacdata, height=np.max(dacdata))
-                        if idac==0:
-                            plt.plot(dacdata[:width], label='DAC {}'.format(DAC))
+                        # pospeak, h = find_peaks(x=dacdata, height=np.max(dacdata))
+                        pospeak = np.argmax(dacdata)
+                        if pospeak-10 < 0:
+                            front = dacdata[-100 : ]
+                            back = dacdata[ : -100]
+                            dacdata = np.concatenate((front, back))
+                            plt.plot(dacdata[pospeak-6 : pospeak+width], label='DAC {}'.format(DAC))
                         else:
-                            plt.plot(dacdata[ pospeak[0]-5 : pospeak[0]+10], label='DAC {}'.format(DAC))
+                            plt.plot(dacdata[pospeak-6 :pospeak+width], label='DAC {}'.format(DAC))
                     plt.legend()
                     plt.savefig('/'.join([self.FE_outputPlots_DIRs[FE_ID], 'CALI_{}_wf_{}_chn{}.png'.format(self.suffixName, BL, chn)]))
                     plt.close()
@@ -216,15 +221,18 @@ class QC_CALI(BaseClass):
         self.getAmplitudes(organizedData=organizedData)
 
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
 
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    root_path = '../../B010T0004'
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
     for i, data_dir in enumerate(list_data_dir):
-        # if i==2:
+        # if '20240703163752' in data_dir:
             asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
             asicdac.runASICDAC_cali(saveWfData=False)
-            if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir])):
+            subdir = os.listdir('/'.join([root_path, data_dir]))[0]
+            if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir, subdir])):
                 asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
                 asic47dac.runASICDAC_cali(saveWfData=False)
             datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=True)
