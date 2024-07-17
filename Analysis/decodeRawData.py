@@ -27,7 +27,7 @@ if __name__ == '__main__':
         #-----------------------------
         # Initialization checkout
         init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.decode_INIT_CHK(generateQCresult=False, generatePlots=False)
+        init_chk.decode_INIT_CHK(generateQCresult=False, generatePlots=True)
         # Power consumption measurement
         qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
         qc_pwr.decode_FE_PWR()
@@ -44,22 +44,22 @@ if __name__ == '__main__':
         rms = RMS(root_path=root_path, data_dir=data_dir, output_path=output_path)
         rms.decodeRMS()
         # ASICDAC Calibration
-        asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=False)
+        asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
         asicdac.runASICDAC_cali(saveWfData=False)
         if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir])):
-            asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=False)
+            asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
             asic47dac.runASICDAC_cali(saveWfData=False)
-        datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=False)
+        datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=True)
         datdac.runASICDAC_cali(saveWfData=False)
-        direct_cali = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=63, QC_filename='QC_CALI_DIRECT.bin', generateWf=False)
+        direct_cali = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=63, QC_filename='QC_CALI_DIRECT.bin', generateWf=True)
         direct_cali.runASICDAC_cali(saveWfData=False)
         #
         # DELAY RUN
-        dly_run = QC_DLY_RUN(root_path=root_path, data_dir=data_dir, output_path=output_path, generateWf=False)
+        dly_run = QC_DLY_RUN(root_path=root_path, data_dir=data_dir, output_path=output_path, generateWf=True)
         dly_run.run_DLY_RUN()
         #
         # Capacitance measurement
-        cap = QC_Cap_Meas(root_path=root_path, data_dir=data_dir, output_path=output_path, generateWf=False)
+        cap = QC_Cap_Meas(root_path=root_path, data_dir=data_dir, output_path=output_path, generateWf=True)
         decodedData = cap.decode()
         cap.saveData(decodedData=decodedData)
         #----------------------------
