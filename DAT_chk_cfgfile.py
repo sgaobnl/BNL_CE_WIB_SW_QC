@@ -17,8 +17,8 @@ import argparse
 #Black = '\033[90m'
 #Default = '\033[99m'
 
-from colorama import just_fix_windows_console
-just_fix_windows_console()
+import colorama
+
 
 #def dat_chk_cfgfile(froot = "./tmp_data/" ):
 def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):

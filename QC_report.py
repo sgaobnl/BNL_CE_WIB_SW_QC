@@ -24,11 +24,8 @@ import QC_components.All_Report as a_repo
 class QC_reports:
 
     def __init__(self, fdir, fembs=[]):
-        savedir = newpath.report_dir_RTQC
-        #self.datadir = "./tmp_data/"+fdir+"/"
-        self.datadir = newpath.data_dir_RTQC + fdir + "/"
-#            savedir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_reports/QC/"+fdir+"/"
-#            self.datadir = "/nfs/hothstor1/towibs/tmp/FEMB_QC_data/QC/"+fdir+"/"
+        savedir = 'E:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
+        self.datadir = fdir + "/"
         self.report_source_doc = 0
         fp = self.datadir+"logs_env.bin"
         with open(fp, 'rb') as fn:
@@ -55,24 +52,15 @@ class QC_reports:
         print("Will analyze the following fembs: ", self.fembs)
         ##### create results dir for each FEMB #####
         for ifemb in self.fembs:
-            # self.fembsID[f'femb{ifemb}'] = self.fembsName[f'femb{ifemb}'][1:]
             fembid = self.fembsID[f'femb{ifemb}']
             fembName = self.fembsName[f'femb{ifemb}']
             one_savedir = savedir+"FEMB{}_{}_{}".format(fembName, logs["env"], logs["toytpc"])
-            n=1
-            while (os.path.exists(one_savedir)):
-                if n==1:
-                    one_savedir = one_savedir + "_R{:03d}".format(n)
-                else:
-                    one_savedir = one_savedir[:-3] + "{:03d}".format(n)
-                n=n+1
-                if n>20:
-                    raise Exception("There are more than 20 folders...")
-            try:
-                os.makedirs(one_savedir)
-            except OSError:
-                print ("Error to create folder %s"%one_savedir)
-                sys.exit()
+            if not os.path.exists(one_savedir):
+                try:
+                    os.makedirs(one_savedir)
+                except OSError:
+                    print ("Error to create folder %s"%fp)
+                    sys.exit()
             self.savedir[ifemb]=one_savedir+"/"
             fp = self.savedir[ifemb] + "logs_env.bin"
             with open(fp, 'wb') as fn:
@@ -113,11 +101,26 @@ class QC_reports:
         qc = ana_tools()
         self.CreateDIR("PWR_Meas")
         datadir = self.datadir+"PWR_Meas/"
-#     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
-#     SE Power Measurement      Power
-        f_pwr = datadir+"PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+
+        f_pwr = datadir + "QC_PWR_t1.bin"
         with open(f_pwr, 'rb') as fn:
-            pwr_meas = pickle.load(fn)[1]
+            pwr_meas_dict = pickle.load(fn)
+        print(len(pwr_meas_dict))
+        print(type(pwr_meas_dict))
+        keys_list = list(pwr_meas_dict.keys())
+        print(keys_list)
+
+
+#     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
+#     01_11 SE Power Measurement      Power
+
+
+
+        f_pwr = datadir+"PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        # with open(f_pwr, 'rb') as fn:
+            # pwr_meas = pickle.load(fn)[1]
+        pwr_meas = pwr_meas_dict["PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
+        print(pwr_meas)
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_11 SE OFF Power Consumption')
@@ -125,19 +128,21 @@ class QC_reports:
             check1 = dict(log.check_log)
             log.report_log01_11.update(pwr1)
             log.check_log01_11.update(check1)
-
-#     SE Pulse Measurement      Pulse
-        f_pl = datadir+"PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        with open(f_pl, 'rb') as fn:
-             rawdata = pickle.load(fn)[0]
+#     01_12 SE OFF Pulse Measurement      Pulse
+#         f_pl = datadir+"PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
+#         with open(f_pl, 'rb') as fn:
+#              rawdata = pickle.load(fn)[0]
+        rawdata = pwr_meas_dict["PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
+        print(1111111111)
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
         pulse = dict(log.tmp_log)
         pulse_check = dict(log.check_log)
         log.report_log01_12.update(pulse)
         log.check_log01_12.update(pulse_check)
-#     SE Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, datadir, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
+#     01_13 SE OFF Power Rail             Rail
+        monvols = pwr_meas_dict["MON_Regular_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"]
+        a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, monvols, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_13.update(power_rail)
@@ -146,8 +151,9 @@ class QC_reports:
 
 #     SE ON Power Measurement    Power
         f_pwr = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        with open(f_pwr, 'rb') as fn:
-             pwr_meas = pickle.load(fn)[1]
+        pwr_meas = pwr_meas_dict["PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
+        # with open(f_pwr, 'rb') as fn:
+        #      pwr_meas = pickle.load(fn)[1]
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_21 SE ON Power Consumption')
@@ -158,8 +164,9 @@ class QC_reports:
 
 #     SE ON Pulse Measurement      Pulse
         f_pl = datadir+"PWR_SE_ON_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        with open(f_pl, 'rb') as fn:
-             rawdata = pickle.load(fn)[0]
+        rawdata = pwr_meas_dict["PWR_SE_ON_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
+        # with open(f_pl, 'rb') as fn:
+        #      rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_ON_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_22 SE ON Power Pulse')
         pulse = dict(log.tmp_log)
@@ -168,7 +175,8 @@ class QC_reports:
         log.check_log01_22.update(pulse_check)
 
 #     SE ON Power Rail             Rail
-        a_func.monitor_power_rail_analysis("SE_ON", self.fembs, datadir, self.fembsID, '01_23 SE ON Power Rail')
+        monvols = pwr_meas_dict["MON_Regular_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"]
+        a_func.monitor_power_rail_analysis("SE_ON", self.fembs, monvols, self.fembsID, '01_23 SE ON Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_23.update(power_rail)
@@ -177,8 +185,9 @@ class QC_reports:
 
 #     DIFF Power Measurement    Power
         f_pwr = datadir + "PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        with open(f_pwr, 'rb') as fn:
-            pwr_meas = pickle.load(fn)[1]
+        pwr_meas = pwr_meas_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
+        # with open(f_pwr, 'rb') as fn:
+        #     pwr_meas = pickle.load(fn)[1]
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], 'DIFF Power Consumption')
@@ -189,8 +198,9 @@ class QC_reports:
 
 #     DIFF Pulse Measurement      Pulse
         f_pl = datadir + "PWR_DIFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        with open(f_pl, 'rb') as fn:
-            rawdata = pickle.load(fn)[0]
+        rawdata = pwr_meas_dict["PWR_DIFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
+        # with open(f_pl, 'rb') as fn:
+        #     rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", 'DIFF Power Pulse')
         pulse = dict(log.tmp_log)
@@ -199,7 +209,8 @@ class QC_reports:
         log.check_log01_32.update(pulse_check)
 
 #     DIFF Power Rail
-        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", self.fembs, datadir, self.fembsID, 'DIFF Power Rail')
+        monvols = pwr_meas_dict["MON_Regular_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"]
+        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", self.fembs, monvols, self.fembsID, 'DIFF Power Rail')
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_33.update(power_rail)
@@ -245,67 +256,95 @@ class QC_reports:
 # 2     Power cycle test, only in LN2, now can be used in RT and LN2
     def PWR_cycle_report(self):
         log.test_label.append(2)
-        if 'RT' in self.logs['env']:
-            return
+        # if 'RT' in self.logs['env']:
+        #     return
         self.CreateDIR("PWR_Cycle")
         datadir = self.datadir+"PWR_Cycle/"
+
+        f_pwr = datadir + "QC_PWR_Cycle_t2.bin"
+        with open(f_pwr, 'rb') as fn:
+            pwr_cycle_dict = pickle.load(fn)
+        print(len(pwr_cycle_dict))
+        print(type(pwr_cycle_dict))
+        keys_list = list(pwr_cycle_dict.keys())
+        print(keys_list)
+
         qc=ana_tools()
         for i in range(3):
-            f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)
-            with open(f_pwr, 'rb') as fn:
-                 pwr_meas = pickle.load(fn)[1]
-            f_pl = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x20.bin".format(i)
-            with open(f_pl, 'rb') as fn:
-                 rawdata = pickle.load(fn)[0]
+            # f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)
+            # with open(f_pwr, 'rb') as fn:
+            #      pwr_meas = pickle.load(fn)[1]
+            pwr_meas = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][1]
+            # f_pl = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x20.bin".format(i)
+            # with open(f_pl, 'rb') as fn:
+            #      rawdata = pickle.load(fn)[0]
+            rawdata = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][0]
             pldata = qc.data_decode(rawdata, self.fembs)
             for ifemb in self.fembs:
                 fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_pwr_meas".format(i)
                 qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
                 fp = self.savedir[ifemb] + "PWR_Cycle/"
                 qc.GetPeaks(pldata, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us".format(i))
-        f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        with open(f_pwr, 'rb') as fn:
-             pwr_meas = pickle.load(fn)[1]
-        f_pl = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        with open(f_pl, 'rb') as fn:
-             rawdata = pickle.load(fn)[0]
+
+        # f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        # with open(f_pwr, 'rb') as fn:
+        #      pwr_meas = pickle.load(fn)[1]
+        pwr_meas = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
+        # f_pl = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        # with open(f_pl, 'rb') as fn:
+        #      rawdata = pickle.load(fn)[0]
+        rawdata = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
-        f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        with open(f_pwr, 'rb') as fn:
-             pwr_meas = pickle.load(fn)[1]
-        f_pl = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        with open(f_pl, 'rb') as fn:
-             rawdata = pickle.load(fn)[0]
+
+        # f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
+        # with open(f_pwr, 'rb') as fn:
+        #      pwr_meas = pickle.load(fn)[1]
+        pwr_meas = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
+        # f_pl = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"
+        # with open(f_pl, 'rb') as fn:
+        #      rawdata = pickle.load(fn)[0]
+        rawdata = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
-        for ifemb in self.fembs:
-            fdir = self.savedir[ifemb] + "PWR_Cycle/"
-            fembid = int(self.fembsID[f'femb{ifemb}'])
+        # for ifemb in self.fembs:
+        #     fdir = self.savedir[ifemb] + "PWR_Cycle/"
+        #     fembid = int(self.fembsID[f'femb{ifemb}'])
             # self.GEN_PWR_PDF(fdir, fembid)
 
-#     03 04    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail
+#     03
     def LCCHKPULSE(self, fdir):
         log.test_label.append(3) # used as a label for this test item
         self.CreateDIR(fdir)
         datadir = self.datadir+fdir+"/"
+
+        f_pwr = datadir + "QC_femb_leakage_cur_t3.bin"
+        with open(f_pwr, 'rb') as fn:
+            LCCHKPULSE_dict = pickle.load(fn)
+        print(len(LCCHKPULSE_dict))
+        print(type(LCCHKPULSE_dict))
+        keys_list = list(LCCHKPULSE_dict.keys())
+        print(keys_list)
+
         log_dict = log.report_log3
         qc=ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
         dict_list = [log.report_log03_01, log.report_log03_02, log.report_log03_03, log.report_log03_04]
         check_list = [log.check_log03_01, log.check_log03_02, log.check_log03_03, log.check_log03_04]
         i = 0
-        for afile in files:
-            with open(afile, 'rb') as fn:
-                 raw = pickle.load(fn)
+        for afile in LCCHKPULSE_dict.keys():
+            # with open(afile, 'rb') as fn:
+            #      raw = pickle.load(fn)
+            print(afile)
+            raw = LCCHKPULSE_dict[afile]
             rawdata = raw[0]
             pwr_meas = raw[1]
             pldata = qc.data_decode(rawdata, self.fembs)
@@ -365,20 +404,27 @@ class QC_reports:
         log.test_label.append(4)
         self.CreateDIR(fdir)
         datadir = self.datadir+fdir+"/"
+
+        f_pwr = datadir + "femb_chk_pulse_t4.bin"
+        with open(f_pwr, 'rb') as fn:
+            CHKPULSE_dict = pickle.load(fn)
+        print(len(CHKPULSE_dict))
+        print(type(CHKPULSE_dict))
+        keys_list = list(CHKPULSE_dict.keys())
+        print(keys_list)
+
         qc=ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-        # dict_list_SE_200 = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
-        # check_list_SE_200 = [log.check_log04_01, log.check_log04_02, log.check_log04_03, log.check_log04_04]
-        # dict_list_SE_200 = [log.report_log04_01, log.report_log04_02, log.report_log04_03, log.report_log04_04]
-        # check_list_SE_200 = [log.check_log04_01, log.check_log04_02, log.check_log04_03, log.check_log04_04]
-        i = 0
+
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             log.check_log04_01[femb_id]['Result'] = True
 
-        for afile in files:
-            with open(afile, 'rb') as fn:
-                raw = pickle.load(fn)
+        for afile in CHKPULSE_dict.keys():
+            # with open(afile, 'rb') as fn:
+            #     raw = pickle.load(fn)
+            print(afile)
+            raw = CHKPULSE_dict[afile]
             rawdata = raw[0]
             pwr_meas = raw[1]
 # =======================================
@@ -390,9 +436,10 @@ class QC_reports:
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/')
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
+            print(pulse_check)
             for ifemb in range(len(self.fembs)):
                 femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] & pulse_check[femb_id]['Result']
+                log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] and pulse_check[femb_id]["Result"]
                 # plt.figure(figsize=(9, 6))
                 # x = [1, 2, 3, 4]
                 if "SE_200mVBL_4_7mVfC_0_5us" in afile:
@@ -704,14 +751,25 @@ class QC_reports:
         log.test_label.append(5)
         self.CreateDIR("RMS")
         datadir = self.datadir+"RMS/"
+
+        f_pwr = datadir + "QC_femb_rms_t5.bin"
+        with open(f_pwr, 'rb') as fn:
+            femb_rms_dict = pickle.load(fn)
+        print(len(femb_rms_dict))
+        print(type(femb_rms_dict))
+        keys_list = list(femb_rms_dict.keys())
+        print(keys_list)
+
         section_status = True
         check = True
         check_list = []
         datafiles = sorted(glob.glob(datadir+"RMS*.bin"), key=os.path.getmtime)
-        for afile in datafiles:
-            with open(afile, 'rb') as fn:
-                raw = pickle.load(fn)
+        for afile in femb_rms_dict.keys():
+            # with open(afile, 'rb') as fn:
+            #     raw = pickle.load(fn)
             print("analyze file: %s"%afile)
+            print(afile)
+            raw = femb_rms_dict[afile]
             rawdata=raw[0]
             if '\\' in afile:
                 fname = afile.split("\\")[-1][4:-9]
@@ -753,6 +811,13 @@ class QC_reports:
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + "RMS/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
+            print('\n')
+            print('\n')
+            print('\n')
+            print(log.report_log05_tablecell[ifemb])
+            print('\n')
+            print('\n')
+            print('\n')
             log.report_log0500[ifemb]['Result'] = check
             log.report_log0500[ifemb]['Issue List'] = check_list
             log.report_log05_table[femb_id]["Baseline"] = "200 mV | | | | | |"
@@ -961,8 +1026,17 @@ class QC_reports:
         dac_list = range(0,64,1)
         datadir = self.datadir+"CALI1/"
 
+        f_pwr = datadir + "QC_Cali01_t6.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali01_dict = pickle.load(fn)
+        print(len(Cali01_dict))
+        print(type(Cali01_dict))
+        keys_list = list(Cali01_dict.keys())
+        print(keys_list)
+
+
         print("analyze CALI1 200mVBL 14_0mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -970,7 +1044,7 @@ class QC_reports:
         log.check_log0603.update(inl_gain_check)
         dac_list = range(0, 64, 8)
         print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
+        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "4_7mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -978,7 +1052,7 @@ class QC_reports:
         log.check_log0601.update(inl_gain_check)
         #
         print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
+        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -986,7 +1060,7 @@ class QC_reports:
         log.check_log0602.update(inl_gain_check)
         #
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
+        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "25_0mVfC", "2_0us", 0, self.savedir, "CALI1/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -994,7 +1068,7 @@ class QC_reports:
         log.check_log0604.update(inl_gain_check)
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1073,9 +1147,18 @@ class QC_reports:
         qc=ana_tools()
         dac_list = range(0,32,1)
         datadir = self.datadir + "CALI2/"
+
+        f_pwr = datadir + "QC_Cali02_t7.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali02_dict = pickle.load(fn)
+        print(len(Cali02_dict))
+        print(type(Cali02_dict))
+        keys_list = list(Cali02_dict.keys())
+        print(keys_list)
+
         self.CreateDIR("CALI2")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
+        qc.GetGain(self.fembs, self.fembsID, Cali02_dict, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1084,7 +1167,7 @@ class QC_reports:
         dac_list = range(0, 32, 4)
         self.CreateDIR("CALI2_DIFF")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
+        qc.GetGain(self.fembs, self.fembsID, Cali02_dict, self.savedir, "CALI2_DIFF/", "CALI2_DIFF_{}_{}_{}_0x{:02x}", "900mVBL", "14_0mVfC", "2_0us", dac_list)
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI2_DIFF/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1124,8 +1207,17 @@ class QC_reports:
         dac_list = range(0,64,8)
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
+
+        f_pwr = datadir + "QC_Cali03_t8.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali03_dict = pickle.load(fn)
+        print(len(Cali03_dict))
+        print(type(Cali03_dict))
+        keys_list = list(Cali03_dict.keys())
+        print(keys_list)
+
         print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
+        qc.GetGain(self.fembs, self.fembsID, Cali03_dict, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1", "200mVBL", "14_0mVfC", "2_0us", dac_list,20,10)
         qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1136,11 +1228,20 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc=ana_tools()
-        dac_list = range(0,32,8)
+        dac_list = range(0,32,4)
         self.CreateDIR("CALI4")
         datadir = self.datadir+"CALI4/"
+
+        f_pwr = datadir + "QC_Cali04_t9.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali04_dict = pickle.load(fn)
+        print(len(Cali04_dict))
+        print(type(Cali04_dict))
+        keys_list = list(Cali04_dict.keys())
+        print(keys_list)
+
         print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
+        qc.GetGain(self.fembs, self.fembsID, Cali04_dict, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1", "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1159,7 +1260,7 @@ class QC_reports:
         log.test_label.append(10)
         self.CreateDIR("MON_FE")
         datadir = self.datadir+"MON_FE/"
-        fp = datadir+"LArASIC_mon.bin"
+        fp = datadir+"LArASIC_mon_t10.bin"
         with open(fp, 'rb') as fn:
              raw = pickle.load(fn)
         print("analyze file: %s"%fp)
@@ -1195,6 +1296,7 @@ class QC_reports:
             plt.plot(range(8), log.mon_pulse["temperature"][femb_id], marker='o', linestyle='-', alpha=0.7, label = 'temperature')
             plt.xlabel("FEMB Chip", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
+            plt.ylim(0, 1500)
             plt.grid(axis='x')
             plt.legend()
             plt.title("SE OFF 200 mV RMS Distribution", fontsize=12)
@@ -1204,17 +1306,18 @@ class QC_reports:
             plt.plot(range(128), log.mon_pulse["900mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf0')
             plt.xlabel("FEMB Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
+            plt.ylim(0, 1000)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
             plt.legend()
             plt.title("200mVBL_900mVBL_sdf0", fontsize=12)
             plt.subplot(1, 3, 3)
-            x_sticks = range(0, 129, 16)
             plt.plot(range(24), log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf1')
             plt.plot(range(24), log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf1')
             plt.xlabel("Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
-            plt.xticks(x_sticks)
+            plt.ylim(0, 1000)
+            # plt.xticks(np.arange(0, 129, step = 16))
             plt.grid(axis='x')
             plt.legend()
             plt.title("200mVBL_900mVBL_sdf1", fontsize=12)
@@ -1228,7 +1331,7 @@ class QC_reports:
         log.test_label.append(11)
         self.CreateDIR("MON_FE")
         datadir = self.datadir+"MON_FE/"
-        fp = datadir+"LArASIC_mon_DAC.bin"
+        fp = datadir+"LArASIC_mon_DAC_t11.bin"
         with open(fp, 'rb') as fn:
              raw = pickle.load(fn)
         print("analyze file: %s"%fp)
@@ -1254,7 +1357,7 @@ class QC_reports:
         log.test_label.append(12)
         self.CreateDIR("MON_ADC")
         datadir = self.datadir+"MON_ADC/"
-        fp = datadir+"ColdADC_mon.bin"
+        fp = datadir+"ColdADC_mon_t12.bin"
         with open(fp, 'rb') as fn:
              raw = pickle.load(fn)
         print("analyze file: %s"%fp)
@@ -1275,13 +1378,23 @@ class QC_reports:
         dac_list = list(range(125, 325, 25))
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
+
+        f_pwr = datadir + "QC_Cali05_t13.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali05_dict = pickle.load(fn)
+        print(len(Cali05_dict))
+        print(type(Cali05_dict))
+        keys_list = list(Cali05_dict.keys())
+        print(keys_list)
+
         print("analyze CALI5 900mVBL 14_0mVfC External")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
+        qc.GetGain(self.fembs, self.fembsID, Cali05_dict, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
 
         #   Get RMS
-        datafiles = datadir+'CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin'
-        with open(datafiles, 'rb') as fn:
-            raw = pickle.load(fn)
+        # datafiles = datadir+'CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin'
+        # with open(datafiles, 'rb') as fn:
+        #     raw = pickle.load(fn)
+        raw = Cali05_dict['CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin']
         rawdata=raw[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
@@ -1302,12 +1415,23 @@ class QC_reports:
         dac_list = list(range(125, 500, 25))
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
+
+        f_pwr = datadir + "QC_Cali06_t14.bin"
+        with open(f_pwr, 'rb') as fn:
+            Cali06_dict = pickle.load(fn)
+        print(len(Cali06_dict))
+        print(type(Cali06_dict))
+        keys_list = list(Cali06_dict.keys())
+        print(keys_list)
+
         print("analyze CALI6 200mVBL 14_0mVfC External")
-        qc.GetGain(self.fembs, self.fembsID, datadir, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
+        qc.GetGain(self.fembs, self.fembsID, Cali06_dict, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
         #   Get RMS
-        datafiles = datadir+'CALI6_SE_200mVBL_14_0mVfC_2_0us_RMS.bin'
-        with open(datafiles, 'rb') as fn:
-            raw = pickle.load(fn)
+        # datafiles = datadir+'CALI6_SE_200mVBL_14_0mVfC_2_0us_RMS.bin'
+        # with open(datafiles, 'rb') as fn:
+        #     raw = pickle.load(fn)
+
+        raw = Cali06_dict['CALI6_SE_200mVBL_14_0mVfC_2_0us_RMS.bin']
         rawdata=raw[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
@@ -1325,11 +1449,21 @@ class QC_reports:
         log.test_label.append(15)
         self.CreateDIR(fdir)
         datadir = self.datadir+fdir+"/"
+
+        f_pwr = datadir + "QC_femb_adc_sync_pat_t15.bin"
+        with open(f_pwr, 'rb') as fn:
+            QC_t15_dict = pickle.load(fn)
+        print(len(QC_t15_dict))
+        print(type(QC_t15_dict))
+        keys_list = list(QC_t15_dict.keys())
+        print(keys_list)
+
         qc = ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-        for afile in files:
-            with open(afile, 'rb') as fn:
-                raw = pickle.load(fn)
+        for afile in QC_t15_dict.keys():
+            # with open(afile, 'rb') as fn:
+            #     raw = pickle.load(fn)
+            raw = QC_t15_dict[afile]
             #print("analyze file: %s"%afile)
             rawdata = raw[0]
             pwr_meas = raw[1]
@@ -1363,13 +1497,22 @@ class QC_reports:
         log.test_label.append(16)
         self.CreateDIR(fdir)
         datadir = self.datadir+fdir+"/"
+
+        f_pwr = datadir + "QC_femb_test_pattern_pll_t16.bin"
+        with open(f_pwr, 'rb') as fn:
+            QC_femb_test_pattern_pll_dict = pickle.load(fn)
+        print(len(QC_femb_test_pattern_pll_dict))
+        print(type(QC_femb_test_pattern_pll_dict))
+        keys_list = list(QC_femb_test_pattern_pll_dict.keys())
+        print(keys_list)
+
         qc = ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
         check = True
-        for afile in files:
-            with open(afile, 'rb') as fn:
-                raw = pickle.load(fn)
-
+        for afile in QC_femb_test_pattern_pll_dict.keys():
+            # with open(afile, 'rb') as fn:
+            #     raw = pickle.load(fn)
+            raw = QC_femb_test_pattern_pll_dict[afile]
             # =========== analysis ===================
             rmsdata = raw[0]
             fembs = raw[2]

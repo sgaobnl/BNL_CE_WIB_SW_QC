@@ -24,7 +24,7 @@ dac = fp[p+31:-4]
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-fembs = [3]
+fembs = [2]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
 

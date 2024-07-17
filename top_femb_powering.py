@@ -45,6 +45,50 @@ time.sleep(2)
 pwr_meas = chk.get_sensors()
 for key in pwr_meas:
     print (key, ":", pwr_meas[key])
+
+print('\n')
+print('\n')
+
+print(pwr_meas['FEMB0_DC2DC0_I'])
+print(pwr_meas['FEMB0_DC2DC1_I'])
+print(pwr_meas['FEMB0_DC2DC2_I'])
+if 'on' in sys.argv[1]:
+    if (pwr_meas['FEMB0_DC2DC0_I'] > 0.40) or (pwr_meas['FEMB0_DC2DC1_I'] > 0.1) or (pwr_meas['FEMB0_DC2DC1_I'] > 1.5):
+        print("\033[32m" + 'SLOT#0 Power Connection Normal' + "\033[0m")
+    else:
+        print("\033[33m" + 'Warning: SLOT#0 LOSS Power Connection !!!' + "\033[0m")
+
+print(pwr_meas['FEMB1_DC2DC0_I'])
+print(pwr_meas['FEMB1_DC2DC1_I'])
+print(pwr_meas['FEMB1_DC2DC2_I'])
+if 'on' in sys.argv[2]:
+    if (pwr_meas['FEMB1_DC2DC0_I'] > 0.40) or (pwr_meas['FEMB1_DC2DC1_I'] > 0.1) or (pwr_meas['FEMB1_DC2DC1_I'] > 1.5):
+        print("\033[32m" + 'SLOT#1 Power Connection Normal' + "\033[0m")
+    else:
+        print("\033[33m" + 'Warning: SLOT#1 LOSS Power Connection !!!' + "\033[0m")
+
+print(pwr_meas['FEMB2_DC2DC0_I'])
+print(pwr_meas['FEMB2_DC2DC1_I'])
+print(pwr_meas['FEMB2_DC2DC2_I'])
+if 'on' in sys.argv[3]:
+    if (pwr_meas['FEMB2_DC2DC0_I'] > 0.40) or (pwr_meas['FEMB2_DC2DC1_I'] > 0.1) or (pwr_meas['FEMB2_DC2DC1_I'] > 1.5):
+        print("\033[32m" + 'SLOT#2 Power Connection Normal' + "\033[0m")
+    else:
+        print("\033[33m" + 'Warning: SLOT#2 LOSS Power Connection !!!' + "\033[0m")
+
+print(pwr_meas['FEMB3_DC2DC0_I'])
+print(pwr_meas['FEMB3_DC2DC1_I'])
+print(pwr_meas['FEMB3_DC2DC2_I'])
+if 'on' in sys.argv[4]:
+    if (pwr_meas['FEMB3_DC2DC0_I'] > 0.40) or (pwr_meas['FEMB3_DC2DC1_I'] > 0.1) or (pwr_meas['FEMB3_DC2DC1_I'] > 1.5):
+        print("\033[32m" + 'SLOT#3 Power Connection Normal' + "\033[0m")
+    else:
+        print("\033[33m" + 'Warning: SLOT#3 LOSS Power Connection !!!' + "\033[0m")
+
+print('\n')
+print('\n')
+print('\n')
+
 #print (pwr_meas)
 
 #fdir = "D:/debug_data/"

@@ -324,48 +324,48 @@ def final_report(datareport, fembs, fembNo):
 
             if 10 in log.test_label:
                 if check_status10:
-                    Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_10](#item10)' + Item10 + '\n\n')
 
             if 11 in log.test_label:
                 if check_status11:
-                    Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_11](#item11)' + Item11 + '\n\n')
 
             if 12 in log.test_label:
                 if check_status12:
-                    Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_12](#item12)' + Item12 + '\n\n')
             if 13 in log.test_label:
                 if check_status13:
-                    Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_13](#item13)' + Item13 + '\n\n')
             if 14 in log.test_label:
                 if check_status14:
-                    Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_14](#item14)' + Item14 + '\n\n')
 
             if 15 in log.test_label:
                 if check_status15:
-                    Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_15](#item15)' + Item15 + '\n\n')
             if 16 in log.test_label:
                 if check_status15:
-                    Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                    Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
-                    Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                    Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_16](#item16)' + Item16 + '\n\n')
             file.write("------\n")
 

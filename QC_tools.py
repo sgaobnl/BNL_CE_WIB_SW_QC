@@ -255,23 +255,23 @@ class ana_tools:
             apulse2 = allpls2 / npulse
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
-            if dac == 48:
-                # print(len(evtdata))
-                if ich == 70:
-                # print(allpls)
-                    print(evtdata)
-                    print(ich)
-                    print(dac)
-                    plt.figure(figsize=(8, 6))
-                    plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
-                    plt.show()
-
-                if ich == 1:
-                    print(evtdata)
-                    print(ich)
-                    print(dac)
-                    plt.figure(figsize=(8, 6))
-                    plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
+            # if dac == 48:
+            #     # print(len(evtdata))
+            #     if ich == 70:
+            #     # print(allpls)
+            #         print(evtdata)
+            #         print(ich)
+            #         print(dac)
+            #         plt.figure(figsize=(8, 6))
+            #         plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
+            #         plt.show()
+            #
+            #     if ich == 1:
+            #         print(evtdata)
+            #         print(ich)
+            #         print(dac)
+            #         plt.figure(figsize=(8, 6))
+            #         plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
                     # plt.show()
 
 
@@ -738,7 +738,8 @@ class ana_tools:
         return slope_f, INL, linear_dac_max
 
 
-    def GetGain(self, fembs, fembNo, datadir, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+    def GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+        global fname_1
         log.tmp_log.clear()
         log.check_log.clear()
         log.chkflag.clear()
@@ -760,12 +761,12 @@ class ana_tools:
             fname = '{}_{}_{}'.format(snc,sgs,sts)
 
         pk_list = [[],[],[],[]]
-        print(dac_list)
         for dac in dac_list:
-            fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
-            with open(fdata, 'rb') as fn:
-                 raw = pickle.load(fn)
-
+            # fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
+            # with open(fdata, 'rb') as fn:
+            #      raw = pickle.load(fn)
+            key_dict = namepat.format(snc,sgs,sts,dac)+'.bin'
+            raw = Cali_dict[key_dict]
             rawdata = raw[0]
             pwr_meas = raw[1]
             wibdata = self.data_decode(rawdata, fembs)
@@ -822,7 +823,7 @@ class ana_tools:
                 gain_list.append(gain)
                 inl_list.append(inl)
                 line_range_list.append(line_range)
-                if ('vdac' in namepat):
+                if ('vdac' in fname_1):
                     if inl > 0.1:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
@@ -837,17 +838,27 @@ class ana_tools:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
                     if "900mV" in fname_1:
-                        if line_range < 25:
-                            check = False
-                            check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+                        if 'sgp1' in fname_1:
+                            if line_range < 4:
+                                check = False
+                                check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+                        else:
+                            if line_range < 25:
+                                check = False
+                                check_issue.append("ch {} line range issue: {}".format(ch, line_range))
                         if gain > 43:
                             check = False
                             check_issue.append("ch {} Gain issue at 14_0 mVfC: {}".format(ch, line_range))
 
                     elif '200mV' in fname_1:
-                        if line_range < 50:
-                            check = False
-                            check_issue.append("ch {} Line range issue at 4_7 mVfC: {}".format(ch, line_range))
+                        if 'sgp1' in fname_1:
+                            if line_range < 20:
+                                check = False
+                                check_issue.append("ch {} Line range issue lower than 20: {}".format(ch, line_range))
+                        else:
+                            if line_range < 50:
+                                check = False
+                                check_issue.append("ch {} Line range issue lower than 50: {}".format(ch, line_range))
                         if '4_7' in fname_1:
                             if gain > 135:
                                 check = False
@@ -865,9 +876,6 @@ class ana_tools:
                                 check = False
                                 check_issue.append("ch {} Gain issue at 25_0 mVfC: {}".format(ch, line_range))
 
-                        if line_range < 50:
-                            check = False
-                            check_issue.append("ch {} line range issue: {}".format(ch, line_range))
                 # max_dac_list.append(max_dac)
                 plt.plot(dac_np, pk_np[ch])
             log.tmp_log[femb_id]["INL"] = np.max(inl_list)

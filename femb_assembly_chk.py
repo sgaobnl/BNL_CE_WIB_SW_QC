@@ -55,9 +55,9 @@ if save:
     
     ToyTPC_en = input("ToyTPC at FE inputs (Y/N) : ")
     if ("Y" in ToyTPC_en) or ("y" in ToyTPC_en):
-        toytpc = "150 pF"
+        toytpc = "100pF"
     else:
-        toytpc = "0 pF"
+        toytpc = "0pF"
     logs['Toy_TPC']=toytpc
     
     note = input("A short note (<200 letters):")
@@ -66,7 +66,7 @@ if save:
     fembName={}
     fembNo={}
     for i in fembs:
-        fembName['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
+        fembName['femb{}'.format(i)]=input("FEMB{}ID:".format(i)).strip()
         fembNo['femb{}'.format(i)]=fembName['femb{}'.format(i)][1:]
     logs['FEMB ID'] = fembName
     #logs['femb id']=fembNo

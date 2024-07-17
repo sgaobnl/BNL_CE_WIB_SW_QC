@@ -301,7 +301,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def wib_mon_switches(self, dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=0, inj_cal_pulse=0):
         reg_value = (dac0_sel & 0x01) + ((dac1_sel & 0x01) << 1) + ((dac2_sel & 0x01) << 2) + (
-                    (dac2_sel & 0x01) << 3) + ((mon_vs_pulse_sel & 0x01) << 4) + ((inj_cal_pulse & 0x01) << 5)
+                    (dac3_sel & 0x01) << 3) + ((mon_vs_pulse_sel & 0x01) << 4) + ((inj_cal_pulse & 0x01) << 5)
         rdreg = self.peek(0xA00C003C)
         self.poke(0xA00C003C, (rdreg & 0xffffffC0) | reg_value)
 

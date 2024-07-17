@@ -27,12 +27,12 @@ class QC_Runs:
         self.sncs = ["900mVBL", "200mVBL"]
         self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
         self.pts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
- 
+
         ####### Test enviroment logs #######
 
         self.logs={}
 
-        tester=input("please input your name:  ") 
+        tester=input("please input your name:  ")
         self.logs['tester']=tester
 
         env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
@@ -53,7 +53,7 @@ class QC_Runs:
         self.logs['note']=note
 
         for i in self.fembs:
-            self.fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i))
+            self.fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i)).strip()
             # self.fembNo['femb{}'.format(i)]=self.fembName['femb{}'.format(i)][1:]
 
         self.logs['femb id']=self.fembNo
@@ -62,27 +62,33 @@ class QC_Runs:
         log.report_log00 = self.logs    ### report
         ####### Create data saving directory #######
 
-        save_dir = "./QC/"
-        for key,femb_no in self.fembNo.items():
-            save_dir = save_dir + "femb{}_".format(femb_no)
-
-        save_dir = save_dir+"{}_{}".format(env,toytpc)
-
-        n=1
-        while (os.path.exists(save_dir)):
-            if n==1:
-                save_dir = save_dir + "_R{:03d}".format(n)
-            else:
-                save_dir = save_dir[:-3] + "{:03d}".format(n)
-            n=n+1
-            if n>20:
-                raise Exception("There are more than 20 folders...") 
-
-        try:
-            os.makedirs(save_dir)
-        except OSError:
-            print ("Error to create folder %s"%save_dir)
-            sys.exit()
+        save_dir = "./QC"
+        # for key,femb_no in self.fembNo.items():
+        #     save_dir = save_dir + "femb{}_".format(femb_no)
+        #
+        # save_dir = save_dir+"{}_{}".format(env,toytpc)
+        #
+        # n=1
+        # while (os.path.exists(save_dir)):
+        #     if n==1:
+        #         save_dir = save_dir + "_R{:03d}".format(n)
+        #     else:
+        #         save_dir = save_dir[:-3] + "{:03d}".format(n)
+        #     n=n+1
+        #     if n>20:
+        #         raise Exception("There are more than 20 folders...")
+        #
+        # try:
+        #     os.makedirs(save_dir)
+        # except OSError:
+        #     print ("Error to create folder %s"%save_dir)
+        #     sys.exit()
+        if not os.path.exists(save_dir):
+            try:
+                os.makedirs(save_dir)
+            except OSError:
+                print("Error to create folder %s" % save_dir)
+                sys.exit()
 
         self.save_dir = save_dir+"/"
 
@@ -115,8 +121,8 @@ class QC_Runs:
            fe_v = pwr_data['FEMB%d_DC2DC0_V'%i]
            cd_v = pwr_data['FEMB%d_DC2DC1_V'%i]
            adc_v = pwr_data['FEMB%d_DC2DC2_V'%i]
-           print (bias_v, fe_v, cd_v, adc_v) 
-  
+           print (bias_v, fe_v, cd_v, adc_v)
+
            if (bias_v < 1.0) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
                print ("FEMB {} is turned off".format(i))
            else:
@@ -126,11 +132,12 @@ class QC_Runs:
         return pwr_sts
 
     def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0,  pwr_flg=False, swdac=1, adc_sync_pat=False, bypass = False, autocali=0):
-         
-        cfg_paras_rec = []
-        ext_cali_flg = False 
 
-        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, 
+        cfg_paras_rec = []
+        ext_cali_flg = False
+        datad = {}
+
+        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi,
                             [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, autocali],
                             [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, autocali],
                             [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, autocali],
@@ -140,7 +147,7 @@ class QC_Runs:
                             [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, autocali],
                             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, autocali],
                           ]
-        if sts == 1 : 
+        if sts == 1 :
             if swdac==1: #internal ASIC-DAC is enabled
                 self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
                 adac_pls_en = 1
@@ -160,12 +167,12 @@ class QC_Runs:
                         self.chk.adcs_paras[i][1] = self.chk.adcs_paras[i][1]|0x10
         for femb_id in self.fembs:
             if sdd==1:
-                self.chk.adc_flg[femb_id] = True 
+                self.chk.adc_flg[femb_id] = True
                 for i in range(8):
-                    self.chk.adcs_paras[i][2]=1   # enable differential 
+                    self.chk.adcs_paras[i][2]=1   # enable differential
 
             if adc_sync_pat:
-                self.chk.adc_flg[femb_id] = True 
+                self.chk.adc_flg[femb_id] = True
 
             self.chk.fe_flg[femb_id] = True
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
@@ -181,7 +188,7 @@ class QC_Runs:
             for femb_id in self.fembs:
                 self.chk.femb_autocali_off(femb_id)
         else:
-            time.sleep(0.1) #temperary 
+            time.sleep(0.1) #temperary
 
         if self.chk.align_flg == True:
             self.chk.data_align(self.fembs)
@@ -203,6 +210,7 @@ class QC_Runs:
             return  None
 
         if ext_cali_flg:
+            datae = {}
             print ("Calibration with pulser from WIB starts...")
             cp_period = 1000
             vdacmax=self.vdacmax
@@ -227,16 +235,23 @@ class QC_Runs:
                 self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
                 rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
                 fplocal = fp[0:-4] + "_vdac%06dmV"%(int((vdac+0.0001)*1000))+fp[-4:]
-                with open(fplocal, 'wb') as fn:
-                    pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, vdac], fn)
+                # with open(fplocal, 'wb') as fn:
+                #     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, vdac], fn)
+                fsubdirs = fplocal.split("/")
+                print(fsubdirs)
+                print(fsubdirs[-1])
+                datad[fsubdirs[-1]] = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
             self.chk.wib_mon_switches() #close wib_mon
+            # with open(fp, 'wb') as fn:
+            #     pickle.dump(datae, fn)
+
         else:
             rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
 
-            # datad[fn] = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
-
-            with open(fp, 'wb') as fn:
-                pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
+            # with open(fp, 'wb') as fn:
+            #     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
+            datad = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
+        return datad
 
     def merge_bin_files_to_dictbin(self, folder_path, output_file):
 
@@ -257,78 +272,53 @@ class QC_Runs:
             for content in merged_dict.values():
                 out.write(content)
 
-        remote_hostname = '192.168.121.123'
-        remote_username = 'root'
-        remote_password = 'fpga'
-        remote_file_path = output_file
-
-        # local_username = 'DUNE'
-        # local_password = '216'
-        # local_ip = '192.168.121.10'
-        # local_path = r'D:\{}'.format(output_file)
-
-        scp_command = f'scp {remote_username}@{remote_hostname}:{remote_file_path} {local_username}@{local_ip}:{local_path}'
-
-        try:
-            completed_process = subprocess.run(
-                scp_command,
-                shell = True,
-                check = True,
-                input = f"{remote_password}\n".encode(),
-                stdout = subprocess.PIPE,
-                stderr = subprocess.PIPE,
-            )
-            print(completed_process.stdout.decode())
-            print(completed_process.stderr.decode())
-
-        except subprocess.CalledProcessError as e:
-            print(f"Error : {e}")
-
-
         return merged_dict
 
     def pwr_consumption(self):
+        datad = {}
         datadir = self.save_dir+"PWR_Meas/"
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
-        
+            return
+
         snc = 1 # 200 mV
         sg0 = 0
         sg1 = 0 # 14mV/fC
         st0 = 1
-        st1 = 1 # 2us 
-        
+        st1 = 1 # 2us
+
         ####### SE OFF #######
         self.sample_N = 1
         self.chk.femb_cd_rst()
         dac = 0x00
         sts = 0
         fp = datadir + "PWR_SE_OFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True) #   power measurement
+        datad["PWR_SE_OFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True) #   power measurement
+
 
         #   SE OFF Power Rail
-        a_func.monitor_power_rail("SE_OFF", self.fembs, datadir, 1)
+        datad["MON_Regular_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"]=a_func.monitor_power_rail("SE_OFF", self.fembs, datadir, 1)
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_SE_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+        datad["PWR_SE_OFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+
 
         ####### SE with LArASIC buffer on #######
         #self.chk.femb_cd_rst()
         dac = 0x00
         sts=0
         fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
+        datad["PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
 
         #   SE on Power Rail
-        a_func.monitor_power_rail("SE_ON", self.fembs, datadir, 1)
+        datad["MON_Regular_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"] = a_func.monitor_power_rail("SE_ON", self.fembs, datadir, 1)
         dac = 0x20
         sts=1
         fp = datadir + "PWR_SE_ON_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
+        datad["PWR_SE_ON_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
         ####### DIFF #######
         #self.chk.femb_cd_rst()
         dac = 0x00
@@ -336,35 +326,39 @@ class QC_Runs:
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1    # enable differential interface
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
+        datad["PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
 
         #   DIFF Power Rail
-        a_func.monitor_power_rail("DIFF", self.fembs, datadir, 1)
+        datad["MON_Regular_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"] = a_func.monitor_power_rail("DIFF", self.fembs, datadir, 1)
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
+        datad["PWR_DIFF_pulse_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
 
-        folder_path = datadir
-        output_file = 'power.bin'
-        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
+        # folder_path = datadir
+        # output_file = 'power.bin'
+        # self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
+        fp = datadir + "QC_PWR_t1" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+
 
     def pwr_cycle(self):
-
+        datad = {}
         datadir = self.save_dir+"PWR_Cycle/"
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
-        
+            return
+
         snc = 1 # 200 mV
         sg0 = 0
         sg1 = 0 # 14mV/fC
         st0 = 1
-        st1 = 1 # 2us 
+        st1 = 1 # 2us
         dac = 0x20
-        
+
         ####### SE 3 cycles #######
         self.chk.femb_cd_rst()
         self.sample_N = 1
@@ -372,11 +366,11 @@ class QC_Runs:
             dac = 0
             sts = 0
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True)
-            dac = 0x20 
+            datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True)
+            dac = 0x20
             sts = 1
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False) 
+            datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
             self.pwr_fembs('off')
             pwr_info = self.chk.get_sensors()
@@ -398,11 +392,11 @@ class QC_Runs:
         dac = 0
         sts = 0
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
+        datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False) 
+        datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
 
         self.pwr_fembs('off')
         pwr_info = self.chk.get_sensors()
@@ -418,80 +412,81 @@ class QC_Runs:
               print ("Wait {}s until completely shut down".format(nn))
 
         self.pwr_fembs('on')
- 
+
         ####### DIFF (1 cycle) #######
         self.chk.femb_cd_rst()
         dac = 0
         sts = 0
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
+        datad["PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
         dac = 0x20
         sts = 1
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
+        datad["PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
 
-        folder_path = datadir
-        output_file = 'power_cycle.bin'
-        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
+        fp = datadir + "QC_PWR_Cycle_t2" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
 
     def femb_leakage_cur(self):
-
+        datad = {}
         datadir = self.save_dir+"Leakage_Current/"
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
-        
+            return
+
         snc = 1 # 200 mV
         sg0 = 0
         sg1 = 0 # 14mV/fC
         st0 = 1
-        st1 = 1 # 2us 
+        st1 = 1 # 2us
         dac = 0x20
         sts = 1
-         
+
         ####### 500 pA #######
         self.chk.femb_cd_rst()
         self.sample_N = 5
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "500pA")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False) 
+        datad["LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "500pA")] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, pwr_flg=False)
 
         ####### 100 pA #######
         #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "100pA")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, pwr_flg=False) 
+        datad["LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "100pA")] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, pwr_flg=False)
 
         ####### 5 nA #######
         #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "5nA")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, pwr_flg=False) 
+        datad["LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "5nA")] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, pwr_flg=False)
 
         ####### 1 nA #######
         #self.chk.femb_cd_rst()
         fp = datadir + "LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "1nA")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
+        datad["LC_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL","14_0mVfC","2_0us",0x20, "1nA")] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, pwr_flg=False)
 
-        folder_path = datadir
-        output_file = 'leakage_cur.bin'
-        self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
+        fp = datadir + "QC_femb_leakage_cur_t3" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
     def femb_chk_pulse(self):
         datadir = self.save_dir+"CHK/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
-        sncs = self.sncs 
-        sgs = self.sgs 
+        sncs = self.sncs
+        sgs = self.sgs
         pts = self.pts
- 
+
         dac = 0x10
         sts = 1
- 
+
         self.chk.femb_cd_rst()
         self.sample_N = 1
         for snci in range(2):
@@ -503,7 +498,7 @@ class QC_Runs:
                     st1 = sti//2
 #   SE  2*4*4 = 32  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 0.5/1/2/3 us]}
                     fp = datadir + "CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+                    datad["CHK_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
         print('SEON pulse')
         sg1 = 0;    sg0 = 0     # 14 mV/fC
@@ -513,7 +508,7 @@ class QC_Runs:
         for snci in range(2):
 #   SEON    2   {[snc 200/900 mV] * [sg 14 mV/fC] * [st 2 us]}  sdf = 1
                     fp = datadir + "CHK_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdf = 1, pwr_flg=False)
+                    datad["CHK_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdf = 1, pwr_flg=False)
 
 
         print('Differential Pulse')
@@ -528,7 +523,7 @@ class QC_Runs:
         self.sample_N = 1
         for snci in range(2):
                     fp = datadir + "CHK_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False, swdac = 1)
+                    datad["CHK_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[0], pts[3], dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False, swdac = 1)
                                 #time.sleep(0.5)
         for i in range(8):
             self.chk.adcs_paras[i][2] = 0    # disable differential interface
@@ -549,7 +544,7 @@ class QC_Runs:
             sg0 = sgi % 2
             sg1 = sgi // 2
             fp = datadir + "CHK_SGP_{}_{}_{}_0x{:02x}.bin".format(sncs[1], sgs[sgi], pts[3], dac)
-            self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
+            datad["CHK_SGP_{}_{}_{}_0x{:02x}.bin".format(sncs[1], sgs[sgi], pts[3], dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
 
 
 #       External Pulse
@@ -565,8 +560,11 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.sample_N = 1
         fp = datadir + "CHK_EX_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
+        datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
 
+        fp = datadir + "femb_chk_pulse_t4" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
     #    def femb_chk_pulse2(self):
 #
@@ -582,21 +580,21 @@ class QC_Runs:
 
 
     def femb_rms(self):
-
         datadir = self.save_dir+"RMS/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         sncs = self.sncs
         sgs = self.sgs
         pts = self.pts
- 
+
         dac = 0
         sts = 0
- 
+
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
 
@@ -611,23 +609,23 @@ class QC_Runs:
                     st1 = sti//2
 #   SE OFF  2*4*4 = 32  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 0.5/1/2/3 us]}
                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+                    datad["RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
 #   SE  OFF Leakage current *4  100 pA, 500 pA, 1 nA, 5 nA  {200 mV * 14 mV/fC * 2 us}
         snc = 1 # 200 mV
         sg0 = 0;        sg1 = 0 # 14mV/fC
         st0 = 1;        st1 = 1 # 2us
         # 500 pA
         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "500pA", dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, swdac=0, pwr_flg=False)
+        datad["RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "500pA", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=0, swdac=0, pwr_flg=False)
         # 100 pA
         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "100pA", dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, swdac=0, pwr_flg=False)
+        datad["RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "100pA", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=0, swdac=0, pwr_flg=False)
         # 5000 pA
         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "5nA", dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, swdac=0, pwr_flg=False)
+        datad["RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "5nA", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=0, slk1=1, swdac=0, pwr_flg=False)
         # 1000 pA
         fp = datadir + "RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "1nA", dac)
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, swdac=0, pwr_flg=False)
+        datad["RMS_SELC_{}_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us", "1nA", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, slk0=1, slk1=1, swdac=0, pwr_flg=False)
 #   SE ON  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}
         st1 = 1;    st0 = 1     # 2 us
         for snci in range(2):
@@ -636,7 +634,7 @@ class QC_Runs:
                 sg1 = sgi // 2
                 fp = datadir + "RMS_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
                 # time.sleep(0.1)
-                self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdf = 1, pwr_flg=False)
+                datad["RMS_SEON_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdf = 1, pwr_flg=False)
 #   DIFF  2*4*1 = 8  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 2 us]}
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1    # enable differential interface, seems repeat with sdd = 1
@@ -648,34 +646,47 @@ class QC_Runs:
                     st0 = sti%2
                     st1 = sti//2
                     fp = datadir + "RMS_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)
-                    self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdd = 1, pwr_flg=False)
+                    datad["RMS_DIFF_{}_{}_{}_0x{:02x}.bin".format(sncs[snci], sgs[sgi], pts[3], dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, sdd = 1, pwr_flg=False)
+
+        fp = datadir + "QC_femb_rms_t5" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
 
     def femb_adc_sync_pat(self):
 
         datadir = self.save_dir+"ADC_SYNC_PAT/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
 
         self.sample_N = 10
         fp = datadir + "ADC_SYNC_PAT_SHA_SE.bin"
-        self.take_data(fp=fp, adc_sync_pat=True)
+        datad["ADC_SYNC_PAT_SHA_SE.bin"] = self.take_data(fp=fp, adc_sync_pat=True)
 
         #self.chk.femb_cd_rst()
         self.sample_N = 10
         fp = datadir + "ADC_SYNC_PAT_SHA_DIFF.bin"
-        self.take_data(fp=fp, sdd = 1, adc_sync_pat=True)
+        datad["ADC_SYNC_PAT_SHA_DIFF.bin"] = self.take_data(fp=fp, sdd = 1, adc_sync_pat=True)
 
         #self.chk.femb_cd_rst()
         self.sample_N = 10
         fp = datadir + "ADC_Test_mode_DC_Noise_SE.bin"
-        self.take_data(fp=fp, adc_sync_pat=True, bypass = True)
+        datad["ADC_Test_mode_DC_Noise_SE.bin"] = self.take_data(fp=fp, adc_sync_pat = True, bypass = True)
+
+
+        fp = datadir + "QC_femb_adc_sync_pat_t15" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+        # folder_path = datadir
+        # output_file = 'femb_adc_sync_pat_merge.bin'
+        # datad["ADC_Test_mode_DC_Noise_SE.bin"] = self.merge_bin_files_to_dictbin(folder_path, output_file)   # merge into one bin file
 
         # self.chk.femb_cd_rst()
         # self.sample_N = 10
@@ -686,8 +697,7 @@ class QC_Runs:
 
 
     def femb_test_pattern_pll(self):
-
-
+        datad = {}
         datadir = self.save_dir + "PLL_PAT/"
         try:
             os.makedirs(datadir)
@@ -720,30 +730,42 @@ class QC_Runs:
             rms_rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=1, trig_cmd=0, TP = True)  # returns list of size 1
             file_name = "Raw_SE_{}_{}_{}_0x{:02x}_{}.bin".format("200mVBL", "14_0mVfC", "2_0us", 0x00, hex(i))
             # begin
-            fp = datadir + file_name
-            with open(fp, 'wb') as fn:
-                pickle.dump( [rms_rawdata, cfg_paras_rec, self.fembs], fn)
+
+            datad[file_name] = [rms_rawdata, cfg_paras_rec, self.fembs]
+
+        fp = datadir + "QC_femb_test_pattern_pll_t16" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+
+            # fp = datadir + file_name
+            # with open(fp, 'wb') as fn:
+            #     pickle.dump( [rms_rawdata, cfg_paras_rec, self.fembs], fn)
+
+        # folder_path = datadir
+        # output_file = 'femb_test_pattern_pll_merge.bin'
+        # self.merge_bin_files_to_dictbin(folder_path, output_file)  # merge into one bin file
 
             # with open('./TestPattern/rms.dat', 'w') as f:
             #     for data in rms_rawdata:
             #         f.write(str(data))
 
 
-
+# item #6
     def femb_CALI_1(self):
         datadir = self.save_dir+"CALI1/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         snc = 1 # 200 mV BL
         sgs = self.sgs      # self.sgs = ["14_0mVfC", "25_0mVfC", "7_8mVfC", "4_7mVfC" ]
         st0 = 1
         st1 = 1 # 2 us
         sts = 1
- 
+
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
         self.sample_N = 5
@@ -760,7 +782,7 @@ class QC_Runs:
                 dacstep = 4
             for dac in range(0,64, dacstep):
                 fp = datadir + "CALI1_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL",sgs[sgi],"2_0us",dac)
-                self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+                datad["CALI1_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL",sgs[sgi],"2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
         #   DIFF
         self.chk.femb_cd_rst()
@@ -772,18 +794,23 @@ class QC_Runs:
         sg0 = 0;        sg1 = 0 # 14mV/fC
         for dac in range(0, 64, 4):
             fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+            datad["CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+
+        fp = datadir + "QC_Cali01_t6" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
         # for i in range(8):
         #     self.chk.adcs_paras[i][2] = 0
 
     def femb_CALI_2(self):
 
         datadir = self.save_dir+"CALI2/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         snc = 0 # 900 mV BL
         sg0 = 0
@@ -791,13 +818,13 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
         sts = 1
- 
+
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
         self.sample_N = 5
         for dac in range(0,32,1):
             fp = datadir + "CALI2_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+            datad["CALI2_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
 
         print('cali2_differential pusle')
         self.chk.femb_cd_rst()
@@ -809,18 +836,23 @@ class QC_Runs:
         self.sample_N = 5
         for dac in range(0,32,4):
             fp = datadir + "CALI2_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+            datad["CALI2_DIFF_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+
+        fp = datadir + "QC_Cali02_t7" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
 
 
     def femb_CALI_3(self):
 
         datadir = self.save_dir+"CALI3/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         snc = 1 # 200 mV BL
         sg0 = 0
@@ -828,35 +860,37 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
         sts = 1
- 
+
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
         self.sample_N = 5
         for dac in range(0,64,8):
             fp = datadir + "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
+            datad["CALI3_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
 
         print('cali3_differential pusle')
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
-        cfg_paras_rec = []
-        # for i in range(8):
-        #     self.chk.adcs_paras[i][2] = 1    # enable differential interface
 
         self.sample_N = 5
         for dac in range(0,64,8):
             fp = datadir + "CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
+            datad["CALI3_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
+
+        fp = datadir + "QC_Cali03_t8" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
 
     def femb_CALI_4(self):
 
         datadir = self.save_dir+"CALI4/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         snc = 0 # 900 mV BL
         sg0 = 0
@@ -864,13 +898,13 @@ class QC_Runs:
         st0 = 1
         st1 = 1 # 2 us
         sts = 1
- 
+
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
         self.sample_N = 5
-        for dac in range(0, 32,8):
+        for dac in range(0, 32,4):
             fp = datadir + "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
+            datad["CALI4_SE_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sgp=1, pwr_flg=False)
 
         print('cali4_differential pusle')
         self.chk.femb_cd_rst()
@@ -880,17 +914,22 @@ class QC_Runs:
         #     self.chk.adcs_paras[i][2] = 1    # enable differential interface
 
         self.sample_N = 5
-        for dac in range(0,32,8):
+        for dac in range(0,32,4):
             fp = datadir + "CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)
-            self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
+            datad["CALI4_DIFF_{}_{}_{}_0x{:02x}_sgp1.bin".format("900mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, sgp=1, pwr_flg=False)
+
+        fp = datadir + "QC_Cali04_t9" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
     def femb_CALI_5(self):
         datadir = self.save_dir+"CALI5/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
         snc = 0 # 900 mV BL
         sg0 = 0
         sg1 = 0 # 14_0 mv/fC
@@ -903,17 +942,22 @@ class QC_Runs:
         self.sample_N = 5
         # get baseline
         fp = datadir + "CALI5_SE_{}_{}_{}_RMS.bin".format("900mVBL","14_0mVfC","2_0us")
-        self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+        datad["CALI5_SE_{}_{}_{}_RMS.bin".format("900mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
         fp = datadir + "CALI5_SE_{}_{}_{}.bin".format("900mVBL","14_0mVfC","2_0us")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False) 
+        datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
+
+        fp = datadir + "QC_Cali05_t13" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
 
     def femb_CALI_6(self):
         datadir = self.save_dir+"CALI6/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
         snc = 1 # 200 mV BL
         sg0 = 0
         sg1 = 0 # 14_0 mv/fC
@@ -926,18 +970,22 @@ class QC_Runs:
         self.sample_N = 5
         # get baseline
         fp = datadir + "CALI6_SE_{}_{}_{}_RMS.bin".format("200mVBL","14_0mVfC","2_0us")
-        self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+        datad["CALI6_SE_{}_{}_{}_RMS.bin".format("200mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
         fp = datadir + "CALI6_SE_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
-        self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
-        
-    def femb_MON_1(self, sps=5):
+        datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
 
+        fp = datadir + "QC_Cali06_t14" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+
+    def femb_MON_1(self, sps=5):
         datadir = self.save_dir+"MON_FE/"
+        datad = {}
         try:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         self.chk.femb_cd_rst()
         chips = 8
@@ -988,8 +1036,8 @@ class QC_Runs:
             for mon_chipchn in range(16):
                 adcrst = self.chk.wib_fe_mon(femb_ids=self.fembs, mon_type=0, snc=0, sdf=0, mon_chip=mon_chip, mon_chipchn=mon_chipchn, sps=sps)
                 mon_900bls_sdf0["chip%dchn%02d"%(mon_chip, mon_chipchn)] = adcrst[7]
-        
-        fp = datadir + "LArASIC_mon.bin"
+
+        fp = datadir + "LArASIC_mon_t10.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_refs, mon_temps, mon_200bls_sdf1, mon_200bls_sdf0, mon_900bls_sdf1, mon_900bls_sdf0, self.logs], fn)
         self.chk.wib_fe_mon(femb_ids=self.fembs)
@@ -1027,17 +1075,14 @@ class QC_Runs:
             self.chk.adcs_paras[i][2] = 0
 
     def femb_MON_2(self, sps=10):
-
         datadir = self.save_dir+"MON_FE/"
         if not os.path.exists(datadir):
            try:
                os.makedirs(datadir)
            except OSError:
                print ("Error to create folder %s !!! Continue to next test........"%datadir)
-               return 
-
+               return
         self.chk.femb_cd_rst()
-
         chips = 8
         print ("monitor LArASIC DAC sgp=1")
         mon_fedacs_sgp1 = {}
@@ -1064,7 +1109,7 @@ class QC_Runs:
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=1, vdacs=vdacs, sps=sps)
             mon_fedacs_7_8mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
-                
+
         print ("monitor LArASIC DAC 25 mV/fC")
         mon_fedacs_25mVfC = {}
         #vdacs=range(64)
@@ -1073,8 +1118,8 @@ class QC_Runs:
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=vdacs, sps=sps)
             mon_fedacs_25mVfC["CHIP%d"%(mon_chip)] = [adcrst, vdacs]
-                
-        fp = datadir + "LArASIC_mon_DAC.bin"
+
+        fp = datadir + "LArASIC_mon_DAC_t11.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_fedacs_sgp1, mon_fedacs_14mVfC, mon_fedacs_7_8mVfC, mon_fedacs_25mVfC, self.logs], fn)
         self.chk.wib_fe_mon(femb_ids=self.fembs)
@@ -1086,7 +1131,7 @@ class QC_Runs:
             os.makedirs(datadir)
         except OSError:
             print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return 
+            return
 
         self.chk.femb_cd_rst()
         self.chk.adcs_paras = copy.deepcopy([ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi
@@ -1116,18 +1161,18 @@ class QC_Runs:
             mondata = self.chk.wib_adc_mon(femb_ids=self.fembs, sps=sps)
             mon_adc.append([vset[i], mondata])
 
-        fp = datadir + "ColdADC_mon.bin"
+        fp = datadir + "ColdADC_mon_t12.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_adc_default, mon_adc, self.logs], fn)
         print (int((time.time_ns() - t0)/1e9), "AAAAAAAAA")
 
 if __name__=='__main__':
-                        
+
    if len(sys.argv) < 2:
        print('Please specify at least one FEMB # to test')
        print('Usage: python wib.py 0')
-       exit()    
-   
+       exit()
+
    if 'save' in sys.argv:
        save = True
        for i in range(len(sys.argv)):
@@ -1139,11 +1184,11 @@ if __name__=='__main__':
    else:
        save = False
        sample_N = 1
-   
+
    fembs = [int(a) for a in sys.argv[1:pos]]
 
    chkout = QC_Runs(fembs, sample_N)
    chkout.pwr_fembs('on')
    chkout.femb_rms()
    chkout.pwr_fembs('off')
-   
+

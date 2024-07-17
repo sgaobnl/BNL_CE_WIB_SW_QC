@@ -574,9 +574,9 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
                 vssa_ref = 150; vssa_err = 150
                 fe_t_ref = 850; fe_t_err = 70
                 fe_bgp_ref = 1150; fe_bgp_err = 50
-                vcmi_ref = 875; vcmi_err = 50
+                vcmi_ref = 865; vcmi_err = 50
                 vcmo_ref = 1160; vcmo_err = 50
-                vrefp_ref = 1870; vrefp_err = 50
+                vrefp_ref = 1860; vrefp_err = 50
                 vrefn_ref = 440; vrefn_err = 50
 
             #   vssa
@@ -617,7 +617,7 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
             vcmi_temp = round(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc - vssa_tmp, 1)
             if abs(vcmi_temp - vcmi_ref) > vcmi_err:
                 check = False
-                check_issue.append("{} vcmi_chip{}={}; out of [825 925 mV]\n".format(env, i, vcmi_temp))
+                check_issue.append("{} vcmi_chip{}={}; out of [815 915 mV]\n".format(env, i, vcmi_temp))
                 vcmi[i] = "<span style = 'color:red;'> {} </span>".format(vcmi_temp)
                 print(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb])
                 print(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc)
@@ -636,11 +636,11 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
             vrefp_temp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][ifemb] * fadc - vssa_tmp, 1)
             if abs(vrefp_temp - vrefp_ref) > vrefp_err:
                 check = False
-                check_issue.append("{} vrefp_chip{}={}; out of [1820 1920 mV]\n".format(env, i, vrefp_temp))
+                check_issue.append("{} vrefp_chip{}={}; out of [1810 1910 mV]\n".format(env, i, vrefp_temp))
                 vrefp[i] = "<span style = 'color:red;'> {} </span>".format(vrefp_temp)
             else:
                 vrefp[i] = "{}".format(vrefp_temp)
-            #   vrefp
+            #   vrefn
             vrefn_temp = round(mon_adcs[f'chip{i}']["VREFN"][1][0][ifemb] * fadc - vssa_tmp, 1)
             if abs(vrefn_temp - vrefn_ref) > vrefn_err:
                 check = False
