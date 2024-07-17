@@ -145,7 +145,7 @@ class QC_PWR(BaseClass):
                 suffixFilename = '_'.join([self.param_meanings[config['SNC']], self.param_meanings[config['SDD']], self.param_meanings[config['SDF']]])
                 # suffixFilename = '_'.join(tmp_config)
                 chipID = self.logs_dict['FE{}'.format(ichip)]
-                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=False, period=self.period)
+                larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=True, period=self.period)
                 data_asic = larasic.runAnalysis()
                 outdata[chipID][suffixFilename] = data_asic
         return outdata
