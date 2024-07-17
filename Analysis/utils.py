@@ -11,16 +11,16 @@ import json
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from scipy.signal import find_peaks
-sys.path.append('../')
-from spymemory_decode import wib_dec
-sys.path.append('./Analysis')
+# sys.path.append('../')
+# from spymemory_decode import wib_dec
+# sys.path.append('./Analysis')
 #_________Import the CPP module_____________
-# system_info = platform.system()
-# if system_info=='Linux':
-#     # print('IN')
-#     sys.path.append('./decode')
-#     from dunedaq_decode import wib_dec
-#     sys.path.append('../')
+system_info = platform.system()
+if system_info=='Linux':
+    # print('IN')
+    sys.path.append('./decode')
+    from dunedaq_decode import wib_dec
+    sys.path.append('../')
 # elif system_info=='Windows':
 #     sys.path.append('../build')
 #     from dunedaq_decode import wib_dec
@@ -135,8 +135,8 @@ def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500):
     dat_tmts_l = []
     dat_tmts_h = []
     for wibdata in tmpwibdata:
-        dat_tmts_l.append(wibdata[5][fembs[0]*2][0]) #LSB of timestamp = 16ns
-        dat_tmts_h.append(wibdata[5][fembs[0]*2+1][0])
+        dat_tmts_l.append(wibdata[4][fembs[0]*2][0]) #LSB of timestamp = 16ns
+        dat_tmts_h.append(wibdata[4][fembs[0]*2+1][0])
 
     # period = 500
     dat_tmtsl_oft = (np.array(dat_tmts_l)//32)%period #ADC sample rate = 16ns*32 = 512ns
@@ -157,9 +157,9 @@ def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500):
             wibdata = tmpwibdata[i]
             datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
             # print('number of chn = ', len(datd))
-            chndata = datd[achn] 
+            chndata = np.array(datd[achn] , dtype=np.uint32)
             lench = len(chndata)
-            tmp = period-oft
+            tmp = int(period-oft)
             # conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
             # print(tmp, ' ---- ', ((lench-tmp)//period)*period + tmp)
             conchndata = np.concatenate((conchndata, chndata[tmp : ((lench-tmp)//period)*period + tmp]))
@@ -271,33 +271,48 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
 class BaseClass:
     def __init__(self, root_path: str, data_dir: str, output_path: str, tms: int, QC_filename: str, generateWaveForm=False):
         self.tms = tms
+        # self.input_dir = '/'.join([root_path, data_dir])
+        tmpdata_dir = os.listdir('/'.join([root_path, data_dir]))[0]
+        self.input_dir = '/'.join([root_path, data_dir, tmpdata_dir])
         self.filename = QC_filename
         splitted_filename = self.filename.split('_')
         if '47.bin' in splitted_filename:
             self.suffixName = splitted_filename[-2] + '_47'
         else:
             self.suffixName = splitted_filename[-1].split('.')[0]
-        # self.foldername = '_'.join(self.filename.split('_')[:2])
         self.foldername = self.filename.split('.')[0]
-        with open('/'.join([root_path, data_dir, self.filename]), 'rb') as fn:
+        # with open('/'.join([root_path, data_dir, self.filename]), 'rb') as fn:
+        with open('/'.join([self.input_dir, self.filename]), 'rb') as fn:
             self.raw_data = pickle.load(fn)
         # self.raw_data = raw_data
         self.logs_dict = self.raw_data['logs']
         self.params = [key for key in self.raw_data.keys() if key!='logs']
+        self.__openLog__()
         createDirs(logs_dict=self.logs_dict, output_dir=output_path)
-        self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
-        for FE_ID, dir in self.FE_outputDIRs.items():
-            try:
-                os.mkdir(dir)
-            except OSError:
-                pass
+        self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)}
+        # self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
+        # for FE_ID, dir in self.FE_outputDIRs.items():
+        #     try:
+        #         os.mkdir(dir)
+        #     except OSError:
+        #         pass
         if generateWaveForm:
-            self.FE_outputPlots_DIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername, self.suffixName]) for ichip in range(8)}
+            self.FE_outputPlots_DIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
             for FE_ID, dir in self.FE_outputPlots_DIRs.items():
                 try:
                     os.mkdir(dir)
                 except OSError:
                     pass
+    
+    def __openLog__(self):
+        # Update the internal logs of each test item -> Use the timestamp as an ID for each FE ASIC
+        with open('/'.join([self.input_dir, 'QC.log']), 'rb') as f:
+            logs = pickle.load(f)
+        RTS_IDs = logs['RTS_IDs']
+        for tmts, place in RTS_IDs.items():
+            self.logs_dict['FE{}'.format(place[1])] = tmts
+            self.logs_dict['ADC{}'.format(place[1])] = tmts
+
 
 # Analyze one LArASIC
 class LArASIC_ana:
@@ -411,6 +426,20 @@ class LArASIC_ana:
                 chdata.append(chunkdata)
             chdata = np.array(chdata)
             avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
+            posmax = np.argmax(avg_wf)
+            if posmax+10 > self.period:
+                front = avg_wf[posmax-50 : ]
+                back = avg_wf[ : posmax-50]
+                avg_wf = np.concatenate((front, back), axis=0)
+            elif posmax-10 < 0:
+                front = avg_wf[-50 : ]
+                back = avg_wf[ : -50]
+                avg_wf = np.concatenate((front, back), axis=0)
+                # plt.figure()
+                # plt.plot(avg_wf)
+                # plt.show()
+                # plt.close()
+                # sys.exit()
             chipWF.append(avg_wf)
         return chipWF
 
@@ -506,6 +535,21 @@ class LArASIC_ana:
         # return {"pedrms": pedrms, "pulseResponse": pulseResponse}
         return out_dict
 
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##************************* STATISTICAL ANALYSIS ***************************************************************
+def stat_ana(root_path: str, testItem: str):
+    file_list = ['/'.join([root_path, dir, testItem+'.json']) for dir in os.listdir(root_path) if testItem+'.json' in os.listdir('/'.join([root_path, dir]))]
+    ## power analysis
+
+    ## pedestal analysis
+
+    ## rms analysis
+
+    ## pospeak analysis
+
+    ## negpeak analysis
+    print(file_list)
+##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Generate report for one LArASIC
 # --> All parameters for the QC
 class QC_REPORT:
@@ -540,7 +584,9 @@ class QC_REPORT:
     
 if __name__ == '__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
-    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC/002-06204'
-    qc_report = QC_REPORT(input_path=root_path, output_path=root_path)
-    pwr_qc_dict = qc_report.QC_PWR_report()
-    print(pwr_qc_dict)
+    # root_path = '../../Analyzed_BNL_CE_WIB_SW_QC/002-06204'
+    # qc_report = QC_REPORT(input_path=root_path, output_path=root_path)
+    # pwr_qc_dict = qc_report.QC_PWR_report()
+    # print(pwr_qc_dict)
+    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    stat_ana(root_path=root_path, testItem='QC_CHK_INIT')
