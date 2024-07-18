@@ -1,9 +1,8 @@
 tester,lke
 SLOT0,H11,
-SLOT1,H22,
-SLOT2,H33,
+SLOT1, ,
+SLOT2, ,
 SLOT3,H44,
 test_site,BNL,
-env,n,
 toy_TPC,y,
 comment,for test,

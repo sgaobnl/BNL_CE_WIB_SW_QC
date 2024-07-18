@@ -39,7 +39,6 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
             print("Exit anyway")
             return None
             # exit()
-
         # continue
     except subprocess.TimeoutExpired as e:
         print("No reponse in %d seconds" % (timeout))
@@ -49,20 +48,17 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
             print("Exit anyway")
             return None
             # exit()
-
         # continue
     return result
 
 previous_files = load_last_scan_results()
-
-
 
 while True:
     current_files = set()
     for root, dirs, files in os.walk(target_folder):
         for file in files:
             current_files.add(os.path.join(root, file))
-    #calculate new update document
+    # calculate new update document
     new_files = current_files - previous_files
     # update the scan result
     previous_files = current_files
@@ -85,12 +81,7 @@ while True:
         path = os.path.dirname(desired_path)  # get last path
         path = path.replace('\\', '/')  # get last path
         t_char = file_path[-7:]
-        # print(t_char)
         t_num = ''.join([char for char in t_char if char.isdigit()])
-        # print(f'test Item {t_num}')
-        # print(f'test Slot {n}')
-        # print(n)# path =
-        # print(path)# path =
         if '_t' in file_path[-9:]:
             time.sleep(10)  # the time is used to copy the whole .bin file
             command = ["python3", "QC_report_all.py", path, "-n"]

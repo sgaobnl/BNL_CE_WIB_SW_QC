@@ -1,6 +1,3 @@
-import os
-import pickle
-
 import QC_components.qc_log as log
 import subprocess
 import matplotlib.pyplot as plt
@@ -47,8 +44,7 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
 
 
 
-def section_report(datareport, fembs, fembNo):
-    global fpmd
+def final_report(datareport, fembs, fembNo):
     print("\n\n\n")
     print("==================================================================================")
     print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
@@ -83,7 +79,6 @@ def section_report(datareport, fembs, fembNo):
         check_status14 = True
         check_status15 = True
         check_status16 = True
-        Status = 'P'
         if 1 in log.test_label:
             dict_list01 = [log.check_log01_11[femb_id], log.check_log01_12[femb_id], log.check_log01_13[femb_id], log.check_log01_21[femb_id], log.check_log01_22[femb_id], log.check_log01_23[femb_id], log.check_log01_31[femb_id], log.check_log01_32[femb_id], log.check_log01_33[femb_id]]
 
@@ -91,7 +86,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list01:
                 if dict_i['Result'] == False:
                     check_status01 = False
-                    Status = 'F'
                     # check_list01.append(str(dict_i['Label']) + "\n")
                     # check_list01.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status01)
@@ -103,7 +97,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list03:
                 if dict_i['Result'] == False:
                     check_status03 = False
-                    Status = 'F'
                     # check_list03.append(str(dict_i['Label']) + "\n")
                     # check_list03.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status03)
@@ -115,7 +108,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list04:
                 if dict_i['Result'] == False:
                     check_status04 = False
-                    Status = 'F'
                     # check_list04.append(str(dict_i['Label']) + "\n")
                     # check_list04.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status04)
@@ -127,7 +119,6 @@ def section_report(datareport, fembs, fembNo):
             # for dict_i in dict_list05:
             if log.report_log0500[femb_id] == False:
                 check_status05 = False
-                Status = 'F'
                 # check_list05.append(str(dict_i['Label']) + "\n")
                 # check_list05.append(str(dict_i['Issue List']) + "\n")
             # check_list.append(check_status05)
@@ -139,7 +130,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list06:
                 if dict_i['Result'] == False:
                     check_status06 = False
-                    Status = 'F'
                     # check_list06.append(str(dict_i['Label']) + "\n")
                     # check_list06.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status06)
@@ -151,7 +141,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list07:
                 if dict_i['Result'] == False:
                     check_status07 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     check_list07.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status07)
@@ -163,7 +152,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list08:
                 if dict_i['Result'] == False:
                     check_status08 = False
-                    Status = 'F'
                     print(log.check_log0801[femb_id])
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     check_list08.append(str(dict_i['Issue List']) + "\n")
@@ -176,7 +164,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list09:
                 if dict_i['Result'] == False:
                     check_status09 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     check_list09.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status09)
@@ -188,7 +175,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list10:
                 if dict_i['Result'] == False:
                     check_status10 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     # check_list10.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status10)
@@ -201,7 +187,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list11:
                 if dict_i['Result'] == False:
                     check_status11 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     # check_list11.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status11)
@@ -213,7 +198,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list12:
                 if dict_i['Result'] == False:
                     check_status12 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     # check_list12.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status12)
@@ -225,7 +209,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list13:
                 if dict_i['Result'] == False:
                     check_status13 = False
-                    Status = 'F'
                     # check_list07.append(str(dict_i['Label']) + "\n")
                     # check_list13.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status13)
@@ -237,7 +220,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list14:
                 if dict_i['Result'] == False:
                     check_status14 = False
-                    Status = 'F'
             check_list.append(check_status14)
 
         if 15 in log.test_label:
@@ -246,7 +228,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list15:
                 if dict_i['Result'] == False:
                     check_status15 = False
-                    Status = 'F'
             check_list.append(check_status15)
 
         if 16 in log.test_label:
@@ -255,7 +236,6 @@ def section_report(datareport, fembs, fembNo):
             for dict_i in dict_list16:
                 if dict_i['Result'] == False:
                     check_status16 = False
-                    Status = 'F'
             check_list.append(check_status16)
 
         all_true = all(value for value in check_list)
@@ -266,14 +246,7 @@ def section_report(datareport, fembs, fembNo):
 ###======================================================================
 
 #   Start Markdown
-
-        print(Status)
-        if Status:
-            print("\033[32m" + "The FEMB {} PASS the ITEM {} QC test".format(fembNo['femb%d' % ifemb], *log.test_label) + "\033[0m")
-        else:
-            print("\033[31m" + "The FEMB {} fail the ITEM {} QC test".format(fembNo['femb%d' % ifemb], *log.test_label) + "\033[0m")
-        print('\n')
-        fpmd = datareport[ifemb] + 'report_FEMB_{}_t{}_{}_S{}.md'.format(fembNo['femb%d' % ifemb], *log.test_label, Status, ifemb)
+        fpmd = datareport[ifemb] + 'report_FEMB_{}.md'.format(fembNo['femb%d' % ifemb])
         print(datareport[ifemb])
         with open(fpmd, 'w', encoding = "utf-8") as file:
             # file.write('')
@@ -997,221 +970,7 @@ def section_report(datareport, fembs, fembNo):
                 info = dict_to_markdown_table(log.report_log1601[femb_id])
                 file.write(info + '\n')
                 file.write("[PDF](./{}/report.pdf)".format(log.item16) + "\n")
-    return fpmd
+'''
+'''   
 
 
-
-
-
-
-
-# final report, generate every analysis
-def final_report(datareport, fembs, fembNo):
-    print("\n\n\n")
-    print("==================================================================================")
-    print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
-    print("+++++++                                                                    +++++++")
-    print("==================================================================================")
-    print("\n")
-    print(log.report_log01["ITEM"])
-    for key, value in log.report_log01["Detail"].items():
-        print(f"{key}: {value}")
-
-    print('\n')
-
-    all_true = {}
-    PH = 250
-    for ifemb in fembs:
-        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-###======================== Whole judgement =============================
-#   item 01 Power Consumption
-        check_list = []
-        check_status = [None for _ in range(1, 17)]
-        item_file = [None for _ in range(1, 17)]
-        print(check_status)
-
-        for root, dirs, files in os.walk(datareport[ifemb]):
-            for file in files:
-                if file.endswith('.md'):
-                    for i in range(1,17,1):
-                        if 't{}_F'.format(i) in file:
-                            check_status[i - 1] = False
-                            item_file[i - 1] = file
-                        elif 't{}_P'.format(i) in file:
-                            check_status[i - 1] = True
-                            item_file[i - 1] = file
-        print(check_status)
-        all_true = all(check_status)
-        if None in check_status:
-            summary = '<span style="color: dark;">' + " FEMB # {}\t       Quality Control in Test ".format(fembNo['femb%d' % ifemb]) + '</span>' + '\n'
-        else:
-            if all_true:
-                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
-            else:
-                summary = '<span style="color: red;">' + " FEMB # {}\t      Fail\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
-        print(summary)
-
-###======================================================================
-
-#   Start Markdown
-
-        print('\n')
-        frmd = datareport[ifemb] + 'Final_Report_FEMB_{}_S{}.md'.format(fembNo['femb%d' % ifemb], ifemb)
-        print(datareport[ifemb])
-        with open(frmd, 'w', encoding = "utf-8") as file:
-            # file.write('')
-            file.write('\n')
-            file.write('\n')
-            file.write('# ' + summary + '\n')
-            file.write('\n')
-            file.write('\n')
-# Title     FEMB ID
-# 00        Print <Input Information>
-            file.write('## INPUT INFORMATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {}'.format(femb_id) + '\n')
-            info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
-            file.write(info + '\n')
-
-            file.write('## Test Content' + '\n')
-
-
-##  Content Pages ================================================
-
-            if check_status[1-1] is True:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[1-1]) + '</span>'
-            elif check_status[1-1] is False:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[1-1]) + '</span>'
-            else:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item01 + '\n\n')
-
-            if check_status[2-1] is True:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[2-1]) + '</span>'
-            elif check_status[2 - 1] is False:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[2-1]) + '</span>'
-            else:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item02 + '\n\n')
-
-            if check_status[3-1] is True:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[3-1]) + '</span>'
-            elif check_status[3 - 1] is False:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[3-1]) + '</span>'
-            else:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item03 + '\n\n')
-
-            if check_status[4-1] is True:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[4-1]) + '</span>'
-            elif check_status[4 - 1] is False:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[4-1]) + '</span>'
-            else:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item04 + '\n\n')
-
-            if check_status[5-1] is True:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[5-1]) + '</span>'
-            elif check_status[5 - 1] is False:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[5-1]) + '</span>'
-            else:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item05 + '\n\n')
-
-            if check_status[6-1] is True:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[6-1]) + '</span>'
-            elif check_status[6 - 1] is False:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[6-1]) + '</span>'
-            else:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item06 + '\n\n')
-
-            if check_status[7-1] is True:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[7-1]) + '</span>'
-            elif check_status[7 - 1] is False:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[7-1]) + '</span>'
-            else:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item07 + '\n\n')
-
-            if check_status[8-1] is True:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[8-1]) + '</span>'
-            elif check_status[8 - 1] is False:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[8-1]) + '</span>'
-            else:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item08 + '\n\n')
-
-            if check_status[9-1] is True:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[9-1]) + '</span>'
-            elif check_status[9 - 1] is False:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[9-1]) + '</span>'
-            else:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item09 + '\n\n')
-
-            if check_status[10-1] is True:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[10-1]) + '</span>'
-            elif check_status[10 - 1] is False:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[10-1]) + '</span>'
-            else:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item10 + '\n\n')
-
-            if check_status[11-1] is True:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[11-1]) + '</span>'
-            elif check_status[11 - 1] is False:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[11-1]) + '</span>'
-            else:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item11 + '\n\n')
-
-            if check_status[12-1] is True:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[12-1]) + '</span>'
-            elif check_status[12 - 1] is False:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[12-1]) + '</span>'
-            else:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item12 + '\n\n')
-
-            if check_status[13-1] is True:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[13-1]) + '</span>'
-            elif check_status[13 - 1] is False:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[13-1]) + '</span>'
-            else:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item13 + '\n\n')
-
-            if check_status[14-1] is True:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[14-1]) + '</span>'
-            elif check_status[14 - 1] is False:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[14-1]) + '</span>'
-            else:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item14 + '\n\n')
-
-            if check_status[15-1] is True:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[15-1]) + '</span>'
-            elif check_status[15 - 1] is False:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[15-1]) + '</span>'
-            else:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item15 + '\n\n')
-
-            if check_status[16-1] is True:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[16-1]) + '</span>'
-            elif check_status[16 - 1] is False:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[16-1]) + '</span>'
-            else:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item16 + '\n\n')
-
-            file.write("------\n")
-
-            if check_status[1-1] is not None:
-                file.write('<img src="./PWR_Meas/Power_Total.png" alt="picture" height="250">' + "\n\n")  # width="200"
-            if check_status[6-1] is not None:
-                file.write('<img src="./CALI1_DIFF/SE_Gain.png" alt="picture" height="250">' + "\n\n")  # width="200"
-                file.write('<img src="./CALI1_DIFF/SE_ENC.png" alt="picture" height="250">' + "\n\n")  # width="200"
-            if check_status[11-1] is not None:
-                file.write('<img src="./MON_FE/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">' + "\n\n")  # width="200"
-
-            file.write("------\n")

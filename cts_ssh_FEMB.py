@@ -1,17 +1,14 @@
 import time
 import sys
 import subprocess
-import getpass
 import datetime
 import filecmp
 import pickle
 import os
-from DAT_read_cfg import dat_read_cfg
-# from DAT_LArASIC_InitChk import dat_larasic_initchk
 from datetime import datetime
-import random
-import colorama
 import csv
+# use webbrowser to show the report
+import webbrowser
 
 
 def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
@@ -48,69 +45,13 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
         # continue
     return result
 
-
-# if False:
-#     print("Transfer data to PC...")
-#     fdir = '/home/root/BNL_CE_WIB_SW_QC/CHK/'
-#
-#     fsubdirs = fdir.split("/")
-#
-#     print(fsubdirs)
-#     fddir = "E:/FEMB_QC/Tested/Time_2024-07-09_17-25-47_CTS_BNL_S3_H14/aaa/"
-#     print(fddir)
-#     if not os.path.exists(fddir):
-#         try:
-#             os.makedirs(fddir)
-#         except OSError:
-#             print("Error to create folder")
-#             print("Exit anyway")
-#             # sys.exit()
-#
-#     wibhost = "root@192.168.121.123:"
-#     fsrc = wibhost + fdir
-#     print(fsrc)
-#     print(fddir)
-#     command = ["scp", "-r", fsrc, fddir]
-#     result = subrun(command, timeout=None)
-#     if result != None:
-#         print("data save at {}".format(fddir))
-#     else:
-#         print("FAIL!")
-
-
-def DAT_power_off():
-    logs = {}
-    print(datetime.datetime.utcnow(), " : Power DAT down (it takes < 60s)")
-    command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
-    result = subrun(command, timeout=60)
-    if result != None:
-        if "Done" in result.stdout:
-            print(datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-        else:
-            print("FAIL!")
-            print(result.stdout)
-            return None
-    else:
-        print("FAIL!")
-        return None
-
-
-def Sinkcover():
-    while True:
-        ccflg = input("\033[93m Do covers of shielding box close? (Y/N) : \033[0m")
-        if ("Y" in ccflg) or ("y" in ccflg):
-            break
-        else:
-            print("Please close the covers and continue...")
-
-
 # =================#
 # FEMB QC Script: #
 # LKE@BNL.GOV     #
 # =================#
 
 # Function 01 CSV Read
-def read_csv_to_dict(filename):
+def read_csv_to_dict(filename, env):
     data = {}
     with open(filename, mode='r', newline='', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
@@ -120,15 +61,20 @@ def read_csv_to_dict(filename):
                 key = row[0]
                 value = row[1]
                 data[key] = value
-            print("\033[96m" + key + " :    " + data[key] + "\033[0m")
+            print("\033[96m" + key + "\t\t:\t\t" + data[key] + "\033[0m")
+    if env == 'LN':
+        data['env'] = 'y'
+        print("\033[96m" + 'environment' + "\t:\t\t" + data['env'] + '(Cold)' + "\033[0m")
+    else:
+        data['env'] = 'n'
+        print("\033[96m" + 'environment' + "\t:\t\t" + data['env'] + '(Warm)' + "\033[0m")
     return data
 
 
 def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
     # QC_TST_EN = True
-    logs = {}  # from collections import defaultdict        report_log01 = defaultdict(dict)
+    logs = {}  # from collections import defaultdict report_log01 = defaultdict(dict)
     logs['CTS_IDs'] = input_info['test_site']
-
     # add slot and FEMB into list
     slot0 = input_info['SLOT0']
     slot1 = input_info['SLOT1']
@@ -181,6 +127,8 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
     # [0 'is used for checkout', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 '1-16 are used for QC']
     tms_items = {}
     tms_items[11] = "\033[96m Item_11 : FE DAC Linearity \033[0m"
+    tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
+    tms_items[12] = "\033[96m Item_12 : ColdADC ref_voltage Linearity \033[0m"
     tms_items[1] = "\033[96m Item_01 : POWER CONSUMPTION  \033[0m"
     tms_items[2] = "\033[96m Item_02 : POWER CYCLE  \033[0m"
     tms_items[3] = "\033[96m Item_03 : Leakage Current Pulse Response  \033[0m"
@@ -190,8 +138,6 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
     tms_items[7] = "\033[96m Item_07 : Cali_2 configuration SE 900 mV \033[0m"
     tms_items[8] = "\033[96m Item_08 : Cali_3 SGP1 SE 200 mV \033[0m"
     tms_items[9] = "\033[96m Item_09 : Cali_4 SGP1 SE 900 mV \033[0m"
-    tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
-    tms_items[12] = "\033[96m Item_12 : ColdADC ref_voltage Linearity \033[0m"
     tms_items[13] = "\033[96m Item_13 : External Pulse Calibration 900mV baseline \033[0m"
     tms_items[14] = "\033[96m Item_14 : External Pulse Calibration 200mV baseline \033[0m"
     tms_items[15] = "\033[96m Item_15 : ColdADC_sync_pat_report \033[0m"
@@ -302,38 +248,42 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
         command1 = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC;  python3 top_femb_powering.py {}".format(power_en)]
         result1 = subrun(command1, timeout=60)
         SlotCheck = result1.stdout
-
-        if 'SLOT#0 Power Connection Normal' in SlotCheck:
-            print("\033[32m" + 'SLOT#0 Power Connection Normal' + "\033[0m")
-            slot0 = input_info['SLOT0']
-        else:
-            print("\033[33m" + 'SLOT#0 LOSS Power Connection Warning !!!' + "\033[0m")
-            Slot_change = True
-            slot0 = ' '
-        if 'SLOT#1 Power Connection Normal' in SlotCheck:
-            print("\033[32m" + 'SLOT#1 Power Connection Normal' + "\033[0m")
-            slot1 = input_info['SLOT1']
-        else:
-            print("\033[33m" + 'SLOT#1 LOSS Power Connection Warning !!!' + "\033[0m")
-            slot1 = ' '
-            Slot_change = True
-        if 'SLOT#2 Power Connection Normal' in SlotCheck:
-            print("\033[32m" + 'SLOT#2 Power Connection Normal' + "\033[0m")
-            slot2 = input_info['SLOT2']
-        else:
-            print("\033[33m" + 'SLOT#2 LOSS Power Connection Warning !!!' + "\033[0m")
-            slot2 = ' '
-            Slot_change = True
-        if 'SLOT#3 Power Connection Normal' in SlotCheck:
-            print("\033[32m" + 'SLOT#3 Power Connection Normal' + "\033[0m")
-            slot3 = input_info['SLOT3']
-        else:
-            print("\033[33m" + 'SLOT#3 LOSS Power Connection Warning !!!' + "\033[0m")
-            slot3 = ' '
-            Slot_change = True
+        print(slot_list)
+        if '0' in slot_list:
+            if 'SLOT#0 Power Connection Normal' in SlotCheck:
+                print("\033[32m" + 'SLOT#0 Power Connection Normal' + "\033[0m")
+                slot0 = input_info['SLOT0']
+            else:
+                print("\033[33m" + 'SLOT#0 LOSS Power Connection Warning !!!' + "\033[0m")
+                Slot_change = True
+                slot0 = ' '
+        if '1' in slot_list:
+            if 'SLOT#1 Power Connection Normal' in SlotCheck:
+                print("\033[32m" + 'SLOT#1 Power Connection Normal' + "\033[0m")
+                slot1 = input_info['SLOT1']
+            else:
+                print("\033[33m" + 'SLOT#1 LOSS Power Connection Warning !!!' + "\033[0m")
+                slot1 = ' '
+                Slot_change = True
+        if '2' in slot_list:
+            if 'SLOT#2 Power Connection Normal' in SlotCheck:
+                print("\033[32m" + 'SLOT#2 Power Connection Normal' + "\033[0m")
+                slot2 = input_info['SLOT2']
+            else:
+                print("\033[33m" + 'SLOT#2 LOSS Power Connection Warning !!!' + "\033[0m")
+                slot2 = ' '
+                Slot_change = True
+        if '3' in slot_list:
+            if 'SLOT#3 Power Connection Normal' in SlotCheck:
+                print("\033[32m" + 'SLOT#3 Power Connection Normal' + "\033[0m")
+                slot3 = input_info['SLOT3']
+            else:
+                print("\033[33m" + 'SLOT#3 LOSS Power Connection Warning !!!' + "\033[0m")
+                slot3 = ' '
+                Slot_change = True
         # print("\033[34m" + '\nPlease Check the Result: \n    press y to continue \n    press n to break' + "\033[0m")
 
-        if SlotCheck:
+        if Slot_change:
             print('Check the SLOT or rewrite the femb_info.csv and Restart, Wait ...')
             power_off = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
             subrun(power_off, timeout=60)
@@ -443,6 +393,10 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
         else:
             print("FAIL!")
             return None
+        chkcheck = result.stdout
+
+        print(result.stdout)  # debug
+
         print("Transfer data to PC...")
         fdir = '/home/root/BNL_CE_WIB_SW_QC/CHK/'
         # wib_raw_dir = fdir #later save it into log file
@@ -474,6 +428,55 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             print("FAIL!")
             return None
 
+        ###############################################
+        check_tmp = True
+        if '0' in slot_list:
+            if 'N0 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+                print("\033[32m" + 'SLOT#0 CHECKOUT Normal' + "\033[0m")
+            else:
+                print("\033[33m" + 'SLOT#0 LOSS CHECKOUT Warning !!!' + "\033[0m")
+                check_tmp = False
+        if '1' in slot_list:
+            if 'N1 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+                print("\033[32m" + 'SLOT#1 CHECKOUT Normal' + "\033[0m")
+            else:
+                print("\033[33m" + 'SLOT#1 LOSS CHECKOUT Warning !!!' + "\033[0m")
+                check_tmp = False
+        if '2' in slot_list:
+            if 'N2 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+                print("\033[32m" + 'SLOT#2 CHECKOUT Normal' + "\033[0m")
+            else:
+                print("\033[33m" + 'SLOT#2 LOSS CHECKOUT Warning !!!' + "\033[0m")
+                check_tmp = False
+        if '3' in slot_list:
+            if 'N3 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+                print("\033[32m" + 'SLOT#3 CHECKOUT Normal' + "\033[0m")
+            else:
+                print("\033[33m" + 'SLOT#3 LOSS CHECKOUT Warning !!!' + "\033[0m")
+                check_tmp = False
+
+        for root, dirs, files in os.walk(fddir):
+            for file in files:
+                file_name = os.path.join(root, file)
+                file_name = file_name.replace('\\', '/')
+                if 'N0.md' in file_name:
+                    print(file_name)
+                    preview_url = f'file://{file_name}'
+                    webbrowser.open(preview_url)
+                if 'N1.md' in file_name:
+                    print(file_name)
+                    preview_url = f'file://{file_name}'
+                    webbrowser.open(preview_url)
+                if 'N2.md' in file_name:
+                    print(file_name)
+                    preview_url = f'file://{file_name}'
+                    webbrowser.open(preview_url)
+                if 'N3.md' in file_name:
+                    print(file_name)
+                    preview_url = f'file://{file_name}'
+                    webbrowser.open(preview_url)
+
+    #    ###################################################
         # remove raw folder in wib side
         command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
         result = subrun(command, timeout=30)
@@ -484,21 +487,20 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
         else:
             print("FAIL!")
             return None
-    ##========== end of 02 checkout ==========================
 
-    # if testid == 0:  # checkout
-    #     print("Run quick analysis...")
-    # QCstatus, bads = dat_larasic_initchk(fdir=logs['pc_raw_dir'])
-    # if len(bads) > 0:
-    #     if logs['New_chips']:
-    #         fp = logs['pc_raw_dir'] + "QC.log"
-    #         with open(fp, 'wb') as fn:
-    #             pickle.dump(logs, fn)
-    #     return (QCstatus, bads)
+        if check_tmp:
+            print('Assembly Checkout Completed!')
+        else:
+            print('Enter y to continue\nEnter Any Key to exit')
+            Next = input()
+            if Next == 'y':
+                print('Continue QC')
+            else:
+                print('Exit ...')
+                print('Please Power OFF and Colse the Power Supply!')
+                sys.exit()
 
-    input()# I need to show the report first
-
-    ##========== begin of 03 QC ==========================
+    ## ========== begin of 03 QC ==========================
     if QC_TST_EN == 3:
         print(datetime.utcnow(), " : Start FEMB QC")
         for testid in tms:
@@ -570,31 +572,22 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             else:
                 print("FAIL!")
                 return None
-    ##========== end of 03 checkout ==========================
-
-    # if testid == 0:  # checkout
-    #     print("Run quick analysis...")
-    #     QCstatus, bads = dat_larasic_initchk(fdir=logs['pc_raw_dir'])
-    #     if len(bads) > 0:
-    #         if logs['New_chips']:
-    #             fp = logs['pc_raw_dir'] + "QC.log"
-    #             with open(fp, 'wb') as fn:
-    #                 pickle.dump(logs, fn)
-    #         return (QCstatus, bads)
+    ## ========== end of 03 QC ==========================
 
     # if True:
     if QC_TST_EN == 10:
         print("save log info during QC")
-        if logs['New_chips']:
-            fp = logs['pc_raw_dir'] + "QC.log"
+        if True:
+            fp = logs['PC_rawdata_root'] + '_QC/' + "QC.log"
+            if not os.path.exists(fp):
+                try:
+                    os.makedirs(fp)
+                except OSError:
+                    print ("Error to create folder %s"%fp)
+                    sys.exit()
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
-        else:
-            tmpstr = "".join(str(x) + "_" for x in logs['TestIDs'])
-            fp = logs['pc_raw_dir'] + "QC_Retest_{}.log".format(tmpstr)
-            print(fp)
-            with open(fp, 'wb') as fn:
-                pickle.dump(logs, fn)
+
 
     QCstatus = "PASS"
     bads = []

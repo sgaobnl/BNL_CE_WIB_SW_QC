@@ -1,4 +1,7 @@
 import os
+import sys
+import time
+
 # from cts_ssh_FEMB import cts_ssh_FEMB
 import cts_ssh_FEMB as cts
 
@@ -7,9 +10,9 @@ import cts_ssh_FEMB as cts
 #       01 Function Part                                   #
 ############################################################
 
-def FEMB_QC(QC_TST_EN):
+def QC_Process(QC_TST_EN=None, input_info=None):
     while True:
-        QCresult = cts.cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=QC_TST_EN, input_info=info)
+        QCresult = cts.cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=QC_TST_EN, input_info=input_info)
         if QCresult != None:
             QCstatus = QCresult[0]
             badchips = QCresult[1]
@@ -28,53 +31,95 @@ def FEMB_QC(QC_TST_EN):
     return QCstatus, badchips  # badchips range from 0 to7
 
 
+def FEMB_QC(input_info):
+    # B Power On Warm Interface Board
+    print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
+    input("Enter to next ...\n")
+    print("\033[35m" + "B01 : Please Wait the Fiber Converter Light on (30 second)" + "\033[0m")
+
+    print("If Fiber Converter works, Enter to next ...\n")
+    input()
+    # first run
+    # ###############STEP1#################################
+    skts = [0, 1, 2, 3, 4, 5, 6, 7]
+
+    # C FEMB QC
+    print("\033[35m" + "C1 : Room Temperature FEMB Quality Control Execution (takes < 1800s)" + "\033[0m")
+
+    # ======== Button 00 WIB initial =====================
+    # input("\033[35m" + 'Enter to Begin!' + "\033[0m")
+    QC_Process(QC_TST_EN=0, input_info=input_info)  # initial wib
+
+    # ======== Button 01 WIB FEMB ========================
+    # input('Button#01 FEMB Initial SLOT')
+    QC_Process(QC_TST_EN=1, input_info=input_info)  # initial FEMB I2C
+
+    # ======== Button 02 Checkout ========================
+    # input('Button#02 FEMB Assembly Checkout')
+    time.sleep(1)
+    QC_Process(QC_TST_EN=2, input_info=input_info)  # assembly checkout
+    # ======== Button 03 QC ==============================
+    # input('Button#03 FEMB Quality Control')
+    QC_Process(QC_TST_EN=3, input_info=input_info)  # QC
+    # storage the log file
+    QC_Process(QC_TST_EN=10, input_info=input_info)  # QC
+
+    return 0
+
+
 ############################################################
 #       02 Execute Part                                    #
 ############################################################
 
+# Warm FEMB QC (Room Temperature)
 # A Before Power On
+
 csv_file = 'femb_info.csv'
 file_path = r'.\femb_info.csv'
-
-print("\033[35m" + "A00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
+print("\033[35m" + "A_RT00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
 input('Put FEMB#0 into SLOT#0; Enter to next ...')
 input('Put FEMB#1 into SLOT#1; Enter to next ...')
 input('Put FEMB#2 into SLOT#2; Enter to next ...')
 input('Put FEMB#3 into SLOT#3; Enter to next ...')
-
 # print("00 : Please Review the information")
-print("\033[35m" + "A01 : Please Review the information" + "\033[0m")
+print("\033[35m" + "A_RT01 : Please Review the information" + "\033[0m")
 os.system(f'notepad {file_path}')
-info = cts.read_csv_to_dict(csv_file)
+infort = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
+Next = input("\033[38;5;208mEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC\n\033[0m")
+if Next == 'n':
+    print('No Warm QC execute!')
+elif Next == 'e':
+    sys.exit()
+else:
+    FEMB_QC(infort)
+    print("Warm FEMB QC Done!")
 
-# B Power On Warm Interface Board
-print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
-input("Enter to next ...")
-print("\033[35m" + "B01 : Please Wait the Fiber Converter Light on (30 second)" + "\033[0m")
+print('\n\n')
 
-print("If Fiber Converter works, Enter to next ...")
+# Cold FEMB QC (LN2)
+
+print("\033[94m" + "A_LN2 : Liquid Nitrogen FEMB Quality Control Execution (takes < 1800s)" + "\033[0m")
+print("\033[94m" + "Please set IMMERSE to fill the Liquid Nitrogen into Cold Box (takes about 30 minutes)" + "\033[0m")
 input()
-# first run
-# ###############STEP1#################################
-skts = [0, 1, 2, 3, 4, 5, 6, 7]
 
-# C FEMB QC
-print("\033[35m" + "C : FEMB Quality Control Excute (takes < 1800s)" + "\033[0m")
+# A Before Power On
+csv_file = 'femb_info.csv'
+file_path = r'.\femb_info.csv'
+print("\033[35m" + "A_LN00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
+input('Put FEMB#0 into SLOT#0; Enter to next ...')
+input('Put FEMB#1 into SLOT#1; Enter to next ...')
+input('Put FEMB#2 into SLOT#2; Enter to next ...')
+input('Put FEMB#3 into SLOT#3; Enter to next ...')
+# print("00 : Please Review the information")
+print("\033[35m" + "A_LN01 : Please Review the information" + "\033[0m")
+os.system(f'notepad {file_path}')
+infoln = cts.read_csv_to_dict(csv_file, 'LN')  # Cold test in Liquid Nitrogen
+Next = input("enter 'y' to continue \nenter 'e' to exit\n any key to skip the Cold QC")
+if Next == 'y':
+    FEMB_QC(infoln)
+    print("\033[35m" + "Cold FEMB QC Done!" + "\033[0m")
+elif Next == 'e':
+    sys.exit()
+else:
+    print('No Cold QC execute!')
 
-# ======== Button 00 WIB initial =====================
-input('Enter to Begin!')
-QCstatus, badchips = FEMB_QC(QC_TST_EN = 0) # initial wib
-
-# ======== Button 01 WIB FEMB ========================
-# input('Button#01 FEMB Initial SLOT')
-FEMB_QC(QC_TST_EN = 1) # initial FEMB I2C
-
-# ======== Button 02 Checkout ========================
-# input('Button#02 FEMB Assembly Checkout')
-FEMB_QC(QC_TST_EN = 2)  # assembly checkout
-
-# ======== Button 03 QC ==============================
-input('Button#03 FEMB Quality Control')
-FEMB_QC(QC_TST_EN=3)  # QC
-
-print("Done")

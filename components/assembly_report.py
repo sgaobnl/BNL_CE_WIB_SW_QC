@@ -21,7 +21,7 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
     elif VALUE == "Horizontal":
         table = '|' + '|'.join(dictionary.keys()) + '|' + '\n'
         table += '|' + '|'.join(['---' for _ in dictionary.keys()]) + '|' + '\n'
-        table += '|' + '|'.join(str(dictionary[key]) for key in dictionary.keys()) + '|' + '\n'
+        table += '|' + '|'.join(str(dictionary[key]).strip() for key in dictionary.keys()) + '|' + '\n'
     else:
         table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
         for key, value in zip(keys, values):
@@ -40,7 +40,7 @@ def final_report(datareport, fembs, fembNo):
     for key, value in log.report_log01["Detail"].items():
         print(f"{key}: {value}")
 
-    print('/n')
+    print('\n')
 
     all_true = {}
     for ifemb in fembs:
@@ -61,9 +61,9 @@ def final_report(datareport, fembs, fembNo):
         all_true[femb_id] = all(value for value in log.final_status[femb_id].values())
 
         if all_true[femb_id]:
-            print("FEMB ID {}\t PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d'%ifemb]))
+            print("FEMB ID {}\t N{} PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d'%ifemb], ifemb))
         else:
-            print("femb id {}\t faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]))
+            print("femb id {}\t N{} faild\t the assembly checkout".format(fembNo['femb%d' % ifemb], ifemb))
     print("\n\n")
     print("Detail for Issues")
 
@@ -73,18 +73,18 @@ def final_report(datareport, fembs, fembNo):
         issue_note = ""
         if all_true[femb_id]:
             pass
-            summary = "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb])
+            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
             note = "### See the Report"
         else:
             print(femb_id)
-            summary = "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb])
+            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict[femb_id])
                     issue_note += "{} \n".format(dict[femb_id])
             note = "### Here is the issue: \n" + str(issue_note) + "\n"
 
-        fpmd = datareport[ifemb] + 'report_FEMB_{}.md'.format(fembNo['femb%d' % ifemb])
+        fpmd = datareport[ifemb] + 'report_FEMB_{}_N{}.md'.format(fembNo['femb%d' % ifemb], ifemb)
 
         with open(fpmd, 'w', encoding = "utf-8") as file:
             file.write('\n')
@@ -98,7 +98,7 @@ def final_report(datareport, fembs, fembNo):
 #   Begin   lke@bnl.gov
 
 # 01        Print <Input Information>
-            Head01 = '### ' + '<span style="color: green;">' + 'PART 01 INPUT INFORMATION' + '    < Pass >' + '</span>' + '\n'
+            Head01 = '### ' + 'PART 01 INPUT INFORMATION' + '\n'
             file.write(Head01 + '\n')
             info = dict_to_markdown_table(log.report_log01["Detail"], VALUE = "Horizontal")
             file.write(info + '\n')

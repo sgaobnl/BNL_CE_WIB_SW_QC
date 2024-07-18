@@ -17,24 +17,25 @@ def Create_data_folders(fembNo, env, toytpc):
 
     datadir = "./CHK/"
     for key,femb_no in fembNo.items():
-        datadir = datadir + "femb{}_".format(femb_no)
+        datadir = datadir + "femb{}".format(femb_no)
 
-    datadir = datadir+"{}_{}".format(env,toytpc)
-    n=1
-    while (os.path.exists(datadir)):
-        if n==1:
-            datadir = datadir + "_R{:03d}".format(n)
-        else:
-            datadir = datadir[:-3] + "{:03d}".format(n)
-        n=n+1
-        if n>20:
-            raise Exception("There are more than 20 folders...")
+    # datadir = datadir+"{}_{}".format(env,toytpc)
+    # n=1
+    # while (os.path.exists(datadir)):
+    #     if n==1:
+    #         datadir = datadir + "_R{:03d}".format(n)
+    #     else:
+    #         datadir = datadir[:-3] + "{:03d}".format(n)
+    #     n=n+1
+    #     if n>20:
+    #         raise Exception("There are more than 20 folders...")
 
-    try:
-        os.makedirs(datadir)
-    except OSError:
-        print ("Error to create folder %s"%datadir)
-        sys.exit()
+    if not os.path.exists(datadir):
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print("Error to create folder %s" % datadir)
+            sys.exit()
 
     datadir = datadir+"/"
 
@@ -42,7 +43,7 @@ def Create_data_folders(fembNo, env, toytpc):
 
 def Create_report_folders(fembs, fembNo, env, toytpc, datadir):
 
-    reportdir = datadir + "report/"
+    reportdir = datadir + "./CHK/report/"
 
     PLOTDIR = {}
 

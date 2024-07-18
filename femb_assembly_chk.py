@@ -11,7 +11,7 @@ import components.assembly_report as a_repo
 import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
-LAr_Dalay = 1
+LAr_Dalay = 5
 
 ####### Input FEMB slots #######
 if len(sys.argv) < 2:
@@ -69,7 +69,7 @@ if save:
         fembName['femb{}'.format(i)]=input("FEMB{}ID:".format(i)).strip()
         fembNo['femb{}'.format(i)]=fembName['femb{}'.format(i)][1:]
     logs['FEMB ID'] = fembName
-    #logs['femb id']=fembNo
+    # logs['femb id']=fembNo
     logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 
     datadir=a_func.Create_data_folders(fembName, env, toytpc)

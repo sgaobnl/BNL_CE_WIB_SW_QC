@@ -20,6 +20,8 @@ from PIL import Image
 import QC_components.qc_a_function as a_func
 import QC_components.qc_log as log
 import QC_components.All_Report as a_repo
+# use webbrowser to show the issue report
+import webbrowser
 
 class QC_reports:
 
@@ -54,12 +56,12 @@ class QC_reports:
         for ifemb in self.fembs:
             fembid = self.fembsID[f'femb{ifemb}']
             fembName = self.fembsName[f'femb{ifemb}']
-            one_savedir = savedir+"FEMB{}_{}_{}".format(fembName, logs["env"], logs["toytpc"])
+            one_savedir = savedir+"FEMB{}_S{}".format(fembName, ifemb)
             if not os.path.exists(one_savedir):
                 try:
                     os.makedirs(one_savedir)
                 except OSError:
-                    print ("Error to create folder %s"%fp)
+                    print ("Error to create folder %s"%one_savedir)
                     sys.exit()
             self.savedir[ifemb]=one_savedir+"/"
             fp = self.savedir[ifemb] + "logs_env.bin"
@@ -113,12 +115,6 @@ class QC_reports:
 
 #     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
 #     01_11 SE Power Measurement      Power
-
-
-
-        f_pwr = datadir+"PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        # with open(f_pwr, 'rb') as fn:
-            # pwr_meas = pickle.load(fn)[1]
         pwr_meas = pwr_meas_dict["PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
         print(pwr_meas)
         for ifemb in range(len(self.fembs)):
@@ -129,9 +125,6 @@ class QC_reports:
             log.report_log01_11.update(pwr1)
             log.check_log01_11.update(check1)
 #     01_12 SE OFF Pulse Measurement      Pulse
-#         f_pl = datadir+"PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
-#         with open(f_pl, 'rb') as fn:
-#              rawdata = pickle.load(fn)[0]
         rawdata = pwr_meas_dict["PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
         print(1111111111)
         pldata = qc.data_decode(rawdata, self.fembs)
@@ -152,8 +145,6 @@ class QC_reports:
 #     SE ON Power Measurement    Power
         f_pwr = datadir+"PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"
         pwr_meas = pwr_meas_dict["PWR_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        # with open(f_pwr, 'rb') as fn:
-        #      pwr_meas = pickle.load(fn)[1]
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '01_21 SE ON Power Consumption')
@@ -163,10 +154,7 @@ class QC_reports:
             log.check_log01_21.update(check1)
 
 #     SE ON Pulse Measurement      Pulse
-        f_pl = datadir+"PWR_SE_ON_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
         rawdata = pwr_meas_dict["PWR_SE_ON_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
-        # with open(f_pl, 'rb') as fn:
-        #      rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_ON_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_22 SE ON Power Pulse')
         pulse = dict(log.tmp_log)
@@ -1015,8 +1003,14 @@ class QC_reports:
 
     def report(self):
         print(self.savedir)
+        path = a_repo.section_report(self.savedir, self.fembs, self.fembsID)
+        if '_F_S' in path:
+            preview_url = f'file://{path}'
+            webbrowser.open(preview_url)
         a_repo.final_report(self.savedir, self.fembs, self.fembsID)
 
+
+        return path
     #   6  CALI_report_1
     def CALI_report_1(self):
         log.test_label.append(6)
