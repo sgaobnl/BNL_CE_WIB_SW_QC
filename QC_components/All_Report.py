@@ -1048,7 +1048,7 @@ def final_report(datareport, fembs, fembNo):
             if all_true:
                 summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
             else:
-                summary = '<span style="color: red;">' + " FEMB # {}\t      Fail\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
+                summary = '<span style="color: red;">' + " FEMB # {}\t      fail\t    the Quality Control tests".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
         print(summary)
 
 ###======================================================================

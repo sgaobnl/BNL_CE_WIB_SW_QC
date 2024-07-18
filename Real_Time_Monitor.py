@@ -90,4 +90,4 @@ while True:
             print(command)
             result = subrun(command, timeout=1000)  # rewrite with Popen later
 
-    time.sleep(10)
+    time.sleep(5)

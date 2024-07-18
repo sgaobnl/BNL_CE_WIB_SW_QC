@@ -1,13 +1,12 @@
+import logging
 import time
 import sys
 import subprocess
 import datetime
 import filecmp
-import pickle
 import os
 from datetime import datetime
 import csv
-# use webbrowser to show the report
 import webbrowser
 
 
@@ -497,7 +496,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                 print('Continue QC')
             else:
                 print('Exit ...')
-                print('Please Power OFF and Colse the Power Supply!')
+                print('Please Power OFF and Close the Power Supply!')
                 sys.exit()
 
     ## ========== begin of 03 QC ==========================
@@ -578,15 +577,10 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
     if QC_TST_EN == 10:
         print("save log info during QC")
         if True:
-            fp = logs['PC_rawdata_root'] + '_QC/' + "QC.log"
-            if not os.path.exists(fp):
-                try:
-                    os.makedirs(fp)
-                except OSError:
-                    print ("Error to create folder %s"%fp)
-                    sys.exit()
-            with open(fp, 'wb') as fn:
-                pickle.dump(logs, fn)
+            logging.basicConfig(filename='QC.log',
+                                level=logging.INFO,
+                                format='%(asctime)s - %(levelname)s - %(message)s')
+            logging.info('info: %s', logs)
 
 
     QCstatus = "PASS"
