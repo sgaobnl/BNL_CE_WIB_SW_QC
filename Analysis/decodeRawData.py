@@ -17,10 +17,12 @@ from QC_DLY_RUN import QC_DLY_RUN
 from QC_Cap_Meas import QC_Cap_Meas
 
 if __name__ == '__main__':
-    root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    # root_path = '../../Data_BNL_CE_WIB_SW_QC'
+    root_path = '../../B010T0004'
     output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
 
-    list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
     for data_dir in list_data_dir:
         t0 = datetime.now()
         print('start time : {}'.format(t0))
