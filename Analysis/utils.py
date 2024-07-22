@@ -258,13 +258,38 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
             rms = np.round(np.std(oneCHdata), 4)
         else:
             data = np.array([])
-            for i in range(N_pulses):
-                istart = i*period
-                iend = posmax[i]-10
-                if (iend-istart) > 0:
-                    data = np.concatenate((data, oneCHdata[istart : iend]))
+            # for i in range(N_pulses):
+            #     istart = i*period
+            #     iend = posmax[i]-10
+            #     if (iend-istart) > 0:
+            #         data = np.concatenate((data, oneCHdata[istart : iend]))
+            # ped = np.round(np.mean(data), 4)
+            # rms = np.round(np.std(data), 4)
+            N_periods = len(oneCHdata)//period
+            for i in range(N_periods):
+                chunkdata = oneCHdata[i*period : (i+1)*period]
+                pmax = np.argmax(chunkdata)
+                pmin = np.argmin(chunkdata)
+                istart = 0
+                iend = 0
+                if (pmax < pmin) and (pmax-50 < 0):
+                    istart = pmin+20
+                    iend = -50
+                elif (pmax < pmin) and (period-pmin < pmax):
+                    istart = 20
+                    iend = pmax - 20
+                else:
+                    front = chunkdata[pmax - 20 : ]
+                    back = chunkdata[ : pmax - 20]
+                    chunkdata = np.concatenate((front, back))
+                    pmax = np.argmax(chunkdata)
+                    pmin = np.argmin(chunkdata)
+                    istart = pmin + 20
+                    iend = -50
+                data = np.concatenate((data, chunkdata[istart : iend]))
             ped = np.round(np.mean(data), 4)
             rms = np.round(np.std(data), 4)
+
     return [ped, rms]
 
 #_______BASE_CLASS________________
@@ -290,12 +315,12 @@ class BaseClass:
         self.__openLog__()
         createDirs(logs_dict=self.logs_dict, output_dir=output_path)
         self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)]]) for ichip in range(8)}
-        # self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
-        # for FE_ID, dir in self.FE_outputDIRs.items():
-        #     try:
-        #         os.mkdir(dir)
-        #     except OSError:
-        #         pass
+        self.FE_outputDIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
+        for FE_ID, dir in self.FE_outputDIRs.items():
+            try:
+                os.mkdir(dir)
+            except OSError:
+                pass
         if generateWaveForm:
             self.FE_outputPlots_DIRs = {self.logs_dict['FE{}'.format(ichip)] :'/'.join([output_path, self.logs_dict['FE{}'.format(ichip)], self.foldername]) for ichip in range(8)}
             for FE_ID, dir in self.FE_outputPlots_DIRs.items():
@@ -426,20 +451,26 @@ class LArASIC_ana:
                 chdata.append(chunkdata)
             chdata = np.array(chdata)
             avg_wf = np.average(np.transpose(chdata), axis=1, keepdims=False)
-            posmax = np.argmax(avg_wf)
-            if posmax+10 > self.period:
-                front = avg_wf[posmax-50 : ]
-                back = avg_wf[ : posmax-50]
-                avg_wf = np.concatenate((front, back), axis=0)
-            elif posmax-10 < 0:
+            # posmax = np.argmax(avg_wf)
+            # if posmax+10 > self.period:
+            #     front = avg_wf[posmax-50 : ]
+            #     back = avg_wf[ : posmax-50]
+            #     avg_wf = np.concatenate((front, back), axis=0)
+            # elif posmax-10 < 0:
+            #     front = avg_wf[-50 : ]
+            #     back = avg_wf[ : -50]
+            #     avg_wf = np.concatenate((front, back), axis=0)
+            pmax = np.argmax(avg_wf)
+            pmin = np.argmin(avg_wf)
+            if pmax > pmin:
+                front = avg_wf[pmax - 50 : ]
+                back = avg_wf[ : pmax - 50]
+                avg_wf = np.concatenate((front, back))
+            elif (pmax < pmin) and (pmax-50 < 0):
                 front = avg_wf[-50 : ]
                 back = avg_wf[ : -50]
-                avg_wf = np.concatenate((front, back), axis=0)
-                # plt.figure()
-                # plt.plot(avg_wf)
-                # plt.show()
-                # plt.close()
-                # sys.exit()
+                avg_wf = np.concatenate((front, back))
+
             chipWF.append(avg_wf)
         return chipWF
 
