@@ -1,6 +1,8 @@
+import logging
 import os
 import time
 import subprocess
+from datetime import datetime
 
 target_folder = 'E:\FEMB_QC\Tested'
 
@@ -51,43 +53,74 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
         # continue
     return result
 
-previous_files = load_last_scan_results()
 
-while True:
-    current_files = set()
-    for root, dirs, files in os.walk(target_folder):
-        for file in files:
-            current_files.add(os.path.join(root, file))
-    # calculate new update document
-    new_files = current_files - previous_files
-    # update the scan result
-    previous_files = current_files
 
-    save_last_scan_results(current_files)
+logs = {}
 
-    for file_path in new_files:
-        n = []
-        print(f'new file detected: {file_path}')
-        if '_S0' in file_path:
-            n.append(0)
-        if '_S1' in file_path:
-            n.append(1)
-        if '_S2' in file_path:
-            n.append(2)
-        if '_S3' in file_path:
-            n.append(3)
+def real_time_monitor():
+    previous_files = load_last_scan_results()
+    while True:
+        current_files = set()
+        for root, dirs, files in os.walk(target_folder):
+            for file in files:
+                current_files.add(os.path.join(root, file))
+        # calculate new update document
+        new_files = current_files - previous_files
+        # update the scan result
+        previous_files = current_files
 
-        desired_path = os.path.dirname(file_path)  # get last path
-        path = os.path.dirname(desired_path)  # get last path
-        path = path.replace('\\', '/')  # get last path
-        t_char = file_path[-7:]
-        t_num = ''.join([char for char in t_char if char.isdigit()])
-        if '_t' in file_path[-9:]:
-            time.sleep(10)  # the time is used to copy the whole .bin file
-            command = ["python3", "QC_report_all.py", path, "-n"]
-            command.extend(map(str, n))  # Convert integers to strings
-            command.extend(["-t", t_num])  # Add other arguments
-            print(command)
-            result = subrun(command, timeout=1000)  # rewrite with Popen later
+        save_last_scan_results(current_files)
 
-    time.sleep(5)
+        for file_path in new_files:
+            n = []
+            c = 0
+            print(f'new file detected: {file_path}')
+            if '_S0' in file_path:
+                n.append(0)
+                c+=1
+            if '_S1' in file_path:
+                n.append(1)
+                c += 1
+            if '_S2' in file_path:
+                n.append(2)
+                c += 1
+            if '_S3' in file_path:
+                n.append(3)
+                c += 1
+
+            desired_path = os.path.dirname(file_path)  # get last path
+            path = os.path.dirname(desired_path)  # get last path
+            path = path.replace('\\', '/')  # get last path
+            t_char = file_path[-7:]
+            t_num = ''.join([char for char in t_char if char.isdigit()])
+            if '_t' in file_path[-9:]:
+                time.sleep(c*7)  # the time is used to copy the whole .bin file
+                command = ["python3", "QC_report_all.py", path, "-n"]
+                command.extend(map(str, n))  # Convert integers to strings
+                command.extend(["-t", t_num])  # Add other arguments
+                print(command)
+                result = subrun(command, timeout=1000)  # rewrite with Popen later
+                if result != None:
+                    resultstr = result.stdout
+                    logs["QC_TestItemID_%03d"] = [command, resultstr]
+                    if "PASS" in result.stdout:
+                        print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                    else:
+                        print("FAIL the test item!")
+                        print(result.stdout)
+                        print("Exit anyway")
+                        return None
+                        # exit()
+                else:
+                    print("FAIL!")
+                    print(result.stdout)
+                    return None
+        time.sleep(5)   # when monitor works in wait, 5 seconds scan in one time
+
+real_time_monitor()
+
+if True:
+    logging.basicConfig(filename='E:\FEMB_QC\Tested\QC.log',
+                        level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info('info: %s', logs)

@@ -477,6 +477,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
 
     #    ###################################################
         # remove raw folder in wib side
+        time.sleep(1)
         command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
         result = subrun(command, timeout=30)
         if result != None:
@@ -501,6 +502,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
 
     ## ========== begin of 03 QC ==========================
     if QC_TST_EN == 3:
+        time.sleep(1)
         print(datetime.utcnow(), " : Start FEMB QC")
         for testid in tms:
             # input('QC debug 01')
@@ -508,7 +510,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             print(tms_items[testid])
             command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid)]
             user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
-            result = subrun(command, timeout=600, user_input=user_input_1)  # rewrite with Popen later
+            result = subrun(command, timeout=1000, user_input=user_input_1)  # rewrite with Popen later
             if result != None:
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d" % testid] = [command, resultstr]
@@ -528,6 +530,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                     # exit()
             else:
                 print("FAIL!")
+                print(result.stdout)
                 return None
 
             print("Transfer data to PC...")
@@ -563,6 +566,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
 
             # remove raw folder in wib side
             print("wib data remove at {}".format(fdir))
+            time.sleep(1)
             command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
             result = subrun(command, timeout=30)
             if result != None:

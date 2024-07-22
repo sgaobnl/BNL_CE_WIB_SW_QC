@@ -5,7 +5,8 @@ import time
 # from cts_ssh_FEMB import cts_ssh_FEMB
 import cts_ssh_FEMB as cts
 
-
+# Please Open Real_Time_Monitor.py and run first
+# Then, Run this CTS_FEMB_QC_top.py
 ############################################################
 #       01 Function Part                                   #
 ############################################################
@@ -76,23 +77,23 @@ def FEMB_QC(input_info):
 
 csv_file = 'femb_info.csv'
 file_path = r'.\femb_info.csv'
-print("\033[35m" + "A_RT00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
-input('Put FEMB#0 into SLOT#0; Enter to next ...')
-input('Put FEMB#1 into SLOT#1; Enter to next ...')
-input('Put FEMB#2 into SLOT#2; Enter to next ...')
-input('Put FEMB#3 into SLOT#3; Enter to next ...')
+print("\033[35m" + "A_RT00 : Install FEMB boards, check the connection of Data and Power Cables" + "\033[0m")
+input('Please Install FEMB #0 #1 #2 #3 into SLOT #0 #1 #2 #3; Enter to next ...')
 # print("00 : Please Review the information")
 print("\033[35m" + "A_RT01 : Please Review the information" + "\033[0m")
 os.system(f'notepad {file_path}')
-infort = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
-Next = input("\033[38;5;208mEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC\n\033[0m")
+inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
+Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC")
 if Next == 'n':
     print('No Warm QC execute!')
 elif Next == 'e':
-    sys.exit()
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test")
+    if Next2 != 'y':
+        sys.exit()
 else:
-    FEMB_QC(infort)
+    FEMB_QC(inform)
     print("Warm FEMB QC Done!")
+    print("Please Turn OFF the Power!")
 
 print('\n\n')
 
@@ -106,20 +107,19 @@ input()
 csv_file = 'femb_info.csv'
 file_path = r'.\femb_info.csv'
 print("\033[35m" + "A_LN00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
-input('Put FEMB#0 into SLOT#0; Enter to next ...')
-input('Put FEMB#1 into SLOT#1; Enter to next ...')
-input('Put FEMB#2 into SLOT#2; Enter to next ...')
-input('Put FEMB#3 into SLOT#3; Enter to next ...')
 # print("00 : Please Review the information")
 print("\033[35m" + "A_LN01 : Please Review the information" + "\033[0m")
 os.system(f'notepad {file_path}')
 infoln = cts.read_csv_to_dict(csv_file, 'LN')  # Cold test in Liquid Nitrogen
-Next = input("enter 'y' to continue \nenter 'e' to exit\n any key to skip the Cold QC")
-if Next == 'y':
-    FEMB_QC(infoln)
-    print("\033[35m" + "Cold FEMB QC Done!" + "\033[0m")
-elif Next == 'e':
-    sys.exit()
-else:
+Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Cold QC")
+if Next == 'n':
     print('No Cold QC execute!')
+elif Next == 'e':
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test")
+    if Next2 != 'y':
+        sys.exit()
+else:
+    FEMB_QC(infoln)
+    print("Cold FEMB QC Done!")
+    print("Please Turn OFF the Power!")
 
