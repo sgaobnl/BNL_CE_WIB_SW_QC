@@ -56,7 +56,7 @@ class QC_PWR(BaseClass):
                         data_by_config[FE_ID][param][keyname] = data_oneconfig[val]
         return data_by_config
 
-    def decode_FE_PWR(self):
+    def decode_FE_PWR(self, getWaveforms=True):
         print('----> Power consumption')
         data_by_config = self.getPowerConsumption()
 
@@ -87,7 +87,7 @@ class QC_PWR(BaseClass):
             pwr_all_chips[FE_ID] = oneChip_data
 
         # update data with the link to the plots and save everything in a json file
-        chResponseAllChips = self.analyzeChResponse()
+        chResponseAllChips = self.analyzeChResponse(getWaveforms=getWaveforms)
         for ichip, chip_id in enumerate(pwr_all_chips.keys()):
             FE_output_dir = self.FE_outputDIRs[chip_id]
            
@@ -125,7 +125,7 @@ class QC_PWR(BaseClass):
                     oneChip_data[tmpconfig]['negpeak'] = chResponseAllChips[chip_id][tmpconfig]['pulseResponse']['negpeak']['data']
             dumpJson(output_path=FE_output_dir, output_name="QC_PWR_data", data_to_dump=oneChip_data)
 
-    def analyzeChResponse(self):
+    def analyzeChResponse(self, getWaveforms=True):
         '''
             For each configuration corresponds a raw data of the channel response. 
             This method aims to analyze the channel response during the power measuremet
@@ -146,7 +146,7 @@ class QC_PWR(BaseClass):
                 # suffixFilename = '_'.join(tmp_config)
                 chipID = self.logs_dict['FE{}'.format(ichip)]
                 larasic = LArASIC_ana(dataASIC=decodedData[ichip], output_dir=self.FE_outputDIRs[chipID], chipID=chipID, tms=1, param=suffixFilename, generateQCresult=False, generatePlots=True, period=self.period)
-                data_asic = larasic.runAnalysis()
+                data_asic = larasic.runAnalysis(getWaveforms=getWaveforms, getPulseResponse=True)
                 outdata[chipID][suffixFilename] = data_asic
         return outdata
 
@@ -166,3 +166,4 @@ if __name__ =='__main__':
         print('end time : {}'.format(tf))
         deltaT = (tf - t0).total_seconds()
         print("Decoding time : {} seconds".format(deltaT))
+        sys.exit()
