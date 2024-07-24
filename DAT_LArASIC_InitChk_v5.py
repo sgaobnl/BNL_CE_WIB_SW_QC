@@ -17,75 +17,8 @@ from spymemory_decode import wib_dec
 #print(Back.RED + 'Red background text')
 
 def data_ana(fembs, rawdata, rms_flg=False):
-    wibdatas = wib_dec(rawdata,fembs, spy_num=5, cd0cd1sync=False)
-    dat_tmts_l = []
-    dat_tmts_h = []
-    for wibdata in wibdatas:
-        dat_tmts_l.append(wibdata[5][fembs[0]*2][0]) #LSB of timestamp = 16ns
-        dat_tmts_h.append(wibdata[5][fembs[0]*2+1][0])
-
-    period = 512 #DIRECT_PLS
-    #period = 500 #ASICDAC_
-    dat_tmtsl_oft = (np.array(dat_tmts_l)//32)%period #ADC sample rate = 16ns*32 = 512ns
-    dat_tmtsh_oft = (np.array(dat_tmts_h)//32)%period #ADC sample rate = 16ns*32 = 512ns
-
-    print (dat_tmts_l, dat_tmts_h)
-
-    
-    import matplotlib.pyplot as plt
-    print ("example 1: align the data...")
-    for i in range(len(wibdatas)):
-        wibdata = wibdatas[i]
-        datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
-        #for achn in range(len(datd)):
-        for achn in [0]:
-            chndata = datd[achn]
-            if achn<64:
-                oft = dat_tmtsl_oft[i]
-            else:
-                oft = dat_tmtsh_oft[i]
-            x = np.arange(oft, len(chndata) + oft, 1)
-            plt.plot(x,chndata)
-    plt.show()
-    plt.close()
-
-    #for achn in range(len(datd)):
-    print ("concatenate spy buffers according to timestamp")
-    for achn in [0]:
-        conchndata = []
-
-        for i in range(len(wibdatas)):
-            if achn<64:
-                oft = dat_tmtsl_oft[i]
-            else:
-                oft = dat_tmtsh_oft[i]
-
-            wibdata = wibdatas[i]
-            datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
-            chndata = datd[achn] 
-            lench = len(chndata)
-            tmp = period-oft
-            conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
-        import matplotlib.pyplot as plt
-        plt.plot(conchndata)
-        plt.show()
-        plt.close()
-
-        sumdata = np.array(conchndata[0:period])
-        for k in range(1,len(conchndata)//period):
-            sumdata +=  np.array(conchndata[k*period:(k+1)*period])
-        print ("average the data %d times"%(len(conchndata)//period))
-        avgdata = sumdata/(len(conchndata)//period)
-        import matplotlib.pyplot as plt
-        plt.plot(avgdata, label="Averaging plot")
-        plt.plot(conchndata[0:period], label="one period of original waveform")
-        plt.legend()
-        #plt.plot(list(avgdata[300:]) + list(avgdata[0:300]) )
-        plt.show()
-        plt.close()
-
-
-    exit()
+    wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
+    datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 
     chns =[]
     rmss = []
@@ -99,15 +32,9 @@ def data_ana(fembs, rawdata, rms_flg=False):
     npos0=0
     ppos64=0
     npos64=0
+    import matplotlib.pyplot as plt
     for achn in range(len(datd)):
         chndata = datd[achn]
-        import matplotlib.pyplot as plt
-        for x in range(4):
-            plt.plot(chndata[x*512+13:(x+1)*512+13])
-        plt.show()
-        plt.close()
-        exit()
-
         amax = np.max(chndata[300:-150])
         amin = np.min(chndata[300:-150])
         if achn==0:
@@ -136,6 +63,10 @@ def data_ana(fembs, rawdata, rms_flg=False):
         peds.append(aped)
         pkps.append(amax)
         pkns.append(amin)
+        plt.plot(chndata)
+    plt.show()
+    plt.close()
+
     return chns, rmss, peds, pkps, pkns, wfs,wfsf
 
 def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
@@ -158,22 +89,22 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000] ):
             if chip not in bads:
                 bads.append(chip)
 
-#    for tmp in [rmss, peds, amps]:
+    for tmp in [rmss, peds, amps]:
 ##    for tmp in [rmss] :#, peds, amps]:
 #    #    print (np.mean(tmp), np.std(tmp), np.max(tmp), np.min(tmp))
 #
-#        import matplotlib.pyplot as plt
-#        plt.plot(chns, tmp)
-#        for i in range(0,128,16):
-#            plt.vlines(i-0.5, 0, 100, color='y')
-#
-#        plt.title("Noise", fontsize=8)
-#       # plt.ylim((0,25))
-#       # plt.xlabel("ADC / bit", fontsize=8)
-#       # plt.ylabel("CH number", fontsize=8)
-#        plt.grid()
-#        plt.show()
-#        plt.close()
+        import matplotlib.pyplot as plt
+        plt.plot(chns, tmp)
+        for i in range(0,128,16):
+            plt.vlines(i-0.5, 0, 100, color='y')
+
+        plt.title("Noise", fontsize=8)
+       # plt.ylim((0,25))
+       # plt.xlabel("ADC / bit", fontsize=8)
+       # plt.ylabel("CH number", fontsize=8)
+        plt.grid()
+        plt.show()
+        plt.close()
 
     for ch in range(len(chns)):
         if (amps[ch] > par[0]) and (amps[ch] < par[1]):
@@ -269,7 +200,7 @@ def dat_larasic_initchk(fdir="/."):
         return QCstatus, sorted(data["FE_Fail"])
     if "Code#W004" in QCstatus:
         bads = []
-        for onekey in ["DIRECT_PLS_CHK", "ASICDAC_47mV_CHK","ASICDAC_CALI_CHK",  "DIRECT_PLS_RMS", "ASICDAC_CALI_RMS", "ASICDAC_47mV_RMS"]:
+        for onekey in ["DIRECT_PLS_CHK", "ASICDAC_CALI_CHK", "ASICDAC_47mV_CHK", "DIRECT_PLS_RMS", "ASICDAC_CALI_RMS", "ASICDAC_47mV_RMS"]:
             print (onekey)
             cfgdata = data[onekey]
             fembs = cfgdata[0]
@@ -309,8 +240,10 @@ def dat_larasic_initchk(fdir="/."):
         else:
             return "PASS", []
 
-if __name__=="__main__":
-    fdir = "D:/DAT_LArASIC_QC//B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+if __name__ == '__main__':
+    fdir = "./tmp_data/RT_FE_002010000_002020000_002030000_002040000_002050000_002060000_002070000_002080000/"
+    fdir = "D:/DAT_LArASIC_QC/Tested/Time_DUT1_DUT_1000_2000_3000_4000_5000_6000_7000_8000/LN_FE_007000948_007001170_007001237_007001247_007001146_007001104_007001152_007001236/"
+    fdir = "./tmp_data/LN_FE_017000948_017001170_017001237_017001247_017001146_017001104_017001152_017001236/"
     QCstatus, bads = dat_larasic_initchk(fdir)
     print (QCstatus)
     print (bads)

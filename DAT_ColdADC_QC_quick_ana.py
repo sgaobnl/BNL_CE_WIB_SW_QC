@@ -17,6 +17,7 @@ colorama.init(autoreset=True)
 #print(Back.RED + 'Red background text')
 
 fsubdir = "ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
+fsubdir = "ADC_100100001_100100002_100100003_100100004_100100005_100100006_100100007_100100008"
 #fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
 froot = os.getcwd() + "\\tmp_data\\"
 
@@ -1092,9 +1093,9 @@ if 8 in tms:
     #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
     #for freq in [8106.23, 14781.95, 31948.09,]:
-    #for freq in [8106.23]:
+    for freq in [8106.23]:
     #for freq in [358104]:
-    for freq in [119686]:
+    #for freq in [119686]:
         fp = fdir + "QC_ENOB_%08dHz"%(int(freq)) + ".bin"
         print ("When it is done, replace {} on the local PC".format(fp) )
         if os.path.isfile(fp):
