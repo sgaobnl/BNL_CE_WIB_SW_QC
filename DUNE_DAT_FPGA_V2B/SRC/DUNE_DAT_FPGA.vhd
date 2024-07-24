@@ -102,9 +102,7 @@ entity DUNE_DAT_FPGA is
 
 	--FE ASIC CONTROL & CALIBRATION
 		FE_IN_TST_SEL 						: OUT STD_LOGIC_VECTOR(15 downto 0); 
-		
 		FE_CALI_CS 							: OUT STD_LOGIC_VECTOR(7 downto 0);
-
 		
 		FE_INS_PLS_CS 						: OUT STD_LOGIC_VECTOR(7 downto 0);		
 
@@ -113,9 +111,9 @@ entity DUNE_DAT_FPGA is
 		FE_TEST_CSB							: OUT STD_LOGIC; 
 		FE_TEST_CSC							: OUT STD_LOGIC; 
 
---		FE_CMN_CSA							: OUT STD_LOGIC; 		
---		FE_CMN_CSB							: OUT STD_LOGIC; 
---		FE_CMN_CSC							: OUT STD_LOGIC; 
+		FE_CMN_CSA							: OUT STD_LOGIC; 		
+		FE_CMN_CSB							: OUT STD_LOGIC; 
+		FE_CMN_CSC							: OUT STD_LOGIC; 
 		FE_CMN_INH							: OUT STD_LOGIC; 
 		
 		EXT_PULSE_CNTL						: OUT STD_LOGIC; 
@@ -162,9 +160,9 @@ entity DUNE_DAT_FPGA is
 		ADC_SRC_CS_P1					   : OUT STD_LOGIC;
 		ADC_SRC_CS_P2					   : OUT STD_LOGIC;
 		ADC_SRC_CS_P3					   : OUT STD_LOGIC;
---		ADC_SRC_CS_P4					   : OUT STD_LOGIC; --comment due to schemacits error
-		ADC_SRC_CS_P5					   : OUT STD_LOGIC;	 --comment due to schemacits error	
---		ADC_SRC_CS_P6					   : OUT STD_LOGIC;		
+		ADC_SRC_CS_P4					   : OUT STD_LOGIC; --rev.1
+		ADC_SRC_CS_P5					   : OUT STD_LOGIC; --rev.1 	 
+		ADC_SRC_CS_P6					   : OUT STD_LOGIC;		
 		ADC_SRC_CS_P7					   : OUT STD_LOGIC;		
 		
 		ADC_SRC_CS_P8					   : OUT STD_LOGIC;
@@ -205,15 +203,23 @@ entity DUNE_DAT_FPGA is
 		ADC_N_TST_AMON_INH				: OUT STD_LOGIC; 
 		
 		
+      CD1_EFUSE_DIN  					   : OUT STD_LOGIC;  
+      CD1_EFUSE_CSB  					   : OUT STD_LOGIC;
+      CD1_EFUSE_SCLK 					   : OUT STD_LOGIC; 
+      CD1_EFUSE_VDDQ 					   : OUT STD_LOGIC; 
+      CD1_EFUSE_DOUT 					   : IN STD_LOGIC; 
+      CD1_EFUSE_PGM  					   : OUT STD_LOGIC;
+
+      CD2_EFUSE_DIN  					   : OUT STD_LOGIC;  
+      CD2_EFUSE_CSB  					   : OUT STD_LOGIC;
+      CD2_EFUSE_SCLK 					   : OUT STD_LOGIC; 
+      CD2_EFUSE_VDDQ 					   : OUT STD_LOGIC; 
+      CD2_EFUSE_DOUT 					   : In STD_LOGIC; 
+      CD2_EFUSE_PGM  					   : OUT STD_LOGIC;
 
 	--MISC
-		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
 	
---      EFUSE_CSB						   : OUT STD_LOGIC;  -- MISC_U1_IO(0) 
---      EFUSE_DIN 						   : OUT STD_LOGIC;  -- MISC_U1_IO(1)
---      EFUSE_PGM						   : OUT STD_LOGIC;  -- MISC_U1_IO(2)
---      EFUSE_SLCK						   : OUT STD_LOGIC;  -- MISC_U1_IO(3)
---      EFUSE_VDDQ						   : OUT  STD_LOGIC   -- MISC_U1_IO(4) 
+		MISC_U1_IO							: out STD_LOGIC_VECTOR(5 downto 0)
 
 
 	);
@@ -367,16 +373,10 @@ SIGNAL	Test_pulse				: STD_LOGIC;
 --SIGNAL	Test_pulse_buffer		: STD_LOGIC_VECTOR(7 downto 0);
 
 
-SIGNAL		EFUSE_CSB						   :  STD_LOGIC;  -- MISC_U1_IO(0) 
-SIGNAL      EFUSE_DIN 						   :  STD_LOGIC;  -- MISC_U1_IO(1)
-SIGNAL      EFUSE_PGM						   :  STD_LOGIC;  -- MISC_U1_IO(2)
-SIGNAL      EFUSE_SLCK						   :  STD_LOGIC;  -- MISC_U1_IO(3)
-SIGNAL      EFUSE_VDDQ						   :  STD_LOGIC;   -- MISC_U1_IO(4) 
-SIGNAL	EFUSE_start		:  STD_LOGIC;	
-SIGNAL	EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
-SIGNAL	    FE_CMN_CSA							: STD_LOGIC; 		
-SIGNAL	    FE_CMN_CSB							: STD_LOGIC; 
-SIGNAL	    FE_CMN_CSC							: STD_LOGIC; 
+SIGNAL	CD1_EFUSE_start		:  STD_LOGIC;	
+SIGNAL	CD2_EFUSE_start		:  STD_LOGIC;	
+SIGNAL	CD1_EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
+SIGNAL	CD2_EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
 
 
 --Registers
@@ -384,10 +384,6 @@ SIGNAL	reg0_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg1_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg2_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg3_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
---SIGNAL	reg2_i_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
---SIGNAL	reg3_i_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
---SIGNAL	reg2_o_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
---SIGNAL	reg3_o_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg4_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg5_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
 SIGNAL	reg6_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
@@ -539,14 +535,10 @@ I2C_CD2_ADD_VDD 		<= '1';
 CD2_ADC_I2C_ADD2 		<= not CD_sEL;
 CD2_ADC_I2C_ADD3 		<= CD_sEL;
 
---Test pulse gen
---Test_pulse_buffer <= (others => Test_pulse);
-FE_INS_PLS_CS <= TP_SOCKET_EN ; --AND Test_pulse_buffer; --bitwise and
+
 
 
 --------------------------------------
-
-
 ----- register map -------
 
 --MISC_U1_IO(0) <= I2C_LVDS_SDA_W2C_P;
@@ -559,12 +551,12 @@ FE_INS_PLS_CS <= TP_SOCKET_EN ; --AND Test_pulse_buffer; --bitwise and
 --MISC_U1_IO(4) <= SYS_RESET;
 --SC_U1_IO(5) <= CLK_10MHze
 
-MISC_U1_IO(0)	<= FE_CMN_CSA when reg62_p(3) = '0' else  EFUSE_CSB ;
-MISC_U1_IO(1)	<= FE_CMN_CSB when reg62_p(3) = '0' else  EFUSE_DIN ;
-MISC_U1_IO(2)	<= FE_CMN_CSC when reg62_p(3) = '0' else  EFUSE_PGM ;
-MISC_U1_IO(3)	<= '0'        when reg62_p(3) = '0' else  EFUSE_SLCK;
-MISC_U1_IO(4)	<= '0'        when reg62_p(3) = '0' else  EFUSE_VDDQ;
-MISC_U1_IO(5)	<= reg62_p(3) ;
+--MISC_U1_IO(0)	<= FE_CMN_CSA when reg62_p(3) = '0' else  EFUSE_CSB ;
+--MISC_U1_IO(1)	<= FE_CMN_CSB when reg62_p(3) = '0' else  EFUSE_DIN ;
+--MISC_U1_IO(2)	<= FE_CMN_CSC when reg62_p(3) = '0' else  EFUSE_PGM ;
+--MISC_U1_IO(3)	<= '0'        when reg62_p(3) = '0' else  EFUSE_SLCK;
+--MISC_U1_IO(4)	<= '0'        when reg62_p(3) = '0' else  EFUSE_VDDQ;
+--MISC_U1_IO(5)	<= reg62_p(3) ;
 
 SYS_RESET				<= reg0_p(0);							-- SYSTEM RESET
 REG_RESET				<= reg0_p(1);							-- RESISTER RESET
@@ -575,9 +567,7 @@ CD2_PAD_RESET 		<= not reg1_p(5);
 
 --CD1_CONTROL <= reg3_o_p (4 downto 0) when reg66_p(0) = '1' else (others => 'Z');
 --CD2_CONTROL <= reg2_o_p (4 downto 0) when reg66_p(1) = '1' else (others => 'Z');
---
---reg3_i_p <= b"000" & CD1_CONTROL;
---reg2_i_p <= b"000" & CD2_CONTROL;
+
 reg3_p <= b"000" & CD1_CONTROL;
 reg2_p <= b"000" & CD2_CONTROL;
 
@@ -646,23 +636,41 @@ ADC_TEST_INH 	<= reg28_p;
 
 FE_TEST_INH_ARR	<= reg29_p;
 
-FE_IN_TST_SEL(7 downto 0) <= reg30_p; 
-FE_IN_TST_SEL(15 downto 8) <= reg31_p;
+--FE_IN_TST_SEL(7 downto 0) <= reg30_p; --rev.0
+--FE_IN_TST_SEL(15 downto 8) <= reg31_p;--rev.0
+FE_IN_TST_SEL(7 downto 0) <= not reg30_p; --rev.1
+FE_IN_TST_SEL(15 downto 8) <= not reg31_p;--rev.1
 
 
-FE_CALI_CS <= reg32_p;
+FE_CALI_CS(0) <= reg32_p(0) AND (not Test_pulse); --rev v3
+FE_CALI_CS(1) <= reg32_p(1) AND (not Test_pulse);--rev v3
+FE_CALI_CS(2) <= reg32_p(2) AND (not Test_pulse);--rev v3
+FE_CALI_CS(3) <= reg32_p(3) AND (not Test_pulse);--rev v3
+FE_CALI_CS(4) <= reg32_p(4) AND (not Test_pulse);--rev v3
+FE_CALI_CS(5) <= reg32_p(5) AND (not Test_pulse);--rev v3
+FE_CALI_CS(6) <= reg32_p(6) AND (not Test_pulse);--rev v3
+FE_CALI_CS(7) <= reg32_p(7) AND (not Test_pulse);--rev v3
+
+--Test pulse gen
+--TP_SOCKET_EN			<= reg56_p;
+FE_INS_PLS_CS(0) <= reg56_p(0) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(1) <= reg56_p(1) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(2) <= reg56_p(2) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(3) <= reg56_p(3) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(4) <= reg56_p(4) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(5) <= reg56_p(5) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(6) <= reg56_p(6) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(7) <= reg56_p(7) AND (not Test_pulse); --rev v3
 
 ADC_TST_SEL <= reg33_p;
 
---ADC_SRC_CS_P(7 downto 0) <= reg34_p;
---ADC_SRC_CS_P(15 downto 8) <= reg35_p;
 ADC_SRC_CS_P0	<=reg34_p(0); --'1';
 ADC_SRC_CS_P1	<=reg34_p(1); --'1';
 ADC_SRC_CS_P2	<=reg34_p(2); --'1';
 ADC_SRC_CS_P3	<=reg34_p(3); --'1';
---ADC_SRC_CS_P4	<=reg34_p(4); --'1'; --comment due to schematics error 
-ADC_SRC_CS_P5	<=reg34_p(5); --'1';--comment due to schematics error		
---ADC_SRC_CS_P6	<=reg34_p(6); --'1';		
+ADC_SRC_CS_P4	<=reg34_p(4); --'1';	
+ADC_SRC_CS_P5	<=reg34_p(5); --'1';
+ADC_SRC_CS_P6	<=reg34_p(6); --'1';	
 ADC_SRC_CS_P7	<=reg34_p(7); --'1';		
 
 ADC_SRC_CS_P8	<=reg35_p(0); --'1';
@@ -685,7 +693,9 @@ ADC_N_TST_AMON_INH	<= reg36_p(7);
 
 ADC_TEST_IN_SEL <= reg37_p(0);
 
-EXT_PULSE_CNTL <=	reg38_p(0) AND (not Test_pulse);	
+--EXT_PULSE_CNTL <=	reg38_p(0) AND (not Test_pulse);	--DAT rev.0
+EXT_PULSE_CNTL <=	not reg38_p(0);	--DAT rev.1
+
 	
 --DAC, ETC
 FE_DAC_TP_set <= reg39_p;
@@ -726,7 +736,7 @@ ASIC_TP_EN           <= reg55_p(1);
 INT_TP_EN            <= reg55_p(2); --internal means coming from FPGA or ASIC
 EXT_TP_EN            <= reg55_p(3); --external means coming from WIB
 
-TP_SOCKET_EN			<= reg56_p;
+
 
 Test_PULSE_WIDTH     <= reg58_p & reg57_p;
 --TP_AMPL              <= reg56_p;
@@ -857,17 +867,6 @@ PORT MAP(	clk 			=> CLK_50MHz,
 				RST_OUT 		=> reset);
 
 
-		
-
---DAT_PLL_inst	: DAT_PLL
---	PORT MAP	(
---		inclk0	=>	CLK_64MHZ_SYS_P,
---		c0			=>	CLK_125MHz,
---		c1			=>	CLK_100MHz,
---		c2			=>	CLK_62_5MHz,
---		c3			=>	CLK_50MHz,
---		locked	=> open);
-
 DAT_PLL_inst : entity work.DAT_PLL 
 	PORT MAP (
 		inclk0	 => CLK_64MHZ_SYS_P,
@@ -971,41 +970,49 @@ gen_FE_INA: for i in 0 to 7 generate
 	);
 end generate gen_FE_INA;
 
-EFUSE_DATA(7 downto 0)	   <= reg88_p;   
-EFUSE_DATA(15 downto 8)	   <= reg89_p;    
-EFUSE_DATA(23 downto 16)   <= reg90_p;    
-EFUSE_DATA(31 downto 24)   <= reg91_p;    
-EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programming	
-EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
+CD1_EFUSE_DATA(7 downto 0)	   <= reg88_p;   
+CD1_EFUSE_DATA(15 downto 8)	   <= reg89_p;    
+CD1_EFUSE_DATA(23 downto 16)   <= reg90_p;    
+CD1_EFUSE_DATA(31 downto 24)   <= reg91_p;    
+CD2_EFUSE_DATA(7 downto 0)	   <= reg92_p;   
+CD2_EFUSE_DATA(15 downto 8)	   <= reg93_p;    
+CD2_EFUSE_DATA(23 downto 16)   <= reg94_p;    
+CD2_EFUSE_DATA(31 downto 24)   <= reg95_p;    
+
+CD1_EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programming	
+CD2_EFUSE_start						<= reg67_p(4);		 -- bit (0) 0->1 will start EFUSE programming	
+
+CD1_EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
 	PORT MAP
 	(
 		clk     		=> CLK_62_5MHz,
 		reset       => reset,			
-		start			=> EFUSE_start,
-		EFUSE_DATA	=> EFUSE_DATA,
-		EFUSE_CSB	=> EFUSE_CSB,
-        EFUSE_DIN 	=> EFUSE_DIN,
-        EFUSE_PGM	=> EFUSE_PGM,
-        EFUSE_SLCK  => EFUSE_SLCK, 
-        EFUSE_VDDQ	=> EFUSE_VDDQ,	
+		start			=> CD1_EFUSE_start,
+		EFUSE_DATA	=> CD1_EFUSE_DATA,
+		EFUSE_CSB	=> CD1_EFUSE_CSB,
+        EFUSE_DIN 	=> CD1_EFUSE_DIN,
+        EFUSE_PGM	=> CD1_EFUSE_PGM,
+        EFUSE_SLCK  => CD1_EFUSE_SCLK, 
+        EFUSE_VDDQ	=> CD1_EFUSE_VDDQ,	
 		BuSY			=> open
 	);
---CD1_MonADC_inst : entity work.COTS_AD7274
---  PORT MAP
---  (
---    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---    reset     => reset,                    -- reset, active high reset
---    start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---
---	 busy      => CD1_MonADC_busy,
---	 ADC_OUT   => CD1_MonADC_data,   -- data output 12 bit.
---	 
---	 CSn       => CD1_MonADC_CS,                    	 -- 2.5V pin
---	 SCLK      => CD1_MonADC_SCK,                    	 -- 2.5V pin
---	 SDATA     => CD1_MonADC_SDO	                  	 -- 2.5V pin	
---	);
-	
+
+CD2_EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
+	PORT MAP
+	(
+		clk     		=> CLK_62_5MHz,
+		reset       => reset,			
+		start			=> CD2_EFUSE_start,
+		EFUSE_DATA	=> CD2_EFUSE_DATA,
+		EFUSE_CSB	=> CD2_EFUSE_CSB,
+        EFUSE_DIN 	=> CD2_EFUSE_DIN,
+        EFUSE_PGM	=> CD2_EFUSE_PGM,
+        EFUSE_SLCK  => CD2_EFUSE_SCLK, 
+        EFUSE_VDDQ	=> CD2_EFUSE_VDDQ,	
+		BuSY			=> open
+	);
+
+
 CD1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
   (
@@ -1025,22 +1032,6 @@ CD1_MonADC_inst : entity work.ADC_AD7274
 	 rdy		 => open	
 	);
 	
-	
-	
---CD2_MonADC_inst : entity work.COTS_AD7274
---  PORT MAP
---  (
---    clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---    reset     => reset,                    -- reset, active high reset
---    start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---	 busy      => CD2_MonADC_busy,
---	 ADC_OUT   => CD2_MonADC_data,   -- data output 12 bit.
---	 
---	 CSn       => CD2_MonADC_CS,                    	 -- 2.5V pin
---	 SCLK      => CD2_MonADC_SCK,                    	 -- 2.5V pin
---	 SDATA     => CD2_MonADC_SDO	                  	 -- 2.5V pin	
---	);	
 	
 CD2_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
@@ -1063,22 +1054,6 @@ CD2_MonADC_inst : entity work.ADC_AD7274
 	);
 	
 	
---ADC1_MonADC_inst : entity work.COTS_AD7274
---  PORT MAP
---  (
---	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---	 reset     => reset,                    -- reset, active high reset
---	 start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---
---	 busy      => ADC_MonADC_busy_arr(0),
---	 ADC_OUT   => ADC_MonADC_data_arr(0),   -- data output 12 bit.
---	 
---	 CSn       => ADC_MonADC_CS,                    	 -- 2.5V pin
---	 SCLK      => ADC_MonADC_SCK,                    	 -- 2.5V pin
---	 SDATA     => ADC_MonADC_SDO(0)	                  	 -- 2.5V pin	
---	);		
-
 reg_adc(7 downto 0)   <= reg72_p;
 reg_adc(15 downto 8)  <= reg73_p;
 reg_adc(23 downto 16) <= reg74_p;
@@ -1107,25 +1082,6 @@ ADC1_MonADC_inst : entity work.ADC_AD7274
 	 rdy		 => open	
 	);
 	
---gen_ADC_MonADC: for i in 7 downto 1 generate
---	ADC_MonADC_inst : entity work.COTS_AD7274
---	  PORT MAP
---	  (
---		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---		 reset     => reset,                    -- reset, active high reset
---		 start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---
---		 busy      => ADC_MonADC_busy_arr(i),
---		 ADC_OUT   => ADC_MonADC_data_arr(i),   -- data output 12 bit.
---		 
---		 CSn       => open,                    	 -- 2.5V pin
---		 SCLK      => open,                    	 -- 2.5V pin
---		 SDATA     => ADC_MonADC_SDO(i)	                  	 -- 2.5V pin	
---		);	
---end generate gen_ADC_MonADC;
-
-
 
 gen_ADC_MonADC: for i in 7 downto 1 generate
 	ADC_MonADC_inst : entity work.ADC_AD7274
@@ -1148,21 +1104,7 @@ gen_ADC_MonADC: for i in 7 downto 1 generate
 		);
 end generate gen_ADC_MonADC;
 
---FE1_MonADC_inst : entity work.COTS_AD7274
---  PORT MAP
---  (
---	 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---	 reset     => reset,                    -- reset, active high reset
---	 start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---
---	 busy      => FE_MonADC_busy_arr(0),
---	 ADC_OUT   => FE_MonADC_data_arr(0),   -- data output 12 bit.
---	 
---	 CSn       => FE_MonADC_CS,                    	 -- 2.5V pin
---	 SCLK      => FE_MonADC_SCK,                    	 -- 2.5V pin
---	 SDATA     => FE_MonADC_SDO(0)	                  	 -- 2.5V pin	
---	);		
+
 reg_fe(7 downto 0)   <= reg80_p;
 reg_fe(15 downto 8)  <= reg81_p;
 reg_fe(23 downto 16) <= reg82_p;
@@ -1191,23 +1133,7 @@ FE1_MonADC_inst : entity work.ADC_AD7274
 	 rdy		 => open	
 	);
 	
---gen_FE_MonADC : for i in 7 downto 1 generate
---	FE_MonADC_inst : entity work.COTS_AD7274
---	  PORT MAP
---	  (
---		 clk       => CLK_25MHz,                       -- system clock 40MHz, can be used for sclk directly
---		 reset     => reset,                    -- reset, active high reset
---		 start     => cots_adc_start,                    -- enable signal for i2c bus.
---
---
---		 busy      => FE_MonADC_busy_arr(i),
---		 ADC_OUT   => FE_MonADC_data_arr(i),   -- data output 12 bit.
---		 
---		 CSn       => open,                    	 -- 2.5V pin
---		 SCLK      => open,                    	 -- 2.5V pin
---		 SDATA     => FE_MonADC_SDO(i)	                  	 -- 2.5V pin	
---	);		
---end generate gen_FE_MonADC;
+
 gen_FE_MonADC : for i in 7 downto 1 generate
 	FE_MonADC_inst : entity work.ADC_AD7274
 	  PORT MAP
@@ -1354,8 +1280,6 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		
 		reg0_i 	=> reg0_p,
 		reg1_i 	=> reg1_p,		 
---		reg2_i 	=> reg2_i_p,		 
---		reg3_i 	=> reg3_i_p,	
 		reg2_i 	=> reg2_p,		 
 		reg3_i 	=> reg3_p,
 		reg4_i 	=> reg4_p,
@@ -1454,8 +1378,6 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		
 		reg0_o 	=> reg0_p,
 		reg1_o 	=> reg1_p,		 
---		reg2_o 	=> reg2_o_p,		 
---		reg3_o   => reg3_o_p,
 		reg2_o 	=> open,		 
 		reg3_o   => open,
 		reg4_o 	=> reg4_p,
