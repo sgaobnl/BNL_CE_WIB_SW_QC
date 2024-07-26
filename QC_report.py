@@ -26,7 +26,7 @@ import webbrowser
 class QC_reports:
 
     def __init__(self, fdir, fembs=[]):
-        savedir = 'E:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
+        savedir = 'D:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
         self.datadir = fdir + "/"
         self.report_source_doc = 0
         fp = self.datadir+"logs_env.bin"
@@ -126,7 +126,6 @@ class QC_reports:
             log.check_log01_11.update(check1)
 #     01_12 SE OFF Pulse Measurement      Pulse
         rawdata = pwr_meas_dict["PWR_SE_OFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
-        print(1111111111)
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_SE_OFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", '01_12 SE Power Pulse')
         pulse = dict(log.tmp_log)
@@ -187,8 +186,6 @@ class QC_reports:
 #     DIFF Pulse Measurement      Pulse
         f_pl = datadir + "PWR_DIFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"
         rawdata = pwr_meas_dict["PWR_DIFF_pulse_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
-        # with open(f_pl, 'rb') as fn:
-        #     rawdata = pickle.load(fn)[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, "PWR_DIFF_200mVBL_14_0mVfC_2_0us", "PWR_Meas/", 'DIFF Power Pulse')
         pulse = dict(log.tmp_log)
@@ -244,8 +241,6 @@ class QC_reports:
 # 2     Power cycle test, only in LN2, now can be used in RT and LN2
     def PWR_cycle_report(self):
         log.test_label.append(2)
-        # if 'RT' in self.logs['env']:
-        #     return
         self.CreateDIR("PWR_Cycle")
         datadir = self.datadir+"PWR_Cycle/"
 
@@ -341,15 +336,13 @@ class QC_reports:
             else:
                 fname = afile.split("/")[-1][:-4]
             label = fname[fname.find("0x20_")+5:]
-            print('XXXXXXX')
-            print(label)
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/', 'SE_'+label)
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
-            if "100" in fname:
+            if "100pA" in fname:
                 dict_list[1].update(pulse)
                 check_list[1].update(pulse_check)
-            elif "500" in fname:
+            elif "500pA" in fname:
                 dict_list[0].update(pulse)
                 check_list[0].update(pulse_check)
             elif "1n" in fname:
@@ -396,22 +389,17 @@ class QC_reports:
         f_pwr = datadir + "femb_chk_pulse_t4.bin"
         with open(f_pwr, 'rb') as fn:
             CHKPULSE_dict = pickle.load(fn)
-        print(len(CHKPULSE_dict))
-        print(type(CHKPULSE_dict))
         keys_list = list(CHKPULSE_dict.keys())
         print(keys_list)
 
         qc=ana_tools()
-        files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+        # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
 
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             log.check_log04_01[femb_id]['Result'] = True
 
         for afile in CHKPULSE_dict.keys():
-            # with open(afile, 'rb') as fn:
-            #     raw = pickle.load(fn)
-            print(afile)
             raw = CHKPULSE_dict[afile]
             rawdata = raw[0]
             pwr_meas = raw[1]
@@ -424,12 +412,9 @@ class QC_reports:
             a_func.pulse_ana(pldata, self.fembs, self.fembsID, self.savedir, fname, fdir + '/')
             pulse = dict(log.tmp_log)
             pulse_check = dict(log.check_log)
-            print(pulse_check)
             for ifemb in range(len(self.fembs)):
                 femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-                log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] and pulse_check[femb_id]["Result"]
-                # plt.figure(figsize=(9, 6))
-                # x = [1, 2, 3, 4]
+                log.check_log04_01[femb_id]['Result'] = log.check_log04_01[femb_id]['Result'] and pulse_check[femb_id]['Result']
                 if "SE_200mVBL_4_7mVfC_0_5us" in afile:
                     log.report_log04_01_4705[femb_id].update(pulse[femb_id]); log.check_log04_01_4705[femb_id].update(pulse_check[femb_id])
                 if "SE_200mVBL_4_7mVfC_1_0us" in afile:
@@ -712,11 +697,6 @@ class QC_reports:
                                 log.check_log04_04_14204[femb_id]["ppk_mean"]-log.check_log04_04_14204[femb_id]["bbl_mean"]]
             DIFF_200_ppkerr = [log.check_log04_04_14203[femb_id]["ppk_std"], log.check_log04_04_14204[femb_id]["ppk_std"]]
             plt.errorbar(x, DIFF_200_ppk, yerr=DIFF_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen', label='DIFF_ppk')
-            # ex_200_ppk = [log.check_log04_04_14205[femb_id]["ppk_mean"]-log.check_log04_04_14205[femb_id]["bbl_mean"],
-            #                     log.check_log04_04_14206[femb_id]["ppk_mean"]-log.check_log04_04_14206[femb_id]["bbl_mean"]]
-            # ex_200_ppkerr = [log.check_log04_04_14205[femb_id]["ppk_std"], log.check_log04_04_14206[femb_id]["ppk_std"]]
-            # plt.errorbar(x, ex_200_ppk, yerr=ex_200_ppkerr, capsize=5, linestyle='-', alpha=0.7, color='darkgreen',
-            #              label='DIFF_ppk')
             plt.legend()
             plt.xlabel("Gain Setting", fontsize=12)
             plt.ylabel("ADC Count", fontsize=12)
@@ -732,7 +712,7 @@ class QC_reports:
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'diff_ex_200_fC_Pulse.png', transparent = True)
             plt.close()
-        self.Gather_PNG_PDF(fp)
+            self.Gather_PNG_PDF(fp)
 
 
     def RMS_report(self):
@@ -997,7 +977,7 @@ class QC_reports:
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(fp + 'SELC_200_2us_ErrorBar.png', transparent = True)
             plt.close()
-        self.Gather_PNG_PDF(fp)
+            self.Gather_PNG_PDF(fp)
         log.report_log05_fin_result = section_status
 
 
@@ -1198,7 +1178,7 @@ class QC_reports:
     def CALI_report_3(self):
         log.test_label.append(8)
         qc=ana_tools()
-        dac_list = range(0,64,8)
+        dac_list = range(0,60,8)
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
 
@@ -1222,7 +1202,7 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc=ana_tools()
-        dac_list = range(0,32,4)
+        dac_list = range(0,30,4)
         self.CreateDIR("CALI4")
         datadir = self.datadir+"CALI4/"
 
@@ -1502,27 +1482,26 @@ class QC_reports:
 
         qc = ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-        check = True
-        for afile in QC_femb_test_pattern_pll_dict.keys():
-            # with open(afile, 'rb') as fn:
-            #     raw = pickle.load(fn)
-            raw = QC_femb_test_pattern_pll_dict[afile]
-            # =========== analysis ===================
-            rmsdata = raw[0]
-            fembs = raw[2]
+        for ifemb in self.fembs:
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
+            fp = self.savedir[ifemb] + fdir + "/"
+            for afile in QC_femb_test_pattern_pll_dict.keys():
+                check = True
+                # with open(afile, 'rb') as fn:
+                #     raw = pickle.load(fn)
+                raw = QC_femb_test_pattern_pll_dict[afile]
+                # =========== analysis ===================
+                rmsdata = raw[0]
+                fembs = raw[2]
 
-                #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
-            pldata = qc.data_decode(rmsdata, fembs)
-                # pldata = np.array(pldata)
+                    #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
+                pldata = qc.data_decode(rmsdata, fembs)
+                    # pldata = np.array(pldata)
 
-            if '\\' in afile:
-                fname = afile.split("\\")[-1][:-4]
-            else:
-                fname = afile.split("/")[-1][:-4]
-
-            for ifemb in self.fembs:
-                femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-                fp = self.savedir[ifemb] + fdir+"/"
+                if '\\' in afile:
+                    fname = afile.split("\\")[-1][:-4]
+                else:
+                    fname = afile.split("/")[-1][:-4]
                 ped,rms=qc.GetRMS(pldata, ifemb, fp, fname)
                 if not(max(rms) == 0):
                     check = False
@@ -1531,12 +1510,16 @@ class QC_reports:
                         check = False
                 log.report_log1601[femb_id][fname] = check
 
+            log.check_log1601[femb_id]["Result"] = all(value for value in log.report_log1601[femb_id].values())
+            print(log.report_log1601[femb_id])
+            print(log.check_log1601[femb_id]["Result"])
+            print('xxxxxxxxxxxxxxxxxxxxx')
             self.Gather_PNG_PDF(fp)
 
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
 
-            log.check_log1601[femb_id]["Result"] = check
+
 
 
 

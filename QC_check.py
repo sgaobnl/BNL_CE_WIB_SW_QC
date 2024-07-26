@@ -3,8 +3,6 @@ import numpy as np
 #   current measurement parameter
 bias_low = 4.2; bias_high = 5.1;    bias_i_high = 0.05
 fe_v_low = 2.9; fe_v_high = 3;      fe_i_low = 0.35;    fe_i_high = 0.55
-bias_low = 4.2; bias_high = 5.1
-bias_low = 4.2; bias_high = 5.1
 
 def CHKPWR(data, nfemb, env):
 
@@ -134,14 +132,15 @@ def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # a
     if type == '25mVfC':
         para_med = (np.max(para_np)+np.min(para_np))/2
     else:
-        para_med = np.median(para_np)
+        para_med = np.mean(para_np)
 
-    refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
-    fit_range = errbar * np.std(refine_para)
+    # refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
+    # fit_range = errbar * np.std(refine_para)
 
     flag = True
     bad_chan=[]
     bad_chip=[]
+    print(para_range)
 #   半高全宽
     if type == 'rms':
         for ch in range(128):
@@ -155,6 +154,13 @@ def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # a
                 flag = False
                 bad_chan.append(ch)
                 bad_chip.append(ch//16)
+                # print(int_para)
+                # print(para_np)
+                # print(tmp_std)  #730
+                # print(para_med) #9939
+                # print(abs(para_np[ch]-para_med))    #3729
+                # print(para_range)
+                # input('debug')
                #
 
 

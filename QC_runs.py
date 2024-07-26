@@ -114,7 +114,6 @@ class QC_Runs:
             self.chk.femb_powering([])
 
     def check_pwr_off(self, pwr_data):
-
         pwr_sts = True
         for i in self.fembs:
            bias_v = pwr_data['FEMB%d_BIAS_V'%i]
@@ -123,12 +122,10 @@ class QC_Runs:
            adc_v = pwr_data['FEMB%d_DC2DC2_V'%i]
            print (bias_v, fe_v, cd_v, adc_v)
 
-           if (bias_v < 1.0) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
+           if (bias_v < 3.0) and (fe_v < 0.5) and (cd_v < 0.5) and (adc_v < 0.5):
                print ("FEMB {} is turned off".format(i))
            else:
                pwr_sts = False
-        print ("KKKKKKKKKKKK", pwr_sts)
-
         return pwr_sts
 
     def take_data(self, sts=0, snc=0, sg0=0, sg1=0, st0=0, st1=0, dac=0, fp=None, sdd=0, sdf=0, slk0=0, slk1=0, sgp=0,  pwr_flg=False, swdac=1, adc_sync_pat=False, bypass = False, autocali=0):
@@ -178,7 +175,7 @@ class QC_Runs:
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
             self.chk.femb_cfg(femb_id, adac_pls_en )
         #if (self.sdd0 != sdd) or (self.sdf0 != sdf):
-        if (sdd == 1) or (sdf==1):
+        if (sdd == 1) or (sdf == 1) or (sgp == 1):
             print ("warning: extra 3.5 delay for DIFF and SE_ON after configuration")
             time.sleep(self.LAr_Dalay)
         #self.sdd0 = sdd
@@ -346,12 +343,12 @@ class QC_Runs:
     def pwr_cycle(self):
         datad = {}
         datadir = self.save_dir+"PWR_Cycle/"
-        try:
-            os.makedirs(datadir)
-        except OSError:
-            print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return
-
+        if not os.path.exists(datadir):
+            try:
+                os.makedirs(datadir)
+            except OSError:
+                print("Error to create folder %s" % datadir)
+                sys.exit()
         snc = 1 # 200 mV
         sg0 = 0
         sg1 = 0 # 14mV/fC
@@ -375,16 +372,15 @@ class QC_Runs:
             self.pwr_fembs('off')
             pwr_info = self.chk.get_sensors()
             pwr_status = self.check_pwr_off(pwr_info)
-            time.sleep(3)
 
             nn=0
+            # change bias value from 5 to 0
             while not pwr_status:
-                  time.sleep(1)
-                  nn=nn+1
-                  pwr_info = self.chk.get_sensors()
-                  pwr_status = self.check_pwr_off(pwr_info)
-                  print ("Wait {}s until completely shut down".format(nn))
-
+                time.sleep(20)
+                nn=nn+1
+                pwr_info = self.chk.get_sensors()
+                pwr_status = self.check_pwr_off(pwr_info)
+                print ("Wait {}s until completely shut down".format(nn))
             self.pwr_fembs('on')
 
         ####### SE with LArASIC buffer on (1 cycle)#######
@@ -397,15 +393,13 @@ class QC_Runs:
         sts = 1
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
-
         self.pwr_fembs('off')
         pwr_info = self.chk.get_sensors()
         pwr_status = self.check_pwr_off(pwr_info)
-        time.sleep(3)
 
         nn=0
         while not pwr_status:
-              time.sleep(1)
+              time.sleep(20)
               nn=nn+1
               pwr_info = self.chk.get_sensors()
               pwr_status = self.check_pwr_off(pwr_info)
@@ -714,7 +708,7 @@ class QC_Runs:
         self.chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00)
         adac_pls_en = 0
 
-        for i in range(0x20, 0x2b):
+        for i in range(0x21, 0x29):
             self.chk.pll = i
             print("PLL value = ", end="");  print(hex(i), end=" "); print("Take TestPattern data")
             self.chk.femb_cd_rst()

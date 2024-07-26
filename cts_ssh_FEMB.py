@@ -11,7 +11,7 @@ import webbrowser
 
 
 def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
-    global result
+    result = None
     try:
         result = subprocess.run(command,
                                 input=user_input,
@@ -39,7 +39,6 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
             print("Timoout FAIL!")
             print("Exit anyway")
             return None
-            # exit()
 
         # continue
     return result
@@ -70,11 +69,10 @@ def read_csv_to_dict(filename, env):
     return data
 
 
-def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
+def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     # QC_TST_EN = True
     logs = {}  # from collections import defaultdict report_log01 = defaultdict(dict)
     logs['CTS_IDs'] = input_info['test_site']
-    # add slot and FEMB into list
     slot0 = input_info['SLOT0']
     slot1 = input_info['SLOT1']
     slot2 = input_info['SLOT2']
@@ -149,22 +147,15 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
     logs['PC_rawdata_root'] = root + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
     logs['PC_WRCFG_FN'] = "./femb_info.csv"
 
-
-    # logs['PC_rawdata_root'] = root + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
-    # logs['PC_WRCFG_FN'] = "./femb_info.csv"
-
     if QC_TST_EN == 0:
         print(datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)")
         timeout = 10
         command = ["ping", "192.168.121.123"]
         print("COMMAND:", command)
-        for i in range(6):
-            if i == 5:
-                print("Please check if WIB is powered and Ethernet connection,exit anyway")
-                return None
-
+        attempt = 0
+        for i in range(5):
             result = subrun(command=command, timeout=timeout, exitflg=False)
-            if result != None:
+            if result:
                 log = result.stdout
                 chk1 = "Reply from 192.168.121.123: bytes=32"
                 chk2p = log.find("Received =")
@@ -173,6 +164,16 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                     print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
                     logs['WIB_Pingable'] = log
                     break
+            else:
+                print('Connection issue')
+                attempt += 1
+                if attempt == 4:
+                    choice = input('Fail Connection\nEnter y to continue\nEnter n to Exit ...')
+                    if choice == 'n':
+                        print('Exit ...')
+                        break
+                    else:
+                        break
 
     if QC_TST_EN == 0:
         print(datetime.utcnow(), " : sync WIB time")
@@ -241,7 +242,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             print("FAIL!")
             return None
 
-    ##========== Begin of 01 FEMB Slot Confirm ==========================
+    # ========== Begin of 01 FEMB Slot Confirm ==========================
     if QC_TST_EN == 1:
         print(datetime.utcnow(), "\033[35m  : Start FEMB SLOT Confirm (it takes < 60s)\n  \033[0m")
         command1 = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC;  python3 top_femb_powering.py {}".format(power_en)]
@@ -366,14 +367,14 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             print("FAIL!")
             return None
 
-    ##========== Begin of 02 checkout ==========================
+    # ========== Begin of 02 checkout ==========================
     if QC_TST_EN == 2:
         print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 120s)")
         print(datetime.utcnow(), " : New Test Item Starts, please wait...")
         print("\033[96m 0 : Initilization Room Temperature Checkout\033[0m")
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
-        result = subrun(command, timeout=120, user_input=user_input_1)  # rewrite with Popen later
+        result = subrun(command, timeout=160, user_input=user_input_1)  # rewrite with Popen later
         if result != None:
             resultstr = result.stdout
             logs["QC_TestItemID_%03d" % 0] = [command, resultstr]
@@ -427,7 +428,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
             print("FAIL!")
             return None
 
-        ###############################################
+        # ##############################################
         check_tmp = True
         if '0' in slot_list:
             if 'N0 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
@@ -477,16 +478,20 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
 
     #    ###################################################
         # remove raw folder in wib side
-        time.sleep(1)
-        command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
-        result = subrun(command, timeout=30)
-        if result != None:
-            print("wib data remove at {}".format(fdir))
-            logs['remove_wib_raw_dir'] = fdir  # later save it into log file
-            print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-        else:
-            print("FAIL!")
-            return None
+        for i in range (3):
+            time.sleep(1)
+            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
+            result = subrun(command, timeout=30)
+            if result != None:
+                print("wib data remove at {}".format(fdir))
+                logs['remove_wib_raw_dir'] = fdir  # later save it into log file
+                print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+            else:
+                print("FAIL!")
+                if i == 3:
+                    break
+                else:
+                    return None
 
         if check_tmp:
             print('Assembly Checkout Completed!')
@@ -500,10 +505,11 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                 print('Please Power OFF and Close the Power Supply!')
                 sys.exit()
 
-    ## ========== begin of 03 QC ==========================
+    # ========== begin of 03 QC ==========================
     if QC_TST_EN == 3:
         time.sleep(1)
         print(datetime.utcnow(), " : Start FEMB QC")
+        # 03_1 QC item test
         for testid in tms:
             # input('QC debug 01')
             print(datetime.utcnow(), " : New Test Item Starts, please wait...")
@@ -533,6 +539,7 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                 print(result.stdout)
                 return None
 
+            # 03_2 QC data transfer to PC
             print("Transfer data to PC...")
             fdir = '/home/root/BNL_CE_WIB_SW_QC/QC'
             logs['wib_raw_dir'] = fdir
@@ -550,10 +557,9 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                     return None
             wibhost = "root@192.168.121.123:"
             fsrc = wibhost + fdir
-
             # move folder
             command = ["scp", "-r", fsrc, fddir]
-            result = subrun(command, timeout=60)
+            result = subrun(command, timeout=180)
             if result != None:
                 print("data save at {}".format(fddir))
                 logs['pc_raw_dir'] = fddir  # later save it into log file
@@ -564,18 +570,24 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                 print("FAIL!")
                 return None
 
-            # remove raw folder in wib side
-            print("wib data remove at {}".format(fdir))
-            time.sleep(1)
-            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
-            result = subrun(command, timeout=30)
-            if result != None:
-                logs['remove_wib_raw_dir'] = fdir  # later save it into log file
-                print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-            else:
-                print("FAIL!")
-                return None
-    ## ========== end of 03 QC ==========================
+            # 03_3 raw folder in wib side
+            for i in range(4):
+                print("wib data remove at {}".format(fdir))
+                time.sleep(1)
+                command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
+                result = subrun(command, timeout=60)
+                if result != None:
+                    logs['remove_wib_raw_dir'] = fdir  # later save it into log file
+                    print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                    break
+                else:
+                    print("FAIL!")
+                    if i == 3:
+                        break
+                    else:
+                        return None
+
+    # ========== end of 03 QC ==========================
 
     # if True:
     if QC_TST_EN == 10:
@@ -585,11 +597,6 @@ def cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=0, input_info=None):
                                 level=logging.INFO,
                                 format='%(asctime)s - %(levelname)s - %(message)s')
             logging.info('info: %s', logs)
-
-
     QCstatus = "PASS"
     bads = []
-    # chip_passed = [0,1,2,3,4,5,6,7]
-    # chip_failed = []
-
     return QCstatus, bads

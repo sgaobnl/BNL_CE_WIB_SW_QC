@@ -8,12 +8,13 @@ import cts_ssh_FEMB as cts
 # Please Open Real_Time_Monitor.py and run first
 # Then, Run this CTS_FEMB_QC_top.py
 ############################################################
+
 #       01 Function Part                                   #
 ############################################################
 
 def QC_Process(QC_TST_EN=None, input_info=None):
     while True:
-        QCresult = cts.cts_ssh_FEMB(root="E:/FEMB_QC/Tested/", QC_TST_EN=QC_TST_EN, input_info=input_info)
+        QCresult = cts.cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=QC_TST_EN, input_info=input_info)
         if QCresult != None:
             QCstatus = QCresult[0]
             badchips = QCresult[1]
@@ -100,7 +101,8 @@ print('\n\n')
 # Cold FEMB QC (LN2)
 
 print("\033[94m" + "A_LN2 : Liquid Nitrogen FEMB Quality Control Execution (takes < 1800s)" + "\033[0m")
-print("\033[94m" + "Please set IMMERSE to fill the Liquid Nitrogen into Cold Box (takes about 30 minutes)" + "\033[0m")
+print("\033[94m" + "Please set IMMERSE to fill the Liquid Nitrogen into Cold Box (takes about 30 minutes)\n" + "\033[0m")
+print("\033[94m" + "If LEVEL = 3, Enter to next ..." + "\033[0m")
 input()
 
 # A Before Power On
@@ -115,7 +117,7 @@ Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip
 if Next == 'n':
     print('No Cold QC execute!')
 elif Next == 'e':
-    Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test")
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'y' to continue the LN test")
     if Next2 != 'y':
         sys.exit()
 else:

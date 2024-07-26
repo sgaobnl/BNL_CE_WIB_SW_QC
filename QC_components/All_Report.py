@@ -251,7 +251,6 @@ def section_report(datareport, fembs, fembNo):
 
         if 16 in log.test_label:
             dict_list16 = [log.check_log1601[femb_id]]
-
             for dict_i in dict_list16:
                 if dict_i['Result'] == False:
                     check_status16 = False
@@ -389,7 +388,7 @@ def section_report(datareport, fembs, fembNo):
                     Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_15](#item15)' + Item15 + '\n\n')
             if 16 in log.test_label:
-                if check_status15:
+                if check_status16:
                     Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
                 else:
                     Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'

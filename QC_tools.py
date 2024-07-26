@@ -255,26 +255,6 @@ class ana_tools:
             apulse2 = allpls2 / npulse
             pmax = np.amax(apulse)
             maxpos = np.argmax(apulse)
-            # if dac == 48:
-            #     # print(len(evtdata))
-            #     if ich == 70:
-            #     # print(allpls)
-            #         print(evtdata)
-            #         print(ich)
-            #         print(dac)
-            #         plt.figure(figsize=(8, 6))
-            #         plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
-            #         plt.show()
-            #
-            #     if ich == 1:
-            #         print(evtdata)
-            #         print(ich)
-            #         print(dac)
-            #         plt.figure(figsize=(8, 6))
-            #         plt.plot(range(len(evtdata)), evtdata, marker='o', linestyle='-')
-                    # plt.show()
-
-
 
             data_type = apulse.dtype
             plt.subplot(1, 2, 1)
@@ -360,17 +340,6 @@ class ana_tools:
         plt.xticks(np.arange(0, 129, 16))
         plt.ylabel("ADC count", fontsize=14)
         plt.legend()
-
-        # plt.subplot(1, 3, 3)
-        # plt.plot(range(128), rms, marker='o', linestyle='-', alpha=0.5, label='RMS')
-        # plt.title("RMS Distribution", fontsize=14)
-        # plt.ylim(rms_mean - 5, rms_mean + 5)
-        # plt.xlabel("chan", fontsize=14)
-        # plt.xticks(np.arange(0, 129, 16))
-        # plt.ylabel("RMS", fontsize=14)
-        # plt.grid(axis='x', color='gray', linestyle='--', alpha=0.7)
-        #
-        # plt.legend()
 
         fp_fig = fp + "pulse_{}.png".format(fname)
         plt.gca().set_facecolor('none')  # set background as transparent

@@ -4,9 +4,9 @@ import time
 import subprocess
 from datetime import datetime
 
-target_folder = 'E:\FEMB_QC\Tested'
+target_folder = 'D:\FEMB_QC\Data'
 
-last_scan_file = 'E:\FEMB_QC\Tested\last_scan_results.txt'
+last_scan_file = 'D:\FEMB_QC\Data\last_scan_results.txt'
 
 def save_last_scan_results(results):
     with open(last_scan_file, 'w') as f:
@@ -30,8 +30,6 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
                                 text=True,
                                 timeout=timeout,
                                 shell=True,
-                                # stdout=subprocess.PIPE,
-                                # stderr=subprocess.PIPE,
                                 check=check
                                 )
     except subprocess.CalledProcessError as e:
@@ -94,33 +92,21 @@ def real_time_monitor():
             t_char = file_path[-7:]
             t_num = ''.join([char for char in t_char if char.isdigit()])
             if '_t' in file_path[-9:]:
-                time.sleep(c*7)  # the time is used to copy the whole .bin file
-                command = ["python3", "QC_report_all.py", path, "-n"]
+                if '_t6' in file_path[-9:]:
+                    time.sleep(c*30)  # the time is used to copy the whole .bin file
+                else:
+                    time.sleep(c*7)  # the time is used to copy the whole .bin file
+                command = ["python", "QC_report_all.py", path, "-n"]
                 command.extend(map(str, n))  # Convert integers to strings
                 command.extend(["-t", t_num])  # Add other arguments
                 print(command)
                 result = subrun(command, timeout=1000)  # rewrite with Popen later
-                if result != None:
-                    resultstr = result.stdout
-                    logs["QC_TestItemID_%03d"] = [command, resultstr]
-                    if "PASS" in result.stdout:
-                        print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-                    else:
-                        print("FAIL the test item!")
-                        print(result.stdout)
-                        print("Exit anyway")
-                        return None
-                        # exit()
-                else:
-                    print("FAIL!")
-                    print(result.stdout)
-                    return None
-        time.sleep(5)   # when monitor works in wait, 5 seconds scan in one time
+        time.sleep(5)   # when monitor works in wait, 5 seconds wait in one scan cycle
 
 real_time_monitor()
 
 if True:
-    logging.basicConfig(filename='E:\FEMB_QC\Tested\QC.log',
+    logging.basicConfig(filename='D:\FEMB_QC\Data\QC.log',
                         level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info('info: %s', logs)

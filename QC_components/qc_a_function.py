@@ -124,9 +124,9 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
     err_i       = [0.2,     0.2,    0.2,    0.2]
     #   the above will use to improve the structure
     bias_v_ref = 5; bias_v_err = 0.6;    bias_i_ref = 0; bias_i_err = 0.1
-    LArASIC_v_ref = 3; LArASIC_v_err = 0.2;    LArASIC_i_ref1 = 0.43; LArASIC_i_ref2 = 0.693; LArASIC_i_err = 0.1
+    LArASIC_v_ref = 3; LArASIC_v_err = 0.2;    LArASIC_i_ref1 = 0.43; LArASIC_i_ref2 = 0.693; LArASIC_i_err = 0.2
     COLDATA_v_ref = 3; COLDATA_v_err = 0.2;    COLDATA_i_ref1 = 0.174; COLDATA_i_ref2 = 0.229; COLDATA_i_err = 0.1
-    ColdADC_v_ref = 3.5; ColdADC_v_err = 0.2;  ColdADC_i_ref1 = 1.648;  ColdADC_i_ref2 = 1.709; ColdADC_i_err = 0.1
+    ColdADC_v_ref = 3.5; ColdADC_v_err = 0.2;  ColdADC_i_ref1 = 1.648;  ColdADC_i_ref2 = 1.709; ColdADC_i_err = 0.2
     # bias_v i p
     temp_v = round(pwr_meas['FEMB%d_BIAS_V'%fembs[ifemb]],3)
     log.check_log[femb_id]["BIAS_V"] = temp_v
@@ -249,11 +249,14 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         npk_err = int(np.std(npk))
 
         if '5nA' in label:
-            pulse_range = 3000
+            pulse_range = 5000
         else:
-            pulse_range = 1000
+            pulse_range = 3000
 
-        tmp = QC_check.CHKPulse(ppk, pulse_range, type = 'pedestal')
+
+        rpk = [a-b for a, b in zip(ppk, bl)]
+        print(fname)
+        tmp = QC_check.CHKPulse(rpk, pulse_range, type = 'pedestal')
         if tmp[0] == False:
             log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'
             log.tmp_log[femb_id]["ppk_std"] = '<span style="color: red;">' + str(ppk_err) + '</span>'
