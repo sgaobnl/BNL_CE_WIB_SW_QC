@@ -46,7 +46,7 @@ if True:
     #Configur Coldata, ColdADC, and LArASIC parameters. 
     #Here Coldata uses default setting in the script (not the ASIC default register values)
     #ColdADC configuraiton
-        sdd = 1
+        sdd = 0
         chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi, autocali
                             [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
                             [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],

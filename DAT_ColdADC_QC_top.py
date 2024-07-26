@@ -128,7 +128,7 @@ if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
 
-    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+    pwr_meas, link_mask, init_f = dat.wib_pwr_on_dat()
     datad["WIB_PWR"] = pwr_meas
     datad["WIB_LINK"] = link_mask
     fes_pwr_info = dat.fe_pwr_meas()
@@ -456,12 +456,15 @@ if 8 in tms:#if "enob_placeholder" in tms:
     print ("\033[95mADC ENOB measurement starts...   \033[0m")
 
     source = 'WIBSE'
-    cfg_info = dat.dat_adc_qc_cfg(autocali=0)  #SDC off, DIFF off
+    #source = 'P6DIFF'
+    #source = 'V2P6_SE2DIFF'
+    #source = 'V2WIB_SE2DIFF'
+    cfg_info = dat.dat_adc_qc_cfg(autocali=1)  #SDC off, DIFF off
     #cfg_info = dat.dat_adc_qc_cfg(sha_cs=2, ibuf_cs=1)  #SED on, DIFF OFF
     dat.dat_coldadc_input_cs(mode=source, SHAorADC = "SHA", chsenl=0x0000)
    
-    for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
-    #for freq in [8106.23]:
+    #for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
+    for freq in [8106.23]:
     #for freq in [119686.13]:
     #for freq in [31948]:
         datad = {}
@@ -486,6 +489,7 @@ if 8 in tms:#if "enob_placeholder" in tms:
         #fp = fdir + "QC_raw_%08dHz"%datad['freq'] + ".bin"
         #with open(fp, 'wb') as fn:
         #    pickle.dump(rawdata, fn)
+        #exit()
         
         datad['enobdata'] = [dat.fembs, dat.dat_enob_acq_2(sineflg=True), cfg_info, "SINE"]
         

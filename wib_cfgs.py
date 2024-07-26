@@ -37,7 +37,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.adc_flg=[True, True, True, True]
         self.fe_flg=[True, True, True, True]
         self.align_flg=True
-        self.fe_spi_fails = [False, False, False, False, False, False, False, False]
 
     def wib_rst_tp(self):
         print ("Configuring PLL")
@@ -819,25 +818,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     prg_flg = False
                 else:
                     prg_flg = True
-                    print ("\033[91m" + "FEMB{}, LArASIC readback status is {}, {} different from 0xFF".format(femb_id, sts_cd1, sts_cd2) + "\033[0m")
+                    print ("\033[91m" + "FEMB{}, LArASIC readback status is {}, {} diffrent from 0xFF".format(femb_id, sts_cd1, sts_cd2) + "\033[0m")
                     if i > 10:
-                        if (cd1>>0)&0x03 != 0x03:
-                            self.fe_spi_fails[0] = True
-                        if (cd1>>2)&0x03 != 0x03:
-                            self.fe_spi_fails[1] = True
-                        if (cd1>>4)&0x03 != 0x03:
-                            self.fe_spi_fails[2] = True
-                        if (cd1>>6)&0x03 != 0x03:
-                            self.fe_spi_fails[3] = True
-                        if (cd2>>0)&0x03 != 0x03:
-                            self.fe_spi_fails[4] = True
-                        if (cd2>>2)&0x03 != 0x03:
-                            self.fe_spi_fails[5] = True
-                        if (cd2>>4)&0x03 != 0x03:
-                            self.fe_spi_fails[6] = True
-                        if (cd2>>6)&0x03 != 0x03:
-                            self.fe_spi_fails[7] = True
-                        print (self.fe_spi_fails) 
                         self.femb_powering(fembs =[])
                         print ("Turn all FEMBs off, exit anyway")
                         return False
@@ -892,22 +874,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 print ("\033[91m" + "LArASIC readback status are {} {}, diffrent from 0xFF".format(sts_cd1, sts_cd2) + "\033[0m")
                 if i > 10:
-                    if (sts_cd1>>0)&0x03 != 0x03:
-                        self.fe_spi_fails[0] = True
-                    if (sts_cd1>>2)&0x03 != 0x03:
-                        self.fe_spi_fails[1] = True
-                    if (sts_cd1>>4)&0x03 != 0x03:
-                        self.fe_spi_fails[2] = True
-                    if (sts_cd1>>6)&0x03 != 0x03:
-                        self.fe_spi_fails[3] = True
-                    if (sts_cd2>>0)&0x03 != 0x03:
-                        self.fe_spi_fails[4] = True
-                    if (sts_cd2>>2)&0x03 != 0x03:
-                        self.fe_spi_fails[5] = True
-                    if (sts_cd2>>4)&0x03 != 0x03:
-                        self.fe_spi_fails[6] = True
-                    if (sts_cd2>>6)&0x03 != 0x03:
-                        self.fe_spi_fails[7] = True
                     self.femb_powering(fembs =[])
                     print ("Turn all FEMBs off, exit anyway")
                     return False
