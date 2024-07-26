@@ -42,7 +42,7 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
 
     # concatenate data
     all_data = []
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
     for achn in range(128):
         conchndata = []
 
@@ -59,10 +59,10 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
             tmp = int(period-oft)
             conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
         all_data.append(conchndata)
-        if True:
-            plt.plot(conchndata)
-    plt.show()
-    plt.close()
+    #    if True:
+    #        plt.plot(conchndata)
+    #plt.show()
+    #plt.close()
 
     # # sumdata = np.array(all_data[0][0:period])
     # # for k in range(1,len(all_data[0])//period):
@@ -261,21 +261,21 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000], per
         else:
             if ch not in badchs:
                 badchs.append(ch)
-                print ("par", ch, amps[ch])
+                #print ("par", ch, amps[ch])
             
         if (peds[ch] > pedr[0]) and (peds[ch] < pedr[1]):
             pass
         else:
             if ch not in badchs:
                 badchs.append(ch)
-                print ("ped", ch, peds[ch])
+                #print ("ped", ch, peds[ch])
 
         if (rmss[ch] > rmsr[0]) and (rmss[ch] < rmsr[1]):
             pass
         else:
             if ch not in badchs:
                 badchs.append(ch)
-                print ("rms", ch, rmss[ch])
+                #print ("rms", ch, rmss[ch])
     for badch in badchs:
         if (badch//16) not in bads:
             bads.append(badch//16)
@@ -303,11 +303,11 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
             if not ((vddas[chip] >= vin[0] )  and (vddas[chip] <= vin[1] ) ):
                 if chip not in bads:
                     bads.append(chip)
-                    print ("v VDDA", chip, vddas[chip], vin[0], vin[1])
+                    #print ("v VDDA", chip, vddas[chip], vin[0], vin[1])
             if not ((cddas[chip] >= cdda[0] ) and (cddas[chip] <= cdda[1] )) :
                 if chip not in bads:
                     bads.append(chip)
-                    print ("C VDDA", chip, cddas[chip], cdda[0], cdda[1])
+                    #print ("C VDDA", chip, cddas[chip], cdda[0], cdda[1])
 
         if "VDDO" in kpwrs[i]:
             vddos.append(pwr_meas[kpwrs[i]][0])
@@ -315,11 +315,11 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
             if not ((vddos[chip] >= vin[0] )  and (vddos[chip] <= vin[1] ) ):
                 if chip not in bads:
                     bads.append(chip)
-                    print ("v VDDO", chip, vddos[chip], vin[0], vin[1])
+                    #print ("v VDDO", chip, vddos[chip], vin[0], vin[1])
             if not ((cddos[chip] >= cddo[0] ) and (cddos[chip] <= cddo[1] )) :
                 if chip not in bads:
                     bads.append(chip)
-                    print ("C VDDO", chip, cddos[chip], cddo[0], cddo[1])
+                    #print ("C VDDO", chip, cddos[chip], cddo[0], cddo[1])
 
         if "VPPP" in kpwrs[i]:
             vddps.append(pwr_meas[kpwrs[i]][0])
@@ -327,11 +327,11 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
             if not ((vddps[chip] >= vin[0] )  and (vddps[chip] <= vin[1] ) ):
                 if chip not in bads:
                     bads.append(chip)
-                    print ("v VPPP", chip, vddps[chip], vin[0], vin[1])
+                    #print ("v VPPP", chip, vddps[chip], vin[0], vin[1])
             if not ((cddps[chip] >= cddp[0] ) and (cddps[chip] <= cddp[1] )) :
                 if chip not in bads:
                     bads.append(chip)
-                    print ("C VPPP", chip, cddps[chip], cddp[0], cddp[1])
+                    #print ("C VPPP", chip, cddps[chip], cddp[0], cddp[1])
     return bads
 
 
@@ -367,10 +367,10 @@ def dat_larasic_initchk(fdir="/."):
             bads0 = []
             bads1 = []
             if ("DIRECT_PLS_CHK" in onekey) :
-                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,2000] , period=512)
+                bads0 = ana_res2(fembs, rawdata, par=[7000,12000], rmsr=[5,25], pedr=[500,2000] , period=512)
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[-0.1,5])
             if ("ASICDAC_CALI_CHK" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[300,2000] , period=500)
+                bads0 = ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[100,2000] , period=500)
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.8], cdda=[40,50], cddp=[25,35], cddo=[5,15])
             if ("ASICDAC_47mV_CHK" in onekey):
                 bads0 = ana_res2(fembs, rawdata, par=[5500,7500], rmsr=[2,10], pedr=[400,2000] , period=500)
@@ -380,7 +380,7 @@ def dat_larasic_initchk(fdir="/."):
                 bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[5,25], pedr=[500,2000] , period=512)
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[25,35], cddo=[-0.1,5])
             if ("ASICDAC_CALI_RMS" in onekey):
-                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[5,25], pedr=[300,2000] , period=500)
+                bads0 = ana_res2(fembs, rawdata, par=[0000,1000], rmsr=[5,25], pedr=[100,2000] , period=500)
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.60,1.8], cdda=[40,50], cddp=[25,35], cddo=[5,15])
             if ("ASICDAC_47mV_RMS" in onekey):
                 bads0 = ana_res2(fembs, rawdata, par=[000,1000], rmsr=[2,10], pedr=[400,2000] , period=500)

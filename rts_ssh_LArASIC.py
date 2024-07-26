@@ -71,19 +71,6 @@ def Sinkcover():
             print ("Please close the covers and continue...")
 
 def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
-    #if True:
-    #    x = random.randint(0,24)
-    #    #x = 10
-    #    #x = int(input("a numer:"))
-    #    #if x >= 20:
-    #    #    return ("Code#E001", [])
-    #    if x >= 8:
-    #        #b = int(input("PASS a numer:"))
-    #        #return ("PASS", [b])
-    #        return ("PASS", [])
-    #    else:
-    #        return ("Code#W004", [x])
-
     QC_TST_EN =  True 
     
     logs = {}
