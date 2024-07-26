@@ -59,7 +59,8 @@ logs["rootdir"] = rootdir
 
 print ("start trayID: {}".format(trayid))
 status = 0
-duts = list(range(40,90,1))
+duts = list(range(0,90,1))
+#duts = [82,83,84,2,86,87,88,89]
 duts = sorted(duts)
 logs["duts"] = duts 
 ids_dict = {} #good chips ID with time that chips are moved from tray to socket
@@ -420,7 +421,11 @@ while (len(duts) > 0) or (len(skts) != 8):
     dut_skt.update(dut_skt_n)
     print ("Chips to be tested: ", dut_skt)
 
-    QCstatus, badchips = DAT_QC(dut_skt) 
+    if True:
+        QCstatus, badchips = DAT_QC(dut_skt) 
+    else:
+        QCstatus = "PASS"
+        badchips = []
     print (QCstatus, "Badchips:", badchips)
 
     if "PASS" not in QCstatus :

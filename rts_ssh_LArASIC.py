@@ -62,6 +62,22 @@ def DAT_power_off():
         print ("FAIL!")
         return None
 
+def DAT_power_on():
+    logs = {}
+    print (datetime.datetime.utcnow(), " : Power DAT On (it takes < 60s)")
+    command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py on off off off"]
+    result=subrun(command, timeout = 60)
+    if result != None:
+        if "Done" in result.stdout:
+            print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+        else:
+            print ("FAIL!")
+            print (result.stdout)
+            return None
+    else:
+        print ("FAIL!")
+        return None
+
 def Sinkcover():
     while True:
         ccflg=input("\033[93m Do covers of shielding box close? (Y/N) : \033[0m")
@@ -71,6 +87,19 @@ def Sinkcover():
             print ("Please close the covers and continue...")
 
 def rts_ssh_LArASIC(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/" ):
+    #if True:
+    #    x = random.randint(0,24)
+    #    #x = 10
+    #    #x = int(input("a numer:"))
+    #    #if x >= 20:
+    #    #    return ("Code#E001", [])
+    #    if x >= 8:
+    #        #b = int(input("PASS a numer:"))
+    #        #return ("PASS", [b])
+    #        return ("PASS", [])
+    #    else:
+    #        return ("Code#W004", [x])
+
     QC_TST_EN =  True 
     
     logs = {}
