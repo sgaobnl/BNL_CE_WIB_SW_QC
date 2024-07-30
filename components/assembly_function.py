@@ -19,17 +19,6 @@ def Create_data_folders(fembNo, env, toytpc):
     for key,femb_no in fembNo.items():
         datadir = datadir + "femb{}".format(femb_no)
 
-    # datadir = datadir+"{}_{}".format(env,toytpc)
-    # n=1
-    # while (os.path.exists(datadir)):
-    #     if n==1:
-    #         datadir = datadir + "_R{:03d}".format(n)
-    #     else:
-    #         datadir = datadir[:-3] + "{:03d}".format(n)
-    #     n=n+1
-    #     if n>20:
-    #         raise Exception("There are more than 20 folders...")
-
     if not os.path.exists(datadir):
         try:
             os.makedirs(datadir)
@@ -43,7 +32,8 @@ def Create_data_folders(fembNo, env, toytpc):
 
 def Create_report_folders(fembs, fembNo, env, toytpc, datadir):
 
-    reportdir = datadir + "./CHK/report/"
+    reportdir = "./CHK/Report/"
+    # reportdir = datadir + "./report/"
 
     PLOTDIR = {}
 
@@ -279,7 +269,7 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
         ped, rms = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
-        tmp = QC_check.CHKPulse(ped, 700, type = 'pedestal')
+        tmp = QC_check.CHKPulse(ped, 1500, type = 'pedestal')
         log.chkflag["BL"]=(tmp[0])
         log.badlist["BL"]=(tmp[1])
         ped_err_flag = tmp[0]

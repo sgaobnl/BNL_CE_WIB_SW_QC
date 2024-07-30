@@ -18,7 +18,7 @@ class QC_Runs:
         self.fembNo={}
         self.fembName={}
         self.vgndoft = 0
-        self.vdacmax = 0.8
+        self.vdacmax = 0.6
         self.vstep = 20
         self.chk = WIB_CFGS()
         self.LAr_Dalay = 3.5

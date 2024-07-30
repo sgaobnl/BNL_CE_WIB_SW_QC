@@ -398,10 +398,8 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )     # enable the Pulse
 time.sleep(LAr_Dalay)
 chk.data_align(fembs)
-print(111111111)
 #   data acquire
 pls_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
-print(2222222222222)
 #   data analysis
 
 

@@ -75,16 +75,18 @@ def final_report(datareport, fembs, fembNo):
             pass
             summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
             note = "### See the Report"
+            status = 'P'
         else:
             print(femb_id)
             summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
+            status = 'P'
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict[femb_id])
                     issue_note += "{} \n".format(dict[femb_id])
             note = "### Here is the issue: \n" + str(issue_note) + "\n"
 
-        fpmd = datareport[ifemb] + 'report_FEMB_{}_N{}.md'.format(fembNo['femb%d' % ifemb], ifemb)
+        fpmd = datareport[ifemb] + 'report_FEMB_{}_N{}_{}.md'.format(fembNo['femb%d' % ifemb], ifemb ,status)
 
         with open(fpmd, 'w', encoding = "utf-8") as file:
             file.write('\n')
@@ -199,27 +201,5 @@ def final_report(datareport, fembs, fembNo):
             info = dict_to_markdown_table(log.report_log11[femb_id], KEY = "Monitor Path", VALUE = "MonPath")
             file.write(info + '\n')
             file.write('\n')
-
-
-        # with open(fpmd, 'r', encoding='utf-8') as file:
-        #     markdown_content = file.read()
-        #
-        # command = f'pandoc -s -f markdown -t html'
-        # process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        # html_content, error = process.communicate(input=markdown_content.encode('utf-8'))
-        #
-        # html_file_path = 'report_FEMB_{}.html'.format(fembNo['femb%d' % ifemb])
-        # with open(html_file_path, 'w', encoding='utf-8') as html_file:
-        #     html_file.write(html_content.decode('utf-8'))
-
-        # inputfile = "# Hello\nThis is a *Markdown* example."
-        # inputfile = "# Hello\nThis is a *Markdown* example."
-        # output_html_file = datareport[ifemb] + "output.html"
-        # with open(fpmd, "r", encoding = "utf-8") as md_file:
-        #     markdown_content = md_file.read()
-        # html_output = markdown.markdown(markdown_content)
-        # print(html_output)
-        # with open(output_html_file, 'w', encoding = "utf-8") as html_file:
-        #     html_file.write((html_output))
 
         print("file_saved")

@@ -1178,7 +1178,7 @@ class QC_reports:
     def CALI_report_3(self):
         log.test_label.append(8)
         qc=ana_tools()
-        dac_list = range(0,60,8)
+        dac_list = range(0,42,8)
         self.CreateDIR("CALI3")
         datadir = self.datadir+"CALI3/"
 
@@ -1202,7 +1202,7 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc=ana_tools()
-        dac_list = range(0,30,4)
+        dac_list = range(0,19,4)
         self.CreateDIR("CALI4")
         datadir = self.datadir+"CALI4/"
 

@@ -145,6 +145,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     tms = list(tms_items.keys())
     current_time = datetime.utcnow()
     logs['PC_rawdata_root'] = root + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
+    logs['PC_rawreport_root'] = "D:/FEMB_QC/Report/" + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
     logs['PC_WRCFG_FN'] = "./femb_info.csv"
 
     if QC_TST_EN == 0:
@@ -399,12 +400,14 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
 
         print("Transfer data to PC...")
         fdir = '/home/root/BNL_CE_WIB_SW_QC/CHK/'
+        fdir2 = '/home/root/BNL_CE_WIB_SW_QC/CHK/Report/'
         # wib_raw_dir = fdir #later save it into log file
         logs['wib_raw_dir'] = fdir
         # fs = resultstr[resultstr.find("save_file_start_") + 16:resultstr.find("_end_save_file")]
         fsubdirs = fdir.split("/")
         print(fsubdirs)
         fddir = logs['PC_rawdata_root'] + '_CHK/' + fsubdirs[-1]
+        fddir2 = logs['PC_rawreport_root'] + '_CHK/' + fsubdirs[-1]
         print(fddir)
         if not os.path.exists(fddir):
             try:
@@ -416,6 +419,10 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 return None
         wibhost = "root@192.168.121.123:"
         fsrc = wibhost + fdir
+        fsrc2 = wibhost + fdir2
+        command = ["scp", "-r", fsrc2, fddir2]
+        subrun(command, timeout=10)
+        time.sleep(1)
         command = ["scp", "-r", fsrc, fddir]
         result = subrun(command, timeout=10)
         if result != None:
