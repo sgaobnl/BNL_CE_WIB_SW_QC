@@ -69,6 +69,7 @@ def section_report(datareport, fembs, fembNo):
 #   item 01 Power Consumption
         check_list = []
         check_status01 = True
+        check_status02 = True
         check_status03 = True
         check_status04 = True
         check_status05 = True
@@ -95,6 +96,14 @@ def section_report(datareport, fembs, fembNo):
                     # check_list01.append(str(dict_i['Label']) + "\n")
                     # check_list01.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status01)
+        if 2 in log.test_label:
+            # dict_list01 = [log.check_log01_11[femb_id], log.check_log01_12[femb_id], log.check_log01_13[femb_id], log.check_log01_21[femb_id], log.check_log01_22[femb_id], log.check_log01_23[femb_id], log.check_log01_31[femb_id], log.check_log01_32[femb_id], log.check_log01_33[femb_id]]
+
+            check_list02 = []
+            check_status02 = True
+                    # check_list01.append(str(dict_i['Label']) + "\n")
+                    # check_list01.append(str(dict_i['Issue List']) + "\n")
+            check_list.append(check_status02)
 
         if 3 in log.test_label:
             dict_list03 = [log.check_log03_01[femb_id], log.check_log03_02[femb_id], log.check_log03_03[femb_id], log.check_log03_04[femb_id]]
@@ -299,6 +308,13 @@ def section_report(datareport, fembs, fembNo):
                     Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
                 file.write('[Chapter_1](#item1)' + Item01 + '\n\n')
 
+            if 2 in log.test_label:
+                if check_status02:
+                    Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_02 POWER CYCLE' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
+                else:
+                    Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_02 POWER CYCLE' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail >' + '</span>'
+                file.write('[Chapter_2](#item2)' + Item02 + '\n\n')
+
             if 3 in log.test_label:
                 if check_status03:
                     Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass >' + '</span>'
@@ -449,8 +465,23 @@ def section_report(datareport, fembs, fembNo):
                 file.write('<img src="./PWR_Meas/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="200">' + "\n") #width="200"
                 file.write('</details>'+ '\n\n')
 
-
-
+            if 2 in log.test_label:
+                if check_status02:
+                    Head02 = '### ' + '</span>' + '<span id="item2"> Chapter_2 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM_02_POWER_CYCLE' + '    < Pass >' + '</span>' + '\n'
+                else:
+                    Head02 = '### ' + '</span>' + '<span id="item2"> Chapter_2 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_02_POWER_CYCLE' + '    < Fail >' + '</span>'  + '\n'
+                file.write(Head02 + '\n')
+                file.write("------\n")
+                file.write('### 2_01 cycle0_SE DAC = 0' + '\n')
+                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle0_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 2_02 cycle1_SE DAC = 0' + '\n')
+                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle1_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 2_03 cycle2_SE DAC = 0' + '\n')
+                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle2_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 2_04 SE_SDF' + '\n')
+                file.write("![ped](./PWR_Cycle/pulse_PWR_SE_SDF_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 2_05 DIFF' + '\n')
+                file.write("![ped](./PWR_Cycle/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
 # 03
             if 3 in log.test_label:
                 if check_status03:
