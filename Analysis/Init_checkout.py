@@ -10,6 +10,7 @@ from datetime import datetime
 from utils import printItem
 from utils import decodeRawData, LArASIC_ana, createDirs, dumpJson, BaseClass
 import matplotlib.pyplot as plt
+from utils import BaseClass_Ana
 
 class QC_INIT_CHECK(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
@@ -145,29 +146,43 @@ class QC_INIT_CHECK(BaseClass):
         ## --- THIS BLOCK SHOULD BE THE LAST PART OF THE METHOD runAnalysis
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='QC_CHK_INIT', data_to_dump=self.out_dict[FE_ID])
+            dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name='QC_INIT_CHK', data_to_dump=self.out_dict[FE_ID])
 
+class QC_INIT_CHK_Ana(BaseClass_Ana):
+    def __init__(self, root_path: str, chipID: str, output_path: str):
+        self.item = 'QC_INIT_CHK'
+        super().__init__(root_path=root_path, chipID=chipID, item=self.item, output_path=output_path)
+        tmp_params = [p for p in self.params if ('ASICDAC' in p) or ('DIRECT_PLS' in p)]
+        self.params = tmp_params
+        print(self.params)
 
 if __name__ == '__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     # root_path = '../../B010T0004/Time_20240703122319_DUT_0000_1001_2002_3003_4004_5005_6006_7007'
-    root_path = '../../B010T0004'
-    output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-    # root_path = 'D:/DAT_LArASIC_QC/Tested'
+    # root_path = '../../B010T0004'
+    # output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    # # root_path = 'D:/DAT_LArASIC_QC/Tested'
 
-    qc_selection = json.load(open("qc_selection.json"))
-    # print(qc_selection)
+    # qc_selection = json.load(open("qc_selection.json"))
+    # # print(qc_selection)
 
-    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')] ### USE THIS LINE FOR OTHER TEST ITEMS AS WELL
-    for i, data_dir in enumerate(list_data_dir):
-        printItem(data_dir)
-        #----------------------------
-        t0 = datetime.now()
-        init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
-        #----------------------------
-        tf = datetime.now()
-        print('end time : {}'.format(tf))
-        deltaT = (tf - t0).total_seconds()
-        print("Decoding time : {} seconds".format(deltaT))
-        print("=xx="*20)
+    # list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')] ### USE THIS LINE FOR OTHER TEST ITEMS AS WELL
+    # for i, data_dir in enumerate(list_data_dir):
+    #     printItem(data_dir)
+    #     #----------------------------
+    #     t0 = datetime.now()
+    #     init_chk = QC_INIT_CHECK(root_path=root_path, data_dir=data_dir, output_dir=output_path)
+    #     init_chk.decode_INIT_CHK(in_params=qc_selection['QC_INIT_CHK'], generateQCresult=False, generatePlots=True)
+    #     #----------------------------
+    #     tf = datetime.now()
+    #     print('end time : {}'.format(tf))
+    #     deltaT = (tf - t0).total_seconds()
+    #     print("Decoding time : {} seconds".format(deltaT))
+    #     print("=xx="*20)
+    #--*********************************************************--------
+    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    output_path = '../../Analysis'
+    list_chipID = os.listdir(root_path)
+    for chipID in list_chipID:
+        init_chk_ana = QC_INIT_CHK_Ana(root_path=root_path, chipID=chipID, output_path=output_path)
+        sys.exit()

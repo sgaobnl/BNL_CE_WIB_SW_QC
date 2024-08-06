@@ -6,6 +6,7 @@
 
 import os, sys, json, platform, pickle
 import numpy as np
+import markdown
 # import csv
 import json
 import matplotlib.pyplot as plt
@@ -57,17 +58,6 @@ def dumpJson(output_path: str, output_name: str, data_to_dump: dict, indent=4):
         else:
             json.dump(data_to_dump, fn)
         
-
-def dumpMD(output_path: str, output_name: str, mdTable_to_dump: str):
-    '''
-        Save markdown table to *.md file.
-        inputs:
-            output_path: path to output,
-            output_name: filename WITHOUT the extension .md,
-            mdTable_to_dump: a string of the markdown table to save
-    '''
-    with open('/'.join([output_path, output_name + '.md']), 'w+') as mdfile:
-        mdfile.write(mdTable_to_dump)
 
 def linear_fit(x: list, y: list):
     '''
@@ -251,44 +241,46 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
         ped = np.round(np.mean(oneCHdata), 4)
         rms = np.round(np.std(oneCHdata), 4)
     else:
-        posmax, pheights = find_peaks(x=oneCHdata, height=0.5*np.max(oneCHdata))
-        N_pulses = len(posmax)
-        if N_pulses>20: # the data does not have any pulse because we sent 20 pulses at max (5 spy buffers)
-            ped = np.round(np.mean(oneCHdata), 4)
-            rms = np.round(np.std(oneCHdata), 4)
-        else:
-            data = np.array([])
-            # for i in range(N_pulses):
-            #     istart = i*period
-            #     iend = posmax[i]-10
-            #     if (iend-istart) > 0:
-            #         data = np.concatenate((data, oneCHdata[istart : iend]))
-            # ped = np.round(np.mean(data), 4)
-            # rms = np.round(np.std(data), 4)
-            N_periods = len(oneCHdata)//period
-            for i in range(N_periods):
-                chunkdata = oneCHdata[i*period : (i+1)*period]
+        # posmax, pheights = find_peaks(x=oneCHdata, height=0.85*np.max(oneCHdata)) ### use argmax corresponding to each period instead of find_peaks 
+        # N_pulses = len(posmax)
+        # if N_pulses>20: # the data does not have any pulse because we sent 20 pulses at max (5 spy buffers)
+        #     ped = np.round(np.mean(oneCHdata), 4)
+        #     rms = np.round(np.std(oneCHdata), 4)
+        # else:
+        #     data = np.array([])
+        #     # for i in range(N_pulses):
+        #     #     istart = i*period
+        #     #     iend = posmax[i]-10
+        #     #     if (iend-istart) > 0:
+        #     #         data = np.concatenate((data, oneCHdata[istart : iend]))
+        #     # ped = np.round(np.mean(data), 4)
+        #     # rms = np.round(np.std(data), 4)
+        #     N_periods = len(oneCHdata)//period
+        data = np.array([])
+        N_periods = len(oneCHdata) // period
+        for i in range(N_periods):
+            chunkdata = oneCHdata[i*period : (i+1)*period]
+            pmax = np.argmax(chunkdata)
+            pmin = np.argmin(chunkdata)
+            istart = 0
+            iend = 0
+            if (pmax < pmin) and (pmax-50 < 0):
+                istart = pmin+20
+                iend = -50
+            elif (pmax < pmin) and (period-pmin < pmax):
+                istart = 20
+                iend = pmax - 20
+            else:
+                front = chunkdata[pmax - 20 : ]
+                back = chunkdata[ : pmax - 20]
+                chunkdata = np.concatenate((front, back))
                 pmax = np.argmax(chunkdata)
                 pmin = np.argmin(chunkdata)
-                istart = 0
-                iend = 0
-                if (pmax < pmin) and (pmax-50 < 0):
-                    istart = pmin+20
-                    iend = -50
-                elif (pmax < pmin) and (period-pmin < pmax):
-                    istart = 20
-                    iend = pmax - 20
-                else:
-                    front = chunkdata[pmax - 20 : ]
-                    back = chunkdata[ : pmax - 20]
-                    chunkdata = np.concatenate((front, back))
-                    pmax = np.argmax(chunkdata)
-                    pmin = np.argmin(chunkdata)
-                    istart = pmin + 20
-                    iend = -50
-                data = np.concatenate((data, chunkdata[istart : iend]))
-            ped = np.round(np.mean(data), 4)
-            rms = np.round(np.std(data), 4)
+                istart = pmin + 20
+                iend = -50
+            data = np.concatenate((data, chunkdata[istart : iend]))
+        ped = np.round(np.mean(data), 4)
+        rms = np.round(np.std(data), 4)
 
     return [ped, rms]
 
@@ -338,8 +330,77 @@ class BaseClass:
             self.logs_dict['FE{}'.format(place[1])] = tmts
             self.logs_dict['ADC{}'.format(place[1])] = tmts
 
+#_______BASE_CLASS_for_ANALYSIS_of_the_decoded_data________________
+class BaseClass_Ana:
+    def __init__(self, root_path: str, chipID: str, item: str, output_path: str):
+        '''
+            root_path : path to the main folder of the decoded data => path to the chip ID (timestamp);
+            item : item to analyze. For example: QC_INIT_CHK, QC_PWR, QC_PWR_CYCLE, etc.
+        '''
+        self.root_path = root_path
+        self.chipID = chipID
+        # self.output_dir = '/'.join([self.root_path, self.chipID, 'Analysis'])
+        self.output_dir = '/'.join([output_path, chipID])
+        try:
+            os.mkdir(self.output_dir)
+        except OSError:
+            print("Folder already exists...")
+            
+        self.item_to_ana = item
+        self.filename = [f for f in os.listdir('/'.join([self.root_path, self.chipID, self.item_to_ana])) if '.json' in f][0]
+        self.data, self.params = self.read_json()
 
-# Analyze one LArASIC
+    def read_json(self):
+        path_to_file = '/'.join([self.root_path, self.chipID, self.item_to_ana, self.filename])
+        data = json.load(open(path_to_file))
+        params = [param for param in data.keys() if param != 'logs']
+        return data, params
+
+    def getoneConfigData(self, config: str):
+        data = self.data[config]
+        return data
+
+    def getCHresp_info(self, oneChipData: list):
+        '''
+            This method can be used if the input data has the channel responses like pedestal, rms, pospeak (or posAmp), and negpeak (or negAmp)
+        '''
+        meanValue = np.round(np.mean(oneChipData), 4)
+        stdValue = np.round(np.std(oneChipData) / np.sqrt(16), 4) # standard error of the mean      
+        minValue = np.round(np.min(oneChipData), 4) # the positive value was obtained by subtracting the pedestal by the minValue (the actual one)
+        maxValue = np.round(np.max(oneChipData), 4)
+        return meanValue, stdValue, minValue, maxValue
+    
+    def ChResp_ana(self, item_to_plot: str):
+        '''
+            This method will be overwritten in some of the analysis classes in order to get the required analysis for each QC item. That's completely fine.
+            item_to_plot could be 'pedestal', 'rms', 'pospeak', or 'negpeak'
+        '''
+        chipData = dict()
+        for param in self.params:
+            data = self.getoneConfigData(config=param)
+            meanValue, stdValue, minValue, maxValue = self.getCHresp_info(oneChipData=data[item_to_plot])
+            # config = '\n'.join(param.split('_'))
+            config = ''
+            cfg_splitted = param.split('_')
+            config ='\n'.join(cfg_splitted)
+            chipData[config] = {'mean': meanValue, 'std': stdValue, 'min': minValue, 'max': maxValue}
+        configs = list(chipData.keys())
+        plt.figure(figsize=(15, 12))
+        for cfg in configs:
+            cfg_split = cfg.split('_')
+            xlabel = cfg
+            # mean and std
+            plt.errorbar(x=xlabel, y=chipData[cfg]['mean'], yerr=chipData[cfg]['std'], color='b', fmt='.', capsize=4)
+            # min value
+            plt.scatter(x=xlabel, y=chipData[cfg]['min'], color='r', marker='.', s=100)
+            # max value
+            plt.scatter(x=xlabel, y=chipData[cfg]['max'], color='r', marker='.', s=100)
+        plt.title('{}'.format(item_to_plot))
+        plt.grid(True)
+        plt.savefig('/'.join([self.output_dir, '{}_'.format(self.item_to_ana) + item_to_plot + '.png']))
+        plt.close()
+
+# Analyze one LArASIC --Decoding
 class LArASIC_ana:
     def __init__(self, dataASIC: list, output_dir: str, chipID: str, tms=0, param='ASICDAC_CALI_CHK', generateQCresult=True, generatePlots=True, period=500):
         self.generateQCresult = generateQCresult
@@ -584,34 +645,36 @@ def stat_ana(root_path: str, testItem: str):
 # Generate report for one LArASIC
 # --> All parameters for the QC
 class QC_REPORT:
-    def __init__(self, input_path: str, output_path: str):
-        self.input_path = input_path
-        self.output_path = output_path
+    def __init__(self, root_path: str, chipID: str):
+        self.input_path = '/'.join([root_path, chipID])
+        self.output_path = '/'.join([root_path, chipID])
+        self.chipID = chipID
+        self.reportName = '{}_report.md'.format(chipID)
+        self.mdfile = self.openMD(reportName=self.reportName)
+
+    def openMD(self, reportName: str):
+        mdfile = open('/'.join([self.output_path, reportName]), 'w', encoding="utf-8")
+        return mdfile
 
     def QC_PWR_report(self):
-        title_summary = "--- \n### POWER CONSUMPTION - SUMMARY"
-        # read the json file
-        data = json.load(open('/'.join([self.input_path, 'QC_PWR_data.json'])))
-        KEY_names = {'V': "Voltage", 'I': 'Current', 'P': "Power Consumption"}
-        KEY_units = {'V': 'V', 'I': 'mA', 'P': 'mW'}
-        md = ""
-        qc_results = []
-        for KEY in data.keys():
-            qc_result = data[KEY]['result_qc']
-            qc_results.append(qc_results)
-            link_to_img = data[KEY]['link_to_img']
-            KEY_title = '**<u>' + KEY_names[KEY] + ' ({}):</u> {}**'.format(KEY_units[KEY], qc_result)
-            KEY_plot = '![]({})'.format(link_to_img)
-            KEY_md = "<span>{} \n {}</span>".format(KEY_title, KEY_plot)
-            md += (KEY_md + '\n')
-        md += "---"
-        if False in qc_results:
-            title_summary += ": Failed\n"
-        else:
-            title_summary += ": Passed\n"
-        md = title_summary + md
-        dumpMD(output_path=self.output_path, output_name='QC_PWR_md', mdTable_to_dump=md)
-
+        
+        pwr_report = "| <h3 style='text-align:center'>Power Consumption</h3> |\n|---|"
+        list_plots = ['/'.join(['.', f]) for f in os.listdir(self.input_path) if 'PWR' in f]
+        keys_pwr = ["Voltage", "Current", "Power"]
+        BLs = ["200mV", "900mV"]
+        ## --- Pulse Response
+        row_pulseResp = "|<div style='display:flex; align-items: center;justify-content: center;'>\
+            <table style='margin-left:auto'>"
+        row_pulseResp += "<tr>"
+        for BL in BLs:
+            plotname = "./QC_PWR_{}_pulseResp.png".format(BL)
+            row_pulseResp += "<td> ![{}Baseline]({}) </td>".format(BL, plotname)
+        print(row_pulseResp)
+        row_pulseResp += "</tr></table></div>|\n"
+        pwr_report = '\n'.join([pwr_report, row_pulseResp])
+        
+        self.mdfile.write(pwr_report)
+        
     
 if __name__ == '__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -619,5 +682,15 @@ if __name__ == '__main__':
     # qc_report = QC_REPORT(input_path=root_path, output_path=root_path)
     # pwr_qc_dict = qc_report.QC_PWR_report()
     # print(pwr_qc_dict)
-    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
-    stat_ana(root_path=root_path, testItem='QC_CHK_INIT')
+    # root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    # # stat_ana(root_path=root_path, testItem='QC_CHK_INIT')
+    # list_chipID = os.listdir(root_path)
+    # for chipID in list_chipID:
+    #     bc_ana = BaseClass_Ana(root_path=root_path, chipID=chipID, item='QC_PWR')
+    #     sys.exit()
+    root_path = '../../Analysis'
+    listChips = os.listdir(root_path)
+    for chipID in listChips:
+        report = QC_REPORT(root_path=root_path, chipID=chipID)
+        report.QC_PWR_report()
+        sys.exit()
