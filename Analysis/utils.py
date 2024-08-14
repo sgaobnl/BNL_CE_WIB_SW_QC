@@ -340,6 +340,10 @@ class BaseClass_Ana:
         self.root_path = root_path
         self.chipID = chipID
         # self.output_dir = '/'.join([self.root_path, self.chipID, 'Analysis'])
+        try:
+            os.mkdir(output_path)
+        except:
+            pass
         self.output_dir = '/'.join([output_path, chipID])
         try:
             os.mkdir(self.output_dir)
@@ -399,6 +403,7 @@ class BaseClass_Ana:
         plt.grid(True)
         plt.savefig('/'.join([self.output_dir, '{}_'.format(self.item_to_ana) + item_to_plot + '.png']))
         plt.close()
+#________________________________________xx___________________________________________________________________________
 
 # Analyze one LArASIC --Decoding
 class LArASIC_ana:
