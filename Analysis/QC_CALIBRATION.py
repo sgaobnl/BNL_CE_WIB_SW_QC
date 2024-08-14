@@ -9,6 +9,7 @@ import numpy as np
 from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, decodeRawData, BaseClass #, getPulse
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
+from utils import BaseClass_Ana
 
 class QC_CALI(BaseClass):
     '''
@@ -220,22 +221,206 @@ class QC_CALI(BaseClass):
             self.plotWaveForms(organizedData=organizedData)
         self.getAmplitudes(organizedData=organizedData)
 
+#@ Analysis of the decoded data
+class QC_CALI_Ana(BaseClass_Ana):
+    def __init__(self, root_path: str, output_path: str, chipID: str, CALI_item: str):
+        self.item = CALI_item + '_Amp'
+        super().__init__(root_path=root_path, chipID=chipID, output_path=output_path, item=CALI_item)
+        self.output_dir = '/'.join([self.output_dir, CALI_item])
+        try:
+            os.mkdir(self.output_dir)
+        except OSError:
+            pass
+        print(self.output_dir)
+        # print(self.params)
+        # self.getmeanData(BL="SNC1", item="posAmp")
+        # self.getmeanData(BL="SNC0", item="posAmp")
+        # dac, chns, allchdacdata = self.getDataperDAC(BL='SNC0', item="posAmp", DAC=4)
+        # self.getDAClist(BL='SNC1')
+        # self.Amp_vs_CH()
+        # self.Amp_vs_DAC()
+        # self.INL_vs_CH()
+        # self.makeplots()
+        # sys.exit()
+    
+    def getDAClist(self, BL: str):
+        data = self.data[BL]
+        DAClist = []
+        ch = 'CH0'
+        for d in data[ch]:
+            DAClist.append(d['DAC'])
+        return DAClist
+
+    def getDataperDAC(self, BL: str, item: str, DAC: int):
+        data = self.data[BL]
+        allchDACdata = []
+        chns = list(range(16))
+        for ich in range(16):
+            CH = "CH{}".format(ich)
+            # get dict with the corresponding DAC value
+            dacdata = dict()
+            for d in data[CH]:
+                if d["DAC"] == DAC:
+                    dacdata = d
+            allchDACdata.append(dacdata[item])
+        return DAC, chns, allchDACdata
+    
+    def getmeanData(self, BL: str, item: str):
+        '''
+            Get the average of the 16 channels value of "item" for each DAC. 
+        '''
+        data = self.data[BL]
+        DAC_list = self.getDAClist(BL=BL)
+        # for d in data["CH0"]:
+        #     DAC_list.append(d["DAC"])
+        DAC_list = sorted(DAC_list)
+
+        meandata = []
+        stddata = []
+        for idac, dac in enumerate(DAC_list):
+            onedac_data = []
+            for ich in range(16):
+                chn = "CH{}".format(ich)
+                d = data[chn][idac]
+                onedac_data.append(d[item])
+            mean = np.round(np.mean(onedac_data), 4)
+            std = np.round(np.std(onedac_data), 4)
+            meandata.append(mean)
+            stddata.append(std)
+        
+        # # plot example -- linearity
+        # fig, ax = plt.subplots()
+        # ax.plot(DAC_list, meandata, 'b-', marker='.', markersize=12)
+        # ax.set_xticklabels(DAC_list)
+        # plt.show()
+        # sys.exit()
+        return DAC_list, meandata, stddata
+    
+    def getINL(self, BL: str, item: str):
+        '''
+            - For each channel number, get the DAC and item values.
+            - Get the INL for each channel.
+            - Return the INL for the 16 channels.
+            We use the positive amplitude to get the linearity.
+        '''
+        data = self.data[BL]
+        INLs = {}
+
+        for chn in range(16):
+            # chn = 0
+            chdata = data["CH{}".format(chn)]
+            item_data = []
+            DAC_list = []
+            for d in chdata:
+                DAC_list.append(d["DAC"])
+                item_data.append(d[item])
+            # print(DAC_list)
+            # print(item_data)
+            # # plot example -- linearity / channel
+            # fig, ax = plt.subplots()
+            # ax.plot(DAC_list, item_data, marker='.', markersize=12)
+            # ax.set_xticklabels(DAC_list)
+            # ax.set_ylabel("Amplitude (ADC bin)")
+            # ax.set_xlabel("DAC bin")
+            # plt.show()
+            #
+            # check linearity and get INL
+            slope, yintercept, inl = linear_fit(x=DAC_list, y=item_data)
+            # print(inl)
+            INLs[chn] = inl
+        return INLs
+    
+    def Amp_vs_CH(self):
+        items = ['posAmp', 'negAmp']
+        BLs = ['SNC0', 'SNC1']
+        BL_dict = {'SNC0': '900mV', 'SNC1' : '200mV'}
+        for BL in BLs:
+            for item in items:
+                DAClist = self.getDAClist(BL=BL)
+                fig, ax = plt.subplots()
+                for dac in DAClist:
+                    DAC, chns, allchdacdata = self.getDataperDAC(BL=BL, item=item, DAC=dac)
+                    ax.plot(chns, allchdacdata, label='{}'.format(DAC))
+                ax.set_xlabel('CH');ax.set_ylabel('ADC bit')
+                ax.set_title('{} : {}'.format(BL_dict[BL], item))
+                ax.legend()
+                fig.savefig('/'.join([self.output_dir, '{}_ampch_{}_{}.png'.format(self.item, BL_dict[BL], item)]))
+                plt.close()
+    
+    def Amp_vs_DAC(self):
+        items = ['posAmp', 'negAmp']
+        BLs = ['SNC0', 'SNC1']
+        BL_dict = {'SNC0': '900mV', 'SNC1' : '200mV'}
+        for item in items:
+            for BL in BLs:
+                daclist, meandata, stddata = self.getmeanData(BL=BL, item=item)
+                fig, ax = plt.subplots()
+                ax.errorbar(x=daclist, y=meandata, yerr=stddata)
+                ax.set_xlabel('DAC');ax.set_ylabel('ADC bit')
+                ax.set_title('{} : {}'.format(BL_dict[BL], item))
+                plt.grid(True)
+                fig.savefig('/'.join([self.output_dir, '{}_ampdac_{}_{}.png'.format(self.item, BL_dict[BL], item)]))
+                plt.close()
+    
+    def INL_vs_CH(self):
+        items = ['posAmp', 'negAmp']
+        BLs = ['SNC0', 'SNC1']
+        BL_dict = {'SNC0': '900mV', 'SNC1' : '200mV'}
+        for item in items:
+            for BL in BLs:
+                inls = self.getINL(BL=BL, item=item)
+                fig, ax = plt.subplots()
+                ax.plot(inls.keys(), inls.values())
+                ax.set_xlabel('CH');ax.set_ylabel('INL')
+                ax.set_title('{} : {}'.format(BL_dict[BL], item))
+                fig.savefig('/'.join([self.output_dir, '{}_inlCH_{}_{}.png'.format(self.item, BL_dict[BL], item)]))
+                plt.close()
+
+    def makeplots(self):
+        self.Amp_vs_CH()
+        self.Amp_vs_DAC()
+        self.INL_vs_CH()
+
+def StatAna_cali(root_path: str, list_chipID: list):
+    BLs = ['SNC0', 'SNC1']
+    items_to_ana = ['posAmp', 'negAmp']
+    allINLs = np.array([])
+    for chipID in list_chipID:
+        ana_cali = QC_CALI_Ana(root_path=root_path, output_path='', chipID=chipID, CALI_item='QC_CALI_ASICDAC')
+        INLs = ana_cali.getINL(BL=BLs[0], item=items_to_ana[1])
+        val = list(INLs.values())
+        allINLs = np.concatenate((allINLs, np.array(val)))
+    plt.figure()
+    mean = np.round(np.mean(allINLs), 4)
+    std = np.round(np.std(allINLs), 4)
+    plt.hist(allINLs, bins=100, label='mean = {}, std = {}'.format(mean, std))
+    plt.legend()
+    plt.show()
+    # print(alldata)
+
 if __name__ == '__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
-    output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    # output_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
 
-    # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
-    root_path = '../../B010T0004'
-    list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
-    for i, data_dir in enumerate(list_data_dir):
-        # if '20240703163752' in data_dir:
-            asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
-            asicdac.runASICDAC_cali(saveWfData=False)
-            subdir = os.listdir('/'.join([root_path, data_dir]))[0]
-            if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir, subdir])):
-                asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
-                asic47dac.runASICDAC_cali(saveWfData=False)
-            datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=True)
-            datdac.runASICDAC_cali(saveWfData=False)
-            direct_cali = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=63, QC_filename='QC_CALI_DIRECT.bin', generateWf=True)
-            direct_cali.runASICDAC_cali(saveWfData=False)
+    # # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
+    # root_path = '../../B010T0004'
+    # list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
+    # for i, data_dir in enumerate(list_data_dir):
+    #     # if '20240703163752' in data_dir:
+    #         asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
+    #         asicdac.runASICDAC_cali(saveWfData=False)
+    #         subdir = os.listdir('/'.join([root_path, data_dir]))[0]
+    #         if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir, subdir])):
+    #             asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
+    #             asic47dac.runASICDAC_cali(saveWfData=False)
+    #         datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=True)
+    #         datdac.runASICDAC_cali(saveWfData=False)
+    #         direct_cali = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=63, QC_filename='QC_CALI_DIRECT.bin', generateWf=True)
+    #         direct_cali.runASICDAC_cali(saveWfData=False)
+    root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
+    output_path = '../../Analysis'
+    list_chipID = os.listdir(root_path)
+    for chipID in list_chipID:
+        ana_cali = QC_CALI_Ana(root_path=root_path, output_path=output_path, chipID=chipID, CALI_item='QC_CALI_ASICDAC_47')
+        ana_cali.makeplots()
+    # StatAna_cali(root_path=root_path, list_chipID=list_chipID)
