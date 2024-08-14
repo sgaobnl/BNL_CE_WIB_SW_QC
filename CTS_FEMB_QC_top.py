@@ -58,7 +58,7 @@ def FEMB_QC(input_info):
 
     # ======== Button 02 Checkout ========================
     # input('Button#02 FEMB Assembly Checkout')
-    time.sleep(1)
+    # time.sleep(1)
     QC_Process(QC_TST_EN=2, input_info=input_info)  # assembly checkout
     # ======== Button 03 QC ==============================
     # input('Button#03 FEMB Quality Control')

@@ -483,7 +483,7 @@ class ana_tools:
                     coefficients = np.polyfit(x_data, y_data, deg=1)
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
-                    inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-3]))
+                    inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-1]))
                     if inl > 1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False

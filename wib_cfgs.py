@@ -1100,10 +1100,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         vdac_mons = []
 
         for vdac in vdacs:
-            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
-
             self.fembs_fe_cfg(femb_ids)
+            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
+            time.sleep(0.01)
             for femb_id in femb_ids:
                 #     self.femb_fe_cfg(femb_id)
                 self.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
