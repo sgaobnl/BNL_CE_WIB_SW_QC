@@ -24,6 +24,7 @@ if __name__ == '__main__':
     # list_data_dir = [dir for dir in os.listdir(root_path) if '.zip' not in dir]
     list_data_dir = [dir for dir in os.listdir(root_path) if (os.path.isdir('/'.join([root_path, dir]))) and (dir!='images')]
     for data_dir in list_data_dir:
+        print(data_dir)
         t0 = datetime.now()
         print('start time : {}'.format(t0))
         #-----------------------------
@@ -34,8 +35,8 @@ if __name__ == '__main__':
         # qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path)
         # qc_pwr.decode_FE_PWR()
         # Channel response checkout
-        qc_checkres = QC_CHKRES(root_path=root_path, data_dir=data_dir, output_dir=output_path)
-        qc_checkres.decode_CHKRES()
+        # qc_checkres = QC_CHKRES(root_path=root_path, data_dir=data_dir, output_dir=output_path)
+        # qc_checkres.decode_CHKRES()
         # FE monitoring
         # fe_mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path)
         # fe_mon.decodeFE_MON()
@@ -48,9 +49,10 @@ if __name__ == '__main__':
         # # ASICDAC Calibration
         # asicdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=61, QC_filename='QC_CALI_ASICDAC.bin', generateWf=True)
         # asicdac.runASICDAC_cali(saveWfData=False)
-        # if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir])):
-        #     asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
-        #     asic47dac.runASICDAC_cali(saveWfData=False)
+        tmpdir = os.listdir('/'.join([root_path, data_dir]))[0]
+        if 'QC_CALI_ASICDAC_47.bin' in os.listdir('/'.join([root_path, data_dir, tmpdir])):
+            asic47dac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=64, QC_filename='QC_CALI_ASICDAC_47.bin', generateWf=True)
+            asic47dac.runASICDAC_cali(saveWfData=False)
         # datdac = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=62, QC_filename='QC_CALI_DATDAC.bin', generateWf=True)
         # datdac.runASICDAC_cali(saveWfData=False)
         # direct_cali = QC_CALI(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=63, QC_filename='QC_CALI_DIRECT.bin', generateWf=True)
