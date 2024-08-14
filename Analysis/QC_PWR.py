@@ -155,6 +155,11 @@ class QC_PWR_analysis(BaseClass_Ana):
     def __init__(self, root_path: str, chipID: str, output_path: str):
         self.item = 'QC_PWR'
         super().__init__(root_path=root_path, chipID=chipID, item=self.item, output_path=output_path)
+        self.output_dir = '/'.join([self.output_dir, self.item])
+        try:
+            os.mkdir(self.output_dir)
+        except OSError:
+            pass
         # print(self.params)
 
     def get_cfg(self, config: str, separateBL=False):
@@ -260,34 +265,44 @@ class QC_PWR_analysis(BaseClass_Ana):
     
     def ChResp_ana(self, item_to_plot: str):
         '''
-            item_to_plot could be 'pedestal', 'rms', 'pospeak', or 'negpeak'
+            item_to_plot could be 'pedestal', 'rms'
         '''
         chipData = {'200mV': {}, '900mV': {}}
+        colors = ['r', 'b']
+        ylim = []
+        if item_to_plot=='rms':
+            ylim = [0, 25]
+        elif item_to_plot=='pedestal':
+            ylim = [500, 10000]
         for param in self.params:
             BL, cfg = self.get_cfg(config=param, separateBL=True)
             data = self.getoneConfigData(config=param)
             meanValue, stdValue, minValue, maxValue = self.getCHresp_info(oneChipData=data[item_to_plot])
             chipData[BL][cfg] = {'mean': meanValue, 'std': stdValue, 'min': minValue, 'max': maxValue}
-        for BL in ['200mV', '900mV']:
-            plt.figure(figsize=(8,7))
+        plt.figure(figsize=(8,7))
+        for i, BL in enumerate(['200mV', '900mV']):
+            # plt.figure(figsize=(8,7))
             configs = list(chipData[BL].keys())
             for cfg in configs:
                 # mean and std
-                plt.errorbar(x=cfg, y=chipData[BL][cfg]['mean'], yerr=chipData[BL][cfg]['std'], color='b', fmt='.', capsize=4)
-                plt.scatter(x=cfg, y=chipData[BL][cfg]['mean'], color='b', marker='.', s=100)
-                if item_to_plot=='negpeak' and BL=='900mV':
-                    # min value
-                    plt.scatter(x=cfg, y=chipData[BL][cfg]['min'], color='r', marker='.', s=100)
+                plt.errorbar(x=cfg, y=chipData[BL][cfg]['mean'], yerr=chipData[BL][cfg]['std'], color=colors[i], fmt='.', capsize=4)
+                plt.scatter(x=cfg, y=chipData[BL][cfg]['mean'], color=colors[i], marker='.', s=100)
+                # if item_to_plot=='negpeak' and BL=='900mV':
+                # min value
+                plt.scatter(x=cfg, y=chipData[BL][cfg]['min'], color=colors[i], marker='.', s=100)
                 # max value
-                plt.scatter(x=cfg, y=chipData[BL][cfg]['max'], color='r', marker='.', s=100)
+                plt.scatter(x=cfg, y=chipData[BL][cfg]['max'], color=colors[i], marker='.', s=100)
             meanvalues = [chipData[BL][cfg]['mean'] for cfg in configs]
-            plt.plot(configs, meanvalues, color='black')
-            plt.xlabel('Configurations', loc='right', fontdict={'weight': 'bold'})
-            plt.ylabel('{} (ADC bit)'.format(item_to_plot), loc='top', fontdict={'weight': 'bold'})
-            plt.title('{} {}'.format(item_to_plot, BL))
-            plt.grid(True)
-            plt.savefig('/'.join([self.output_dir, 'PWR_{}_{}.png'.format(item_to_plot, BL)]))
-            plt.close()
+            plt.plot(configs, meanvalues, color=colors[i], label=BL)
+        plt.xlabel('Configurations', loc='right', fontdict={'weight': 'bold'})
+        plt.ylabel('{} (ADC bit)'.format(item_to_plot), loc='top', fontdict={'weight': 'bold'})
+        plt.ylim(ylim)
+        # plt.title('{} {}'.format(item_to_plot, BL))
+        plt.title('{}'.format(item_to_plot))
+        plt.legend()
+        plt.grid(True)
+        plt.savefig('/'.join([self.output_dir, 'PWR_{}.png'.format(item_to_plot)]))
+        plt.close()
 
     def Mean_ChResp_ana(self, BL: str):
         configs = []
