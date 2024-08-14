@@ -50,12 +50,16 @@ class QC_CHKRES(BaseClass):
             "1" : "Buff ON"
         }
         slkh_dict = {
-            "0" : "RQI x10 OFF",
-            "1" : "RQI x10 ON"
+            # "0" : "RQI x10 OFF",
+            # "1" : "RQI x10 ON"
+            "0" : 1,
+            "1": 10
         }
         slk_dict = {
-            "0" : "500 pA RQI",
-            "1" : "100 pA RQI"
+            # "0" : "500 pA RQI",
+            # "1" : "100 pA RQI"
+            "0": 500, # pA RQI
+            "1": 100 # pA RQI
         }
         snc_dict = {
             "0" : "900 mV",
@@ -66,20 +70,28 @@ class QC_CHKRES(BaseClass):
             "1" : "test cap ON"
         }
         st_dict = {
-            "00" : "1.0 $\mu s$",
-            "10" : "0.5 $\mu s$",
-            "01" : "3 $\mu s$",
-            "11" : "2 $\mu s$"
+            # "00" : "1.0 $\mu s$",
+            # "10" : "0.5 $\mu s$",
+            # "01" : "3 $\mu s$",
+            # "11" : "2 $\mu s$"
+            "00" : 1.0,
+            "10" : 0.5,
+            "01" : 3,
+            "11" : 2
         }
         sgp_dict = {
             "0": "Gbit=0",
             "1": "Gbit=1"
         }
         sg_dict = {
-            "00" : "14mV/fC",
-            "10" : "25mV/fC",
-            "01" : "7.8mV/fC",
-            "11" : "4.7mV/fC"
+            # "00" : "14mV/fC",
+            # "10" : "25mV/fC",
+            # "01" : "7.8mV/fC",
+            # "11" : "4.7mV/fC"
+            "00": 14,
+            "10": 25,
+            "01": 7.8,
+            "11": 4.7
         }
         config_datasheet = dict()
         # for KEY, config_list in config_dict.items():
@@ -172,10 +184,16 @@ class QC_CHKRES_Ana(BaseClass_Ana):
     def __init__(self, root_path: str, chipID: str, output_path: str):
         self.item = 'QC_CHKRES'
         super().__init__(root_path=root_path, chipID=chipID, output_path=output_path, item=self.item)
+        self.output_dir = '/'.join([self.output_dir, self.item])
+        try:
+            os.mkdir(self.output_dir)
+        except OSError:
+            pass
         # print(self.params)
-        self.makePlots()
+        # self.makePlots()
+        # sys.exit()
     
-    def ChResp_ana(self, item_to_plot: str, group: str):
+    def ChResp_ana(self, item_to_plot: str, group: str, returnData: False):
         chipData = {}
         for param in self.params:
             data = self.getoneConfigData(config=param)
@@ -186,15 +204,19 @@ class QC_CHKRES_Ana(BaseClass_Ana):
                 cfg_info = data['CFG_info']
                 config = ''
                 if group=='GAINs':
-                    config = '\n'.join([cfg_info['SNC'], cfg_info['SGP'], cfg_info['SG']])
+                    # config = '\n'.join([cfg_info['SNC'], cfg_info['SGP'], str(cfg_info['SG'])])
+                    config = '_'.join([cfg_info['SNC'], str(cfg_info['SG'])])
                 elif group=='OUTPUT':
-                    config = '\n'.join(['_'.join([cfg_info['SNC'], cfg_info['SG']]), cfg_info['SDD'], cfg_info['SDF']])
+                    # config = '\n'.join(['_'.join([cfg_info['SNC'], cfg_info['SG']]), cfg_info['SDD'], cfg_info['SDF']])
+                    config = '\n'.join([cfg_info['SNC'], cfg_info['SDD'], cfg_info['SDF']])
                 elif group=='BL':
                     config = '\n'.join([cfg_info['SNC'], '_'.join([cfg_info['SDD'], cfg_info['SDF']])])
                 elif group=='TP':
-                    config = '\n'.join([cfg_info['ST'], cfg_info['SLK'], cfg_info['SLKH']])
+                    # config = '\n'.join([cfg_info['ST'], cfg_info['SLK'], cfg_info['SLKH']])
+                    config = cfg_info['ST']
                 elif group=='SLKS':
-                    config = '\n'.join([cfg_info['SNC'], cfg_info['SLKH'], cfg_info['SLK']])
+                    # config = '\n'.join([cfg_info['SNC'], cfg_info['SLKH'], cfg_info['SLK']])
+                    config = cfg_info['SLKH'] * cfg_info['SLK']
                 chipData[config] = {'mean': meanValue, 'std': stdValue, 'min': minValue, 'max': maxValue}
         configs = chipData.keys()
         meanValues = [d['mean'] for key, d in chipData.items()]
@@ -203,11 +225,16 @@ class QC_CHKRES_Ana(BaseClass_Ana):
         maxValues = [d['max'] for key, d in chipData.items()]
         plt.figure(figsize=(8, 8))
         if group=='GAINs':
+            # print(configs)
             BL200mV_configs = [c for c in list(configs) if '200 mV' in c]
             BL900mV_configs = [c for c in list(configs) if '900 mV' in c]
-            xticks = ['\n'.join(c.split('\n')[1:]) for c in BL200mV_configs]
-            # print(tp)
-            # sys.exit()
+            # xticks = ['\n'.join(c.split('\n')[1:]) for c in BL200mV_configs]
+            xticks = [float(c.split('_')[1]) for c in BL200mV_configs]
+            bl200_xticks = xticks.copy()
+            bl900_xticks = xticks.copy()
+            bl200_xticks, BL200mV_configs = (list(t) for t in zip(*sorted(zip(bl200_xticks, BL200mV_configs))))
+            bl900_xticks, BL900mV_configs = (list(t)for t in zip(*sorted(zip(bl900_xticks, BL900mV_configs))))
+            xticks = [c.split('_')[1] for c in BL200mV_configs]
             tmpdata200 = {key: chipData[key] for key in BL200mV_configs}
             tmpdata900 = {key: chipData[key] for key in BL900mV_configs}
             mean200 = [d['mean'] for key, d, in tmpdata200.items()]
@@ -225,23 +252,63 @@ class QC_CHKRES_Ana(BaseClass_Ana):
             stds = [std200, std900]
             mins = [min200, min900]
             maxs = [max200, max900]
-            range_to_scan = []
-            if item_to_plot=='negpeak':
-                range_to_scan = [1] # select 900mV only
+            #______ return the data if returnData==True______
+            if returnData:
+                return xticks, means, stds, mins, maxs
             else:
-                range_to_scan = [0, 1]
-            for i in range_to_scan:
-                plt.errorbar(x=xticks, y=means[i], yerr=stds[i], capsize=4, ecolor=colors[i], label='Mean of {}, {} BL'.format(item_to_plot, BL[i]), elinewidth=1.5)
-                plt.scatter(x=xticks, y=means[i], color='g', marker='.', s=10)
-                plt.scatter(x=xticks, y=mins[i], color=colors[i], marker='.', s=100)
-                plt.scatter(x=xticks, y=maxs[i], color=colors[i], marker='.', s=100)
+                range_to_scan = []
+                if item_to_plot=='negpeak':
+                    range_to_scan = [1] # select 900mV only
+                else:
+                    range_to_scan = [0, 1]
+                for i in range_to_scan:
+                    plt.errorbar(x=xticks, y=means[i], yerr=stds[i], capsize=4, color=colors[i], ecolor=colors[i], label='Mean of {}, {} BL'.format(item_to_plot, BL[i]), elinewidth=1.5)
+                    # plt.scatter(x=xticks, y=means[i], color='g', marker='.', s=10)
+                    plt.scatter(x=xticks, y=mins[i], color=colors[i], marker='.', s=100)
+                    plt.scatter(x=xticks, y=maxs[i], color=colors[i], marker='.', s=100)
+                    plt.xticks(xticks)
         else:
-            plt.errorbar(x=configs, y=meanValues, yerr=stdValues, capsize=4, label='Mean of {}'.format(item_to_plot), elinewidth=1.5)
-            plt.scatter(x=configs, y=meanValues, color='b', marker='.', s=100)
-            plt.scatter(x=configs, y=minValues, color='r', marker='.', s=100)
-            plt.scatter(x=configs, y=maxValues, color='r', marker='.', s=100)
-        # plt.xticks(rotation=90)
-        plt.xlabel('Configurations', fontdict={'weight': 'bold'}, loc='right')
+            if type(list(configs)[0]) in [float, int]:
+                tmp = list(configs).copy()
+                _, meanValues = (list(t) for t in zip(*sorted(zip(list(configs).copy(), meanValues))))
+                _, stdValues = (list(t) for t in zip(*sorted(zip(list(configs).copy(), stdValues))))
+                _, minValues = (list(t) for t in zip(*sorted(zip(list(configs).copy(), minValues))))
+                _, maxValues = (list(t) for t in zip(*sorted(zip(list(configs).copy(), maxValues))))
+                configs = sorted(list(configs))
+            #______ return the data if returnData==True______
+            if returnData:
+                return configs, meanValues, stdValue, minValues, maxValues
+            else:
+                plt.errorbar(x=configs, y=meanValues, yerr=stdValues, capsize=4, label='Mean of {}'.format(item_to_plot), elinewidth=1.5)
+                # plt.scatter(x=configs, y=meanValues, color='b', marker='.', s=100)
+                plt.scatter(x=configs, y=minValues, color='r', marker='.', s=100)
+                plt.scatter(x=configs, y=maxValues, color='r', marker='.', s=100)
+                plt.xticks(list(configs))
+        unitx = ''
+        if group=='GAINs':
+            unitx = '(mV/fC)'
+        elif group=='TP':
+            unitx = '($\\mu s$)'
+        elif group=='SLKS':
+            unitx = '(pA RQI)'
+        
+        ylim = []
+        if item_to_plot=='pedestal':
+            minped = 500
+            maxped = 10000
+            if group=='SLKS':
+                minped = 8000
+                maxped = 12000
+            ylim = [minped, maxped]
+        elif item_to_plot=='rms':
+            ylim = [0, 25]
+        elif item_to_plot=='pospeak':
+            ylim = [3000, 5000]
+        elif item_to_plot=='negpeak':
+            ylim = [3000, 5000]
+        if len(ylim)!=0:
+            plt.ylim(ylim)
+        plt.xlabel('Configurations {}'.format(unitx), fontdict={'weight': 'bold'}, loc='right')
         plt.ylabel('{} (ADC bit)'.format(item_to_plot), fontdict={'weight': 'bold'}, loc='top')
         plt.title(item_to_plot)
         plt.legend()
@@ -273,4 +340,4 @@ if __name__ == "__main__":
     list_chipID = os.listdir(root_path)
     for chipID in list_chipID:
         chk_res = QC_CHKRES_Ana(root_path=root_path, chipID=chipID, output_path=output_path)
-        # sys.exit()
+        chk_res.makePlots()
