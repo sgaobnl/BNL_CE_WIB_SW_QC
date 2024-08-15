@@ -110,6 +110,7 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
 
 def monitor_power_rail(interface, fembs, datadir, save = False):
     sps = 10
+    chk.wib_mon_switches(dac0_sel=1, dac1_sel=1, dac2_sel=1, dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
     vold = chk.wib_vol_mon(femb_ids=fembs, sps=sps)
     dkeys = list(vold.keys())
     #LSB = 2.5 / 16384
@@ -563,7 +564,7 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
                 vrefn_ref = 440; vrefn_err = 50
             else:
                 vssa_ref = 150; vssa_err = 150
-                fe_t_ref = 850; fe_t_err = 70
+                fe_t_ref = 900; fe_t_err = 100
                 fe_bgp_ref = 1150; fe_bgp_err = 50
                 vcmi_ref = 865; vcmi_err = 50
                 vcmo_ref = 1160; vcmo_err = 50
