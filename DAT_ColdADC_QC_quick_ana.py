@@ -16,12 +16,17 @@ colorama.init(autoreset=True)
 #print(Fore.RED + 'Red foreground text')
 #print(Back.RED + 'Red background text')
 
-fsubdir = "ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
-fsubdir = "ADC_100100001_100100002_100100003_100100004_100100005_100100006_100100007_100100008"
+#fsubdir = "ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
+fsubdir = "ADC_000200001_000200002_000200003_000200004_000200005_000200006_000200007_000200008"
+fsubdir = "LN_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
+
 #fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
 froot = os.getcwd() + "\\tmp_data\\"
 
 fdir = froot + fsubdir + "\\"
+fdir = "D:/DAT_LArASIC_QC/DAT_Rev1_SN3_Fermilab_data/LN_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/"
+fdir = "D:/DAT_LArASIC_QC/DAT_Rev1_SN3_Fermilab_data/RT_ADC_000200001_000200002_000200003_000200004_000200005_000200006_000200007_000200008/"
+fdir = '''D:\DAT_LArASIC_QC\DAT_Rev1_SN4\ADC_400100001_400100002_400100003_400100004_400100005_400100006_400100007_400100008/'''
 # fdir = os.path.join(froot,fsubdir) #platform-agnostic
 
 evl = input ("Analyze all test items? (Y/N) : " )
@@ -962,8 +967,8 @@ if 6 in tms:
                 ny = (y*1.0)/tot - 1
                 inl = []
                 for i in range(len(ny)):
-                    if (np.sum(ny[0:i+1])>100):
-                        print (ch)
+                    #if (np.sum(ny[0:i+1])>100):
+                    #    print (ch)
                     inl.append(np.sum(ny[0:i+1]))
                 ax3.plot (x1, ny)
 
@@ -1093,7 +1098,8 @@ if 8 in tms:
     #fp = fdir + "QC_ENOB_00008106Hz" + ".bin"
     
     #for freq in [8106.23, 14781.95, 31948.09,]:
-    for freq in [8106.23]:
+    #for freq in [8106.23]:
+    for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:
     #for freq in [358104]:
     #for freq in [119686]:
         fp = fdir + "QC_ENOB_%08dHz"%(int(freq)) + ".bin"

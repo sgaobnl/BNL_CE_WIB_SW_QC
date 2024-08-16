@@ -68,47 +68,35 @@ if True:
 chk.data_align(fembs)
 time.sleep(0.5)
 
-for x in range(25):
-#for x in [3]:
-    dacvol = x*0.05
-    print (dacvol)
-    chk.wib_cali_dac(dacvol=dacvol)
-    for fembid in fembs:
-        dac0_sel= 0
-        dac1_sel= 0
-        dac2_sel= 0
-        dac3_sel= 0
-        if fembid == 0:
-            dac0_sel= 1
-        if fembid == 1:
-            dac1_sel= 1
-        if fembid == 2:
-            dac2_sel= 1
-        if fembid == 3:
-            dac3_sel= 1
-            dac0_sel= 1
-    chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel,dac2_sel=dac2_sel,dac3_sel=dac3_sel,mon_vs_pulse_sel=1, inj_cal_pulse=1)
-    cp_period=1000
-    cp_high_time = int(cp_period*32*3/4)
-    chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
-    
-    time.sleep(2)
-    
-    ####################FEMBs Data taking################################
-    rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
-    
-    
-    pwr_meas = chk.get_sensors()
-    #
-    if save:
-        fdir = "./tmp_data/"
-        ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-        fp = fdir + "DAC%04dmV_"%(x*50) + ts  + ".bin"
-        with open(fp, 'wb') as fn:
-            pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
-
-
+#for x in range(12):
 chk.wib_pls_gen(fembs=[]) #disable
+
+chk.wib_cali_dac(dacvol=0)
+dac0_sel= 0
+dac1_sel= 0
+dac2_sel= 0
+dac3_sel= 0
+chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel,dac2_sel=dac2_sel,dac3_sel=dac3_sel,mon_vs_pulse_sel=1, inj_cal_pulse=0)
+chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
+#chk.wib_pls_gen(fembs=[]) #disable
+x = int(input ("pluse amplitude from signal generator : mV"))
+
+time.sleep(2)
+
+
+####################FEMBs Data taking################################
+rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+
+
+pwr_meas = chk.get_sensors()
+#
+if save:
+    fdir = "./tmp_data/"
+    ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+    fp = fdir + "P5_%04dmV_"%x + ts  + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
+
 #chk.wib_pls_gen(fembs=fembs, cp_period=cp_period, cp_phase=16, cp_high_time=cp_high_time)
 #rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 #pwr_meas = chk.get_sensors()
