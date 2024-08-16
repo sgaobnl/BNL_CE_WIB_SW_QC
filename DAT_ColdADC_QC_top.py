@@ -89,14 +89,30 @@ fembs = [dat.DAT_on_WIBslot]
 dat.fembs = fembs
 
 #Possibly put DAT version in a DAT register that we can peek?
-dat_revision = 0 # 0 = old dat
+#dat_revision = 0 # 0 = old dat
 
-dat_sn = int(logsd["DAT_SN"])
-if dat_sn  == 1:
-    Vref = 1.583
-if dat_sn  == 2:
-    Vref = 1.5738
+#if dat.rev == 0:
+#    if dat_sn  == 1:
+#        dat.fe_cali_vref = 1.583
+#    if dat_sn  == 2:
+#        dat.fe_cali_vref = 1.5738
+#if dat.rev == 1:
+#    dat.fe_cali_vref = 1.090
+#Vref = dat.fe_cali_vref
+
 logs.update(logsd)
+
+if dat.rev == 0:
+    if dat_sn  == 1:
+        dat.fe_cali_vref = 1.583
+    if dat_sn  == 2:
+        dat.fe_cali_vref = 1.5738
+if dat.rev == 1:
+    if 'RT' in logs['env']:
+        dat.fe_cali_vref = 1.090
+    else:
+        dat.fe_cali_vref = 1.030 #DAT_SN=3
+Vref = dat.fe_cali_vref        
 
 #to be change later sgao 04/19/24
 #tms=[0]
@@ -131,13 +147,28 @@ if 0 in tms:
     pwr_meas, link_mask, init_f = dat.wib_pwr_on_dat()
     datad["WIB_PWR"] = pwr_meas
     datad["WIB_LINK"] = link_mask
+
+    if False:
+        fes_pwr_info = dat.fe_pwr_meas()
+        datad["FE_PWRON"] = fes_pwr_info
+        print (fes_pwr_info)
+        adcs_pwr_info = dat.adc_pwr_meas()
+        datad["ADC_PWRON"] = adcs_pwr_info
+        print (adcs_pwr_info)
+        cds_pwr_info = dat.dat_cd_pwr_meas()
+        datad["CD_PWRON"] = cds_pwr_info
+        print (cds_pwr_info)
+
     fes_pwr_info = dat.fe_pwr_meas()
     datad["FE_PWRON"] = fes_pwr_info
     adcs_pwr_info = dat.adc_pwr_meas()
     datad["ADC_PWRON"] = adcs_pwr_info
     cds_pwr_info = dat.dat_cd_pwr_meas()
     datad["CD_PWRON"] = cds_pwr_info
-    dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
+    warn_flg, febads, adcbads, cdbads = dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
+    if warn_flg:
+        print ("exit anyway")
+        exit()
     dat.asic_init_por()
     chkdata = dat.dat_asic_chk()
     datad.update(chkdata)
@@ -313,7 +344,8 @@ if 6 in tms:
     #Replace these or input them in DAT_user_input.py as necessary:
     datad['fembs'] = dat.fembs
     datad['waveform'] = 'RAMP' 
-    datad['source'] = 'WIB'
+    source = 'P6SE'
+    datad['source'] = source
     datad['freq'] = 1 # Hz
     datad['voltage_low'] = -0.1 # Vpp
     datad['voltage_high'] = 2.0
@@ -326,7 +358,7 @@ if 6 in tms:
     dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
 
     cfg_info = dat.dat_adc_qc_cfg() 
-    dat.dat_coldadc_input_cs(mode="WIBSE", SHAorADC = "SHA", chsenl=0x0000)
+    dat.dat_coldadc_input_cs(mode=source, SHAorADC = "SHA", chsenl=0x0000)
     dat.dat_adc_qc_acq(1)
     histdata = dat.dat_adc_histbuf_trig(num_samples=datad['num_samples'], waveform=datad['waveform'])  
     datad['histdata'] = [dat.fembs, histdata, cfg_info, "WIB_SE_SHA_HIST"]
@@ -455,7 +487,8 @@ if 7 in tms:#if "overflow_placeholder" in tms:
 if 8 in tms:#if "enob_placeholder" in tms:
     print ("\033[95mADC ENOB measurement starts...   \033[0m")
 
-    source = 'WIBSE'
+    #source = 'WIBSE'
+    source = 'P6SE'
     #source = 'P6DIFF'
     #source = 'V2P6_SE2DIFF'
     #source = 'V2WIB_SE2DIFF'
@@ -463,8 +496,8 @@ if 8 in tms:#if "enob_placeholder" in tms:
     #cfg_info = dat.dat_adc_qc_cfg(sha_cs=2, ibuf_cs=1)  #SED on, DIFF OFF
     dat.dat_coldadc_input_cs(mode=source, SHAorADC = "SHA", chsenl=0x0000)
    
-    #for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
-    for freq in [8106.23]:
+    for freq in [8106.23, 14781.95, 31948.09, 72002.41, 119686.13, 200748.44, 358104.70]:  
+    #for freq in [8106.23]:
     #for freq in [119686.13]:
     #for freq in [31948]:
         datad = {}
@@ -535,7 +568,8 @@ if 10 in tms:
     dat.sig_gen_config(waveform = datad['waveform'], freq=datad['freq'], vlow=datad['voltage_low'], vhigh=datad['voltage_high']) 
         
     cfg_info = dat.dat_adc_qc_cfg() 
-    dat.dat_coldadc_input_cs(mode="WIBSE", SHAorADC = "SHA", chsenl=0x0000)
+    #dat.dat_coldadc_input_cs(mode="WIBSE", SHAorADC = "SHA", chsenl=0x0000)
+    dat.dat_coldadc_input_cs(mode="P6SE", SHAorADC = "SHA", chsenl=0x0000)
     dat.dat_adc_qc_acq(1) #trigger readout, save in case of issue
     datad['rawdata'] = [dat.fembs, dat.dat_enob_acq(sineflg=False), cfg_info, "TRIG"]
     dat.sig_gen_config()

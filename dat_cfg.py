@@ -381,7 +381,6 @@ class DAT_CFGS(WIB_CFGS):
                     if fe_no not in febads:
                         febads.append(fe_no)
                     warn_flg = True
-
         kl = list(adcs_pwr_info.keys())
         for onekey in kl:
             if "VDDA2P5" in onekey:

@@ -66,16 +66,21 @@ dat.fembs = fembs
 dat.rev = int(logsd["DAT_Revision"])
 dat_sn = int(logsd["DAT_SN"])
 
+logs.update(logsd)
+
 if dat.rev == 0:
     if dat_sn  == 1:
         dat.fe_cali_vref = 1.583
     if dat_sn  == 2:
         dat.fe_cali_vref = 1.5738
 if dat.rev == 1:
-    dat.fe_cali_vref = 1.090
+    if 'RT' in logs['env']:
+        dat.fe_cali_vref = 1.090
+    else:
+        dat.fe_cali_vref = 1.030 #DAT_SN=3
 Vref = dat.fe_cali_vref
+print (dat.fe_cali_vref)
         
-logs.update(logsd)
 
 #if 100 in tms : #100 is only for itemed testing with power operation 
 if True:
