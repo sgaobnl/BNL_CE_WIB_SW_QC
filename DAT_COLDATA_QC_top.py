@@ -25,7 +25,12 @@ dat =  DAT_CFGS()
 
 print ("\033[93m  QC task list   \033[0m")
 print ("\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m")
-#print ("\033[96m 1: FE power consumption measurement  \033[0m")
+print ("\033[96m 1: COLDATA basic functionality checkout  \033[0m")
+print ("\033[96m 2: COLDATA primary/secondary swap check  \033[0m")
+print ("\033[96m 3: COLDATA power consumption measurement  \033[0m")
+print ("\033[96m 4: COLDATA PLL lock range measurement  \033[0m")
+print ("\033[96m 5: COLDATA fast command verification  \033[0m")
+print ("\033[96m 6: COLDATA output link verification \033[0m")
 #print ("\033[96m 2: FE response measurement checkout  \033[0m")
 #print ("\033[96m 3: FE monitoring measurement  \033[0m")
 #print ("\033[96m 4: FE power cycling measurement  \033[0m")
@@ -35,11 +40,12 @@ print ("\033[96m 0: Initilization checkout (not selectable for itemized test ite
 #print ("\033[96m 63: FE calibration measurement (Direct-Input) \033[0m")
 #print ("\033[96m 7: FE delay run  \033[0m")
 #print ("\033[96m 8: FE cali-cap measurement \033[0m")
+print ("\033[96m 7: COLDATA EFUSE burn-in \033[0m")
 print ("\033[96m 9: Turn DAT on \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63,7,8,9,10],  nargs='+', default=[0,1,2,3,4,5,61, 62, 63,7,8,9])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,6,7,9,10],  nargs='+', default=[0,1,2,3,4,5,6,7,9])
 args = ag.parse_args()   
 tms = args.task
 
@@ -83,6 +89,7 @@ if itemized_flg:
 dat.DAT_on_WIBslot = int(logsd["DAT_on_WIB_slot"])
 fembs = [dat.DAT_on_WIBslot] 
 dat.fembs = fembs
+dat.rev = int(logsd["DAT_Revision"])
 dat_sn = int(logsd["DAT_SN"])
 if dat_sn  == 1:
     Vref = 1.583
@@ -119,7 +126,7 @@ if 0 in tms:
     print ("Init check after chips are installed")
     datad = {}
 
-    pwr_meas, link_mask = dat.wib_pwr_on_dat()
+    pwr_meas, link_mask, init_f = dat.wib_pwr_on_dat()
     datad["WIB_PWR"] = pwr_meas
     datad["WIB_LINK"] = link_mask
     fes_pwr_info = dat.fe_pwr_meas()
@@ -150,466 +157,422 @@ if 0 in tms:
 
 
 if 1 in tms:
-    print ("COLDATA basic functionlity checkout...")
+    print ("COLDATA basic functionality checkout...")
     datad = {}
     datad['logs'] = logs
+    
+    # dat.femb_cd_rst()    
+    #Write to registers to test reset
+    dat.femb_cd_cfg(femb_id = dat.fembs[0])
+
 
     print ("COLDATA hard reset check")
     dat.dat_cd_hard_reset(femb_id = dat.fembs[0])
-    time.sleep(1)
+    time.sleep(3)
     cds_pwr_info = dat.dat_cd_pwr_meas()
     regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
     datad["Post-Hard_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
-
-    print ("COLDATA fast reset check")
+    
+    #Write to registers to test reset
+    dat.femb_cd_cfg(femb_id = dat.fembs[0])
+    
+    print ("COLDATA soft reset check")
+    #The Soft Reset command has the format of a Write to chip address 0, register page 0, 
+    #register address 6: ([00000000][00000110]). The contents of the third byte are unimportant.
+    dat.femb_i2c_wr(dat.fembs[0], 0x0, 0x0, 0x6, 0x1) #no need to verify
+    time.sleep(1)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
+    datad["Post-Soft_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+    
+    #Write to registers to test reset
+    dat.femb_cd_cfg(femb_id = dat.fembs[0])    
+    
+    print ("COLDATA fast reset check") 
     dat.femb_cd_rst()
     time.sleep(1)
     cds_pwr_info = dat.dat_cd_pwr_meas()
     regerrflg = dat.femb_cd_chkreg(femb_id = dat.fembs[0])
     datad["FAST_CMD_Reset"] = [dat.fembs, regerrflg, cds_pwr_info ]
+    
 
     print ("COLDATA GPIO check")
-    dat.dat_cd_gpio_chk(femb_id = dat.fembs[0])
+    cntrl_chk = dat.dat_cd_gpio_chk(femb_id = dat.fembs[0])
+    datad.update(cntrl_chk)
+    
+    print ("COLDATA SPI functionality check") 
+    spi_config = dat.femb_fe_cfg(femb_id = dat.fembs[0])
+    datad["SPI_config"] = spi_config    
 
-
-if 2 in tms:
-    print ("COLDATA Primary/Secondary Swap check")
-
-#    fp = fdir + "QC_PWR" + ".bin"
-#    with open(fp, 'wb') as fn:
-#        pickle.dump(datad, fn)
-#    tt.append(time.time())
-#    print ("FE power consumption measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
-    print ("debugging...")
-    exit()
-
-if 2 in tms:
-    print ("FE check response measurement starts...")
-    datad = {}
-    datad['logs'] = logs
-
-    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0x10)
-    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
-    
-    sdd=0
-    sdf=0
-    slk0=0
-    slk1=0
-    snc=0
-    st0=1
-    st1=1
-    
-    #response under different gains
-    for sg0 in [0,1]:
-        for sg1 in [0,1]:
-            fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-            data = dat.dat_fe_qc_acq(num_samples=1)
-            cfgstr = "CHK_GAINs_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-            datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
-    sg0=0
-    sg1=0
-    
-    #response under different output modes
-    for buf in [0,1,2]:
-        sdd = buf//2
-        sdf = buf%2
-        fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-        data = dat.dat_fe_qc_acq(num_samples=1)
-        cfgstr = "CHK_OUTPUT_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-        datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
-    
-    sdd=0
-    sdf=0
-    #response under different BLs
-    for snc in [0,1]:
-        fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-        data = dat.dat_fe_qc_acq(num_samples=1)
-        cfgstr = "CHK_BL_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-        datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
-    
-    snc=0
-    #response under different SLKs
-    for slk0 in [0,1]:
-        for slk1 in [0,1]:
-            fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-            data = dat.dat_fe_qc_acq(num_samples=1)
-            cfgstr = "CHK_SLKS_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-            datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
-    
-    slk0=0
-    slk1=0
-    #response under different peak times
-    for st0 in [0,1]:
-        for st1 in [0,1]:
-            fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-            data = dat.dat_fe_qc_acq(num_samples=1)
-            cfgstr = "CHK_TP_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-            datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
-    
-    fp = fdir + "QC_CHKRES.bin"
+    fp = fdir + "QC_BASIC_FUNC" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE CHECK RESPONSE is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("\033[92mCOLDATA basic functionality checkout is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
+
+
+
+if 2 in tms:
+    print ("COLDATA primary/secondary swap check")
+    datad = {}
+    datad['logs'] = logs   
+    
+    swapdata = dat.dat_cd_order_swap(femb_id = dat.fembs[0])
+    datad.update(swapdata)
+    
+    fp = fdir + "QC_SWAP" + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump(datad, fn)
+    tt.append(time.time())
+    print ("\033[92mCOLDATA primary/secondary swap check is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
 
 
 if 3 in tms:
-    print ("FE monitoring measurement starts...")
-    data = {}
-    data['logs'] = logs
-
-    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
-    time.sleep(1)
-
-    data.update( dat.dat_fe_vbgrs() )
-    data.update( dat.dat_fe_mons(mon_type=0x01) )
-    data.update( dat.dat_fe_mons(mon_type=0x02) )
-    data.update( dat.dat_fe_mons(mon_type=0x04) )
-    data.update( dat.dat_fe_mons(mon_type=0x08) )
-    data.update( dat.dat_fe_mons(mon_type=0x10) )
+    print ("COLDATA power consumption measurement")
+    datad = {}
+    datad['logs'] = logs      
     
-    fp = fdir + "QC_MON" + ".bin"
+    # Power cycle at least 5 times; measure currents
+    # Q: any different configuration for each power cycle? 
+    # Reg 0x41 : 0x20, 0x25(RT), 0x26(LN2)
+    # LDVDS current set? (reg 0x11)  (0x0, typical[0x2 is default], 0x7)    
+
+    dat.femb_cd_rst()
+    time.sleep(1)  
+    cfg_info = dat.femb_cd_cfg(dat.fembs[0])
+    
+    val = 0x20    
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["BAND_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info)
+    
+    val = 0x25
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["BAND_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info)   
+    
+    val = 0x26
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["BAND_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info)    
+
+    dat.femb_cd_rst()
+    time.sleep(1)  
+    cfg_info = dat.femb_cd_cfg(dat.fembs[0])
+
+    val = 0x0
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x0, 0x11, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x0, 0x11, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["LVDS_CUR_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info)
+    
+    val = 0x2
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x0, 0x11, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x0, 0x11, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["LVDS_CUR_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info) 
+ 
+    val = 0x7
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x0, 0x11, val)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x0, 0x11, val)
+    cds_pwr_info = dat.dat_cd_pwr_meas()
+    datad["LVDS_CUR_"+hex(val)]= (dat.fembs, cfg_info, cds_pwr_info)
+ 
+    fp = fdir + "QC_PWR" + ".bin"
     with open(fp, 'wb') as fn:
-        pickle.dump(data, fn)
-    
+        pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE monitoring measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("\033[92mCOLDATA power consumption measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
 
 if 4 in tms:
-    print ("FE power cycling measurement starts...")
-    cycle_times = 8
-    
+    print ("COLDATA PLL lock range measurement")
     datad = {}
-    datad['logs'] = logs
+    datad['logs'] = logs      
     
-    for ci in range(cycle_times):
-        dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
-        dat.wib_pwr_on_dat() #turn DAT on
-        cseti = ci%8
-        if cseti == 0:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=0, slk1=0) #900mV, 500pA, SDD off, SDF off, ASIC-DAC
-        if cseti == 1:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=1, slk1=0) #900mV, 100pA, SDD off, SDF off, ASIC-DAC
-        if cseti == 2:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=1, slk1=1) #900mV, 1000pA, SDD off, SDF off, ASIC-DAC
-        if cseti == 3:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x10)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=0, sdd=0, sdf=0, slk0=0, slk1=1) #900mV, 5000pA, SDD off, SDF off, ASIC-DAC
-        if cseti == 4:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, DAT-DAC
-        if cseti == 5:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=1, sdf=0 ) #200mV, 500pA, SDD on, SDF off, DAT-DAC
-        if cseti == 6:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=1.54, period=500, width=400)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=1 ) #200mV, 500pA, SDD off, SDF on, DAT-DAC
-        if cseti == 7:
-            adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=1.54, period=500, width=400)
-            rawdata = dat.dat_fe_qc(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac, snc=1, sdd=0, sdf=0 ) #200mV, 500pA, SDD off, SDF off, Direct-input
+    # Check the LOCK pin (TP4 or net CD_LOCK) 
+    # Scan reg 0x41 from 0x1A to 0x3f. → will look into the data.(CD timestamp should increase) 
+    # Bias to 1.2V the locking range may vary.         
+    #See notebook notes on this
+    datad['CD1_locked'] = [None for i in range(38)]
+    datad['CD2_locked'] = [None for i in range(38)]
+    datad['CD_data'] = [None for i in range(38)]
     
-        fes_pwr_info = dat.fe_pwr_meas()
-        adcs_pwr_info = dat.adc_pwr_meas()
-        cds_pwr_info = dat.dat_cd_pwr_meas()
+    for pll_band in range(0x1a, 0x3f + 1):
+        print("PLL band",hex(pll_band))
+        dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, pll_band)
+        dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, pll_band)
+        
+        samples=100
+        # if pll_band == 28 or pll_band == 29 or pll_band == 46:
+            # samples = 999999999
+        # else:
+            # samples = 1000
+        
+        
+        cd1_lock, cd2_lock, cd_sel = dat.dat_cd_are_locked(dat.fembs[0],samples)     
+        
+        datad['CD1_locked'][pll_band - 0x1a] = cd1_lock
+        datad['CD2_locked'][pll_band - 0x1a] = cd2_lock 
+        
+        
+        # input(str(pll_band)+": "+str(cd1_lock)+" "+str(cd2_lock))
+        
+        rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0, synctries=10) #will return False if data not synced
+        datad['CD_data'][pll_band - 0x1a] = rawdata         
     
-        datad["PwrCycle_%d"%cseti] = [dat.fembs, rawdata[0], rawdata[1], fes_pwr_info, adcs_pwr_info, cds_pwr_info]
+    #restore to default 
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, 0x20)
+    dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, 0x20)    
     
-    fp = fdir + "QC_PWR_CYCLE" + ".bin"
+    fp = fdir + "QC_LOCK" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE power cycling measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
-    
+    print ("\033[92mCOLDATA PLL lock range measurement is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
+   
 if 5 in tms:
-    print ("FE noise measurement starts...")
+    print ("COLDATA fast command verification")
     datad = {}
-    datad['logs'] = logs
+    datad['logs'] = logs      
     
-    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=3)
-    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
+    print ("Sending Fast command idle")
+    dat.fastcmd(cmd= 'idle')   
+    #What to check to make sure things are the same?
+    datad['idle'] = {}
+    datad['idle']['rawdata'] = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
     
-    sdd=0
-    sdf=0
-    slk0=0
-    slk1=0
-    snc=0
-    st0=0
-    st1=0
-    sg0=0
-    sg1=0
+# ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
+# ·     Sync = 1110_0010 (zero timestamp)
+    datad['edge_sync'] = {}
+    #Before Sync is sent, timestamps from two CDs are different.    
+    dat.dat_cd_hard_reset(femb_id = dat.fembs[0]) #hard reset in case data_align has already been run
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0) #contains timestamps
+    datad['edge_sync']['rawdata_before_dataalign'] = rawdata
+    #After Sync is sent, timestampe from two CDs are exactly the same. 
+    dat.data_align(dat.fembs)
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0) #contains timestamps
+    datad['edge_sync']['rawdata_after_dataalign'] = rawdata
     
-    if True:
-        print ("Test RMS noise with differnt BLs, peak times and gains")
-        sdd=0
-        sdf=0
-        slk0=0
-        slk1=0
-        for snc in [0, 1]:
-            for sg0 in [0,1]:
-                for sg1 in [0,1]:
-                    for st0 in [0,1]:
-                        for st1 in [0,1]:
-                            fe_cfg_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-                            data = dat.dat_fe_qc_acq(num_samples=10)
-                            cfgstr = "RMS_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-                            print (cfgstr)
-                            datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
+    #EDGE_ACT also?
+    #Check that ADC is reset (test-write some registers beforehand to verify)
+    cfg_info = dat.femb_adc_cfg(dat.fembs[0]) #save for cd_sel info
+    dat.femb_cd_edge_act(dat.fembs)
+    datad['edge_act'] = dat.femb_adc_chkreg(femb_id=dat.fembs[0], reset_first=False)
     
-    if True:
-        print ("Test RMS noise with differnt output modes under 14mV/fC, 2us")
-        slk0=0
-        slk1=0
-        st0=1
-        st1=1
-        sg0=0
-        sg1=0
-        for snc in [0, 1]:
-            for buf in [0,1,2]:
-                sdd = buf//2
-                sdf = buf%2
-                fe_cfg_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-                data = dat.dat_fe_qc_acq(num_samples=10)
-                cfgstr = "RMS_OUTPUT_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-                print (cfgstr)
-                datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
+# Act Command register (loaded via I2C):
+    datad['ACT_idle'] = {}
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="idle")
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad['ACT_idle']['rawdata'] = rawdata
+    #What to check to make sure things are the same?
     
-    if True:
-        print ("Test RMS noise with differnt leakage currents under 14mV/fC, 2us")
-        sdd=0
-        sdf=0
-        snc=0
-        st0=1
-        st1=1
-        sg0=0
-        sg1=0
-        for slk0 in [0, 1]:
-            for slk1 in [0,1]:
-                fe_cfg_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-                data = dat.dat_fe_qc_acq(num_samples=10)
-                cfgstr = "RMS_SLK_SDD%d_SDF%d_SLK0%d_SLK1%d_SNC%d_ST0%d_ST1%d_SG0%d_SG1%d"%(sdd, sdf, slk0, slk1, snc, st0, st1, sg0, sg1)
-                print (cfgstr)
-                datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
+    #LArASIC_pulse checked already with ASICDAC_CALI_CHK
+# # ·     LArASIC_PULSE = 0000_0001 (act to start calibration sequence; act again to stop)
+    # datad["ACT_larasic_pls"] = {}
+    # dat.femb_adac_cali(dat.fembs[0])
+    # dat.femb_adac_cali(dat.fembs[0])
+    # #How to check if calibrated? Take data?
+    # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    # datad["ACT_larasic_pls"]["rawdata"] = rawdata
     
-    fp = fdir + "QC_RMS" + ".bin"
+# ·     Save Timestamp = 0000_0010 (one of the status register) 
+    datad["ACT_save_timestamp"] = {}
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="save_timestamp")
+    timestamp_lower_0x3 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x21)
+    timestamp_higher_0x3 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x22)    
+    timestamp_lower_0x2 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x21)
+    timestamp_higher_0x2 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x22)
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad["ACT_save_timestamp"]["0x2_timestamp"] = (timestamp_higher_0x2 << 8) | timestamp_lower_0x2
+    datad["ACT_save_timestamp"]["0x3_timestamp"] = (timestamp_higher_0x3 << 8) | timestamp_lower_0x3
+    datad["ACT_save_timestamp"]["rawdata"] = (dat.fembs, rawdata)
+    
+# ·     Save Status = 0000_0011 #Save the various status bits for readout via I2C    
+    datad["ACT_save_status"] = {}
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="save_status")
+    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x23)
+    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x24)   
+    datad["ACT_save_status"]["0x2_regs"] = (reg23, reg24)
+    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x23)
+    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x24)
+    datad["ACT_save_status"]["0x3_regs"] = (reg23, reg24)
+    datad["ACT_save_status"]["CD_LOCK"] = dat.dat_cd_are_locked(dat.fembs[0]) #compare with reg 23 bit 6
+    
+    
+# ·     Clear Saves = 0000_0100 #Clear the saved status bits
+    datad["ACT_clr_saves"] = {}
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="clr_saves")
+    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x23)
+    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x24)   
+    datad["ACT_clr_saves"]["0x2_regs"] = (reg23, reg24)
+    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x23)
+    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x24)
+    datad["ACT_clr_saves"]["0x3_regs"] = (reg23, reg24)    
+    
+# ·     Reset ColdADCs = 0000_0101
+    dat.femb_adc_cfg(dat.fembs[0])
+    datad["ACT_rst_adcs"] = dat.femb_adc_chkreg(dat.fembs[0]) #performs reset
+
+    
+# ·     Reset LArASICs = 0000_0110 (Reset LArASICs using the LARASIC_RESET pad)
+    datad["ACT_rst_larasics"] = {}
+    vbgrs_before = []
+    vbgrs_after = []  
+    samples = 10 
+    #Check VGBR before & after
+    for i in range(50):
+        dat.wib_mon_adcs() #need to reset it 50 times for some reason
+    for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time       
+        dat.fembs_fe_cfg(dat.fembs) #Configure FEs to test reset 
+        vbgrs_before.append(dat.wib_fe_mon(femb_ids=dat.fembs, mon_chip=fe, reset_sw_after=False))
+        dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasics")
+        #copied from wib_fe_mon:
+        adcss = []
+        dat.wib_mon_adcs() #get rid of previous result
+        for i in range(samples):
+            adcs = dat.wib_mon_adcs()
+            adcss.append(adcs) 
+        mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, dat.fembs]  
+        #print(mon_paras)
+        vbgrs_after.append(mon_paras)
+    datad["ACT_rst_larasics"]["VBGR_before"] = vbgrs_before
+    datad["ACT_rst_larasics"]["VBGR_after"] = vbgrs_after
+    # print(vbgrs_before)
+    # print(vbgrs_after)
+    
+    #Check pulse response before & after
+    #config pulse - copied from top_chkout_pls_faking_timing
+    dat.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+    adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+    dat.fe_flg[dat.fembs[0]] = True #force fe cfg
+    dat.femb_cfg(dat.fembs[0], adac_pls_en )
+    dat.data_align(fembs)
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad["ACT_rst_larasics"]["rawdata_before"] = rawdata
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasics")
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad["ACT_rst_larasics"]["rawdata_after"] = rawdata
+    
+    
+# ·     SPI Reset = 0000_0111 (Reset LArASICs using the SPI interface)
+    datad["ACT_rst_larasic_spi"] = {}
+    vbgrs_before = []
+    vbgrs_after = []  
+    samples = 10 
+    #Check VGBR before & after
+    for i in range(50):
+        dat.wib_mon_adcs() #need to reset it 50 times for some reason
+    for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time               
+        dat.fembs_fe_cfg(dat.fembs) #Configure FEs to test reset        
+        vbgrs_before.append(dat.wib_fe_mon(femb_ids=dat.fembs, mon_chip=fe, reset_sw_after=False))
+        dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+        #copied from wib_fe_mon:
+        adcss = []
+        dat.wib_mon_adcs() #get rid of previous result
+        for i in range(samples):
+            adcs = dat.wib_mon_adcs()
+            adcss.append(adcs) 
+        mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, dat.fembs]
+        vbgrs_after.append(mon_paras)
+    datad["ACT_rst_larasic_spi"]["VBGR_before"] = vbgrs_before
+    datad["ACT_rst_larasic_spi"]["VBGR_after"] = vbgrs_after
+    #dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+
+    #Check pulse response before & after
+    #config pulse - copied from top_chkout_pls_faking_timing
+    dat.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+    adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+    dat.fe_flg[dat.fembs[0]] = True #force fe cfg
+    dat.femb_cfg(dat.fembs[0], adac_pls_en )
+    dat.data_align(fembs)
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad["ACT_rst_larasic_spi"]["rawdata_before"] = rawdata
+    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+    datad["ACT_rst_larasic_spi"]["rawdata_after"] = rawdata
+    
+# ·     Program LArASICs = 0000_1000 (Download the stored daisy chain bits to LArASICs using SPI)
+    #dat.femb_cd_fc_act(dat.fembs[0], act_cmd="prm_larasics")
+    datad["ACT_prm_larasics"] = dat.femb_fe_cfg(dat.fembs[0])
+# ·     Relay I2C_SDA = 0000_1001 (Echo I2C_SDA_W2C back to WIB on I2C_SDA_C2W if and only if all 
+#three I2C_Relay_Code registers are set)  → done by data alignment and cable latency measurement.
+
+    
+    
+    fp = fdir + "QC_FASTCMD" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
-
     tt.append(time.time())
-    print ("FE noise measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
-
-if 61 in tms:
-    if True:
-        print ("perform ASIC-DAC calibration under 14mV/fC, 2us")
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2, asicdac=0)
-        cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
-        datad = {}
-        datad['logs'] = logs
+    print ("\033[92mCOLDATA fast command verification is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
+   
+if 6 in tms:
+    print ("COLDATA output link verification check")
+    datad = {}
+    datad['logs'] = logs   
     
-        slk0=0
-        slk1=0
-        st0=1
-        st1=1
-        sg0=0
-        sg1=0
-        sdd=0
-        sdf=0
-        for snc in [0, 1]:
-    #        for buf in [0,1,2]:
-    #            sdd = buf//2
-    #            sdf = buf%2
-            if snc == 0:
-                maxdac = 32
-            else:
-                maxdac = 64
-            for dac in range(0, maxdac, maxdac//8):
-                fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-                data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_SNC%d_ASICDAC%02d"%(snc,dac)
-                print (cfgstr)
-                datad[cfgstr] = [dat.fembs, data, cfg_info, fe_cfg_info]
     
-        fp = fdir + "QC_CALI_ASICDAC" + ".bin"
-        with open(fp, 'wb') as fn:
-            pickle.dump(datad, fn)
-    tt.append(time.time())
-    print ("FE calibration measurement (ASIC-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
-      
-if 62 in tms:
-    if True:
-        print ("perform DAT-DAC calibration under 14mV/fC, 2us")
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=Vref, period=1000, width=800) 
-        cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
-        datad = {}
-        datad['logs'] = logs
-    
-        slk0=0
-        slk1=0
-        st0=1
-        st1=1
-        sg0=0
-        sg1=0
-        sdd=0
-        sdf=0
-        for snc in [0, 1]:
-            for buf in [0,1,2]:
-                sdd = buf//2
-                sdf = buf%2
-                fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
+    datad['LArASIC_pulse'] = []
+    datad['ADC_pattern'] = []
+    # Scan LVDS current set  (reg 0x11)  (0x0, typical, 0x7)
+    dat.femb_cfg(dat.fembs[0])
+    dat.cd_flg[dat.fembs[0]]=False #keep subsequent femb_cfg calls from overwriting this setting
+    for current in range(0x8):        
+        dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x0, 0x11, current)
+        dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x0, 0x11, current)       
+        #Verify output links using FRAME 14 
+        # LArASIC pulse data    
+        # dat.dat_fe_qc_cfg(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1, dac=0x20, adac_pls_en=1)
+        # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x20)
+        rawdata, cfg_info = dat.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)        
+        datad['LArASIC_pulse'].append((dat.fembs, rawdata, cfg_info))
         
-                if snc == 0:
-                    minval = Vref - (50/185) 
-                else:
-                    minval = Vref - (100/185) 
-                vals = np.arange(Vref,minval,(minval-Vref)/10)
-                for val in vals:
-                    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=1000, width=800) 
-                    data = dat.dat_fe_qc_acq(num_samples=5)
-                    cfgstr = "CALI_DATDAC_%dmV_SDD%d_SDF%d_SNC%d"%(int(val*1000), sdd, sdf, snc)
-                    print (cfgstr)
-                    datad[cfgstr] = [dat.fembs, data, val,cfg_info, fe_cfg_info]
+        # ADC test pattern data, 
+        dat.dat_adc_qc_cfg(autocali=0x2)
+        rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+        datad['ADC_pattern'].append((dat.fembs, rawdata))       
         
-                fp = fdir + "QC_CALI_DATDAC" + ".bin"
-                with open(fp, 'wb') as fn:
-                    pickle.dump(datad, fn)
+        dat.dat_adc_qc_cfg(autocali=0x1) #set back to default
+    
+    
+    fp = fdir + "QC_OUTPUT" + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE calibration measurement (DAT-DAC) is done. it took %d seconds"%(tt[-1]-tt[-2]))
-      
-if 63 in tms:
-    if True:
-        print ("perform DIRECT-input DAC calibration under 14mV/fC, 2us")
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=Vref, period=1000, width=800) 
-        cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
-        datad = {}
-        datad['logs'] = logs
-    
-        slk0=0
-        slk1=0
-        st0=1
-        st1=1
-        sg0=0
-        sg1=0
-        sdd=0
-        sdf=0
-        for snc in [0, 1]:
-    #        for buf in [0,1,2]:
-    #            sdd = buf//2
-    #            sdf = buf%2
-            fe_cfg_info = dat.dat_fe_only_cfg(sts=sts, swdac=swdac, dac=dac, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, slk0=slk0, slk1=slk1, sdd=sdd, sdf=sdf) 
-    
-            if snc == 0:
-                minval = Vref - (50/1000) 
-            else:
-                minval = Vref - (100/1000) 
-            vals = np.arange(Vref,minval,(minval-Vref)/10)
-            for val in vals:
-                adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=val, period=1000, width=800) 
-                data = dat.dat_fe_qc_acq(num_samples=5)
-                cfgstr = "CALI_SNC%d_DIRECT_%dmV"%(snc, int(val*1000))
-                print (cfgstr)
-                datad[cfgstr] = [dat.fembs, data, val,cfg_info, fe_cfg_info]
-    
-        fp = fdir + "QC_CALI_DIRECT" + ".bin"
-        with open(fp, 'wb') as fn:
-            pickle.dump(datad, fn)
-    tt.append(time.time())
-    print ("FE calibration measurement (Direct-Input) is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("\033[92mCOLDATA output link verification is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
 
 if 7 in tms:
-    print ("FE delay run starts...")
+    print ("COLDATA EFUSE burn-in")
     datad = {}
-    datad['logs'] = logs
-    period = 1000
-    width = 800
-    val = 1.45
-    adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
-    cfg_info = dat.dat_fe_qc_cfg(adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac) 
+    datad['logs'] = logs   
+
+    # val = 0b11111
+    val = 0b11
+    cd = "CD1"
+    input("Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
     
-    for phase in range(0,32,1):
-        dat.cdpoke(0, 0xC, 0, dat.DAT_TEST_PULSE_DELAY, phase%32)  #cali input
-        time.sleep(0.1)
-        data = dat.dat_fe_qc_acq(num_samples = 5)
-        datad["Phase%04d_freq%04d"%(phase, period)] =[dat.fembs, data, cfg_info, phase, period, width, val]
+    efuse_readout = dat.dat_coldata_efuse_prm(dat.fembs[0], cd, val)
+    #print("COLDATA",cd,"reports its EFUSE value is",hex(efuse_readout))
+    datad[cd] = (val, efuse_readout)
     
-    fp = fdir + "QC_DLY_RUN" + ".bin"
+    # val = 0b1111
+    val = 0b1
+    cd = "CD2"
+    input("Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
+    
+    efuse_readout = dat.dat_coldata_efuse_prm(dat.fembs[0], cd, val)
+    #print("COLDATA",cd,"reports its EFUSE value is",hex(efuse_readout))
+    datad[cd] = (val, efuse_readout)
+    
+    fp = fdir + "QC_EFUSE" + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump(datad, fn)
     tt.append(time.time())
-    print ("FE delay run is done. it took %d seconds"%(tt[-1]-tt[-2]))
+    print ("\033[92mCOLDATA EFUSE burn-in is done. it took %d seconds   \033[0m"%(tt[-1]-tt[-2]))
 
-if 8 in tms:
-    print ("FE cali-cap measurement starts...")
-    datad = {}
-    datad['logs'] = logs
-
-    #bl200mV
-    snc=1
-    #3.0us
-    st0=0
-    st1=1
-    if True:
-        #4.7mV/fC
-        sg0=1
-        sg1=1
-        cali_vals=[0.6, 1.4]
-        dire_vals=[1.40, 1.55]
-    if False:
-        #7.8mV/fC
-        sg0=0
-        sg1=1
-        cali_vals=[0.95, 1.55]
-        dire_vals=[1.47, 1.57]
-    if False:
-        #14mV/fC
-        sg0=0
-        sg1=0
-        cali_vals=[1.2, 1.55]
-        dire_vals=[1.52, 1.58]
-    
-    period = 1000
-    width = 800
-    
-    cfg_info = dat.dat_fe_qc_cfg() #default setting 
-    
-    for chn in range(16):
-        print ("DAC DAT cali for FE CH%02d"%chn)
-        val = 1.4
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=1, val=val, period=period, width=width)
-        cali_fe_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sts=sts, swdac=swdac, chn=chn) #direct input, tp=3us, sg=4.7mV
-        
-        for val in cali_vals:
-            #:w
-            #val = int(val*1000)/1000.0
-            valint = int(val*65536/dat.ADCVREF)
-
-            dat.dat_set_dac(val=valint, fe_cal=0)
-            data = dat.dat_fe_qc_acq(num_samples=5)
-            datad["FECHN%02d_%04dmV_CALI"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, cali_fe_info, cfg_info]
-        
-        #inject directly (cali)
-        val = 1.4
-        print ("inject directly (cali) for FE CH%02d"%chn)
-        adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=0, val=val, period=period, width=width)
-        chn_sel = 0x01<<chn
-        dat.cdpoke(0, 0xC, 0, dat.DAT_FE_IN_TST_SEL_MSB, (chn_sel>>8)&0xff)   #direct input
-        dat.cdpoke(0, 0xC, 0, dat.DAT_FE_IN_TST_SEL_LSB, chn_sel&0xff)   #direct input
-        direct_fe_info = dat.dat_fe_only_cfg(snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, sts=0, swdac=0, chn=chn) #direct input, tp=3us, sg=4.7mV
-        
-        for val in  dire_vals:
-            val = int(val*1000)/1000.0
-            dat.dat_set_dac(val=valint, fe_cal=0)
-            data = dat.dat_fe_qc_acq(num_samples=5)
-            datad["FECHN%02d_%04dmV_INPUT"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, direct_fe_info, cfg_info]
-    
-    fp = fdir + "QC_Cap_Meas" + ".bin"
-    with open(fp, 'wb') as fn:
-        pickle.dump(datad, fn)
-
-    tt.append(time.time())
-    print ("FE cali-cap measurement is done. it took %d seconds"%(tt[-1]-tt[-2]))
 
 if 9 in tms:
     print ("Turn DAT off")
