@@ -280,13 +280,13 @@ def plt_subplot(plt, fembs, rawdata ):
     ax3.plot(chns, peds, color='b', marker='.')
     ax3.plot(chns, pkns, color='m', marker='.')
     ax3.set_title("Pulse Response Distribution", fontsize=8)
-    ax3.set_xlabel("Amplitude", fontsize=8)
-    ax3.set_ylabel("CH number", fontsize=8)
+    ax3.set_ylabel("Amplitude", fontsize=8)
+    ax3.set_xlabel("CH number", fontsize=8)
 
     ax4.plot(chns,rmss, color='r', marker='.')
     ax4.set_title("Noise", fontsize=8)
-    ax4.set_xlabel("ADC / bit", fontsize=8)
-    ax4.set_ylabel("CH number", fontsize=8)
+    ax4.set_ylabel("ADC / bit", fontsize=8)
+    ax4.set_xlabel("CH number", fontsize=8)
     ax1.grid()
     ax2.grid()
     

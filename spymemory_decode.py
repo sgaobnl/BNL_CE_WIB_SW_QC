@@ -180,6 +180,7 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
     
         for sn in range(spy_num):
             tmts = [[],[],[],[],[],[],[],[]]
+            cd_tmts = [[],[],[],[],[],[],[],[]]
             femb00 = []
             femb01 = []
             femb10 = []
@@ -218,10 +219,10 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
                     chdata_64ticks0 = [dec_data[0][i]["CD_data"][tick] for tick in range(64)]        
                     chdata_64ticks1 = [dec_data[1][i]["CD_data"][tick] for tick in range(64)]        
                     femb00 = femb00 + chdata_64ticks0        
-                    #tmts[0].append(dec_data[0][i]["FEMB_CD0TS"])
+                    cd_tmts[0].append(dec_data[0][i]["FEMB_CD0TS"])
                     tmts[0].append(dec_data[0][i]["TMTS"])
                     femb01 = femb01 + chdata_64ticks1        
-                    #tmts[1].append(dec_data[1][i]["FEMB_CD1TS"])
+                    cd_tmts[1].append(dec_data[1][i]["FEMB_CD1TS"])
                     tmts[1].append(dec_data[1][i]["TMTS"])
     
             if 1 in fembs:        
@@ -230,10 +231,10 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
                     chdata_64ticks0 = [dec_data[2][i]["CD_data"][tick] for tick in range(64)]        
                     chdata_64ticks1 = [dec_data[3][i]["CD_data"][tick] for tick in range(64)]        
                     femb10 = femb10 + chdata_64ticks0        
-                    #tmts[2].append(dec_data[2][i]["FEMB_CD0TS"])
+                    cd_tmts[2].append(dec_data[2][i]["FEMB_CD0TS"])
                     tmts[2].append(dec_data[2][i]["TMTS"])
                     femb11 = femb11 + chdata_64ticks1        
-                    #tmts[3].append(dec_data[3][i]["FEMB_CD1TS"])
+                    cd_tmts[3].append(dec_data[3][i]["FEMB_CD1TS"])
                     tmts[3].append(dec_data[3][i]["TMTS"])
     
             if 2 in fembs:       
@@ -242,10 +243,10 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
                     chdata_64ticks0 = [dec_data[4][i]["CD_data"][tick] for tick in range(64)]        
                     chdata_64ticks1 = [dec_data[5][i]["CD_data"][tick] for tick in range(64)]        
                     femb20 = femb20 + chdata_64ticks0        
-                    #tmts[4].append(dec_data[4][i]["FEMB_CD0TS"])
+                    cd_tmts[4].append(dec_data[4][i]["FEMB_CD0TS"])
                     tmts[4].append(dec_data[4][i]["TMTS"])
                     femb21 = femb21 + chdata_64ticks1        
-                    #tmts[5].append(dec_data[5][i]["FEMB_CD1TS"])
+                    cd_tmts[5].append(dec_data[5][i]["FEMB_CD1TS"])
                     tmts[5].append(dec_data[5][i]["TMTS"])
     
             if 3 in fembs:
@@ -254,10 +255,10 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
                     chdata_64ticks0 = [dec_data[6][i]["CD_data"][tick] for tick in range(64)]        
                     chdata_64ticks1 = [dec_data[7][i]["CD_data"][tick] for tick in range(64)]        
                     femb30 = femb30 + chdata_64ticks0        
-                    #tmts[6].append(dec_data[6][i]["FEMB_CD0TS"])
+                    cd_tmts[6].append(dec_data[6][i]["FEMB_CD0TS"])
                     tmts[6].append(dec_data[6][i]["TMTS"])
                     femb31 = femb31 + chdata_64ticks1        
-                    #tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
+                    cd_tmts[7].append(dec_data[7][i]["FEMB_CD1TS"])
                     tmts[7].append(dec_data[7][i]["TMTS"])
     
             if cd0cd1sync:
@@ -324,7 +325,7 @@ if Py_Dec_Flg: # line#10 to line#371 use python for decoding
             else:
                 femb3 = None
     
-            wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, None])
+            wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, cd_tmts])
         return wibdata
 
 
@@ -638,7 +639,7 @@ else:
 
             else:
                 femb3 = None
-    
+            
             wibdata.append([femb0, femb1, femb2, femb3, t0max, tmts, cd_tmts]) #temp for graphing 
         return wibdata
         
