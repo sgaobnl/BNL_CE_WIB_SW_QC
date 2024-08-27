@@ -295,7 +295,6 @@ if 4 in tms:
     # Check the LOCK pin (TP4 or net CD_LOCK) 
     # Scan reg 0x41 from 0x1A to 0x3f. → will look into the data.(CD timestamp should increase) 
     # Bias to 1.2V the locking range may vary.         
-    #See notebook notes on this
     datad['CD1_locked'] = [None for i in range(38)]
     datad['CD2_locked'] = [None for i in range(38)]
     datad['CD_data'] = [None for i in range(38)]
@@ -305,20 +304,12 @@ if 4 in tms:
         dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x5, 0x41, pll_band)
         dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x5, 0x41, pll_band)
         
-        samples=100
-        # if pll_band == 28 or pll_band == 29 or pll_band == 46:
-            # samples = 999999999
-        # else:
-            # samples = 1000
-        
+        samples=100        
         
         cd1_lock, cd2_lock, cd_sel = dat.dat_cd_are_locked(dat.fembs[0],samples)     
         
         datad['CD1_locked'][pll_band - 0x1a] = cd1_lock
-        datad['CD2_locked'][pll_band - 0x1a] = cd2_lock 
-        
-        
-        # input(str(pll_band)+": "+str(cd1_lock)+" "+str(cd2_lock))
+        datad['CD2_locked'][pll_band - 0x1a] = cd2_lock         
         
         rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0, synctries=10) #will return False if data not synced
         datad['CD_data'][pll_band - 0x1a] = rawdata         
@@ -338,169 +329,8 @@ if 5 in tms:
     datad = {}
     datad['logs'] = logs      
     
-    print ("Sending Fast command idle")
-    dat.fastcmd(cmd= 'idle')   
-    #What to check to make sure things are the same?
-    datad['idle'] = {}
-    datad['idle']['rawdata'] = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    
-# ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
-# ·     Sync = 1110_0010 (zero timestamp)
-    datad['edge_sync'] = {}
-    #Before Sync is sent, timestamps from two CDs are different.    
-    dat.dat_cd_hard_reset(femb_id = dat.fembs[0]) #hard reset in case data_align has already been run
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0) #contains timestamps
-    datad['edge_sync']['rawdata_before_dataalign'] = rawdata
-    #After Sync is sent, timestampe from two CDs are exactly the same. 
-    dat.data_align(dat.fembs)
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0) #contains timestamps
-    datad['edge_sync']['rawdata_after_dataalign'] = rawdata
-    
-    #EDGE_ACT also?
-    #Check that ADC is reset (test-write some registers beforehand to verify)
-    cfg_info = dat.femb_adc_cfg(dat.fembs[0]) #save for cd_sel info
-    dat.femb_cd_edge_act(dat.fembs)
-    datad['edge_act'] = dat.femb_adc_chkreg(femb_id=dat.fembs[0], reset_first=False)
-    
-# Act Command register (loaded via I2C):
-    datad['ACT_idle'] = {}
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="idle")
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad['ACT_idle']['rawdata'] = rawdata
-    #What to check to make sure things are the same?
-    
-    #LArASIC_pulse checked already with ASICDAC_CALI_CHK
-# # ·     LArASIC_PULSE = 0000_0001 (act to start calibration sequence; act again to stop)
-    # datad["ACT_larasic_pls"] = {}
-    # dat.femb_adac_cali(dat.fembs[0])
-    # dat.femb_adac_cali(dat.fembs[0])
-    # #How to check if calibrated? Take data?
-    # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    # datad["ACT_larasic_pls"]["rawdata"] = rawdata
-    
-# ·     Save Timestamp = 0000_0010 (one of the status register) 
-    datad["ACT_save_timestamp"] = {}
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="save_timestamp")
-    timestamp_lower_0x3 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x21)
-    timestamp_higher_0x3 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x22)    
-    timestamp_lower_0x2 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x21)
-    timestamp_higher_0x2 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x22)
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad["ACT_save_timestamp"]["0x2_timestamp"] = (timestamp_higher_0x2 << 8) | timestamp_lower_0x2
-    datad["ACT_save_timestamp"]["0x3_timestamp"] = (timestamp_higher_0x3 << 8) | timestamp_lower_0x3
-    datad["ACT_save_timestamp"]["rawdata"] = (dat.fembs, rawdata)
-    
-# ·     Save Status = 0000_0011 #Save the various status bits for readout via I2C    
-    datad["ACT_save_status"] = {}
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="save_status")
-    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x23)
-    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x24)   
-    datad["ACT_save_status"]["0x2_regs"] = (reg23, reg24)
-    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x23)
-    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x24)
-    datad["ACT_save_status"]["0x3_regs"] = (reg23, reg24)
-    datad["ACT_save_status"]["CD_LOCK"] = dat.dat_cd_are_locked(dat.fembs[0]) #compare with reg 23 bit 6
-    
-    
-# ·     Clear Saves = 0000_0100 #Clear the saved status bits
-    datad["ACT_clr_saves"] = {}
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="clr_saves")
-    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x23)
-    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=2, reg_page=0, reg_addr=0x24)   
-    datad["ACT_clr_saves"]["0x2_regs"] = (reg23, reg24)
-    reg23 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x23)
-    reg24 = dat.femb_i2c_rd(dat.fembs[0], chip_addr=3, reg_page=0, reg_addr=0x24)
-    datad["ACT_clr_saves"]["0x3_regs"] = (reg23, reg24)    
-    
-# ·     Reset ColdADCs = 0000_0101
-    dat.femb_adc_cfg(dat.fembs[0])
-    datad["ACT_rst_adcs"] = dat.femb_adc_chkreg(dat.fembs[0]) #performs reset
-
-    
-# ·     Reset LArASICs = 0000_0110 (Reset LArASICs using the LARASIC_RESET pad)
-    datad["ACT_rst_larasics"] = {}
-    vbgrs_before = []
-    vbgrs_after = []  
-    samples = 10 
-    #Check VGBR before & after
-    for i in range(50):
-        dat.wib_mon_adcs() #need to reset it 50 times for some reason
-    for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time       
-        dat.fembs_fe_cfg(dat.fembs) #Configure FEs to test reset 
-        vbgrs_before.append(dat.wib_fe_mon(femb_ids=dat.fembs, mon_chip=fe, reset_sw_after=False))
-        dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasics")
-        #copied from wib_fe_mon:
-        adcss = []
-        dat.wib_mon_adcs() #get rid of previous result
-        for i in range(samples):
-            adcs = dat.wib_mon_adcs()
-            adcss.append(adcs) 
-        mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, dat.fembs]  
-        #print(mon_paras)
-        vbgrs_after.append(mon_paras)
-    datad["ACT_rst_larasics"]["VBGR_before"] = vbgrs_before
-    datad["ACT_rst_larasics"]["VBGR_after"] = vbgrs_after
-    # print(vbgrs_before)
-    # print(vbgrs_after)
-    
-    #Check pulse response before & after
-    #config pulse - copied from top_chkout_pls_faking_timing
-    dat.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
-    adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
-    dat.fe_flg[dat.fembs[0]] = True #force fe cfg
-    dat.femb_cfg(dat.fembs[0], adac_pls_en )
-    dat.data_align(fembs)
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad["ACT_rst_larasics"]["rawdata_before"] = rawdata
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasics")
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad["ACT_rst_larasics"]["rawdata_after"] = rawdata
-    
-    
-# ·     SPI Reset = 0000_0111 (Reset LArASICs using the SPI interface)
-    datad["ACT_rst_larasic_spi"] = {}
-    vbgrs_before = []
-    vbgrs_after = []  
-    samples = 10 
-    #Check VGBR before & after
-    for i in range(50):
-        dat.wib_mon_adcs() #need to reset it 50 times for some reason
-    for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time               
-        dat.fembs_fe_cfg(dat.fembs) #Configure FEs to test reset        
-        vbgrs_before.append(dat.wib_fe_mon(femb_ids=dat.fembs, mon_chip=fe, reset_sw_after=False))
-        dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
-        #copied from wib_fe_mon:
-        adcss = []
-        dat.wib_mon_adcs() #get rid of previous result
-        for i in range(samples):
-            adcs = dat.wib_mon_adcs()
-            adcss.append(adcs) 
-        mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, dat.fembs]
-        vbgrs_after.append(mon_paras)
-    datad["ACT_rst_larasic_spi"]["VBGR_before"] = vbgrs_before
-    datad["ACT_rst_larasic_spi"]["VBGR_after"] = vbgrs_after
-    #dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
-
-    #Check pulse response before & after
-    #config pulse - copied from top_chkout_pls_faking_timing
-    dat.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
-    adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
-    dat.fe_flg[dat.fembs[0]] = True #force fe cfg
-    dat.femb_cfg(dat.fembs[0], adac_pls_en )
-    dat.data_align(fembs)
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad["ACT_rst_larasic_spi"]["rawdata_before"] = rawdata
-    dat.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
-    rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-    datad["ACT_rst_larasic_spi"]["rawdata_after"] = rawdata
-    
-# ·     Program LArASICs = 0000_1000 (Download the stored daisy chain bits to LArASICs using SPI)
-    #dat.femb_cd_fc_act(dat.fembs[0], act_cmd="prm_larasics")
-    datad["ACT_prm_larasics"] = dat.femb_fe_cfg(dat.fembs[0])
-# ·     Relay I2C_SDA = 0000_1001 (Echo I2C_SDA_W2C back to WIB on I2C_SDA_C2W if and only if all 
-#three I2C_Relay_Code registers are set)  → done by data alignment and cable latency measurement.
-
-    
+    fastcmd_data = dat.dat_cd_fast_cmd_chk(dat.fembs[0])
+    datad.update(fastcmd_data)    
     
     fp = fdir + "QC_FASTCMD" + ".bin"
     with open(fp, 'wb') as fn:
@@ -518,14 +348,11 @@ if 6 in tms:
     datad['ADC_pattern'] = []
     # Scan LVDS current set  (reg 0x11)  (0x0, typical, 0x7)
     dat.femb_cfg(dat.fembs[0])
-    dat.cd_flg[dat.fembs[0]]=False #keep subsequent femb_cfg calls from overwriting this setting
+    dat.cd_flg[dat.fembs[0]]=False #keep subsequent femb_cfg calls from overwriting current setting
     for current in range(0x8):        
         dat.femb_i2c_wrchk(dat.fembs[0], 0x2, 0x0, 0x11, current)
         dat.femb_i2c_wrchk(dat.fembs[0], 0x3, 0x0, 0x11, current)       
         #Verify output links using FRAME 14 
-        # LArASIC pulse data    
-        # dat.dat_fe_qc_cfg(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1, dac=0x20, adac_pls_en=1)
-        # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
         adac_pls_en, sts, swdac, dac = dat.dat_cali_source(cali_mode=2,asicdac=0x20)
         rawdata, cfg_info = dat.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)        
         datad['LArASIC_pulse'].append((dat.fembs, rawdata, cfg_info))
@@ -535,7 +362,7 @@ if 6 in tms:
         rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
         datad['ADC_pattern'].append((dat.fembs, rawdata))       
         
-        dat.dat_adc_qc_cfg(autocali=0x1) #set back to default
+        dat.dat_adc_qc_cfg(autocali=0x1) #set adc mode back to default
     
     
     fp = fdir + "QC_OUTPUT" + ".bin"
@@ -549,22 +376,18 @@ if 7 in tms:
     datad = {}
     datad['logs'] = logs   
 
-    # val = 0b11111
     val = 0b11
     cd = "CD1"
-    input("Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
+    input(cd+" Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
     
     efuse_readout = dat.dat_coldata_efuse_prm(dat.fembs[0], cd, val)
-    #print("COLDATA",cd,"reports its EFUSE value is",hex(efuse_readout))
     datad[cd] = (val, efuse_readout)
     
-    # val = 0b1111
     val = 0b1
     cd = "CD2"
-    input("Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
+    input(cd+" Debug: Press enter if you want to continue burning in value "+hex(val)+" (irreversible)")
     
     efuse_readout = dat.dat_coldata_efuse_prm(dat.fembs[0], cd, val)
-    #print("COLDATA",cd,"reports its EFUSE value is",hex(efuse_readout))
     datad[cd] = (val, efuse_readout)
     
     fp = fdir + "QC_EFUSE" + ".bin"

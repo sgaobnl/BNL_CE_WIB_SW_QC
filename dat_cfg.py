@@ -431,6 +431,170 @@ class DAT_CFGS(WIB_CFGS):
         
         return cd1_locked, cd2_locked, self.cd_sel
         
+    def dat_cd_fast_cmd_chk(self, femb_id):
+        datad = {}
+        
+        print ("Sending Fast command idle")
+        self.fastcmd(cmd= 'idle')   
+        datad['idle'] = {}
+        datad['idle']['rawdata'] = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        
+    # ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
+    # ·     Sync = 1110_0010 (zero timestamp)
+        datad['edge_sync'] = {}
+        #Before Sync is sent, timestamps from two CDs are different.    
+        self.dat_cd_hard_reset(femb_id = femb_id) #hard reset in case data_align has already been run
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
+        datad['edge_sync']['rawdata_before_dataalign'] = rawdata
+        #After Sync is sent, timestampe from two CDs are exactly the same. 
+        self.data_align(self.fembs)
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
+        datad['edge_sync']['rawdata_after_dataalign'] = rawdata
+        
+        #EDGE_ACT
+        #Check that ADC is reset (test-write some registers beforehand to verify)
+        cfg_info = self.femb_adc_cfg(femb_id) #save for cd_sel info
+        self.femb_cd_edge_act([femb_id])
+        datad['edge_act'] = self.femb_adc_chkreg(femb_id=femb_id, reset_first=False)
+        
+    # Act Command register (loaded via I2C):
+        datad['ACT_idle'] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="idle")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad['ACT_idle']['rawdata'] = rawdata
+        
+        #LArASIC_pulse checked already with ASICDAC_CALI_CHK
+    # # ·     LArASIC_PULSE = 0000_0001 (act to start calibration sequence; act again to stop)
+        # datad["ACT_larasic_pls"] = {}
+        # dat.femb_adac_cali(dat.fembs[0])
+        # dat.femb_adac_cali(dat.fembs[0])
+        # #How to check if calibrated? Take data?
+        # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+        # datad["ACT_larasic_pls"]["rawdata"] = rawdata
+        
+    # ·     Save Timestamp = 0000_0010 (one of the status register) 
+        datad["ACT_save_timestamp"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="save_timestamp")
+        timestamp_lower_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
+        timestamp_higher_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
+        timestamp_lower_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
+        timestamp_higher_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_save_timestamp"]["0x2_timestamp"] = (timestamp_higher_0x2 << 8) | timestamp_lower_0x2
+        datad["ACT_save_timestamp"]["0x3_timestamp"] = (timestamp_higher_0x3 << 8) | timestamp_lower_0x3
+        datad["ACT_save_timestamp"]["rawdata"] = ([femb_id], rawdata)
+        
+    # ·     Save Status = 0000_0011 #Save the various status bits for readout via I2C    
+        datad["ACT_save_status"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="save_status")
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
+        datad["ACT_save_status"]["0x2_regs"] = (reg23, reg24)
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        datad["ACT_save_status"]["0x3_regs"] = (reg23, reg24)
+        datad["ACT_save_status"]["CD_LOCK"] = self.dat_cd_are_locked(femb_id) #compare with reg 23 bit 6
+        
+        
+    # ·     Clear Saves = 0000_0100 #Clear the saved status bits
+        datad["ACT_clr_saves"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
+        datad["ACT_clr_saves"]["0x2_regs"] = (reg23, reg24)
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        datad["ACT_clr_saves"]["0x3_regs"] = (reg23, reg24)    
+        
+    # ·     Reset ColdADCs = 0000_0101
+        self.femb_adc_cfg(femb_id)
+        datad["ACT_rst_adcs"] = self.femb_adc_chkreg(femb_id) #performs reset
+
+        
+    # ·     Reset LArASICs = 0000_0110 (Reset LArASICs using the LARASIC_RESET pad)
+        datad["ACT_rst_larasics"] = {}
+        vbgrs_before = []
+        vbgrs_after = []  
+        samples = 10 
+        #Check VGBR before & after fast command
+        for i in range(50):
+            self.wib_mon_adcs() #need to reset it 50 times for some reason
+        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time       
+            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset 
+            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+            #copied from wib_fe_mon:
+            adcss = []
+            self.wib_mon_adcs() #get rid of previous result
+            for i in range(samples):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs) 
+            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]  
+            #print(mon_paras)
+            vbgrs_after.append(mon_paras)
+        datad["ACT_rst_larasics"]["VBGR_before"] = vbgrs_before
+        datad["ACT_rst_larasics"]["VBGR_after"] = vbgrs_after
+        # print(vbgrs_before)
+        # print(vbgrs_after)
+        
+        #Check pulse response before & after fast cmd
+        #config pulse - copied from top_chkout_pls_fake_timing
+        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        self.fe_flg[femb_id] = True #force fe to config
+        self.femb_cfg(femb_id, adac_pls_en )
+        self.data_align([femb_id])
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasics"]["rawdata_before"] = rawdata
+        self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasics"]["rawdata_after"] = rawdata
+        
+        
+    # ·     SPI Reset = 0000_0111 (Reset LArASICs using the SPI interface)
+        datad["ACT_rst_larasic_spi"] = {}
+        vbgrs_before = []
+        vbgrs_after = []  
+        samples = 10 
+        #Check VGBR before & after fast cmd
+        for i in range(50):
+            self.wib_mon_adcs() #need to reset it 50 times for some reason
+        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time               
+            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset        
+            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+            #copied from wib_fe_mon:
+            adcss = []
+            self.wib_mon_adcs() #get rid of previous result
+            for i in range(samples):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs) 
+            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]
+            vbgrs_after.append(mon_paras)
+        datad["ACT_rst_larasic_spi"]["VBGR_before"] = vbgrs_before
+        datad["ACT_rst_larasic_spi"]["VBGR_after"] = vbgrs_after
+        #self.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+
+        #Check pulse response before & after fast cmd
+        #config pulse - copied from top_chkout_pls_faking_timing
+        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        self.fe_flg[femb_id] = True #force fe to config
+        self.femb_cfg(femb_id, adac_pls_en )
+        self.data_align([femb_id])
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasic_spi"]["rawdata_before"] = rawdata
+        self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasic_spi"]["rawdata_after"] = rawdata
+        
+    # ·     Program LArASICs = 0000_1000 (Download the stored daisy chain bits to LArASICs using SPI)
+        datad["ACT_prm_larasics"] = self.femb_fe_cfg(femb_id)
+        
+    # ·     Relay I2C_SDA = 0000_1001 (Echo I2C_SDA_W2C back to WIB on I2C_SDA_C2W if and only if all 
+    #three I2C_Relay_Code registers are set)  → done by data alignment and cable latency measurement.    
+        return datad
+    
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
         febads = []
         adcbads = []

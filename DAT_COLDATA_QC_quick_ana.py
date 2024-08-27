@@ -409,7 +409,6 @@ if 1 in tms:
         
     #print(dkeys)
     for onekey in dkeys:
-        #cfgdata = data[onekey]
         if "Reset" in onekey:
             rstdata = data[onekey]
             hasError = rstdata[1]
@@ -457,8 +456,7 @@ if 2 in tms:
         print(Fore.RED + fp + " not found.")
         exit()
         
-    #print(dkeys)
-    
+    #print(dkeys)    
     for onekey in dkeys:
         if "LVDS" in onekey or "CMOS" in onekey:
             i2cerror = data[onekey]
