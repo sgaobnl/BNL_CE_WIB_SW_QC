@@ -975,11 +975,12 @@ class QC_Runs:
     def femb_MON_1(self, sps=5):
         datadir = self.save_dir+"MON_FE/"
         datad = {}
-        try:
-            os.makedirs(datadir)
-        except OSError:
-            print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return
+        if not os.path.exists(datadir):
+           try:
+               os.makedirs(datadir)
+           except OSError:
+               print ("Error to create folder %s !!! Continue to next test........"%datadir)
+               return
 
         self.chk.femb_cd_rst()
         chips = 8
@@ -1121,11 +1122,12 @@ class QC_Runs:
     def femb_MON_3(self, sps=5):
         t0 = time.time_ns()
         datadir = self.save_dir+"MON_ADC/"
-        try:
-            os.makedirs(datadir)
-        except OSError:
-            print ("Error to create folder %s !!! Continue to next test........"%datadir)
-            return
+        if not os.path.exists(datadir):
+           try:
+               os.makedirs(datadir)
+           except OSError:
+               print ("Error to create folder %s !!! Continue to next test........"%datadir)
+               return
 
         self.chk.femb_cd_rst()
         self.chk.adcs_paras = copy.deepcopy([ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi

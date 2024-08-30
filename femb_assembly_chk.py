@@ -229,7 +229,6 @@ for femb_id in fembs:
     chk.femb_cfg(femb_id, adac_pls_en )
 time.sleep(LAr_Dalay)
 chk.data_align(fembs)
-print(111111111)
 # data acquire
 rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 

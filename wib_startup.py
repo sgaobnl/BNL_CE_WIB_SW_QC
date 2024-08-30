@@ -15,7 +15,7 @@ if ("Y" in ynstr) or ("y" in ynstr):
     fp1_ptc0_sel=0
     cmd_stamp_sync = 0x0
     chk.wib_timing(ts_clk_sel=ts_clk_sel, fp1_ptc0_sel=fp1_ptc0_sel, cmd_stamp_sync= cmd_stamp_sync)
-    chk.wib_mon_switches()
+    # chk.wib_mon_switches()
     time.sleep(1)
     if len(sys.argv) > 2: 
         if "PTC"in sys.argv[2]:

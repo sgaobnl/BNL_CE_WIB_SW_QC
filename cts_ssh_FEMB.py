@@ -123,9 +123,9 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
 
     # [0 'is used for checkout', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 '1-16 are used for QC']
     tms_items = {}
-    tms_items[11] = "\033[96m Item_11 : FE DAC Linearity \033[0m"
-    tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
     tms_items[12] = "\033[96m Item_12 : ColdADC ref_voltage Linearity \033[0m"
+    tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
+    tms_items[11] = "\033[96m Item_11 : FE DAC Linearity \033[0m"
     tms_items[1] = "\033[96m Item_01 : POWER CONSUMPTION  \033[0m"
     tms_items[2] = "\033[96m Item_02 : POWER CYCLE  \033[0m"
     tms_items[3] = "\033[96m Item_03 : Leakage Current Pulse Response  \033[0m"

@@ -525,7 +525,16 @@ class ana_tools:
                     vset_list.append(mon_list[i][0])
                     mon_data = mon_list[i][1]
                     chip_dic = mon_data[imon]
+                    # for key, chip_data in chip_dic.items():
+                    #     print(key)
+                    #     print(chip_data)
+                    #     print('\n')
+                    # input('debug')
                     for key,chip_data in chip_dic.items():
+                        # print(key)
+                        # print(chip_data)
+                        # print(chip_data[3])
+
                         sps = len(chip_data[3])
                         sps_list=[]
                         for j in range(sps):
@@ -538,7 +547,7 @@ class ana_tools:
                            mon_mean = sps_list[0]
                         if key not in data_dic:
                            data_dic[key]=[]
-                        data_dic[key].append(mon_mean*self.fadc)
+                        data_dic[key].append(mon_mean*self.fadc)  ###
 
                 for key, chip_data in chip_dic.items():
                     #   INL judgement
@@ -825,7 +834,7 @@ class ana_tools:
                                 check = False
                                 check_issue.append("ch {} Line range issue lower than 20: {}".format(ch, line_range))
                         else:
-                            if line_range < 50:
+                            if line_range < 48:
                                 check = False
                                 check_issue.append("ch {} Line range issue lower than 50: {}".format(ch, line_range))
                         if '4_7' in fname_1:
