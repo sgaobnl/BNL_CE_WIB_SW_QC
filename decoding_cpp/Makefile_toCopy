@@ -1,0 +1,14 @@
+#WRKDIR=/media/radofana/RADO/WORKSPACE/BNL/BNL_CE_WIB_SW_QC/TESTING_PYBIND11/decoding_cpp
+
+WRKDIR=$(PWD)
+SRCS=$(WRKDIR)/rawdatautils/pybindsrc/module.cpp $(WRKDIR)/rawdatautils/pybindsrc/unpack.cpp $(WRKDIR)/rawdatautils/pybindsrc/TDEUnpacker.cpp $(WRKDIR)/rawdatautils/pybindsrc/WIB2Unpacker.cpp $(WRKDIR)/rawdatautils/pybindsrc/WIBEthUnpacker.cpp $(WRKDIR)/rawdatautils/pybindsrc/WIBUnpacker.cpp
+OUTPUT=$(WRKDIR)/build/_daq_rawdatautils_py.so
+CFLAGS=-O3 -Wall -shared -std=c++17 -fPIC
+
+# Make sure to include the pybind11_install folder as it is. The sh script creates this folder for you
+INCLUDE=-I$(WRKDIR)/detdataformats/include -I$(WRKDIR)/daqdataformats/include -I$(WRKDIR)/fddetdataformats/include -I$(WRKDIR)/rawdatautils/include -I$(WRKDIR)/pybind11_install/include -I$(HOME)/Software/anaconda3/include/python3.12
+
+all: $(OUTPUT)
+
+$(OUTPUT): $(SRCS)
+	g++ -o $@ $(CFLAGS) $(INCLUDE) $^
