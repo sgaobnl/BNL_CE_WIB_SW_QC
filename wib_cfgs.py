@@ -21,16 +21,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
             [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 1],
         ]
-        #        self.adcs_paras_init = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80),  vrefp, vrefn, vcmo, vcmi, autocali #for SE operation
-        #                            [0x4, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0x5, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0x6, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0x7, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0x8, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0x9, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0xA, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                            [0xB, 0x08, 0, 0, 0xE8, 0x18, 0x90, 0x60, 1],
-        #                          ]
 
         self.adcs_paras = copy.deepcopy(self.adcs_paras_init)
         self.adac_cali_quo = [False, False, False, False]
@@ -260,9 +250,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
                 print("FEMB%d is off" % femb_off_id)
             time.sleep(3)
-            # for femb_off_id in range(4):
-            #     self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            # time.sleep(1)
             self.all_femb_bias_ctrl(enable=0)
 
     #    def get_sensors(self):
@@ -678,6 +665,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         print("Check femb%d COLDADC default registers' value" % femb_id)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+        time.sleep(0.1)
 
         # page 1 registers
         # reg_addr1=range(0x80,0xB7)

@@ -8,6 +8,15 @@ import QC_components.qc_log as log
 import QC_check as QC_check
 import csv
 from scipy import stats
+import platform
+
+system_info = platform.system()
+
+index_tmts = 5
+if system_info == 'Linux':
+    index_tmts = 4
+elif system_info == 'Windows':
+    index_tmts = 5
 
 def ResFunc(x, par0, par1, par2, par3):
 
@@ -206,6 +215,7 @@ class ana_tools:
 
     def GetPeaks(self, data, nfemb, fp, fname, funcfit=False, shapetime=2, period=500, dac = 0):
 
+        global dat_tmts_l
         nevent = len(data)
 
         ppk_val = []
@@ -216,109 +226,85 @@ class ana_tools:
         bl = []
         bl_rms = []
 
-        rms = []
-        ped = []
+        # new=======
+        dat_tmts_l = []
+        dat_tmts_h = []
+        for wibdata in data:
+            dat_tmts_l.append(wibdata[index_tmts][nfemb*2][0])
+            dat_tmts_h.append(wibdata[index_tmts][nfemb*2+1][0])
+        dat_tmtsl_oft = (np.array(dat_tmts_l)//32)%period
+        dat_tmtsh_oft = (np.array(dat_tmts_h)//32)%period
 
-        plt.figure(figsize=(12, 4))
+        all_data = []
 
-        if period == 500:
-            pulrange = 120
-            pulseoffset = 30
-            offset2 = 120
-        else:
-            pulrange = 220
-            pulseoffset = 30
-            offset2 = 220
+        for achn in range(128):
+            conchndata = []
 
-        for ich in range(128):
-            global_ch = nfemb * 128 + ich
-            allpls = np.zeros(period)
-            allpls2 = np.zeros(period)
-            npulse = 0
-            hasError = False
-            pulse = []
-            pulse2 = []
-            for itr in range(nevent):
-                # print(data[itr])
-                # print(nfemb)
-                # input()
-                evtdata = np.array(data[itr][nfemb][ich])
-                tstart = data[itr][4] // 0x20
-                for tt in range(int(period - (tstart % period)), len(evtdata) - period - offset2 - 1, period):
-                    allpls = allpls + evtdata[tt:tt + period]
-                    pulse.extend(evtdata[tt:tt + period])
-                    allpls2 = allpls2 + evtdata[tt + offset2:tt + period + offset2]
-                    pulse2.extend(evtdata[tt + offset2:tt + period + offset2])
-                    npulse = npulse + 1
-
-            apulse = allpls / npulse
-            apulse2 = allpls2 / npulse
-            pmax = np.amax(apulse)
-            maxpos = np.argmax(apulse)
-
-            data_type = apulse.dtype
-            plt.subplot(1, 2, 1)
-            if maxpos >= pulseoffset and maxpos < len(apulse) + pulseoffset - pulrange:
-                plot_pulse = apulse[maxpos - pulseoffset:maxpos - pulseoffset + pulrange]
-                plt.plot(range(len(plot_pulse)), plot_pulse)
-                if maxpos < 70:
-                    baseline = pulse[:maxpos - 20]
+            for i in range(len(data)):
+                if achn < 64:
+                    oft = dat_tmtsl_oft[i]
                 else:
-                    baseline = pulse[maxpos - 40:maxpos - 20]
-                baseline.extend(pulse[maxpos - 40 + period:maxpos - 20 + period])
-                if npulse > 2:
-                    baseline.extend(pulse[maxpos - 40 + 2*period:maxpos - 20 + 2*period])
+                    oft = dat_tmtsh_oft[i]
 
-            if maxpos < pulseoffset:
-                plot_pulse = apulse2[maxpos - pulseoffset + period-offset2:maxpos - pulseoffset + period-offset2 + pulrange]
-                plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos + period - 40:maxpos + period - 20]
-                # baseline = pulse[maxpos + offset2+pulseoffset+pulseoffset:maxpos + period - 100]
-                # baseline.extend(pulse[maxpos + offset2+pulseoffset+pulseoffset + period:maxpos + period - 100 + period])
-                baseline.extend(pulse[maxpos + period - 40 + period:maxpos + period - 20 + period])
-                # baseline.extend(pulse[maxpos + 180 + 2*period:maxpos + 500 - 100 + 2*period])
+                wibdata = data[i]
+                datd = [wibdata[0], wibdata[1], wibdata[2], wibdata[3]][nfemb]
+                chndata = np.array(datd[achn], dtype = np.uint32)
+                lench = len(chndata)
+                tmp = int(period-oft)
+                conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
+            all_data.append(conchndata)
 
-            if maxpos >= len(apulse) + pulseoffset - pulrange:
-                plot_pulse = apulse2[maxpos - pulseoffset - offset2:maxpos - pulseoffset - offset2 + pulrange]
-                plt.plot(range(len(plot_pulse)), plot_pulse)
-                baseline = pulse[maxpos - 40:maxpos - 20]
-                # baseline = pulse[180:maxpos - 20]
-                # baseline.extend(pulse[180 + period: maxpos - 20 + period])
-                baseline.extend(pulse[maxpos - 40 + period: maxpos - 20 + period])
-                # baseline.extend(pulse[180 + 2*period: maxpos - 20 + 2*period])
+        chns = list(range(128))
+        rmss = []
+        peds = []
+        pkps, pkns = [], []
+        wfs, wfsf = [], []
 
-            pulse_rms = np.std(baseline)
-            pulse_ped = np.mean(baseline)
 
-            if funcfit:
-                popt = FitFunc(apulse, shapetime, makeplot=False)
-                a_xx = np.array(range(20)) * 0.5
-                a_yy = ResFunc(a_xx, popt[0], popt[1], popt[2], popt[3])
-                pmax = np.amax(a_yy)
+        for achn in range(128):
+            chdata = []
+            N_period = len(all_data[achn])//period
+            for iperiod in range(N_period):
+                istart = iperiod*period
+                iend = istart + period
+                chunkdata = all_data[achn][istart : iend]
+                chdata.append(chunkdata)
+            chdata = np.array(chdata)
+            avg_wf = np.average(np.transpose(chdata), axis = 1, keepdims = False)
+            wfsf.append(avg_wf)
+            amax = np.max(avg_wf)
+            amin = np.min(avg_wf)
+            pkps.append(amax)
+            pkns.append(amin)
+            ppos = np.where(avg_wf == amax)[0][0]
+            p0 = ppos + period
 
-            if maxpos > 100:
-                bbl = np.mean(apulse[:maxpos - 50])
-            else:
-                bbl = np.mean(apulse[400:])
+            peddata = []
 
-            pmin = np.amin(apulse)
+            for iperid in range(N_period):
+                peddata += all_data[achn][p0 + iperid*period - 250: p0 + iperid*period - 50]
+            rmss.append(np.std(peddata))
+            peds.append(np.mean(peddata))
 
-            ppk_val.append(pmax)
-            # ppk.append(pmax - pulse_ped)
-            npk_val.append(pmin)
-            # npk.append(pmin - pulse_ped)
-            # bl_rms.append(bbl_rms)
-            # bl_val.append(bbl)
-            bl_val.append(pulse_ped)
-            bl.append(bbl)
+            tmpwf =  avg_wf
+            if ppos-50 < 0:
+                front = avg_wf[-50 :]
+                back = avg_wf[:-50]
+                tmpwf = np.concatenate((front, back))
+            ppos = np.where(tmpwf==np.max(tmpwf))[0][0]
+            if ppos + 150 > period:
+                front = tmpwf[ppos-50 : ]
+                back = tmpwf[ : ppos - 50]
+                tmpwf = np.concatenate((front, back))
+            ppos = np.where(tmpwf == np.max(tmpwf))[0][0]
+            wfs.append(tmpwf[ppos-50:ppos+150])
 
-            rms.append(pulse_rms)
-            ped.append(pulse_ped)
+            plt.subplot(1, 2, 1)
+            print(len(tmpwf))
+            plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
 
-            if ich == 64:
-                log.channel0_pulse[nfemb][dac] = plot_pulse - pulse_ped
-
-        rms_mean = np.mean(rms)
+            if achn == 64:
+                log.channel0_pulse[nfemb][dac] = wfs - np.mean(peddata)
 
         bottom = -1000
         plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
@@ -328,9 +314,9 @@ class ana_tools:
         plt.grid(axis='y', color='gray', linestyle='--', alpha=0.5)
 
         plt.subplot(1, 2, 2)
-        plt.plot(range(128), ppk_val, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
-        plt.plot(range(128), bl_val, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
-        plt.plot(range(128), npk_val, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
+        plt.plot(range(128), pkps, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
+        plt.plot(range(128), peds, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
+        plt.plot(range(128), pkns, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
         plt.grid(axis='x', color='gray', linestyle='--', alpha=0.5)
 
         # pl1.plot(range(128), bl_rms)
@@ -349,9 +335,9 @@ class ana_tools:
 
         fp_bin = fp + "Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
-            pickle.dump([ppk_val, npk_val, bl_val], fn)
+            pickle.dump([pkps, pkns, peds], fn)
 
-        return ppk_val, npk_val, bl_val
+        return pkps, pkns, peds
 
 
     def PrintPWR(self, pwr_data, nfemb, fp):

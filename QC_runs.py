@@ -9,6 +9,8 @@ import time, datetime, random, statistics
 import subprocess
 import QC_components.qc_function as a_func
 import QC_components.qc_log as log
+from QC_tools import ana_tools
+import QC_components.qc_a_function as a_func
 #import TestPattern_chk as PLL_TP
 
 class QC_Runs:
@@ -54,35 +56,13 @@ class QC_Runs:
 
         for i in self.fembs:
             self.fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i)).strip()
-            # self.fembNo['femb{}'.format(i)]=self.fembName['femb{}'.format(i)][1:]
 
         self.logs['femb id']=self.fembNo
-        # self.logs['femb name']=self.fembName
         self.logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
         log.report_log00 = self.logs    ### report
         ####### Create data saving directory #######
 
         save_dir = "./QC"
-        # for key,femb_no in self.fembNo.items():
-        #     save_dir = save_dir + "femb{}_".format(femb_no)
-        #
-        # save_dir = save_dir+"{}_{}".format(env,toytpc)
-        #
-        # n=1
-        # while (os.path.exists(save_dir)):
-        #     if n==1:
-        #         save_dir = save_dir + "_R{:03d}".format(n)
-        #     else:
-        #         save_dir = save_dir[:-3] + "{:03d}".format(n)
-        #     n=n+1
-        #     if n>20:
-        #         raise Exception("There are more than 20 folders...")
-        #
-        # try:
-        #     os.makedirs(save_dir)
-        # except OSError:
-        #     print ("Error to create folder %s"%save_dir)
-        #     sys.exit()
         if not os.path.exists(save_dir):
             try:
                 os.makedirs(save_dir)
@@ -95,9 +75,6 @@ class QC_Runs:
         fp = self.save_dir + "logs_env.bin"
         with open(fp, 'wb') as fn:
              pickle.dump(self.logs, fn)
-
-
-        #self.chk=None   # WIB pointer
 
     def pwr_fembs(self, status):
 
@@ -525,7 +502,7 @@ class QC_Runs:
 
         print('SGP pulse response')
         #   SGP    4       {[snc 200 mV] * [4.7 7.8 14 25 mV/fc] *[2 us]}
-        st1 = 1;
+        st1 = 1
         st0 = 1  # 2 us
         sts = 1
         self.chk.femb_cd_rst()
@@ -547,8 +524,8 @@ class QC_Runs:
         snc = 1 # 200 mV BL
         sg0 = 0
         sg1 = 0 # 14_0 mv/fC
-        #st0 = 1
-        #st1 = 1 # 2 us
+        st0 = 1
+        st1 = 1 # 2 us
         sts = 1
         dac=0
         self.chk.femb_cd_rst()
@@ -570,9 +547,80 @@ class QC_Runs:
 #            return
 #
 ##SE off/on, DIFF on  (14mV/fC, 200mV BL/ 900mV BL, 2us) = 3*2, External pulse
-##
+    def debug_02(self):
+        datadir = self.save_dir + "CHK/"
+        datad = {}
+        try:
+            os.makedirs(datadir)
+        except OSError:
+            print("Error to create folder %s !!! Continue to next test........" % datadir)
+            return
+
+        #       External Pulse
+        print('External pulse')
+
+        snc = 1  # 200 mV BL
+        sg0 = 0
+        sg1 = 0  # 14_0 mv/fC
+        st0 = 1
+        st1 = 1 # 2 us
+        sts = 1
+        dac = 0
+        self.chk.femb_cd_rst()
+        self.sample_N = 1
 
 
+
+        fp = datadir + "CHK_EX_{}_{}_{}.bin".format("200mVBL", "14_0mVfC", "2_0us")
+        datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
+
+        fp = datadir + "femb_chk_pulse_t4" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+            f_pwr = datadir + "femb_chk_pulse_t4.bin"
+
+        self.fembsName={}
+        self.fembsID={}
+        fembs = []
+        if fembs:
+            self.fembs = fembs
+            for ifemb in fembs:
+                self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
+                self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
+        else:
+            # self.fembsID = logs['femb id']
+            self.fembs=[]
+            for key,value in self.logs['femb id'].items():
+                self.fembs.append(int(key[-1]))
+            for ifemb in self.fembs:
+                self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
+                self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
+
+        f_pwr = datadir + "femb_chk_pulse_t4.bin"
+        with open(f_pwr, 'rb') as fn:
+            CHKPULSE_dict = pickle.load(fn)
+        keys_list = list(CHKPULSE_dict.keys())
+        print(keys_list)
+        qc = ana_tools()
+        # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+        for ifemb in range(len(self.fembs)):
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+            log.check_log04_01[femb_id]['Result'] = True
+        for afile in CHKPULSE_dict.keys():
+            raw = CHKPULSE_dict[afile]
+            rawdata = raw[0]
+            pwr_meas = raw[1]
+            # =======================================
+            pldata = qc.data_decode(rawdata, self.fembs)
+            if '\\' in afile:
+                fname = afile.split("\\")[-1][:-4]
+                print(fname)
+            else:
+                fname = afile.split("/")[-1][:-4]
+                print(fname)
+            a_func.pulse_ana(pldata, self.fembs, self.fembsID, datadir, fname, '')
+
+    ##
     def femb_rms(self):
         datadir = self.save_dir+"RMS/"
         datad = {}

@@ -115,9 +115,6 @@ cfg_paras_rec = []
 for i in range(8):
     chk.adcs_paras[i][8]=1   # enable  auto
 for femb_id in fembs:
-    # chk.set_fe_board(sts=0, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x00 )
-    # adac_pls_en = 0
-    # cfg_paras_rec.append((femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), False))
     chk.femb_cfg(femb_id, False )
 #####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
@@ -265,7 +262,6 @@ if ship:
             chk.femb_cfg(femb_id, adac_pls_en )
         time.sleep(LAr_Dalay)
         chk.data_align(fembs)
-        print(111111111)
 
         # data acquire
         rms_rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
@@ -325,7 +321,6 @@ for ifemb in fembs:
        hasERROR = True
 
     if fe_i<0.35:
-    # if fe_i>0.55 or fe_i<0.35:
        print("ERROR: FEMB{} LArASIC current {} out of range (0.35A,0.55A)".format(ifemb,fe_i))
        hasERROR = True
 
@@ -340,15 +335,10 @@ for ifemb in fembs:
     if hasERROR:
         print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
         result = False
-        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
     else:
         print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
         result = True
-        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} Pass current #1 check\n".format(fembNo['femb%d' % ifemb])
-    # log.report_log05[femb_id]["FC1_BIAS_current_2"] = "BIAS current: %f (default range: <0.05A)\n" % bias_i
-    # log.report_log05[femb_id]["FC1_LArASIC_current_2"] = "LArASIC current: %f  (default range: (0.35A, 0.55A))\n" % fe_i
-    # log.report_log05[femb_id]["FC1_COLDATA_current_2"] = "COLDATA current: %f  (default range: (0.15A, 0.35A))\n" % cd_i
-    # log.report_log05[femb_id]["FC1_ColdADC_current_2"] = "ColdADC current: %f  (default range: (1.35A, 1.85A))\n" % adc_i
+
 for ifemb in range(len(fembs)):
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
     se_power = a_func.power_ana(fembs, ifemb, femb_id, pwr_meas2, env)
@@ -486,7 +476,6 @@ for ifemb in fembs:
     if hasERROR:
         print("FEMB ID {} Faild current check 2, will skip this femb".format(fembNo['femb%d'%ifemb]))
         result = False
-        # log.report_log05[femb_id]['FEMB_current_2'] = "FEMB ID {} faild current #1 check\n".format(fembNo['femb%d'%ifemb])
     else:
         print("FEMB ID {} Pass current check 2".format(fembNo['femb%d'%ifemb]))
         result = True
@@ -519,12 +508,10 @@ log.report_log101 = dict(log.check_log)
 #      PART 05 Monitor Path      #
 ##################################
 ###### Take monitoring data ######
-#   initial ColdADC, COLDATA
 chk.femb_cd_rst()
-#   Data Acquisition
+
 mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
-#   Data Process
-#   Parameter Comparison
+
 a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env)
 
 #================   Final Report    ===================================

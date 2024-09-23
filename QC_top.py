@@ -5,7 +5,7 @@ import time
 ag = argparse.ArgumentParser()
 ag.add_argument("fembs", help="a list of femb slots number", type=int, nargs='+')
 #ag.add_argument("-s", "--save", help="number of pulses to be saved", type=int, default=1)
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,16+1),  nargs='+', default=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=range(1,17+1),  nargs='+', default=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,16, 17))
 args = ag.parse_args()
 
 fembs = args.fembs
@@ -91,7 +91,7 @@ for tm in tasks:
         qc.femb_test_pattern_pll()
 
     if tm == 17: #debugging use only
-        qc.LArASIC_Analog()
+        qc.debug_02()
 
 qc.pwr_fembs('off')
 print(tt)
