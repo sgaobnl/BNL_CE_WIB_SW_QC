@@ -80,6 +80,20 @@ entity DUNE_DAT_FPGA is
 	--COLDATA CONTROL & MONITORING
 		CD1_CONTROL						 	: IN STD_LOGIC_VECTOR(4 downto 0);
 		CD2_CONTROL							: IN STD_LOGIC_VECTOR(4 downto 0);	
+		
+		CD1_EFUSE_DIN  					   : OUT STD_LOGIC;--rev.1  
+		CD1_EFUSE_CSB  					   : OUT STD_LOGIC;--rev.1
+		CD1_EFUSE_SCLK 					   : OUT STD_LOGIC;--rev.1 
+		CD1_EFUSE_VDDQ 					   : OUT STD_LOGIC;--rev.1 
+		CD1_EFUSE_DOUT 					   : IN STD_LOGIC; --rev.1 
+		CD1_EFUSE_PGM  					   : OUT STD_LOGIC;--rev.1
+
+		CD2_EFUSE_DIN  					   : OUT STD_LOGIC;--rev.1  
+		CD2_EFUSE_CSB  					   : OUT STD_LOGIC;--rev.1
+		CD2_EFUSE_SCLK 					   : OUT STD_LOGIC;--rev.1 
+		CD2_EFUSE_VDDQ 					   : OUT STD_LOGIC;--rev.1 
+		CD2_EFUSE_DOUT 					   : IN STD_LOGIC; --rev.1 
+		CD2_EFUSE_PGM  					   : OUT STD_LOGIC;--rev.1
 
 		CD1_AMON_CSA 						: OUT STD_LOGIC;		
 		CD1_AMON_CSB 						: OUT STD_LOGIC;
@@ -90,6 +104,9 @@ entity DUNE_DAT_FPGA is
 		CD2_AMON_CSB 						: OUT STD_LOGIC;
 		CD2_AMON_CSC 						: OUT STD_LOGIC;
 		CD2_AMON_INH 						: OUT STD_LOGIC;
+		
+		CD1_LOCK							: IN STD_LOGIC;--rev.1
+		CD2_LOCK							: IN STD_LOGIC;--rev.1		
 		
 		--work.ADC_LTC2314
 		CD1_MonADC_CS 						: OUT STD_LOGIC;
@@ -203,19 +220,7 @@ entity DUNE_DAT_FPGA is
 		ADC_N_TST_AMON_INH				: OUT STD_LOGIC; 
 		
 		
-      CD1_EFUSE_DIN  					   : OUT STD_LOGIC;  
-      CD1_EFUSE_CSB  					   : OUT STD_LOGIC;
-      CD1_EFUSE_SCLK 					   : OUT STD_LOGIC; 
-      CD1_EFUSE_VDDQ 					   : OUT STD_LOGIC; 
-      CD1_EFUSE_DOUT 					   : IN STD_LOGIC; 
-      CD1_EFUSE_PGM  					   : OUT STD_LOGIC;
 
-      CD2_EFUSE_DIN  					   : OUT STD_LOGIC;  
-      CD2_EFUSE_CSB  					   : OUT STD_LOGIC;
-      CD2_EFUSE_SCLK 					   : OUT STD_LOGIC; 
-      CD2_EFUSE_VDDQ 					   : OUT STD_LOGIC; 
-      CD2_EFUSE_DOUT 					   : In STD_LOGIC; 
-      CD2_EFUSE_PGM  					   : OUT STD_LOGIC;
 
 	--MISC
 	
@@ -378,6 +383,10 @@ SIGNAL	CD2_EFUSE_start		:  STD_LOGIC;
 SIGNAL	CD1_EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
 SIGNAL	CD2_EFUSE_DATA		: STD_LOGIC_VECTOR(31 downto 0);
 
+SIGNAL 	CD1_LOCK_OUT			: STD_LOGIC;
+SIGNAL 	CD2_LOCK_OUT			: STD_LOGIC;
+SIGNAL 	counter1 				: INTEGER RANGE 0 TO 100;
+SIGNAL 	counter2 				: INTEGER RANGE 0 TO 100;
 
 --Registers
 SIGNAL	reg0_p 			:  STD_LOGIC_VECTOR(7  DOWNTO 0);
@@ -492,6 +501,7 @@ SIGNAL	REG_RESET				:  STD_LOGIC;
 begin
 
 TP_INT_GEN <= CLK_1M953125Hz;
+TP_EXT_GEN <= '0';
 DAC_CNTL(12)	<= '1';
 
 CD1_CLK_64MHZ_SYS_P	<= CLK_64MHZ_SYS_P;
@@ -651,16 +661,7 @@ FE_CALI_CS(5) <= reg32_p(5) AND (not Test_pulse);--rev v3
 FE_CALI_CS(6) <= reg32_p(6) AND (not Test_pulse);--rev v3
 FE_CALI_CS(7) <= reg32_p(7) AND (not Test_pulse);--rev v3
 
---Test pulse gen
---TP_SOCKET_EN			<= reg56_p;
-FE_INS_PLS_CS(0) <= reg56_p(0) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(1) <= reg56_p(1) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(2) <= reg56_p(2) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(3) <= reg56_p(3) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(4) <= reg56_p(4) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(5) <= reg56_p(5) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(6) <= reg56_p(6) AND (not Test_pulse); --rev v3
-FE_INS_PLS_CS(7) <= reg56_p(7) AND (not Test_pulse); --rev v3
+
 
 ADC_TST_SEL <= reg33_p;
 
@@ -736,7 +737,16 @@ ASIC_TP_EN           <= reg55_p(1);
 INT_TP_EN            <= reg55_p(2); --internal means coming from FPGA or ASIC
 EXT_TP_EN            <= reg55_p(3); --external means coming from WIB
 
-
+--Test pulse gen
+--TP_SOCKET_EN			<= reg56_p;
+FE_INS_PLS_CS(0) <= reg56_p(0) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(1) <= reg56_p(1) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(2) <= reg56_p(2) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(3) <= reg56_p(3) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(4) <= reg56_p(4) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(5) <= reg56_p(5) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(6) <= reg56_p(6) AND (not Test_pulse); --rev v3
+FE_INS_PLS_CS(7) <= reg56_p(7) AND (not Test_pulse); --rev v3
 
 Test_PULSE_WIDTH     <= reg58_p & reg57_p;
 --TP_AMPL              <= reg56_p;
@@ -748,6 +758,45 @@ FE_CMN_CSA	 	<= reg62_p(0);
 FE_CMN_CSB	 	<= reg62_p(1); 
 FE_CMN_CSC	 	<= reg62_p(2);
 FE_CMN_INH	 	<= reg62_p(3);
+--reg 62 bit 4 is used in fw for DAT original revision
+
+--reg 64 & 65 used for CD1/2 MonADC D_SHT, PH_SEL, ADC_CS_POS	
+
+CD1_EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programming	
+CD2_EFUSE_start						<= reg67_p(4);		 -- bit (0) 0->1 will start EFUSE programming	
+
+
+reg68_p(0) <= CD1_LOCK_OUT;
+reg68_p(1) <= CD2_LOCK_OUT;
+reg68_p(2) <= CD1_LOCK;
+reg68_p(3) <= CD2_LOCK;
+
+reg_adc(7 downto 0)   <= reg72_p;
+reg_adc(15 downto 8)  <= reg73_p;
+reg_adc(23 downto 16) <= reg74_p;
+reg_adc(31 downto 24) <= reg75_p;
+reg_adc(39 downto 32) <= reg76_p;
+reg_adc(47 downto 40) <= reg77_p;
+reg_adc(55 downto 48) <= reg78_p;
+reg_adc(63 downto 56) <= reg79_p;
+
+reg_fe(7 downto 0)   <= reg80_p;
+reg_fe(15 downto 8)  <= reg81_p;
+reg_fe(23 downto 16) <= reg82_p;
+reg_fe(31 downto 24) <= reg83_p;
+reg_fe(39 downto 32) <= reg84_p;
+reg_fe(47 downto 40) <= reg85_p;
+reg_fe(55 downto 48) <= reg86_p;
+reg_fe(63 downto 56) <= reg87_p;
+
+CD1_EFUSE_DATA(7 downto 0)	   <= reg88_p;   
+CD1_EFUSE_DATA(15 downto 8)	   <= reg89_p;    
+CD1_EFUSE_DATA(23 downto 16)   <= reg90_p;    
+CD1_EFUSE_DATA(31 downto 24)   <= reg91_p;    
+CD2_EFUSE_DATA(7 downto 0)	   <= reg92_p;   
+CD2_EFUSE_DATA(15 downto 8)	   <= reg93_p;    
+CD2_EFUSE_DATA(23 downto 16)   <= reg94_p;    
+CD2_EFUSE_DATA(31 downto 24)   <= reg95_p;    
 
 
 ----------------------------------------------------
@@ -858,7 +907,45 @@ ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else
 				ro_cnt_arr(6) when SOCKET_RDOUT_SEL = b"110" else 
 				ro_cnt_arr(7) when SOCKET_RDOUT_SEL = b"111" else 
 				(others => '0');
+
+--CD_LOCK signal stretcher
+--When CD1/2_LOCK is low, prolong CD1/2_LOCK_OUT by 100 clock cycles
+--so that the low-ness can be read by software
+cd_lock_stretcher : process(CLK_62_5MHz, reset)
+--	variable counter1 : integer range 0 to 100;
+--	variable counter2 : integer range 0 to 100;
+begin
+	if (reset = '1') then	
+		CD1_LOCK_OUT <= CD1_LOCK;
+		CD2_LOCK_OUT <= CD2_LOCK;
+		counter1 <= 0;
+		counter2 <= 0;
+	elsif (CLK_62_5MHz'event  AND  CLK_62_5MHz = '1') then	
+		if (CD1_LOCK = '0') then
+			CD1_LOCK_OUT <= '0';
+			counter1 <= 0;
+		else
+			counter1 <= counter1 + 1;
+			if (counter1 = 100) then
+				CD1_LOCK_OUT <= CD1_LOCK;	
+			end if;					
+		end if;
 		
+		if (CD2_LOCK = '0') then
+			CD2_LOCK_OUT <= '0';
+			counter2 <= 0;
+		else
+			counter2 <= counter2 + 1;
+			if (counter2 = 100) then
+				CD2_LOCK_OUT <= CD2_LOCK;	
+			end if;			
+			
+		end if;		
+		
+		
+		
+	end if;
+end process cd_lock_stretcher;
 
 sys_rst_inst : entity work.sys_rst
 PORT MAP(	clk 			=> CLK_50MHz,
@@ -970,17 +1057,9 @@ gen_FE_INA: for i in 0 to 7 generate
 	);
 end generate gen_FE_INA;
 
-CD1_EFUSE_DATA(7 downto 0)	   <= reg88_p;   
-CD1_EFUSE_DATA(15 downto 8)	   <= reg89_p;    
-CD1_EFUSE_DATA(23 downto 16)   <= reg90_p;    
-CD1_EFUSE_DATA(31 downto 24)   <= reg91_p;    
-CD2_EFUSE_DATA(7 downto 0)	   <= reg92_p;   
-CD2_EFUSE_DATA(15 downto 8)	   <= reg93_p;    
-CD2_EFUSE_DATA(23 downto 16)   <= reg94_p;    
-CD2_EFUSE_DATA(31 downto 24)   <= reg95_p;    
 
-CD1_EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programming	
-CD2_EFUSE_start						<= reg67_p(4);		 -- bit (0) 0->1 will start EFUSE programming	
+--CD1_EFUSE_DATA regs 88-95
+--CD1/2_EFUSE_START reg67
 
 CD1_EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
 	PORT MAP
@@ -1054,14 +1133,7 @@ CD2_MonADC_inst : entity work.ADC_AD7274
 	);
 	
 	
-reg_adc(7 downto 0)   <= reg72_p;
-reg_adc(15 downto 8)  <= reg73_p;
-reg_adc(23 downto 16) <= reg74_p;
-reg_adc(31 downto 24) <= reg75_p;
-reg_adc(39 downto 32) <= reg76_p;
-reg_adc(47 downto 40) <= reg77_p;
-reg_adc(55 downto 48) <= reg78_p;
-reg_adc(63 downto 56) <= reg79_p;
+--reg_adc tied to regs 72-29
 
 ADC1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
@@ -1104,15 +1176,7 @@ gen_ADC_MonADC: for i in 7 downto 1 generate
 		);
 end generate gen_ADC_MonADC;
 
-
-reg_fe(7 downto 0)   <= reg80_p;
-reg_fe(15 downto 8)  <= reg81_p;
-reg_fe(23 downto 16) <= reg82_p;
-reg_fe(31 downto 24) <= reg83_p;
-reg_fe(39 downto 32) <= reg84_p;
-reg_fe(47 downto 40) <= reg85_p;
-reg_fe(55 downto 48) <= reg86_p;
-reg_fe(63 downto 56) <= reg87_p;
+--reg_fe regs 80-87
 
 FE1_MonADC_inst : entity work.ADC_AD7274
   PORT MAP
@@ -1239,7 +1303,7 @@ gen_ro_cnt: for i in 7 downto 0 generate
 	);
 end generate gen_ro_cnt;
 
-TP_EXT_GEN <= '0';
+
 TST_PULSE_GEN_inst : entity work.SBND_TST_PULSE 
 	PORT MAP 
 	(
@@ -1444,7 +1508,7 @@ DUNE_DAT_Registers_inst :  entity work.DUNE_DAT_Registers
 		reg65_o 	=> reg65_p,
 		reg66_o 	=> reg66_p,
 		reg67_o 	=> reg67_p,
-		reg68_o 	=> reg68_p,
+		reg68_o 	=> open,
 		reg69_o 	=> reg69_p,
 		reg70_o 	=> reg70_p,
 		reg71_o 	=> reg71_p,
