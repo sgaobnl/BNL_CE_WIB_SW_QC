@@ -506,26 +506,51 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         return hasERROR
 
-    def femb_cd_cfg(self, femb_id):
-#set coldata 8b10 
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x03, wrdata=0x3c)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x03, wrdata=0x3c)
+    def femb_cd_cfg(self, femb_id, config_2 = True, config_3 = True):
+        chip_addrs = []
+        if config_3:
+            chip_addrs.append(3)
+        if config_2:
+            chip_addrs.append(2)   
+        
+#set coldata 8b10         
+        for chip_addr in chip_addrs:
+            self.femb_i2c_wrchk(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=0x03, wrdata=0x3c)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x03, wrdata=0x3c)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x03, wrdata=0x3c)
+        
 #set LVDS current strength
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x11, wrdata=0x07)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x11, wrdata=0x07)
+        for chip_addr in chip_addrs:        
+            self.femb_i2c_wrchk(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=0x11, wrdata=0x07)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x11, wrdata=0x07)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x11, wrdata=0x07)
+        
 #Lengthen SCK time during SPI write for more stability
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x25, wrdata=0x40)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x25, wrdata=0x40)
+        for chip_addr in chip_addrs:
+            self.femb_i2c_wrchk(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=0x25, wrdata=0x40)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x25, wrdata=0x40)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x25, wrdata=0x40)
+        
 #FE power on
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=0x1f)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x27, wrdata=0x1f)
+        for chip_addr in chip_addrs:
+            self.femb_i2c_wrchk(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=0x27, wrdata=0x1f)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=0x1f)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x27, wrdata=0x1f)
+        
 #tie LArASIC test pin to ground
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x26, wrdata=0x02)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x26, wrdata=0x00)
+        if config_3:
+            self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x26, wrdata=0x02)
+        if config_2:
+            self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x26, wrdata=0x00)
+            
 #Frame14
-        self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
-        self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
-        self.cd_flg[femb_id]=False
+        for chip_addr in chip_addrs:
+            self.femb_i2c_wrchk(femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=0x01, wrdata=0x01)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x01, wrdata=0x01)
+        # self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x01, wrdata=0x01)
+        
+        if config_3 and config_2:
+            self.cd_flg[femb_id]=False
         return True
 
     def femb_cd_gpio(self, femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f):
@@ -647,17 +672,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if dts_time_delay >= 0x7f:
                     #self.femb_powering(fembs =[])
                     print ("\033[91m" + "Error: data can't be aligned, re-initilize the clock again." + "\033[0m")
+                    
                     #self.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
                     self.wib_timing_wrap()
                     time.sleep(0.1)
                     #exit()
 
-
-    def femb_adc_chkreg(self, femb_id):
+    def femb_adc_chkreg(self, femb_id, reset_first=True):
         adcbads = []
 
         print("Check femb%d COLDADC default registers' value"%femb_id)
-        self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+        if reset_first:
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
 
         # page 1 registers
         #reg_addr1=range(0x80,0xB7)
@@ -932,7 +958,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x7, wrdata=phase0x07[chip])
             #self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x8, wrdata=0x5d        )
             #self.femb_i2c_wrchk(femb_id, chip_addr=3-(chip//4), reg_page=(chip%4+1), reg_addr=0x9, wrdata=0xc0        )
-
         self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls")
         self.adac_cali_quo[femb_id] = not self.adac_cali_quo[femb_id] 
 
@@ -1032,7 +1057,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         for femb_id in fembs:
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 = 0x00,cd2_0x27 = 0x1f)
 
-    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10 ):
+    def wib_fe_mon(self, femb_ids=[0,1,2,3], adac_pls_en = 0, rst_fe=0, mon_type=2, mon_chip=0, mon_chipchn=0, snc=0,sg0=0, sg1=0, sdf=1, sps=10, reset_sw_after=True):
         self.wib_mon_switches(dac0_sel=1,dac1_sel=1,dac2_sel=1,dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0) 
         #step 1
         #reset all FEMBs on WIB
@@ -1058,8 +1083,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             mon_str = "Temperature"
         else:
             mon_str = "Channel"
-        mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss]
-        self.wib_mon_switches()
+        mon_paras = [mon_str, mon_chip, mon_chipchn, snc, sg0, sg1, sps, adcss, femb_ids] #added femb_ids to mon_paras
+        #print(mon_paras)
+        if reset_sw_after:
+            self.wib_mon_switches()
         return mon_paras
 
     def wib_fe_dac_mon(self, femb_ids, mon_chip=0,sgp=False, sg0=0, sg1=0, vdacs=range(64), sps = 3 ): 
@@ -1213,7 +1240,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #             self.poke(0xA00C0004, wrreg) #reset spy buffer
 #             self.spybuf(fembs)
 #
-    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True): 
+    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True, synctries=100): 
         synctry = 0
         while True:
 	    #spy_rec_ticks subject to change
@@ -1313,9 +1340,10 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 if not syncsts : 
                     #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
                     synctry = synctry+1
-                    if synctry > 100:
-                        print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
-                        self.femb_powering(fembs =[])
+                    if synctry > synctries:                        
+                        if synctries >= 100: #typical use
+                            print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                            self.femb_powering(fembs =[])
                         return False
                     if synctry%10 == 0:
                         print ("perform data synchronzation again...")

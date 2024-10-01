@@ -307,17 +307,23 @@ class DAT_CFGS(WIB_CFGS):
         time.sleep(0.01)
 
     def dat_cd_gpio_chk(self, femb_id):
-        #set GPIO as output
+        #set GPIO as output  
         self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x27, wrdata=0x1f) #CD0
         self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x27, wrdata=0x1f) #CD1
         datad = {}
         cd0 = []
         cd1 = []
+        if self.cd_sel == 0:
+            cd0_addr = 0x3
+            cd1_addr = 0x2
+        else:
+            cd0_addr = 0x2
+            cd1_addr = 0x3        
         for wrv in range(32):
             wrv0 = wrv&0x1f
             wrv1 = (wrv+1)&0x1f
-            self.femb_i2c_wrchk(femb_id, chip_addr=3, reg_page=0, reg_addr=0x26, wrdata=wrv0)
-            self.femb_i2c_wrchk(femb_id, chip_addr=2, reg_page=0, reg_addr=0x26, wrdata=wrv1)
+            self.femb_i2c_wrchk(femb_id, chip_addr=cd0_addr, reg_page=0, reg_addr=0x26, wrdata=wrv0)
+            self.femb_i2c_wrchk(femb_id, chip_addr=cd1_addr, reg_page=0, reg_addr=0x26, wrdata=wrv1)
             cd0rdv = self.cdpeek(femb_id, 0xC, 0, 0x3) 
             cd1rdv = self.cdpeek(femb_id, 0xC, 0, 0x2) 
             if (wrv0 != cd0rdv):
@@ -327,26 +333,268 @@ class DAT_CFGS(WIB_CFGS):
                 cd1.append([wrv1 ,cd1rdv])
                 #print ("Error1", wrv1 ,cd1rdv)
         if (len(cd0) == 0):
-            print ("COLDATA with Addr0x03 pass GPIO check")
-            datad["CD0_Addr3_GPIO"] = [femb_id,  "PASS"]
+            #print ("COLDATA with Addr0x03 pass GPIO check")
+            print ("COLDATA 0 pass GPIO check")
+            datad["CD0_GPIO"] = [femb_id,  "PASS"]
+            #datad["CD0_Addr3_GPIO"] = [femb_id,  "PASS"]
         else:
-            datad["CD0_Addr2_GPIO"] = [femb_id,  "FAIL", cd0]
+            #datad["CD0_Addr2_GPIO"] = [femb_id,  "FAIL", cd0]
+            datad["CD0_GPIO"] = [femb_id,  "FAIL", cd0]
         if (len(cd1) == 0):
-            print ("COLDATA with Addr0x02 pass GPIO check")
-            datad["CD1_Addr2_GPIO"] = [femb_id,  "PASS"]
+            #print ("COLDATA with Addr0x02 pass GPIO check")
+            print ("COLDATA 1 pass GPIO check")
+            #datad["CD1_Addr2_GPIO"] = [femb_id,  "PASS"]
+            datad["CD1_GPIO"] = [femb_id,  "PASS"]
         else:
-            datad["CD1_Addr2_GPIO"] = [femb_id,  "FAIL", cd1]
+            #datad["CD1_Addr2_GPIO"] = [femb_id,  "FAIL", cd1]
+            datad["CD1_GPIO"] = [femb_id,  "FAIL", cd1]
         return datad
+        
 
     def dat_cd_order_swap(self, femb_id):
-        #U1 (left) as primary
+        datad = {}
+        
+        ####U1 (left) as primary
+        print("Set U1 (left) as primary")        
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
-#perform FEMB configuration, check ADC pattern data
+        
+        # set adc pattern 
+        for adc_no in range(8):
+            self.adcs_paras[adc_no][8] = 2        
 
-        #U2 (right) as primary
+        print("Configuring U1 Left with LVDS")
+        self.i2cerror = False #clear old errors
+        self.femb_cd_cfg(femb_id, config_2 = False, config_3 = True)       
+        datad["U1_Left_LVDS"] =  self.i2cerror
+        
+        print("Configuring U2 Right with CMOS")        
+        self.i2cerror = False #clear old errors
+        self.femb_cd_cfg(femb_id, config_2 = True, config_3 = False)
+        datad["U2_Right_CMOS"] = self.i2cerror      
+        
+        print("Configuring ADCs")
+        self.i2cerror = False #clear old errors     
+        self.femb_adc_cfg(femb_id)
+        datad["ADCs_U1_Left_primary"] = self.i2cerror          
+        
+        
+        
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #returns list of size 1
+        #print(len(rawdata))
+        datad["Data_U1_Left_primary"] = ([femb_id], rawdata)#), rawdata[1])
+        
+
+        ####U2 (right) as primary
+        print("Set U2 (right) as primary")
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x01) 
-#perform FEMB configuration, check ADC pattern data
 
+        print("Configuring U2 Right with LVDS")
+        self.i2cerror = False #clear old errors
+        self.femb_cd_cfg(femb_id, config_2 = False, config_3 = True)       
+        datad["U2_Right_LVDS"] =  self.i2cerror
+        
+        print("Configuring U1 Left with CMOS")        
+        self.i2cerror = False #clear old errors
+        self.femb_cd_cfg(femb_id, config_2 = True, config_3 = False)
+        datad["U1_Left_CMOS"] = self.i2cerror
+        
+        print("Configuring ADCs")
+        self.i2cerror = False #clear old errors       
+        self.femb_adc_cfg(femb_id)
+        datad["ADCs_U2_Right_primary"] = self.i2cerror 
+        
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #returns list of size 1
+        datad["Data_U2_Right_primary"] = ([femb_id], rawdata)#, rawdata[1])
+
+        ####U1 (left) as primary
+        print("Set U1 (left) as primary")        
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
+       
+        # set adc to default
+        for adc_no in range(8):
+            self.adcs_paras[adc_no][8] = 0            
+       
+        return datad
+    
+    def dat_cd_are_locked(self, femb_id, samples=100):
+        cd1_locked = True
+        cd2_locked = True
+        
+        for i in range(samples):
+            reg68 = self.femb_i2c_rd(femb_id, 0xC, 0, 68)
+            if reg68&0x1 == 0:
+                cd1_locked = False
+            if reg68&0x2 == 0:
+                cd2_locked = False
+            if not cd1_locked and not cd2_locked:
+                break
+        
+        return cd1_locked, cd2_locked, self.cd_sel
+        
+    def dat_cd_fast_cmd_chk(self, femb_id):
+        datad = {}
+        
+        print ("Sending Fast command idle")
+        self.fastcmd(cmd= 'idle')   
+        datad['idle'] = {}
+        datad['idle']['rawdata'] = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        
+    # ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
+    # ·     Sync = 1110_0010 (zero timestamp)
+        datad['edge_sync'] = {}
+        #Before Sync is sent, timestamps from two CDs are different.    
+        self.dat_cd_hard_reset(femb_id = femb_id) #hard reset in case data_align has already been run
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
+        datad['edge_sync']['rawdata_before_dataalign'] = rawdata
+        #After Sync is sent, timestampe from two CDs are exactly the same. 
+        self.data_align(self.fembs)
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
+        datad['edge_sync']['rawdata_after_dataalign'] = rawdata
+        
+        #EDGE_ACT
+        #Check that ADC is reset (test-write some registers beforehand to verify)
+        cfg_info = self.femb_adc_cfg(femb_id) #save for cd_sel info
+        self.femb_cd_edge_act([femb_id])
+        datad['edge_act'] = self.femb_adc_chkreg(femb_id=femb_id, reset_first=False)
+        
+    # Act Command register (loaded via I2C):
+        datad['ACT_idle'] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="idle")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad['ACT_idle']['rawdata'] = rawdata
+        
+        #LArASIC_pulse checked already with ASICDAC_CALI_CHK
+    # # ·     LArASIC_PULSE = 0000_0001 (act to start calibration sequence; act again to stop)
+        # datad["ACT_larasic_pls"] = {}
+        # dat.femb_adac_cali(dat.fembs[0])
+        # dat.femb_adac_cali(dat.fembs[0])
+        # #How to check if calibrated? Take data?
+        # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
+        # datad["ACT_larasic_pls"]["rawdata"] = rawdata
+        
+    # ·     Save Timestamp = 0000_0010 (one of the status register) 
+        datad["ACT_save_timestamp"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="save_timestamp")
+        timestamp_lower_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
+        timestamp_higher_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
+        timestamp_lower_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
+        timestamp_higher_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_save_timestamp"]["0x2_timestamp"] = (timestamp_higher_0x2 << 8) | timestamp_lower_0x2
+        datad["ACT_save_timestamp"]["0x3_timestamp"] = (timestamp_higher_0x3 << 8) | timestamp_lower_0x3
+        datad["ACT_save_timestamp"]["rawdata"] = ([femb_id], rawdata)
+        
+    # ·     Save Status = 0000_0011 #Save the various status bits for readout via I2C    
+        datad["ACT_save_status"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="save_status")
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
+        datad["ACT_save_status"]["0x2_regs"] = (reg23, reg24)
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        datad["ACT_save_status"]["0x3_regs"] = (reg23, reg24)
+        datad["ACT_save_status"]["CD_LOCK"] = self.dat_cd_are_locked(femb_id) #compare with reg 23 bit 6
+        
+        
+    # ·     Clear Saves = 0000_0100 #Clear the saved status bits
+        datad["ACT_clr_saves"] = {}
+        self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
+        datad["ACT_clr_saves"]["0x2_regs"] = (reg23, reg24)
+        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        datad["ACT_clr_saves"]["0x3_regs"] = (reg23, reg24)    
+        
+    # ·     Reset ColdADCs = 0000_0101
+        self.femb_adc_cfg(femb_id)
+        datad["ACT_rst_adcs"] = self.femb_adc_chkreg(femb_id) #performs reset
+
+        
+    # ·     Reset LArASICs = 0000_0110 (Reset LArASICs using the LARASIC_RESET pad)
+        datad["ACT_rst_larasics"] = {}
+        vbgrs_before = []
+        vbgrs_after = []  
+        samples = 10 
+        #Check VGBR before & after fast command
+        for i in range(50):
+            self.wib_mon_adcs() #need to reset it 50 times for some reason
+        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time       
+            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset 
+            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+            #copied from wib_fe_mon:
+            adcss = []
+            self.wib_mon_adcs() #get rid of previous result
+            for i in range(samples):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs) 
+            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]  
+            #print(mon_paras)
+            vbgrs_after.append(mon_paras)
+        datad["ACT_rst_larasics"]["VBGR_before"] = vbgrs_before
+        datad["ACT_rst_larasics"]["VBGR_after"] = vbgrs_after
+        # print(vbgrs_before)
+        # print(vbgrs_after)
+        
+        #Check pulse response before & after fast cmd
+        #config pulse - copied from top_chkout_pls_fake_timing
+        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        self.fe_flg[femb_id] = True #force fe to config
+        self.femb_cfg(femb_id, adac_pls_en )
+        self.data_align([femb_id])
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasics"]["rawdata_before"] = rawdata
+        self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasics"]["rawdata_after"] = rawdata
+        
+        
+    # ·     SPI Reset = 0000_0111 (Reset LArASICs using the SPI interface)
+        datad["ACT_rst_larasic_spi"] = {}
+        vbgrs_before = []
+        vbgrs_after = []  
+        samples = 10 
+        #Check VGBR before & after fast cmd
+        for i in range(50):
+            self.wib_mon_adcs() #need to reset it 50 times for some reason
+        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time               
+            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset        
+            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
+            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+            #copied from wib_fe_mon:
+            adcss = []
+            self.wib_mon_adcs() #get rid of previous result
+            for i in range(samples):
+                adcs = self.wib_mon_adcs()
+                adcss.append(adcs) 
+            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]
+            vbgrs_after.append(mon_paras)
+        datad["ACT_rst_larasic_spi"]["VBGR_before"] = vbgrs_before
+        datad["ACT_rst_larasic_spi"]["VBGR_after"] = vbgrs_after
+        #self.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+
+        #Check pulse response before & after fast cmd
+        #config pulse - copied from top_chkout_pls_faking_timing
+        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
+        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
+        self.fe_flg[femb_id] = True #force fe to config
+        self.femb_cfg(femb_id, adac_pls_en )
+        self.data_align([femb_id])
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasic_spi"]["rawdata_before"] = rawdata
+        self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["ACT_rst_larasic_spi"]["rawdata_after"] = rawdata
+        
+    # ·     Program LArASICs = 0000_1000 (Download the stored daisy chain bits to LArASICs using SPI)
+        datad["ACT_prm_larasics"] = self.femb_fe_cfg(femb_id)
+        
+    # ·     Relay I2C_SDA = 0000_1001 (Echo I2C_SDA_W2C back to WIB on I2C_SDA_C2W if and only if all 
+    #three I2C_Relay_Code registers are set)  → done by data alignment and cable latency measurement.    
+        return datad
+    
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
         febads = []
         adcbads = []
@@ -381,6 +629,7 @@ class DAT_CFGS(WIB_CFGS):
                     if fe_no not in febads:
                         febads.append(fe_no)
                     warn_flg = True
+
         kl = list(adcs_pwr_info.keys())
         for onekey in kl:
             if "VDDA2P5" in onekey:
@@ -1013,7 +1262,8 @@ class DAT_CFGS(WIB_CFGS):
         #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_LSB, 0xFE)
         #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xff)
 
-    def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
+    #def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
+    def dat_coldata_efuse_prm(self, femb_id=0, cd_id="CD1", efuseid=0):
         if (efuseid < 0) :
             print ("Error, EFUSE ID must be >=0")
             input ("Pause...")
@@ -1023,32 +1273,49 @@ class DAT_CFGS(WIB_CFGS):
         efusevalue=(efuseid<<1)&0xFFFFFFFF
         efuse_enable_regadr =  62
         efuse_start_regadr = 67
-        efuse_data07adr =88 
-        efuse_data0fadr =89 
-        efuse_data17adr =90 
-        efuse_data1fadr =91 
+        #if cd_sel = 0, CD1 uses LVDS & has 0x3 addr        
+        if cd_id == "CD1":
+            efuse_start_value = 0x1
+            efuse_data07adr =88 
+            efuse_data0fadr =89 
+            efuse_data17adr =90 
+            efuse_data1fadr =91 
+            if self.cd_sel == 0:
+                cd_addr = 0x3
+            else:
+                cd_addr = 0x2
+        elif cd_id == "CD2":
+            efuse_start_value = 0x10
+            efuse_data07adr =92 
+            efuse_data0fadr =93 
+            efuse_data17adr =94 
+            efuse_data1fadr =95 
+            if self.cd_sel == 0:
+                cd_addr = 0x2
+            else:
+                cd_addr = 0x3            
 
         while True:
             self.femb_cd_rst()
             time.sleep(0.1)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x8)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data07adr,  wrdata=efusevalue&0xff      )
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data0fadr, wrdata=(efusevalue>>8)&0xff )
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data17adr, wrdata=(efusevalue>>16)&0xff)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_data1fadr, wrdata=(efusevalue>>24)&0xff)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 1)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x8) #used in dat rev 0
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_data07adr,  wrdata=efusevalue&0xff      )
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_data0fadr, wrdata=(efusevalue>>8)&0xff )
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_data17adr, wrdata=(efusevalue>>16)&0xff)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_data1fadr, wrdata=(efusevalue>>24)&0xff)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_start_regadr, wrdata= efuse_start_value)
             time.sleep(0.1)
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_start_regadr, wrdata= 0)
             self.femb_cd_rst()
-            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=chip_addr, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x0)
+            self.femb_i2c_wrchk(femb_id=femb_id, chip_addr=0x0C, reg_page=0, reg_addr=efuse_enable_regadr, wrdata= 0x0)
 
-            self.femb_i2c_wrchk(0, 0x3, 0, 0x1f,1)
+            self.femb_i2c_wrchk(0, cd_addr, 0, 0x1f,1)
             time.sleep(0.01)
-            efusev18 = self.cdpeek(0, 0x3, 0, 0x18)
-            efusev19 = self.cdpeek(0, 0x3, 0, 0x19)
-            efusev1A = self.cdpeek(0, 0x3, 0, 0x1A)
-            efusev1B = self.cdpeek(0, 0x3, 0, 0x1B)
+            efusev18 = self.cdpeek(0, cd_addr, 0, 0x18)
+            efusev19 = self.cdpeek(0, cd_addr, 0, 0x19)
+            efusev1A = self.cdpeek(0, cd_addr, 0, 0x1A)
+            efusev1B = self.cdpeek(0, cd_addr, 0, 0x1B)
             efusev = efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24)
             if (efuseid&efusev) == efuseid :
                 print ("Efuse was programmed, readback value is 0x%x"%efusev)
@@ -1057,7 +1324,9 @@ class DAT_CFGS(WIB_CFGS):
                 print ("Not all bits were programmed, re-program...")
                 print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
                 break
-
+        return efusev
+        
+        
     def dat_fpga_reset(self):
         tmpi = 0
         while True:
