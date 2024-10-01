@@ -7,6 +7,7 @@
 import datetime
 import os, sys
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import json, pickle
 from utils import printItem, createDirs, dumpJson, decodeRawData, LArASIC_ana, BaseClass
@@ -364,6 +365,196 @@ class QC_PWR_analysis(BaseClass_Ana):
         for BL in ['200mV', '900mV']:
             self.Mean_ChResp_ana(BL=BL)
 
+from scipy.stats import norm
+import statistics
+class QC_PWR_StatAna():
+    """
+        The purpose of this class to statistically analyze the decoded data of the LArASIC tested using the DUNE-DAT board.
+        It calls the class QC_PWR_analysis in order to extract the current, voltage, and power for each ASIC from the json files 
+        saved by the class QC_PWR.
+        *** This analysis cannot tell us whether a chip pass or fail the test. Instead it will generate the acceptance range of
+        pass/fail selection during the QC. ***
+
+    """
+    def __init__(self, root_path: str, output_path: str):
+        self.root_path = root_path
+        self.output_path = output_path
+
+    def getItem(self, item='I'):
+        unit = ''
+        if item=='I':
+            unit = 'mA/LArASIC'
+        elif item=='P':
+            unit = 'mW/LArASIC'
+        elif item=='V':
+            unit = 'V/LArASIC'
+        # unit = 'mA' # this unit may need to be manually changed if the unit the data source is not mA
+        I_vdda, I_vddo, I_vddp = [], [], []
+        list_chipID = os.listdir(self.root_path)
+        for chipID in list_chipID:
+            pwr_ana = QC_PWR_analysis(root_path=self.root_path, chipID = chipID, output_path='')
+            tmpI_vdda, tmpI_vddo, tmpI_vddp = dict(), dict(), dict()
+            if item=='I':
+                tmpI_vdda, tmpI_vddo, tmpI_vddp = pwr_ana.get_I()
+            elif item=='V':
+                tmpI_vdda, tmpI_vddo, tmpI_vddp = pwr_ana.get_V()
+            elif item=='P':
+                tmpI_vdda, tmpI_vddo, tmpI_vddp, _ = pwr_ana.get_P()
+            I_vdda.append(tmpI_vdda['data'])
+            I_vddo.append(tmpI_vddo['data'])
+            I_vddp.append(tmpI_vddp['data'])
+        # print(I_vdda[0].keys())
+        # print(len(list_chipID))
+
+        vdda_allcfg = {k: [] for k in I_vdda[0].keys()}
+        vddo_allcfg = {k: [] for k in I_vddo[0].keys()}
+        vddp_allcfg = {k: [] for k in I_vddp[0].keys()}
+        # print(vdda_allcfg)
+        for I in I_vdda:
+            for k, v in I.items():
+                vdda_allcfg[k].append(v)
+        for I in I_vddo:
+            for k, v in I.items():
+                vddo_allcfg[k].append(v)
+        for I in I_vddp:
+            for k, v in I.items():
+                vddp_allcfg[k].append(v)
+
+        # Analysis of VDDA
+        outdata_vdda = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        for k, v in vdda_allcfg.items():
+            # print(k)
+            mean, std = statistics.mean(v), statistics.stdev(v)
+            # print("MEAN = {}, STD = {}".format(mean, std))
+            xmin, xmax = np.min(v), np.max(v)
+            # Get rid of values outside of the 3sigma range
+            for i in range(10):
+                posMax = np.where(v==xmax)[0]
+                posMin = np.where(v==xmin)[0]
+                if xmax > 3*std:
+                    del v[posMax[0]]
+                    # for j in posMax:
+                    #     del v[j]
+                if xmin < 3*std:
+                    del v[posMin[0]]
+                    # for j in posMin:
+                    #     del v[j]
+                xmin, xmax = np.min(v), np.max(v)
+                mean, std = statistics.mean(v), statistics.stdev(v) 
+            mean, std = np.round(mean, 4), np.round(std, 4)
+            # print("MEAN = {}, STD = {}".format(mean, std))               
+            # x = np.linspace(xmin, xmax, len(v))
+            # p = norm.pdf(x, mean, std)
+            # plt.hist(v, bins=len(v), density=True)
+            # plt.plot(x, p, 'r')
+            # plt.show()
+            # break
+            print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
+            outdata_vdda['testItem'].append(item + ' ({})'.format(unit))
+            outdata_vdda['cfgs'].append(k)
+            outdata_vdda['vdd_cfgs'].append('vdda')
+            outdata_vdda['mean'].append(mean)
+            outdata_vdda['std'].append(std)
+
+        # print(outdata_vdda)
+        outdata_vdda_df = pd.DataFrame(outdata_vdda)
+        # print(outdata_vdda_df)
+
+        # Analysis of VDDO
+        outdata_vddo = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        for k, v in vddo_allcfg.items():
+            # print(k)
+            mean, std = statistics.mean(v), statistics.stdev(v)
+            # print("MEAN = {}, STD = {}".format(mean, std))
+            xmin, xmax = np.min(v), np.max(v)
+            # Get rid of values outside of the 3sigma range
+            for i in range(10):
+                posMax = np.where(v==xmax)[0]
+                posMin = np.where(v==xmin)[0]
+                if xmax > 3*std:
+                    del v[posMax[0]]
+                    # for j in posMax:
+                    #     del v[j]
+                if xmin < 3*std:
+                    del v[posMin[0]]
+                    # for j in posMin:
+                    #     del v[j]
+                xmin, xmax = np.min(v), np.max(v)
+                mean, std = statistics.mean(v), statistics.stdev(v) 
+            mean, std = np.round(mean, 4), np.round(std, 4)
+            # print("MEAN = {}, STD = {}".format(mean, std))               
+            # x = np.linspace(xmin, xmax, len(v))
+            # p = norm.pdf(x, mean, std)
+            # plt.hist(v, bins=len(v), density=True)
+            # plt.plot(x, p, 'r')
+            # plt.show()
+            # break
+            print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
+            outdata_vddo['testItem'].append(item + ' ({})'.format(unit))
+            outdata_vddo['cfgs'].append(k)
+            outdata_vddo['vdd_cfgs'].append('vddo')
+            outdata_vddo['mean'].append(mean)
+            outdata_vddo['std'].append(std)
+
+        # print(outdata_vddo)
+        outdata_vddo_df = pd.DataFrame(outdata_vddo)
+        # print(outdata_vddo_df)
+        
+        # Analysis of VDDP
+        outdata_vddp = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        for k, v in vddp_allcfg.items():
+            # print(k)
+            mean, std = statistics.mean(v), statistics.stdev(v)
+            # print("MEAN = {}, STD = {}".format(mean, std))
+            xmin, xmax = np.min(v), np.max(v)
+            # Get rid of values outside of the 3sigma range
+            for i in range(10):
+                posMax = np.where(v==xmax)[0]
+                posMin = np.where(v==xmin)[0]
+                if xmax > 3*std:
+                    del v[posMax[0]]
+                    # for j in posMax:
+                    #     del v[j]
+                if xmin < 3*std:
+                    del v[posMin[0]]
+                    # for j in posMin:
+                    #     del v[j]
+                xmin, xmax = np.min(v), np.max(v)
+                mean, std = statistics.mean(v), statistics.stdev(v) 
+            mean, std = np.round(mean, 4), np.round(std, 4)
+            # print("MEAN = {}, STD = {}".format(mean, std))               
+            # x = np.linspace(xmin, xmax, len(v))
+            # p = norm.pdf(x, mean, std)
+            # plt.hist(v, bins=len(v), density=True)
+            # plt.plot(x, p, 'r')
+            # plt.show()
+            # break
+            # print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
+            outdata_vddp['testItem'].append(item + ' ({})'.format(unit))
+            outdata_vddp['cfgs'].append(k)
+            outdata_vddp['vdd_cfgs'].append('vddp')
+            outdata_vddp['mean'].append(mean)
+            outdata_vddp['std'].append(std)
+
+        # print(outdata_vddp)
+        outdata_vddp_df = pd.DataFrame(outdata_vddp)
+        # print(outdata_vddp_df)
+
+        # CONCATENATE THE DATAFRAMES ALONG THE AXIS=0
+        outdf = pd.concat([outdata_vdda_df, outdata_vddo_df, outdata_vddp_df], axis=0, ignore_index=True)
+        # print(outdf)
+        # SORT THE CONFIGURATION COLUMN SO THAT WE CAN SEE VDDA, VDDO, VDDP ON TOP OF EACH OTHER IN THE DATAFRAME
+        outdf.sort_values(by=['cfgs'], axis=0, inplace=True, ignore_index=True)
+        # print(outdf)
+        return outdf
+
+    def run_Ana(self):
+        outdf = pd.DataFrame()
+        for item in ['I', 'V', 'P']:
+            df = self.getItem(item=item)
+            outdf = pd.concat([df, outdf], axis=0, ignore_index=True)
+        outdf.to_csv('/'.join([self.output_path, 'StatAnaPWR.csv']), index=False)
+
 if __name__ =='__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
     # root_path = '../../B010T0004'
@@ -383,9 +574,12 @@ if __name__ =='__main__':
     #     sys.exit()
     root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     output_path = '../../Analysis'
-    list_chipID = os.listdir(root_path)
-    for chipID in list_chipID:
-        pwr_ana = QC_PWR_analysis(root_path=root_path, chipID=chipID, output_path=output_path)
-        pwr_ana.runAnalysis()
-        # pwr_ana.Mean_ChResp_ana(BL='900mV')
-        # sys.exit()
+    # list_chipID = os.listdir(root_path)
+    # for chipID in list_chipID:
+    #     pwr_ana = QC_PWR_analysis(root_path=root_path, chipID=chipID, output_path=output_path)
+    #     pwr_ana.runAnalysis()
+    #     # pwr_ana.Mean_ChResp_ana(BL='900mV')
+    #     # sys.exit()
+    pwr_ana_stat = QC_PWR_StatAna(root_path=root_path, output_path=output_path)
+    # pwr_ana_stat.getItem(item='I')
+    pwr_ana_stat.run_Ana()
