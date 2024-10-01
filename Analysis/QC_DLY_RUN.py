@@ -80,6 +80,39 @@ class QC_DLY_RUN(BaseClass):
                     pedestal = chipdata['CH{}'.format(chn)]['pedestal']
                     rms = chipdata['CH{}'.format(chn)]['rms']
                     organized_data[FE_ID][param]['CH{}'.format(chn)] = {'data': chdata, 'pedestal': pedestal, 'rms': rms}
+        newdata = dict()
+        for ichip in range(8):
+            FE_ID = self.logs_dict['FE{}'.format(ichip)]
+            newdata[FE_ID] = dict()
+            onechipdata = {'CH{}'.format(ich): [] for ich in range(16)}
+            phases = organized_data[FE_ID].keys()
+            # group data by channel
+            for phase in phases:
+                for ich in range(16):
+                    CH = 'CH{}'.format(ich)
+                    onechipdata[CH].append(organized_data[FE_ID][phase][CH])
+            # merge phases for each channel
+            for ich in range(16):
+                # tmpd = np.array([np.array(d['data']) for ph, d in enumerate(onechipdata['CH{}'.format(ich)])])
+                tmpd = np.array([np.array(onechipdata['CH{}'.format(ich)][i]['data']) for i in range(31, -1, -1)])
+                print(tmpd.shape)
+                transpose_tmpd = np.transpose(tmpd) # transpose the previous matrix
+                # transpose_tmpd = tmpd
+                print(transpose_tmpd.shape)
+                print(len(transpose_tmpd[0, :]))
+                print(transpose_tmpd[0, :])
+                tmpresult = transpose_tmpd.flatten() # 2d array --> 1d vector
+                print(len(tmpresult)==32*1000)
+                CHnumber = 'CH{}'.format(ich)
+                newdata[FE_ID][CHnumber] = tmpresult
+                plt.figure()
+                x = [i for i in range(len(newdata[FE_ID][CHnumber]))]
+                # plt.scatter(x=x, y=newdata[FE_ID][CHnumber])
+                plt.plot(newdata[FE_ID][CHnumber], marker='*')
+                plt.show()
+                sys.exit()
+            print(onechipdata['CH0'][0].keys())
+            sys.exit()
         return organized_data
     
     def getAmplitudes(self, organizedData: dict):
@@ -136,6 +169,13 @@ class QC_DLY_RUN(BaseClass):
     def run_DLY_RUN(self):
         decodedData = self.decode()
         organizedData = self.organizeData(decodedData=decodedData)
+        print(type(organizedData))
+        print(organizedData.keys())
+        print(type(organizedData['20240703122319']))
+        print(organizedData['20240703122319'].keys())
+        print(type(organizedData['20240703122319']['Phase0000_freq1000']))
+        print(organizedData['20240703122319']['Phase0000_freq1000'].keys())
+        sys.exit()
         self.getAmplitudes(organizedData=organizedData)
         if self.generateWf:
             self.plotWaveforms(organizedData=organizedData)
