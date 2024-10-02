@@ -292,6 +292,13 @@ class BaseClass:
         tmpdata_dir = os.listdir('/'.join([root_path, data_dir]))[0]
         self.input_dir = '/'.join([root_path, data_dir, tmpdata_dir])
         self.filename = QC_filename
+        self.ERROR = False
+        # does self.filename exist in the folder??
+        if self.filename in os.listdir(self.input_dir):
+            pass
+        else:
+            self.ERROR = True
+            return
         splitted_filename = self.filename.split('_')
         if '47.bin' in splitted_filename:
             self.suffixName = splitted_filename[-2] + '_47'
@@ -323,6 +330,9 @@ class BaseClass:
     
     def __openLog__(self):
         # Update the internal logs of each test item -> Use the timestamp as an ID for each FE ASIC
+        if 'QC.log' not in os.listdir(self.input_dir):
+            self.ERROR = True
+            return
         with open('/'.join([self.input_dir, 'QC.log']), 'rb') as f:
             logs = pickle.load(f)
         RTS_IDs = logs['RTS_IDs']
@@ -348,10 +358,16 @@ class BaseClass_Ana:
         try:
             os.mkdir(self.output_dir)
         except OSError:
-            print("Folder already exists...")
-            
+            # print("Folder already exists...")
+            pass
+        self.ERROR = False # to check if the json file exists    
         self.item_to_ana = item
-        self.filename = [f for f in os.listdir('/'.join([self.root_path, self.chipID, self.item_to_ana])) if '.json' in f][0]
+        try:
+            self.filename = [f for f in os.listdir('/'.join([self.root_path, self.chipID, self.item_to_ana])) if '.json' in f][0]
+        except:
+            print('No file {}.json for chip = {}'.format(self.item_to_ana, chipID))
+            self.ERROR = True
+            return
         self.data, self.params = self.read_json()
 
     def read_json(self):
