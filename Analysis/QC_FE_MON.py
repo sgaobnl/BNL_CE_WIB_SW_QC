@@ -14,6 +14,8 @@ class FE_MON(BaseClass):
         self.tms = 3
         printItem(item="FE monitoring")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_MON.bin', tms=self.tms)
+        if self.ERROR:
+            return
         self.mon_params = self.params
         # tmpdata_dir = os.listdir('/'.join([root_path, data_dir]))[0]
         # self.qc_filename = "QC_MON.bin"
@@ -165,6 +167,8 @@ class FE_MON(BaseClass):
         return OUT_dict
     
     def decodeFE_MON(self):
+        if self.ERROR:
+            return
         logs = {
             "date": self.logs_dict['date'],
             "testsite": self.logs_dict['testsite'],
