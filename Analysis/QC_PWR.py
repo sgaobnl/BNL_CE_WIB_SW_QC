@@ -20,6 +20,8 @@ class QC_PWR(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
         printItem('FE power consumption measurement')
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=1, QC_filename='QC_PWR.bin')
+        if self.ERROR:
+            return
         #
         self.param_meanings = {
             'SDF0': 'seBuffOFF',
@@ -59,6 +61,8 @@ class QC_PWR(BaseClass):
         return data_by_config
 
     def decode_FE_PWR(self, getWaveforms=True):
+        if self.ERROR:
+            return
         print('----> Power consumption')
         data_by_config = self.getPowerConsumption()
 
@@ -358,6 +362,8 @@ class QC_PWR_analysis(BaseClass_Ana):
             # sys.exit()
 
     def runAnalysis(self):
+        if self.ERROR:
+            return
         self.PWR_consumption_ana()
         chresp_items = ['pedestal', 'rms']
         for item_to_plot in chresp_items:
@@ -379,6 +385,11 @@ class QC_PWR_StatAna():
     def __init__(self, root_path: str, output_path: str):
         self.root_path = root_path
         self.output_path = output_path
+        self.output_path_fig = '/'.join([output_path, 'fig'])
+        try:
+            os.mkdir(self.output_path_fig)
+        except:
+            pass
 
     def getItem(self, item='I'):
         unit = ''
@@ -393,6 +404,8 @@ class QC_PWR_StatAna():
         list_chipID = os.listdir(self.root_path)
         for chipID in list_chipID:
             pwr_ana = QC_PWR_analysis(root_path=self.root_path, chipID = chipID, output_path='')
+            if pwr_ana.ERROR:
+                continue
             tmpI_vdda, tmpI_vddo, tmpI_vddp = dict(), dict(), dict()
             if item=='I':
                 tmpI_vdda, tmpI_vddo, tmpI_vddp = pwr_ana.get_I()
@@ -421,47 +434,54 @@ class QC_PWR_StatAna():
                 vddp_allcfg[k].append(v)
 
         # Analysis of VDDA
-        outdata_vdda = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        outdata_vdda = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': [], 'min': [], 'max': []}
         for k, v in vdda_allcfg.items():
             # print(k)
             mean, std = statistics.mean(v), statistics.stdev(v)
             # print("MEAN = {}, STD = {}".format(mean, std))
             xmin, xmax = np.min(v), np.max(v)
             # Get rid of values outside of the 3sigma range
-            for i in range(10):
+            for i in range(1):
                 posMax = np.where(v==xmax)[0]
                 posMin = np.where(v==xmin)[0]
-                if xmax > 3*std:
+                if xmax > mean+3*std:
                     del v[posMax[0]]
                     # for j in posMax:
                     #     del v[j]
-                if xmin < 3*std:
+                if xmin < mean-3*std:
                     del v[posMin[0]]
                     # for j in posMin:
                     #     del v[j]
                 xmin, xmax = np.min(v), np.max(v)
                 mean, std = statistics.mean(v), statistics.stdev(v) 
             mean, std = np.round(mean, 4), np.round(std, 4)
+            xmin, xmax = np.round(xmin, 4), np.round(xmax, 4)
             # print("MEAN = {}, STD = {}".format(mean, std))               
-            # x = np.linspace(xmin, xmax, len(v))
-            # p = norm.pdf(x, mean, std)
-            # plt.hist(v, bins=len(v), density=True)
-            # plt.plot(x, p, 'r')
+            x = np.linspace(xmin, xmax, len(v))
+            p = norm.pdf(x, mean, std)
+            plt.figure()
+            plt.hist(v, bins=int(len(v)/2), density=True)
+            plt.plot(x, p, 'r', label='mean = {}, std = {}'.format(mean, std))
+            plt.xlabel('{}_VDDA ({})'.format(item, unit));plt.ylabel('#')
             # plt.show()
-            # break
-            print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
+            plt.legend()
+            plt.savefig('/'.join([self.output_path_fig, 'QC_PWR_{}_{}_vddp.png'.format(k, item)]))
+            plt.close()
+            # print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
             outdata_vdda['testItem'].append(item + ' ({})'.format(unit))
             outdata_vdda['cfgs'].append(k)
             outdata_vdda['vdd_cfgs'].append('vdda')
             outdata_vdda['mean'].append(mean)
             outdata_vdda['std'].append(std)
+            outdata_vdda['min'].append(xmin)
+            outdata_vdda['max'].append(xmax)
 
         # print(outdata_vdda)
         outdata_vdda_df = pd.DataFrame(outdata_vdda)
         # print(outdata_vdda_df)
 
         # Analysis of VDDO
-        outdata_vddo = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        outdata_vddo = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': [], 'min': [], 'max': []}
         for k, v in vddo_allcfg.items():
             # print(k)
             mean, std = statistics.mean(v), statistics.stdev(v)
@@ -471,11 +491,11 @@ class QC_PWR_StatAna():
             for i in range(10):
                 posMax = np.where(v==xmax)[0]
                 posMin = np.where(v==xmin)[0]
-                if xmax > 3*std:
+                if xmax > mean+3*std:
                     del v[posMax[0]]
                     # for j in posMax:
                     #     del v[j]
-                if xmin < 3*std:
+                if xmin < mean-3*std:
                     del v[posMin[0]]
                     # for j in posMin:
                     #     del v[j]
@@ -483,25 +503,31 @@ class QC_PWR_StatAna():
                 mean, std = statistics.mean(v), statistics.stdev(v) 
             mean, std = np.round(mean, 4), np.round(std, 4)
             # print("MEAN = {}, STD = {}".format(mean, std))               
-            # x = np.linspace(xmin, xmax, len(v))
-            # p = norm.pdf(x, mean, std)
-            # plt.hist(v, bins=len(v), density=True)
-            # plt.plot(x, p, 'r')
+            x = np.linspace(xmin, xmax, len(v))
+            p = norm.pdf(x, mean, std)
+            plt.figure()
+            plt.hist(v, bins=int(len(v)/2), density=True)
+            plt.plot(x, p, 'r', label='mean = {}, std = {}'.format(mean, std))
+            plt.xlabel('{}_VDDO ({})'.format(item, unit));plt.ylabel('#')
             # plt.show()
-            # break
-            print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
+            plt.legend()
+            plt.savefig('/'.join([self.output_path_fig, 'QC_PWR_{}_{}_vddp.png'.format(k, item)]))
+            plt.close()
+            # print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
             outdata_vddo['testItem'].append(item + ' ({})'.format(unit))
             outdata_vddo['cfgs'].append(k)
             outdata_vddo['vdd_cfgs'].append('vddo')
             outdata_vddo['mean'].append(mean)
             outdata_vddo['std'].append(std)
+            outdata_vddo['min'].append(xmin)
+            outdata_vddo['max'].append(xmax)
 
         # print(outdata_vddo)
         outdata_vddo_df = pd.DataFrame(outdata_vddo)
         # print(outdata_vddo_df)
         
         # Analysis of VDDP
-        outdata_vddp = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': []}
+        outdata_vddp = {'testItem': [], 'cfgs': [], 'vdd_cfgs': [], 'mean': [], 'std': [], 'min': [], 'max': []}
         for k, v in vddp_allcfg.items():
             # print(k)
             mean, std = statistics.mean(v), statistics.stdev(v)
@@ -511,11 +537,11 @@ class QC_PWR_StatAna():
             for i in range(10):
                 posMax = np.where(v==xmax)[0]
                 posMin = np.where(v==xmin)[0]
-                if xmax > 3*std:
+                if xmax > mean+3*std:
                     del v[posMax[0]]
                     # for j in posMax:
                     #     del v[j]
-                if xmin < 3*std:
+                if xmin < mean-3*std:
                     del v[posMin[0]]
                     # for j in posMin:
                     #     del v[j]
@@ -523,18 +549,24 @@ class QC_PWR_StatAna():
                 mean, std = statistics.mean(v), statistics.stdev(v) 
             mean, std = np.round(mean, 4), np.round(std, 4)
             # print("MEAN = {}, STD = {}".format(mean, std))               
-            # x = np.linspace(xmin, xmax, len(v))
-            # p = norm.pdf(x, mean, std)
-            # plt.hist(v, bins=len(v), density=True)
-            # plt.plot(x, p, 'r')
+            x = np.linspace(xmin, xmax, len(v))
+            p = norm.pdf(x, mean, std)
+            plt.figure()
+            plt.hist(v, bins=int(len(v)/2), density=True)
+            plt.plot(x, p, 'r', label='mean = {}, std = {}'.format(mean, std))
+            plt.xlabel('{}_VDDP ({})'.format(item, unit));plt.ylabel('#')
             # plt.show()
-            # break
+            plt.legend()
+            plt.savefig('/'.join([self.output_path_fig, 'QC_PWR_{}_{}_vddp.png'.format(k, item)]))
+            plt.close()
             # print("{} : Mean = {} mA, STD = {}".format(k, mean, std))
             outdata_vddp['testItem'].append(item + ' ({})'.format(unit))
             outdata_vddp['cfgs'].append(k)
             outdata_vddp['vdd_cfgs'].append('vddp')
             outdata_vddp['mean'].append(mean)
             outdata_vddp['std'].append(std)
+            outdata_vddp['min'].append(xmin)
+            outdata_vddp['max'].append(xmax)
 
         # print(outdata_vddp)
         outdata_vddp_df = pd.DataFrame(outdata_vddp)
@@ -550,10 +582,16 @@ class QC_PWR_StatAna():
 
     def run_Ana(self):
         outdf = pd.DataFrame()
+        SKIP = False
         for item in ['I', 'V', 'P']:
             df = self.getItem(item=item)
             outdf = pd.concat([df, outdf], axis=0, ignore_index=True)
-        outdf.to_csv('/'.join([self.output_path, 'StatAnaPWR.csv']), index=False)
+            if outdf.shape == (0,0):
+                SKIP = True
+                break
+            # break
+        if not SKIP:
+            outdf.to_csv('/'.join([self.output_path, 'StatAnaPWR.csv']), index=False)
 
 if __name__ =='__main__':
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'
@@ -574,12 +612,12 @@ if __name__ =='__main__':
     #     sys.exit()
     root_path = '../../Analyzed_BNL_CE_WIB_SW_QC'
     output_path = '../../Analysis'
-    # list_chipID = os.listdir(root_path)
-    # for chipID in list_chipID:
-    #     pwr_ana = QC_PWR_analysis(root_path=root_path, chipID=chipID, output_path=output_path)
-    #     pwr_ana.runAnalysis()
+    list_chipID = os.listdir(root_path)
+    for chipID in list_chipID:
+        pwr_ana = QC_PWR_analysis(root_path=root_path, chipID=chipID, output_path=output_path)
+        pwr_ana.runAnalysis()
     #     # pwr_ana.Mean_ChResp_ana(BL='900mV')
     #     # sys.exit()
-    pwr_ana_stat = QC_PWR_StatAna(root_path=root_path, output_path=output_path)
-    # pwr_ana_stat.getItem(item='I')
-    pwr_ana_stat.run_Ana()
+    # pwr_ana_stat = QC_PWR_StatAna(root_path=root_path, output_path=output_path)
+    # # pwr_ana_stat.getItem(item='I')
+    # pwr_ana_stat.run_Ana()
