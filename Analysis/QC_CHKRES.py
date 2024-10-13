@@ -18,6 +18,8 @@ class QC_CHKRES(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_dir: str):
         printItem("FE response measurement")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=2, QC_filename='QC_CHKRES.bin')
+        if self.ERROR:
+            return
         self.period = 500
 
     def __getConfig_dict(self, list_params: list):

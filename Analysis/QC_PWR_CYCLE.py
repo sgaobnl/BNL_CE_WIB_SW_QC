@@ -12,6 +12,8 @@ class PWR_CYCLE(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
         printItem('FE power cycling')
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_PWR_CYCLE.bin', tms=4)
+        if self.ERROR:
+            return
         self.period = 500
 
     def decode_pwrCons(self, pwrCons_data: dict):
@@ -76,6 +78,8 @@ class PWR_CYCLE(BaseClass):
         return PwrCycle_data
         
     def decode_PwrCycle(self):
+        if self.ERROR:
+            return
         N_pwrcycle = 8
         logs = {
             "date": self.logs_dict['date'],

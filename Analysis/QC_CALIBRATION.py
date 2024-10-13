@@ -37,6 +37,8 @@ class QC_CALI(BaseClass):
             self.period = 1000
         self.generateWf = generateWf
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=tms, QC_filename=QC_filename, generateWaveForm=self.generateWf)
+        if self.ERROR:
+            return
             
 
     def getCFG(self):
@@ -216,6 +218,8 @@ class QC_CALI(BaseClass):
                     plt.close()
 
     def runASICDAC_cali(self, saveWfData=False):
+        if self.ERROR:
+            return
         organizedData = self.organizeData(saveWaveformData=saveWfData)
         if self.generateWf:
             self.plotWaveForms(organizedData=organizedData)

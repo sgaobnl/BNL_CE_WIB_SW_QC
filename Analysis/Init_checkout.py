@@ -17,6 +17,8 @@ class QC_INIT_CHECK(BaseClass):
         printItem('Initialization checkout')
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_dir, tms=0, QC_filename='QC_INIT_CHK.bin')
         self.out_dict = dict()
+        if self.ERROR:
+            return
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             self.out_dict[FE_ID] = {
@@ -118,6 +120,8 @@ class QC_INIT_CHECK(BaseClass):
                             'isPosPeak': True/False
                             }
         '''
+        if self.ERROR:
+            return
         range_peds, range_rms, range_pulseAmp, range_V = [], [], [], []
         for param in self.params:
             if param=="FE_PWRON":

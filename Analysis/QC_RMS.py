@@ -13,6 +13,8 @@ class RMS(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str):
         printItem("FE noise measurement")
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, QC_filename='QC_RMS.bin', tms=5)
+        if self.ERROR:
+            return
         self.CFG_datasheet = self.getCFGs()
         self.period = 500
     
@@ -60,6 +62,8 @@ class RMS(BaseClass):
         return out_dict
 
     def decodeRMS(self):
+        if self.ERROR:
+            return
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for config in self.params:
             print("configuration : {}".format(config))
