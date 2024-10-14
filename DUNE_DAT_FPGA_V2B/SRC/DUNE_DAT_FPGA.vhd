@@ -766,10 +766,10 @@ CD1_EFUSE_start						<= reg67_p(0);		 -- bit (0) 0->1 will start EFUSE programmi
 CD2_EFUSE_start						<= reg67_p(4);		 -- bit (0) 0->1 will start EFUSE programming	
 
 
-reg68_p(0) <= CD1_LOCK_OUT;
-reg68_p(1) <= CD2_LOCK_OUT;
-reg68_p(2) <= CD1_LOCK;
-reg68_p(3) <= CD2_LOCK;
+--reg68_p(0) <= CD1_LOCK_OUT;
+--reg68_p(1) <= CD2_LOCK_OUT;
+--reg68_p(2) <= CD1_LOCK;
+--reg68_p(3) <= CD2_LOCK;
 
 reg_adc(7 downto 0)   <= reg72_p;
 reg_adc(15 downto 8)  <= reg73_p;
@@ -908,44 +908,61 @@ ro_cnt <= 	ro_cnt_arr(0) when SOCKET_RDOUT_SEL = b"000" else
 				ro_cnt_arr(7) when SOCKET_RDOUT_SEL = b"111" else 
 				(others => '0');
 
---CD_LOCK signal stretcher
---When CD1/2_LOCK is low, prolong CD1/2_LOCK_OUT by 100 clock cycles
---so that the low-ness can be read by software
-cd_lock_stretcher : process(CLK_62_5MHz, reset)
---	variable counter1 : integer range 0 to 100;
---	variable counter2 : integer range 0 to 100;
-begin
-	if (reset = '1') then	
-		CD1_LOCK_OUT <= CD1_LOCK;
-		CD2_LOCK_OUT <= CD2_LOCK;
-		counter1 <= 0;
-		counter2 <= 0;
-	elsif (CLK_62_5MHz'event  AND  CLK_62_5MHz = '1') then	
-		if (CD1_LOCK = '0') then
-			CD1_LOCK_OUT <= '0';
-			counter1 <= 0;
-		else
-			counter1 <= counter1 + 1;
-			if (counter1 = 100) then
-				CD1_LOCK_OUT <= CD1_LOCK;	
-			end if;					
-		end if;
-		
-		if (CD2_LOCK = '0') then
-			CD2_LOCK_OUT <= '0';
-			counter2 <= 0;
-		else
-			counter2 <= counter2 + 1;
-			if (counter2 = 100) then
-				CD2_LOCK_OUT <= CD2_LOCK;	
-			end if;			
-			
-		end if;		
-		
-		
-		
-	end if;
-end process cd_lock_stretcher;
+
+CD1_LOCK_inst: ENTITY WORK.CD_LOCK_CNT 
+  PORT MAP(
+	 clk  =>    clk_62_5Mhz, --?
+	 reset    => reg69_p(0),
+	 lock_in    => CD1_LOCK,
+	 lock_cnt   =>  reg68_p(3 downto 0) 
+);
+
+CD2_LOCK_inst: ENTITY WORK.CD_LOCK_CNT 
+  PORT MAP(
+	 clk  =>    clk_62_5Mhz, --?
+	 reset    => reg69_p(0),
+	 lock_in    => CD2_LOCK,
+	 lock_cnt   =>  reg68_p(7 downto 4) 
+);
+
+----CD_LOCK signal stretcher
+----When CD1/2_LOCK is low, prolong CD1/2_LOCK_OUT by 100 clock cycles
+----so that the low-ness can be read by software
+--cd_lock_stretcher : process(CLK_62_5MHz, reset)
+----	variable counter1 : integer range 0 to 100;
+----	variable counter2 : integer range 0 to 100;
+--begin
+--	if (reset = '1') then	
+--		CD1_LOCK_OUT <= CD1_LOCK;
+--		CD2_LOCK_OUT <= CD2_LOCK;
+--		counter1 <= 0;
+--		counter2 <= 0;
+--	elsif (CLK_62_5MHz'event  AND  CLK_62_5MHz = '1') then	
+--		if (CD1_LOCK = '0') then
+--			CD1_LOCK_OUT <= '0';
+--			counter1 <= 0;
+--		else
+--			counter1 <= counter1 + 1;
+--			if (counter1 = 100) then
+--				CD1_LOCK_OUT <= CD1_LOCK;	
+--			end if;					
+--		end if;
+--		
+--		if (CD2_LOCK = '0') then
+--			CD2_LOCK_OUT <= '0';
+--			counter2 <= 0;
+--		else
+--			counter2 <= counter2 + 1;
+--			if (counter2 = 100) then
+--				CD2_LOCK_OUT <= CD2_LOCK;	
+--			end if;			
+--			
+--		end if;		
+--		
+--		
+--		
+--	end if;
+--end process cd_lock_stretcher;
 
 sys_rst_inst : entity work.sys_rst
 PORT MAP(	clk 			=> CLK_50MHz,

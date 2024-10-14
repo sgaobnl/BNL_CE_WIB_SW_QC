@@ -60,7 +60,7 @@ ARCHITECTURE behavior OF EFUSE_COLDATA IS
   signal state: state_type;
   
   signal	CLK_CNT			: STD_LOGIC_VECTOR(15 downto 0);
-  signal EFUSE_DATA_s	: STD_LOGIC_VECTOR(31 downto 0);  -- ONLY (bits 31..1) will be programmed 
+  signal EFUSE_DATA_s	: STD_LOGIC_VECTOR(31 downto 0);  
   signal	start_S1			: STD_LOGIC;  
   signal	start_S2			: STD_LOGIC;  
   signal BIT_CNT		   : STD_LOGIC_VECTOR(7 downto 0);
@@ -105,7 +105,8 @@ end process;
 			CLK_CNT 		<=	x"0000";
 			if (start_S1 = '1' AND start_S2 = '0' ) then
 				busy         	<= '1';
-				EFUSE_DATA_s	<= EFUSE_DATA(31 downto 1) & '1';		
+				--EFUSE_DATA_s	<= EFUSE_DATA(31 downto 1) & '1';	
+				EFUSE_DATA_s	<= EFUSE_DATA; --10142024, all bits be programmed
 				EFUSE_DIN 		<= '0';  -- MISC_U1_IO(1)
 				EFUSE_PGM		<= '1';  -- MISC_U1_IO(2)
 				EFUSE_VDDQ		<= '1';  -- MISC_U1_IO(4) 			

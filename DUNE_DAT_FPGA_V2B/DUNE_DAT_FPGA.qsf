@@ -497,6 +497,7 @@ set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
 set_global_assignment -name FLOW_ENABLE_RTL_VIEWER ON
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name USE_SIGNALTAP_FILE stp1.stp
+set_global_assignment -name VHDL_FILE SRC/CD_Lock_cnt.vhd
 set_global_assignment -name VHDL_FILE DAT_PLL2.vhd
 set_global_assignment -name QIP_FILE DAT_PLL2.qip
 set_global_assignment -name SOURCE_FILE DAT_PLL2.cmp
