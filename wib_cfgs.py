@@ -322,7 +322,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C0004,rdreg&0xfffBffff) #set bit22 to 0
         time.sleep(0.001)
 
-    def wib_pls_gen(self, fembs=[0,1,2,3], cp_period=500, cp_phase=0, cp_high_time=500*16/2):
+    def wib_pls_gen(self, fembs=[0,1,2,3], cp_period=500, cp_phase=0, cp_high_time=500*16/2, inj_cal_pulse_sw=0 ):
         if cp_period <= 1:
             cp_period = 1
         cp_period = cp_period - 1
@@ -338,15 +338,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         
         rdreg = self.peek(0xA00C003C)
         wrreg = (rdreg&0xffff803f)
-        for fembid in fembs:
-            if fembid == 0:
-                wrreg = wrreg | 0x800
-            if fembid == 1:
-                wrreg = wrreg | 0x1000
-            if fembid == 2:
-                wrreg = wrreg | 0x2000
-            if fembid == 3:
-                wrreg = wrreg | 0x4000
+        if inj_cal_pulse_sw == 0:
+            for fembid in fembs:
+                if fembid == 0:
+                    wrreg = wrreg | 0x800
+                if fembid == 1:
+                    wrreg = wrreg | 0x1000
+                if fembid == 2:
+                    wrreg = wrreg | 0x2000
+                if fembid == 3:
+                    wrreg = wrreg | 0x4000
+        else:
+            wrreg = wrreg | 0x8000
         wrreg = wrreg|((cp_phase&0x1f)<<6)
         self.poke(0xA00C003C, wrreg)
         for fembid in fembs:
@@ -482,7 +485,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                        defreg = reg_dval0[nreg]
                        if rdreg!=defreg:
                           print("ERROR: femb {} chip {} CD page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, chip_addr, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
-                          hasERROR = True
+                          #hasERROR = True
+                          #break
+                          return hasERROR,femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg
                        nreg = nreg+1 
 
                 if reg_page==5:
@@ -492,7 +497,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                        defreg = reg_dval5[nreg]
                        if rdreg!=defreg:
                           print("ERROR: femb {} chip {} CD page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, chip_addr, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
-                          hasERROR = True
+                          return hasERROR,femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg
+                          #hasERROR = True
+                          #break
                        nreg = nreg+1 
 
                 if reg_page>0 and reg_page<5:
@@ -501,7 +508,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                        defreg = reg_dval1[nreg]
                        if rdreg!=defreg:
                           print("ERROR: femb {} chip {} CD page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, chip_addr, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
-                          hasERROR = True
+                          return hasERROR,femb_id, chip_addr, reg_page, reg_addr,rdreg,defreg
+                          #hasERROR = True
+                          #break
                        nreg = nreg+1 
 
         return hasERROR
@@ -668,21 +677,24 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                     self.poke(rdaddr, wrreg) 
                     self.poke(rdaddr, wrreg) 
                     align_sts = False
-                    break
+                    return True
+                    #break
                 if dts_time_delay >= 0x7f:
-                    #self.femb_powering(fembs =[])
-                    print ("\033[91m" + "Error: data can't be aligned, re-initilize the clock again." + "\033[0m")
-                    
-                    #self.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
-                    self.wib_timing_wrap()
-                    time.sleep(0.1)
-                    #exit()
+                    print ("\033[91m" + "Error: data can't be aligned" + "\033[0m")
+                    return False 
+                    ##self.femb_powering(fembs =[])
+                    #print ("\033[91m" + "Error: data can't be aligned, re-initilize the clock again." + "\033[0m")
+                    #
+                    ##self.wib_timing(ts_clk_sel=True, fp1_ptc0_sel=0, cmd_stamp_sync = 0x0)
+                    #self.wib_timing_wrap()
+                    #time.sleep(0.1)
+                    ##exit()
 
     def femb_adc_chkreg(self, femb_id, reset_first=True):
         adcbads = []
 
-        print("Check femb%d COLDADC default registers' value"%femb_id)
         if reset_first:
+            print("Check femb%d COLDADC default registers' value"%femb_id)
             self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
 
         # page 1 registers
@@ -708,7 +720,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 defreg = reg_dval1[nreg]
                 nreg = nreg+1
                 if rdreg!=defreg:
-                   print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
+                   if reset_first:
+                       print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
                    if adc_no not in adcbads:
                        adcbads.append(adc_no)
                    hasERROR = True
@@ -720,7 +733,8 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 defreg = reg_dval2[nreg]
                 nreg = nreg+1
                 if rdreg!=defreg:
-                   print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
+                   if reset_first:
+                       print("ERROR: femb {} chip {} ADC page_reg={} reg_addr={} read value({}) is not default({})".format(femb_id, c_id, hex(reg_page), hex(reg_addr),hex(rdreg),hex(defreg)))
                    if adc_no not in adcbads:
                        adcbads.append(adc_no)
                    hasERROR = True
@@ -1240,7 +1254,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 #             self.poke(0xA00C0004, wrreg) #reset spy buffer
 #             self.spybuf(fembs)
 #
-    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True, synctries=100): 
+    def spybuf_trig(self, fembs, num_samples=1, trig_cmd=0x08, spy_rec_ticks=0x7fff, fastchk=True, synctries=10, data_align_flg=True): 
         synctry = 0
         while True:
 	    #spy_rec_ticks subject to change
@@ -1335,22 +1349,29 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                             print ("No external trigger received, Wait a second ")
                             time.sleep(1)                
             if fastchk:
+                if synctries <2:
+                    synctries = 2
                 syncsts = wib_dec(data, fembs=fembs, spy_num=1, fastchk=fastchk)
-
-                if not syncsts : 
-                    #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
-                    synctry = synctry+1
-                    if synctry > synctries:                        
-                        if synctries >= 100: #typical use
-                            print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
-                            self.femb_powering(fembs =[])
-                        return False
-                    if synctry%10 == 0:
-                        print ("perform data synchronzation again...")
-                        self.data_align(fembs)
-                        time.sleep(1)
+                if data_align_flg:
+                    if not syncsts : 
+                        #self.spybuf_idle(fembs)  #useless but to assure refresh the data in spy buffer
+                        if synctry > synctries:                        
+                            #if synctries >= 100: #typical use
+                            #    print ("Data can't be synchronzed, please contact tech coordinator... Exit anyway ")
+                            #    self.femb_powering(fembs =[])
+                            return False
+                        if synctry == (synctries//2):
+                            print ("reconfig WIB timing...")
+                            self.wib_timing_wrap()
+                            time.sleep(0.1)
+                            print ("perform data synchronzation again...")
+                            self.data_align(fembs)
+                            time.sleep(0.1)
+                        synctry = synctry+1
+                    else:
+                        break
                 else:
-                    break
+                    return syncsts
             else:
                 break
         return data

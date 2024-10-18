@@ -84,39 +84,49 @@ def dat_user_input(infile_mode = False, froot = "./tmp_data/",itemized_flg=False
             for cd in range(2):
                 dkey = "CD%d"%cd
                 cdstr=logs[dkey]
-                if (len(cdstr) == 9) :
-                    cdexist_flg = False
-                    cdks = list(cd_id.keys())
-                    for cdk in cdks:
-                        cdexist = cd_id[cdk]
-                        if (cdstr[4] == ("-")) :
-                            if (cdstr[0:4] in cdexist)  and (cdstr[5:] in cdexist):
-                                cdexist_flg = True
-                        else:
-                            if (cdstr == cdexist):
-                                cdexist_flg = True
-                            
-                    if cdexist_flg:
-                        print ("\033[93m COLDATA Serial number exists, please correct \033[0m") 
+                #if (len(cdstr) == 9) :
+                if True:
+                    try: 
+                        int(cdstr[0:9])
+                        cd_id['CD{}'.format(cd)] = cdstr[0:9]
+                    except ValueError:
+                        print ("\033[93m COLDATA Serial number is not in right format (XXXXXXXXX), please correct\033[0m") 
                         re_flg = True
                         break
-                    elif cdstr[4] == ("-")  :
-                        try: 
-                            cdbatch = int(cdstr[0:4])
-                            cdsn = int(cdstr[5:])
-                            cd_id['CD{}'.format(cd)] = cdstr[0:4]+cdstr[4:]
-                        except ValueError:
-                            print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
-                            re_flg = True
-                            break
-                    else:
-                        print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
-                        re_flg = True
-                        break
-                else:
-                    print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
-                    re_flg = True
-                    break
+
+#                if (len(cdstr) == 9) :
+#                    cdexist_flg = False
+#                    cdks = list(cd_id.keys())
+#                    for cdk in cdks:
+#                        cdexist = cd_id[cdk]
+#                        if (cdstr[4] == ("-")) :
+#                            if (cdstr[0:4] in cdexist)  and (cdstr[5:] in cdexist):
+#                                cdexist_flg = True
+#                        else:
+#                            if (cdstr == cdexist):
+#                                cdexist_flg = True
+#                            
+#                    if cdexist_flg:
+#                        print ("\033[93m COLDATA Serial number exists, please correct \033[0m") 
+#                        re_flg = True
+#                        break
+#                    elif cdstr[4] == ("-")  :
+#                        try: 
+#                            cdbatch = int(cdstr[0:4])
+#                            cdsn = int(cdstr[5:])
+#                            cd_id['CD{}'.format(cd)] = cdstr[0:4]+cdstr[4:]
+#                        except ValueError:
+#                            print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+#                            re_flg = True
+#                            break
+#                    else:
+#                        print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+#                        re_flg = True
+#                        break
+#                else:
+#                    print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+#                    re_flg = True
+#                    break
             if re_flg:
                 break
 

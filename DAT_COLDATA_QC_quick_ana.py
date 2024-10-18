@@ -19,7 +19,7 @@ colorama.init(autoreset=True)
 #fsubdir = "ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008"
 #fsubdir = "ADC_100100001_100100002_100100003_100100004_100100005_100100006_100100007_100100008"
 #fsubdir = "FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008"
-fsubdir = "CD_2417-6057_2417-5313"
+fsubdir = "RT_CD_060592417_060542417"
 froot = os.getcwd() + "\\tmp_data\\"
 
 fdir = froot + fsubdir + "\\"
@@ -359,7 +359,7 @@ if 0 in tms:
     
     
     for onekey in dkeys:
-        if ("DIRECT_PLS_CHK" in onekey) or ("ASICDAC_CALI_CHK" in onekey):
+        if ("DIRECT_PLS_CHK" in onekey) or ("ASICDAC_CALI_CHK" in onekey) :
             cfgdata = data[onekey]
             fembs = cfgdata[0]
             rawdata = cfgdata[1]
@@ -471,32 +471,54 @@ if 2 in tms:
             else:
                 print(onekey + " path config PASS")
         elif "Data" in onekey:
-            rawdata = data[onekey][1]
-            fembs = data[onekey][0]
-            wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
-            
-            pattern_ok = True
-            for ch, chdata in enumerate(wibdata[fembs[0]]):
-                if ch % 16 < 8:
-                    expected = 0x2af3
-                else:
-                    expected = 0x48d
-                
-                for snum, samp in enumerate(chdata):
-                    if samp != expected:
-                        print("Ch",ch,"sample",snum,"is",hex(samp),"- expected",hex(expected))
-                        pattern_ok = False
-            if pattern_ok:
-                print(onekey,"pattern data okay, PASS")
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+
+            show_flg=True
+            if show_flg:
+                print (onekey + "  : Fail")
+                print ("command on WIB terminal to retake data for this test item is as below :")
+                print ("When it is done, replace {} on the local PC".format(fp) )
+
+                import matplotlib.pyplot as plt
+                fig = plt.figure(figsize=(8,6))
+                plt.rcParams.update({'font.size': 8})
+                plt_log(plt,logsd, onekey)
+                plt_subplot(plt, fembs, rawdata)
+                plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+                plt.plot()
+                plt.show()
+                plt.close()
             else:
-                print(Fore.RED+onekey+" pattern data incorrect. Fail")
+                print (onekey + "  : PASS")
+
+#            rawdata = data[onekey][1]
+#            fembs = data[onekey][0]
+#            wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
+#            
+#            pattern_ok = True
+#            for ch, chdata in enumerate(wibdata[fembs[0]]):
+#                if ch % 16 < 8:
+#                    expected = 0x2af3
+#                else:
+#                    expected = 0x48d
+#                
+#                for snum, samp in enumerate(chdata):
+#                    if samp != expected:
+#                        print("Ch",ch,"sample",snum,"is",hex(samp),"- expected",hex(expected))
+#                        pattern_ok = False
+#            if pattern_ok:
+#                print(onekey,"pattern data okay, PASS")
+#            else:
+#                print(Fore.RED+onekey+" pattern data incorrect. Fail")
     print ("#########################################################################")   
     
 if 3 in tms:
     print ("-------------------------------------------------------------------------")
     print ("3: COLDATA power consumption measurement  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
-    fp = fdir + "QC_PWR" + ".bin"
+    fp = fdir + "QC_PWR_CYCLE" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
     if os.path.isfile(fp):
         with open(fp, 'rb') as fn:
@@ -667,6 +689,36 @@ if 5 in tms:
     else:
         print(Fore.RED + fp + " not found.")
         exit()
+
+    for onekey in dkeys:
+        #if ("ASICDAC_CALI_CHK_Pre" in onekey) or ("ASICDAC_CALI_CHK_Post" in onekey)  :
+
+        if ("ASICDAC_CALI" in onekey)  :
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+
+            #show_flg = ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
+            show_flg=True
+            if show_flg:
+                print (onekey + "  : Fail")
+                print ("command on WIB terminal to retake data for this test item is as below :")
+                print ("When it is done, replace {} on the local PC".format(fp) )
+
+                import matplotlib.pyplot as plt
+                fig = plt.figure(figsize=(8,6))
+                plt.rcParams.update({'font.size': 8})
+                plt_log(plt,logsd, onekey)
+                plt_subplot(plt, fembs, rawdata)
+                plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+                plt.plot()
+                plt.show()
+                plt.close()
+            else:
+                print (onekey + "  : PASS")
+    print ("#########################################################################")
+
+    exit()
         
     #print(dkeys)
     for onekey in dkeys:
@@ -809,6 +861,53 @@ if 5 in tms:
             else:
                 print(onekey+": PASS")
     print ("#########################################################################")           
+
+if 6 in tms:
+    print ("-------------------------------------------------------------------------")
+    print ("6: COLDATA output link verification  ")
+    print ("command on WIB terminal to retake data for this test item is as bellow :")
+    fp = fdir + "QC_LVDS_Curs" + ".bin"
+    print ("When it is done, replace {} on the local PC".format(fp) )
+    if os.path.isfile(fp):
+        with open(fp, 'rb') as fn:
+            data = pickle.load( fn)
+    
+        dkeys = list(data.keys())
+        
+        logsd = data["logs"]
+        dkeys.remove("logs")
+    else:
+        print(Fore.RED + fp + " not found.")
+        exit()
+
+
+    for onekey in dkeys:
+        #if ("ASICDAC_CALI_CHK_Pre" in onekey) or ("ASICDAC_CALI_CHK_Post" in onekey)  :
+        if ("LVDS" in onekey)  :
+            print (onekey)
+            cfgdata = data[onekey]
+            fembs = cfgdata[0]
+            rawdata = cfgdata[1]
+
+            #show_flg = ana_res(fembs, rawdata, par=[9000,16000], rmsr=[5,25], pedr=[300,3000] )
+            show_flg=True
+            if show_flg:
+                print (onekey + "  : Fail")
+                print ("command on WIB terminal to retake data for this test item is as below :")
+                print ("When it is done, replace {} on the local PC".format(fp) )
+
+                import matplotlib.pyplot as plt
+                fig = plt.figure(figsize=(8,6))
+                plt.rcParams.update({'font.size': 8})
+                plt_log(plt,logsd, onekey)
+                plt_subplot(plt, fembs, rawdata)
+                plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+                plt.plot()
+                plt.show()
+                plt.close()
+            else:
+                print (onekey + "  : PASS")
+    print ("#########################################################################")
 
 if 6 in tms:
     print ("-------------------------------------------------------------------------")

@@ -23,10 +23,10 @@ with open(fp, 'rb') as fn:
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-#fembs = [int(sys.argv[2])]
-fembs = [0]
+fembs = [int(sys.argv[2])]
+#fembs = [1]
 
-wibdata = wib_dec(rawdata,fembs, spy_num=10)
+wibdata = wib_dec(rawdata,fembs, spy_num=1)
 #wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 datd = []
@@ -38,11 +38,13 @@ for i in [0]:
 
 if 1:
     import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(8,6))
-    plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
+    fig = plt.figure(figsize=(8,6))
+    plt.rcParams.update({'font.size': 14})
+
     for fe in range(8):
+
         for fe_chn in range(16):
     
             fechndata = datd[fe*16+fe_chn]

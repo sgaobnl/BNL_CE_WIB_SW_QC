@@ -42,7 +42,7 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
 
     # concatenate data
     all_data = []
-    import matplotlib.pyplot as plt
+#    import matplotlib.pyplot as plt
     for achn in range(128):
     #chipi = 2
     #for achn in range(16*chipi,16*chipi+16,1):
@@ -61,52 +61,10 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
             tmp = int(period-oft)
             conchndata = conchndata + list(chndata[tmp : ((lench-tmp)//period)*period + tmp])
         all_data.append(conchndata)
-        if True:
-            plt.plot(conchndata[0:1000])
-    plt.show()
-    plt.close()
-
-    # # sumdata = np.array(all_data[0][0:period])
-    # # for k in range(1,len(all_data[0])//period):
-    # #     sumdata +=  np.array(all_data[0][k*period:(k+1)*period])
-    # # print ("average the data %d times"%(len(all_data[0])//period))
-    # # avgdata = sumdata/(len(all_data[0])//period)
-    # # # import matplotlib.pyplot as plt
-    # # plt.plot(avgdata, label="Averaging plot")
-    # # plt.plot(all_data[0][0:period], label="one period of original waveform")
-    # # plt.legend()
-    # # #plt.plot(list(avgdata[300:]) + list(avgdata[0:300]) )
-    # # plt.show()
-    # # plt.close()
-
-
-    # exit()
-#code with issue
-#    rmss = []
-#    peds = []
-#    for achn in chns:
-#        arms = 0.0
-#        aped = 0.0
-#        if rms_flg:
-#            aped = np.round(np.mean(all_data[achn]), 4)
-#            arms = np.round(np.std(all_data[achn]), 4)
-#        else:
-#            posmax, pheights = find_peaks(x=all_data[achn], height=0.5*np.max(all_data[achn]))
-#            N_pulses = len(posmax)
-#            if N_pulses>20:
-#                aped = np.round(np.mean(all_data[achn]), 4)
-#                arms = np.round(np.std(all_data[achn]), 4)
-#            else:
-#                tmpdata = np.array([])
-#                for ipulse in range(N_pulses):
-#                    istart = i*period
-#                    iend = posmax[ipulse]-10
-#                    if (iend-istart) > 0:
-#                        tmpdata = np.concatenate((tmpdata, all_data[achn][istart : iend]))
-#                aped = np.round(np.mean(tmpdata), 4)
-#                arms = np.round(np.std(tmpdata), 4)
-#        rmss.append(arms)
-#        peds.append(aped)
+#        if True:
+#            plt.plot(conchndata[0:1000])
+#    plt.show()
+#    plt.close()
 
     chns = list(range(128))
     rmss = []
@@ -132,19 +90,10 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
         p0=ppos + period
 
         peddata = []
-        #import matplotlib.pyplot as plt
         for iperiod in range(N_period-3):
-            #print (p0 + iperiod*period - 250, p0 + iperiod*period - 50, len(all_data[achn][p0 + iperiod*period - 250: p0 + iperiod*period-50]))
             peddata += all_data[achn][p0 + iperiod*period - 250: p0 + iperiod*period-50]
         rmss.append(np.std(peddata))
         peds.append(np.mean(peddata))
-        #plt.plot(peddata)
-        #continue
-    #plt.show()
-    #plt.close()
-
-    #if False:
-        
 
 
         npos = np.where(avg_wf==amin)[0][0]
@@ -160,64 +109,6 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512):
             tmpwf = np.concatenate((front, back))
         ppos = np.where(tmpwf==np.max(tmpwf))[0][0]
         wfs.append(tmpwf[ppos-50 : ppos+150])
-
-#    import matplotlib.pyplot as plt
-#    for ch in range(128):
-#        #if np.max(wfs[ch]) < 6000:
-#        if True:
-#            print (ch,np.max(wfs[ch]) )
-#            plt.plot(wfs[ch])
-#    plt.show()
-#    plt.close()
-    # chns =[]
-    # rmss = []
-    # peds = []
-    # pkps = []
-    # pkns = []
-    # wfs = []
-    # wfsf = []
-
-    # ppos0=0
-    # npos0=0
-    # ppos64=0
-    # npos64=0
-    # for achn in range(len(datd)):
-    #     chndata = datd[achn]
-    #     # import matplotlib.pyplot as plt
-    #     for x in range(4):
-    #         plt.plot(chndata[x*512+13:(x+1)*512+13])
-    #     plt.show()
-    #     plt.close()
-    #     exit()
-
-    #     amax = np.max(chndata[300:-150])
-    #     amin = np.min(chndata[300:-150])
-    #     if achn==0:
-    #         ppos0 = np.where(chndata[300:-150]==amax)[0][0] + 300
-    #         npos0 = np.where(chndata[300:-150]==amin)[0][0] + 300
-    #     if achn==64:
-    #         ppos64 = np.where(chndata[300:-150]==amax)[0][0] + 300
-    #         npos64 = np.where(chndata[300:-150]==amin)[0][0] + 300
-
-    #     if rms_flg:
-    #         arms = np.std(chndata)
-    #         aped = int(np.mean(chndata))
-    #     else:
-    #         if achn <64:
-    #             arms = np.std(chndata[ppos0-150:ppos0-50])
-    #             aped = int(np.mean(chndata[ppos0-150:ppos0-50]))
-    #             wfs.append(chndata[ppos0-50:ppos0+150])
-    #             wfsf.append(chndata)
-    #         else:
-    #             arms = np.std(chndata[ppos64-150:ppos64-50])
-    #             aped = int(np.mean(chndata[ppos64-150:ppos64-50]))
-    #             wfs.append(chndata[ppos64-50:ppos64+150])
-    #             wfsf.append(chndata)
-    #     chns.append(achn)
-    #     rmss.append(arms)
-    #     peds.append(aped)
-    #     pkps.append(amax)
-    #     pkns.append(amin)
     return chns, rmss, peds, pkps, pkns, wfs,wfsf
 
 def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000], period=512 ):
@@ -230,32 +121,11 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000], per
         chipamps = list(amps[chip*16: chip*16 + 16])
         maxcamp = np.max(chipamps)
         mincamp = np.min(chipamps)
-        #chipamps.remove(maxcamp)
-        #chipamps.remove(mincamp)
         meanamp = np.mean(chipamps)
         rmsamp = np.std(chipamps)
-        #print (maxcamp, mincamp, meanamp, rmsamp)
         if (abs(maxcamp-meanamp) > 5*rmsamp) or (abs(mincamp-meanamp) > 5*rmsamp ):
-            #print ("Error", chip, maxcamp, mincamp, meanamp, rmsamp)
             if chip not in bads:
                 bads.append(chip)
-
-    # for tmp in [rmss, peds, amps]:
-    # #    for tmp in [rmss] :#, peds, amps]:
-    # #    print (np.mean(tmp), np.std(tmp), np.max(tmp), np.min(tmp))
-
-    #     # import matplotlib.pyplot as plt
-    #     plt.plot(chns, tmp)
-    #     for i in range(0,128,16):
-    #         plt.vlines(i-0.5, 0, 100, color='y')
-
-    #     plt.title("Noise", fontsize=8)
-    #     # plt.ylim((0,25))
-    #     # plt.xlabel("ADC / bit", fontsize=8)
-    #     # plt.ylabel("CH number", fontsize=8)
-    #     plt.grid()
-    #     plt.show()
-    #     plt.close()
 
     for ch in range(len(chns)):
         if (amps[ch] > par[0]) and (amps[ch] < par[1]):
@@ -281,8 +151,6 @@ def ana_res2(fembs, rawdata, par=[7000,10000], rmsr=[5,25], pedr=[500,3000], per
     for badch in badchs:
         if (badch//16) not in bads:
             bads.append(badch//16)
-    #print (bads)
-    #exit()
     return bads
 
 def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
@@ -298,7 +166,6 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
 
     for i in range(len(kpwrs)):
         chip = int(kpwrs[i][2])
-        #print (chip, kpwrs[i],pwr_meas[kpwrs[i]] )
         if "VDDA" in kpwrs[i]:
             vddas.append(pwr_meas[kpwrs[i]][0])
             cddas.append(pwr_meas[kpwrs[i]][1])
@@ -337,7 +204,7 @@ def ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[15,25], cddp=[20,35], cddo=[0,5]):
     return bads
 
 
-def dat_larasic_initchk(fdir="/."):
+def dat_initchk(fdir="/."):
     fp = fdir + "QC_INIT_CHK" + ".bin"
     with open(fp, 'rb') as fn:
         data = pickle.load( fn)
@@ -357,9 +224,15 @@ def dat_larasic_initchk(fdir="/."):
     if "Code#E005" in QCstatus:
         return QCstatus, sorted(data["FE_Fail"])
     if "Code#W004" in QCstatus:
+
         bads = []
-        for onekey in ["DIRECT_PLS_CHK", "ASICDAC_CALI_CHK", "ASICDAC_47mV_CHK", "DIRECT_PLS_RMS", "ASICDAC_CALI_RMS", "ASICDAC_47mV_RMS"]:
-            print (onekey)
+        datakeys = list(data.keys())
+        vkeys = []
+        for onekey in datakeys:
+            if "DIRECT_" in onekey or "ASICDAC_" in onekey :
+                vkeys.append(onekey)
+        for onekey in vkeys:
+            #print (onekey)
             cfgdata = data[onekey]
             fembs = cfgdata[0]
             rawdata = cfgdata[1]
@@ -387,7 +260,7 @@ def dat_larasic_initchk(fdir="/."):
             if ("ASICDAC_47mV_RMS" in onekey):
                 bads0 = ana_res2(fembs, rawdata, par=[000,1000], rmsr=[2,10], pedr=[400,2000] , period=500)
                 bads1 = ana_fepwr2(pwr_meas, vin=[1.7,1.9], cdda=[10,25], cddp=[25,35], cddo=[-0.1,5])
-            print('Bads0 = {} \t Bads1 = {}'.format(bads0, bads1))
+            #print('Bads0 = {} \t Bads1 = {}'.format(bads0, bads1))
 
             for badchip in bads0:
                 if badchip not in bads:
@@ -412,7 +285,8 @@ if __name__=="__main__":
     fdir = "D:/DAT_LArASIC_QC/DAT_Rev1_SN3_Fermilab_data/RT_FE_003000001_003000002_003000003_003000004_003000005_003000006_003000007_003000008/"
     fdir = '''D:\DAT_LArASIC_QC\Tested\Time_20240807183343_DUT_1000_2000_3000_4000_5000_6000_7000_8000\RT_FE_401000001_401000002_401000003_401000004_401000005_401000006_401000007_401000008/'''
     fdir = '''D:/DAT_LArASIC_QC/Tested/Time_20240816185815_DUT_1000_2000_3000_4000_5000_6000_7000_8000/RT_FE_031000001_031000002_031000003_031000004_031000005_031000006_031000007_031000008/'''
-    QCstatus, bads = dat_larasic_initchk(fdir)
+    fdir = '''D:\DAT_CD_QC\Tested\Time_20241015202741_DUT_1000_2000\RT_CD_031702417_031752417/'''
+    QCstatus, bads = dat_initchk(fdir)
     print (QCstatus)
     print (bads)
 

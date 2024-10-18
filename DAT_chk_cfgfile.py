@@ -21,7 +21,7 @@ from colorama import just_fix_windows_console
 just_fix_windows_console()
 
 #def dat_chk_cfgfile(froot = "./tmp_data/" ):
-def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):
+def dat_chk_cfgfile(fcfg = "./asic_info.csv", duttype="FE" ):
     logs={}
     #tester=input("please input your name:  ")
     #logs['tester']=tester
@@ -80,38 +80,19 @@ def dat_chk_cfgfile(fcfg = "./asic_info.csv" ):
                 #continue
                 return False
 
+        if duttype not in logs['DUT'] :
+            print ("\033[93m DUT type in file is wrong, please correct \033[0m") 
+            return False
+
         cd_id = {}
         for cd in range(2):
             dkey = "CD%d"%cd
             cdstr=logs[dkey]
-            if (len(cdstr) == 9) :
-                cdexist_flg = False
-                cdks = list(cd_id.keys())
-                for cdk in cdks:
-                    cdexist = cd_id[cdk]
-                    if (cdstr[4] == ("-")) :
-                        if (cdstr[0:4] in cdexist)  and (cdstr[5:] in cdexist):
-                            cdexist_flg = True
-                    else:
-                        if (cdstr == cdexist):
-                            cdexist_flg = True
-                        
-                if cdexist_flg:
-                    print ("\033[93m COLDATA Serial number exists, please correct \033[0m") 
-                    return False
-                elif cdstr[4] == ("-")  :
-                    try: 
-                        cdbatch = int(cdstr[0:4])
-                        cdsn = int(cdstr[5:])
-                        cd_id['CD{}'.format(cd)] = cdstr[0:4]+cdstr[4:]
-                    except ValueError:
-                        print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
-                        return False
-                else:
-                    print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
-                    return False
-            else:
-                print ("\033[93m COLDATA Serial number is not in right format (XXXX-XXXX), please correct\033[0m") 
+            try:
+                int(cdstr[0:9])
+                cd_id['CD{}'.format(cd)] = cdstr[0:9]
+            except ValueError:
+                print ("\033[93m COLDATA Serial number is not in right format (XXXXXXXXX), please correct\033[0m") 
                 return False
 
         adc_id = {}

@@ -28,6 +28,7 @@ class DAT_CFGS(WIB_CFGS):
         self.mon_fe_cmn_cs = ["GND", "DAC_OUT", "TST_PULSE_AMON", "Ext_TEST", "DAC_OUT_WIB_SWTCH", "P1.8V"]
         self.mon_adc_cs = ["VOLTAGE_MONITOR_MUX", "CURRENT_MONITOR_MUX", "VREFP", "VREFN", "VCMI", "VCMO", "AUX_ISINK_MUX", "AUX_ISOURCE_MUX"]
         self.adc_imon_sel = ["ICMOS_REF", "ISHA0", "IADC0", "ISHA1", "IADC1", "IBUFF(CMOS)", "IREF", "IREFBUFFER0"]
+        self.mon_cd_cs = ["GND","CD_VCEXT", "CD_LOCK", "CD_ATO", "CD_VDDIO", "CD_VDDA", "CD_VDDCORE", "CD_VDDD"]
         self.mon_AD_REF = 2.564 #need to update accoring to board
         self.AD_LSB = 2564/4096 #mV/bit #need to update accoring to board
         self.imon_R = 5#5kOhm resistor for DAT current monitor
@@ -299,10 +300,15 @@ class DAT_CFGS(WIB_CFGS):
         cds_pwr_info = self.cd_pwr_info(asic_list=cd_list, dat_addrs=addrs, pwrrails=pwrrails)
         return cds_pwr_info
 
-    def dat_cd_hard_reset(self, femb_id):
+    def dat_cd_hard_reset(self, femb_id, cd1=True, cd2=True):
         rdv = self.cdpeek(femb_id, 0xC, 0, self.DAT_CD_CONFIG) 
-        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x30|rdv) #CD0
-        time.sleep(0.001)
+        rdv = 0xCF&rdv
+        if cd1:
+            rdv = 0x10|rdv
+        if cd2:
+            rdv = 0x20|rdv
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, rdv) #CD0&CD1 reset
+        time.sleep(0.01)
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0xCF&rdv) #CD0
         time.sleep(0.01)
 
@@ -353,14 +359,16 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_cd_order_swap(self, femb_id):
         datad = {}
-        
-        ####U1 (left) as primary
-        print("Set U1 (left) as primary")        
-        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
-        
+
+        self.adcs_paras =  self.adcs_paras_init       
         # set adc pattern 
         for adc_no in range(8):
             self.adcs_paras[adc_no][8] = 2        
+       
+        ####U1 (left) as primary
+        print("Set U1 (left) as primary")        
+        self.cd_sel = 0
+        self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
 
         print("Configuring U1 Left with LVDS")
         self.i2cerror = False #clear old errors
@@ -375,17 +383,22 @@ class DAT_CFGS(WIB_CFGS):
         print("Configuring ADCs")
         self.i2cerror = False #clear old errors     
         self.femb_adc_cfg(femb_id)
+        for adc_no in range(8):
+            c_id    = self.adcs_paras[adc_no][0]
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB2, wrdata=0x20)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB3, wrdata=(adc_no<<2)&0xff)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=c_id&0xff  )
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=(adc_no<<2)&0xff)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=c_id&0xff  )
         datad["ADCs_U1_Left_primary"] = self.i2cerror          
-        
-        
         
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #returns list of size 1
         #print(len(rawdata))
         datad["Data_U1_Left_primary"] = ([femb_id], rawdata)#), rawdata[1])
         
-
         ####U2 (right) as primary
         print("Set U2 (right) as primary")
+        self.cd_sel = 1
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x01) 
 
         print("Configuring U2 Right with LVDS")
@@ -401,6 +414,13 @@ class DAT_CFGS(WIB_CFGS):
         print("Configuring ADCs")
         self.i2cerror = False #clear old errors       
         self.femb_adc_cfg(femb_id)
+        for adc_no in range(8):
+            c_id    = self.adcs_paras[adc_no][0]
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB2, wrdata=0x20)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB3, wrdata=(adc_no<<2)&0xff)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB4, wrdata=c_id&0xff  )
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB5, wrdata=(adc_no<<2)&0xff)
+            self.femb_i2c_wrchk(femb_id, chip_addr=c_id, reg_page=1, reg_addr=0xB6, wrdata=c_id&0xff  )
         datad["ADCs_U2_Right_primary"] = self.i2cerror 
         
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #returns list of size 1
@@ -408,17 +428,29 @@ class DAT_CFGS(WIB_CFGS):
 
         ####U1 (left) as primary
         print("Set U1 (left) as primary")        
+        self.cd_sel = 0
         self.femb_i2c_wrchk(femb_id, 0xC, 0, self.DAT_CD_CONFIG, 0x00)
-       
+        self.femb_cd_rst()       
         # set adc to default
-        for adc_no in range(8):
-            self.adcs_paras[adc_no][8] = 0            
-       
+        self.adcs_paras = self.adcs_paras_init
+        #for adc_no in range(8):
+        #    self.adcs_paras[adc_no][8] = 0            
         return datad
     
     def dat_cd_are_locked(self, femb_id, samples=100):
         cd1_locked = True
         cd2_locked = True
+        while True:
+            reg68 = self.femb_i2c_rd(femb_id, 0xC, 0, 68)
+            print ("pre", hex(reg68))
+            self.femb_i2c_wr(femb_id, 0xC, 0, 69, 1)
+            self.femb_i2c_wr(femb_id, 0xC, 0, 69, 0)
+            time.sleep(1)
+            self.femb_i2c_wr(femb_id, 0xC, 0, 69, 1)
+            self.femb_i2c_wr(femb_id, 0xC, 0, 69, 0)
+            time.sleep(0.1)
+            reg68 = self.femb_i2c_rd(femb_id, 0xC, 0, 68)
+            return None
         
         for i in range(samples):
             reg68 = self.femb_i2c_rd(femb_id, 0xC, 0, 68)
@@ -433,166 +465,144 @@ class DAT_CFGS(WIB_CFGS):
         
     def dat_cd_fast_cmd_chk(self, femb_id):
         datad = {}
-        
-        print ("Sending Fast command idle")
-        self.fastcmd(cmd= 'idle')   
-        datad['idle'] = {}
-        datad['idle']['rawdata'] = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        
-    # ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
-    # ·     Sync = 1110_0010 (zero timestamp)
-        datad['edge_sync'] = {}
-        #Before Sync is sent, timestamps from two CDs are different.    
-        self.dat_cd_hard_reset(femb_id = femb_id) #hard reset in case data_align has already been run
-        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
-        datad['edge_sync']['rawdata_before_dataalign'] = rawdata
+        #self.femb_powering([])
+        #time.sleep(3)
+        #self.femb_powering(fembs=[femb_id])
+        #time.sleep(5)
+
+        #FC_ACT: EDGE_SYNC
+        datad['FC_ACT_Pre_EDGE_SYNC'] = "FAIL" #synced
+        for i in range(3):
+            self.femb_cd_rst()
+            self.femb_cd_cfg(femb_id)
+            time.sleep(0.1)
+            self.dat_cd_hard_reset(femb_id = femb_id, cd1=True, cd2=False) #hard reset in case data_align has already been run
+            time.sleep(0.1)
+            self.dat_cd_hard_reset(femb_id = femb_id, cd1=False, cd2=True) #hard reset in case data_align has already been run
+            self.fastcmd(cmd= 'idle')   
+            self.femb_cd_cfg(femb_id)
+
+            self.femb_cd_fc_act(femb_id, act_cmd="save_timestamp")
+            ts_l_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
+            ts_h_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
+            ts_l_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
+            ts_h_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
+            ts_0x3=(ts_h_0x3<<8)+ts_l_0x3
+            ts_0x2=(ts_h_0x2<<8)+ts_l_0x2
+            if ts_0x3 != ts_0x2: #timestamps from two Cd are different
+                datad['FC_ACT_Pre_EDGE_SYNC'] = "PASS" #synced
+                break
+            if i > 0:
+                self.femb_powering([])
+                time.sleep(5)
+                self.femb_powering(fembs=[femb_id])
+                time.sleep(5)
+
+
+        #FC_ACT: save_timestamp
+        ####    # ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
+        ####    # ·     Sync = 1110_0010 (zero timestamp)
         #After Sync is sent, timestampe from two CDs are exactly the same. 
         self.data_align(self.fembs)
-        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0) #contains timestamps
-        datad['edge_sync']['rawdata_after_dataalign'] = rawdata
-        
-        #EDGE_ACT
-        #Check that ADC is reset (test-write some registers beforehand to verify)
-        cfg_info = self.femb_adc_cfg(femb_id) #save for cd_sel info
-        self.femb_cd_edge_act([femb_id])
-        datad['edge_act'] = self.femb_adc_chkreg(femb_id=femb_id, reset_first=False)
-        
-    # Act Command register (loaded via I2C):
-        datad['ACT_idle'] = {}
-        self.femb_cd_fc_act(femb_id, act_cmd="idle")
-        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad['ACT_idle']['rawdata'] = rawdata
-        
-        #LArASIC_pulse checked already with ASICDAC_CALI_CHK
-    # # ·     LArASIC_PULSE = 0000_0001 (act to start calibration sequence; act again to stop)
-        # datad["ACT_larasic_pls"] = {}
-        # dat.femb_adac_cali(dat.fembs[0])
-        # dat.femb_adac_cali(dat.fembs[0])
-        # #How to check if calibrated? Take data?
-        # rawdata = dat.spybuf_trig(fembs=dat.fembs, num_samples=1, trig_cmd=0)
-        # datad["ACT_larasic_pls"]["rawdata"] = rawdata
-        
-    # ·     Save Timestamp = 0000_0010 (one of the status register) 
-        datad["ACT_save_timestamp"] = {}
         self.femb_cd_fc_act(femb_id, act_cmd="save_timestamp")
-        timestamp_lower_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
-        timestamp_higher_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
-        timestamp_lower_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
-        timestamp_higher_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
-        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad["ACT_save_timestamp"]["0x2_timestamp"] = (timestamp_higher_0x2 << 8) | timestamp_lower_0x2
-        datad["ACT_save_timestamp"]["0x3_timestamp"] = (timestamp_higher_0x3 << 8) | timestamp_lower_0x3
-        datad["ACT_save_timestamp"]["rawdata"] = ([femb_id], rawdata)
-        
-    # ·     Save Status = 0000_0011 #Save the various status bits for readout via I2C    
-        datad["ACT_save_status"] = {}
-        self.femb_cd_fc_act(femb_id, act_cmd="save_status")
-        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
-        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
-        datad["ACT_save_status"]["0x2_regs"] = (reg23, reg24)
-        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
-        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
-        datad["ACT_save_status"]["0x3_regs"] = (reg23, reg24)
-        datad["ACT_save_status"]["CD_LOCK"] = self.dat_cd_are_locked(femb_id) #compare with reg 23 bit 6
-        
-        
-    # ·     Clear Saves = 0000_0100 #Clear the saved status bits
-        datad["ACT_clr_saves"] = {}
+        ts_l_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
+        ts_h_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
+        ts_l_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
+        ts_h_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
+        ts_0x3=(ts_h_0x3<<8)+ts_l_0x3
+        ts_0x2=(ts_h_0x2<<8)+ts_l_0x2
+        if ts_0x3 == ts_0x2: 
+            datad['FC_ACT_Post_EDGE_SYNC'] = "PASS" #synced
+        else:
+            datad['FC_ACT_Post_EDGE_SYNC'] = "FAIL" #synced
+
+        ###########################################################
+        self.fastcmd(cmd= 'idle')   
+        self.femb_cd_fc_act(femb_id, act_cmd="save_timestamp")
+        ts_l_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x21)
+        ts_h_0x3 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x22)    
+        ts_l_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x21)
+        ts_h_0x2 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x22)
+        ts_0x3=(ts_h_0x3<<8)+ts_l_0x3
+        ts_0x2=(ts_h_0x2<<8)+ts_l_0x2
+        if ts_0x3 == ts_0x2: #timestamps from two Cd are different
+            datad['FC_ACT_Post_EDGE_SYNC_IDLE'] = "PASS" #synced
+        else:
+            datad['FC_ACT_Post_EDGE_SYNC_IDLE'] = "FAIL" #synced
+
+
+        #FC_ACT: clr_saves
         self.femb_cd_fc_act(femb_id, act_cmd="clr_saves")
-        reg23 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
-        reg24 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)   
-        datad["ACT_clr_saves"]["0x2_regs"] = (reg23, reg24)
-        reg23 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
-        reg24 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
-        datad["ACT_clr_saves"]["0x3_regs"] = (reg23, reg24)    
-        
-    # ·     Reset ColdADCs = 0000_0101
+        ts_0x3_0 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        ts_0x3_1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        ts_0x2_0 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        ts_0x2_1 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
+        ts_0x3=(ts_0x3_1<<8)+ts_0x3_0
+        ts_0x2=(ts_0x2_1<<8)+ts_0x2_0
+        #print (hex(ts_0x3), hex(ts_0x2))
+        if (ts_0x3 == ts_0x2) and (ts_0x2==0):
+            datad['FC_ACT_CLR_SAVES'] = "PASS" #synced
+        else:
+            datad['FC_ACT_CLR_SAVES'] = "FAIL" #synced
+
+        #FC_ACT: save_status
+        self.femb_cd_rst()       
+        self.adcs_paras = self.adcs_paras_init
+        self.femb_cfg(femb_id)
+        self.femb_cd_fc_act(femb_id, act_cmd="save_status")
+        ts_0x3_0 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x23)
+        ts_0x3_1 = self.femb_i2c_rd(femb_id, chip_addr=3, reg_page=0, reg_addr=0x24)
+        ts_0x2_0 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x23)
+        ts_0x2_1 = self.femb_i2c_rd(femb_id, chip_addr=2, reg_page=0, reg_addr=0x24)
+        ts_0x3=(ts_0x3_1<<8)+ts_0x3_0
+        ts_0x2=(ts_0x2_1<<8)+ts_0x2_0
+        if (ts_0x3 == ts_0x2) and (ts_0x2&0xff00==0xff00):
+            datad['FC_ACT_SAVE_STATUS'] = "PASS" #synced
+        else:
+            datad['FC_ACT_SAVE_STATUS'] = "FAIL" #synced
+
+        #FC_ACT: rst_adcs
         self.femb_adc_cfg(femb_id)
-        datad["ACT_rst_adcs"] = self.femb_adc_chkreg(femb_id) #performs reset
+        tmp = self.femb_adc_chkreg(femb_id, reset_first=False) #performs reset
+        if tmp[0] and (tmp[1] == [0,1,2,3,4,5,6,7]): 
+            datad['FC_ACT_rst_adcs'] = "PASS" 
+        else:
+            datad['FC_ACT_rst_adcs'] = "FAIL" 
 
-        
-    # ·     Reset LArASICs = 0000_0110 (Reset LArASICs using the LARASIC_RESET pad)
-        datad["ACT_rst_larasics"] = {}
-        vbgrs_before = []
-        vbgrs_after = []  
-        samples = 10 
-        #Check VGBR before & after fast command
-        for i in range(50):
-            self.wib_mon_adcs() #need to reset it 50 times for some reason
-        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time       
-            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset 
-            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
-            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-            #copied from wib_fe_mon:
-            adcss = []
-            self.wib_mon_adcs() #get rid of previous result
-            for i in range(samples):
-                adcs = self.wib_mon_adcs()
-                adcss.append(adcs) 
-            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]  
-            #print(mon_paras)
-            vbgrs_after.append(mon_paras)
-        datad["ACT_rst_larasics"]["VBGR_before"] = vbgrs_before
-        datad["ACT_rst_larasics"]["VBGR_after"] = vbgrs_after
-        # print(vbgrs_before)
-        # print(vbgrs_after)
-        
-        #Check pulse response before & after fast cmd
-        #config pulse - copied from top_chkout_pls_fake_timing
-        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
-        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
-        self.fe_flg[femb_id] = True #force fe to config
-        self.femb_cfg(femb_id, adac_pls_en )
-        self.data_align([femb_id])
+        #FC_ACT: rst_larasic
+        self.femb_cd_rst()       
+        self.fedly = 1
+        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+        rawdata = self.dat_fe_qc(num_samples=1, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=0)
+        if rawdata == False:
+            return False
+        fes_pwr_info =  self.fe_pwr_meas()
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad["ACT_rst_larasics"]["rawdata_before"] = rawdata
+        datad["FC_ACT_RST_LARASIC_Before"] = (self.fembs, rawdata)
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+        time.sleep(1)
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad["ACT_rst_larasics"]["rawdata_after"] = rawdata
-        
-        
-    # ·     SPI Reset = 0000_0111 (Reset LArASICs using the SPI interface)
-        datad["ACT_rst_larasic_spi"] = {}
-        vbgrs_before = []
-        vbgrs_after = []  
-        samples = 10 
-        #Check VGBR before & after fast cmd
-        for i in range(50):
-            self.wib_mon_adcs() #need to reset it 50 times for some reason
-        for fe in range(8): #ONlY one channel of a FEMB can set smn to 1 at a time               
-            self.fembs_fe_cfg([femb_id]) #Configure FEs to test reset        
-            vbgrs_before.append(self.wib_fe_mon(femb_ids=[femb_id], mon_chip=fe, reset_sw_after=False))
-            self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
-            #copied from wib_fe_mon:
-            adcss = []
-            self.wib_mon_adcs() #get rid of previous result
-            for i in range(samples):
-                adcs = self.wib_mon_adcs()
-                adcss.append(adcs) 
-            mon_paras = ["VBGR", fe, 0, 0, 0, 0, samples, adcss, [femb_id]]
-            vbgrs_after.append(mon_paras)
-        datad["ACT_rst_larasic_spi"]["VBGR_before"] = vbgrs_before
-        datad["ACT_rst_larasic_spi"]["VBGR_after"] = vbgrs_after
-        #self.femb_cd_fc_act(dat.fembs[0], act_cmd="rst_larasic_spi")
+        datad["FC_ACT_RST_LARASIC_After"] = (self.fembs, rawdata)
 
-        #Check pulse response before & after fast cmd
-        #config pulse - copied from top_chkout_pls_faking_timing
-        self.set_fe_board(sts=1, snc=1,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=1,dac=0x20 )
-        adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
-        self.fe_flg[femb_id] = True #force fe to config
-        self.femb_cfg(femb_id, adac_pls_en )
-        self.data_align([femb_id])
+        #FC_ACT: rst_larasic_spi
+        self.femb_cd_rst()       
+        self.fedly = 1
+        rawdata = self.dat_fe_qc(num_samples=1, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=0)
+        if rawdata == False:
+            return False
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad["ACT_rst_larasic_spi"]["rawdata_before"] = rawdata
+        datad["FC_ACT_RST_LARASIC_SPI_Before"] = (self.fembs, rawdata)
+
+        self.femb_cd_fc_act(femb_id, act_cmd="larasic_pls") #disable pulse
+        time.sleep(1)
+        rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
+        datad["FC_ACT_RST_LARASIC_SPI_DIS"] = (self.fembs, rawdata)
+
         self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
+        time.sleep(1)
         rawdata = self.spybuf_trig(fembs=[femb_id], num_samples=1, trig_cmd=0)
-        datad["ACT_rst_larasic_spi"]["rawdata_after"] = rawdata
-        
-    # ·     Program LArASICs = 0000_1000 (Download the stored daisy chain bits to LArASICs using SPI)
-        datad["ACT_prm_larasics"] = self.femb_fe_cfg(femb_id)
-        
-    # ·     Relay I2C_SDA = 0000_1001 (Echo I2C_SDA_W2C back to WIB on I2C_SDA_C2W if and only if all 
-    #three I2C_Relay_Code registers are set)  → done by data alignment and cable latency measurement.    
+        datad["FC_ACT_RST_LARASIC_SPI_After"] = (self.fembs, rawdata)
+
         return datad
     
     def asic_init_pwrchk(self, fes_pwr_info, adcs_pwr_info, cds_pwr_info):
@@ -653,7 +663,7 @@ class DAT_CFGS(WIB_CFGS):
                     warn_flg = True
 
             if "VDDIO" in onekey:
-                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.40) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][1] < 8  ) :
+                if  (adcs_pwr_info[onekey][0] > 2.10) & (adcs_pwr_info[onekey][0] < 2.40) & (adcs_pwr_info[onekey][1] > 3  ) & (adcs_pwr_info[onekey][1] < 10  ) :
                     pass
                 else:
                     print ("Warning: {} is out of range {}".format(onekey, adcs_pwr_info[onekey]))
@@ -754,7 +764,13 @@ class DAT_CFGS(WIB_CFGS):
                 warn_flg, adcbads = self.femb_adc_chkreg(self.dat_on_wibslot)
 
         if "CD" in duts:
-            print ("To be developped")
+            regerrflg = self.femb_cd_chkreg(femb_id = self.dat_on_wibslot)
+            if regerrflg is not False:
+                warn_flg = True
+                if regerrflg[2] == 2:
+                    adcbads.append(1)
+                if regerrflg[2] == 3:
+                    adcbads.append(0)
             #warn_flg, adcbads
 
         if warn_flg:
@@ -954,6 +970,7 @@ class DAT_CFGS(WIB_CFGS):
 #                                [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                                [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
 #                              ]
+            self.adcs_paras = self.adcs_paras_init
             for i in range(8):
                 self.adcs_paras[i][2] = sdd
 
@@ -1004,6 +1021,7 @@ class DAT_CFGS(WIB_CFGS):
                 self.set_fe_sync()
             self.femb_fe_cfg(femb_id=femb_id)
             if self.sddflg != sdd :
+                self.adcs_paras = self.adcs_paras_init
                 for i in range(8):
                     self.adcs_paras[i][2] = sdd
 #            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
@@ -1114,42 +1132,43 @@ class DAT_CFGS(WIB_CFGS):
         return adac_pls_en, sts, swdac, dac
 
 
-    def dat_asic_chk(self):
+    def dat_asic_chk(self, duts=["FE"]):
         datad = {}
         datad["Status"] = True
 
-        self.fedly = 1
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_47mV_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+        if "FE" in duts:
+            self.fedly = 1
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["ASICDAC_47mV_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x10)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_47mV_CHK_x10"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x10)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["ASICDAC_47mV_CHK_x10"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x18)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_47mV_CHK_x18"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x18)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=1, sg1=1, sdd=0)
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["ASICDAC_47mV_CHK_x18"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=1, sg1=1, sdd=0)
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_47mV_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=1, sg1=1, sdd=0)
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["ASICDAC_47mV_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
 
         self.fedly = 1
@@ -1159,32 +1178,38 @@ class DAT_CFGS(WIB_CFGS):
             return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
-        datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+        adc_pwr_info =  self.adc_pwr_meas()
+        cd_pwr_info =  self.dat_cd_pwr_meas()
+        datad["DIRECT_PLS_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info, adc_pwr_info, cd_pwr_info)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en,  snc=1) #direct FE input
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["DIRECT_PLS_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+        if ("FE" in duts) or ("ADC" in duts):
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en,  snc=1) #direct FE input
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["DIRECT_PLS_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
-        self.fedly = 3
+        self.fedly = 5
         adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=2,asicdac=0x20)
         rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, sts=sts, swdac=swdac, dac=dac,snc=1,sg0=0, sg1=0, sdd=1)
         if rawdata == False:
             return False
         #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
         fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+        adc_pwr_info =  self.adc_pwr_meas()
+        cd_pwr_info =  self.dat_cd_pwr_meas()
+        datad["ASICDAC_CALI_CHK"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info, adc_pwr_info, cd_pwr_info)
 
-        adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
-        rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=0, sg1=0, sdd=1)
-        if rawdata == False:
-            return False
-        #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
-        fes_pwr_info =  self.fe_pwr_meas()
-        datad["ASICDAC_CALI_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
+        if ("FE" in duts) or ("ADC" in duts):
+            adac_pls_en, sts, swdac, dac = self.dat_cali_source(cali_mode=3)
+            rawdata = self.dat_fe_qc(num_samples=5, adac_pls_en=adac_pls_en, snc=1,sg0=0, sg1=0, sdd=1)
+            if rawdata == False:
+                return False
+            #wibdata = wib_dec(rawdata[0], fembs=self.fembs, spy_num=1)[0]
+            fes_pwr_info =  self.fe_pwr_meas()
+            datad["ASICDAC_CALI_RMS"] = (self.fembs, rawdata[0], rawdata[1], fes_pwr_info)
 
         self.fedly = 1
         return datad
@@ -1263,13 +1288,13 @@ class DAT_CFGS(WIB_CFGS):
         #self.cdpoke(0, 0xC, 0, self.DAT_ADC_SRC_CS_P_MSB, 0xff)
 
     #def dat_coldata_efuse_prm(self, femb_id=0, chip_addr=0x0C, efuseid=0):
-    def dat_coldata_efuse_prm(self, femb_id=0, cd_id="CD1", efuseid=0):
+    def dat_coldata_efuse_prm(self, femb_id=0, cd_id="CD0", efuseid=0):
         if (efuseid < 0) :
             print ("Error, EFUSE ID must be >=0")
-            input ("Pause...")
+            return False
         elif (efuseid > 0x80000000) :
             print ("Error, EFUSE ID must be <0x80000000")
-            input ("Pause...")
+            return False
         efusevalue=(efuseid<<1)&0xFFFFFFFF
         efuse_enable_regadr =  62
         efuse_start_regadr = 67
@@ -1318,11 +1343,11 @@ class DAT_CFGS(WIB_CFGS):
             efusev1B = self.cdpeek(0, cd_addr, 0, 0x1B)
             efusev = efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24)
             if (efuseid&efusev) == efuseid :
-                print ("Efuse was programmed, readback value is 0x%x"%efusev)
+                print ("Efuse was programmed, readback value is %d"%efusev)
                 break
             else:
                 print ("Not all bits were programmed, re-program...")
-                print ("WriteEfuse=0x%x, ReadEfuse=0x%x"%(efuseid, efusev))
+                print ("WriteEfuse=0x%x, ReadEfuse=%d"%(efuseid, efusev))
                 break
         return efusev
         
@@ -1351,15 +1376,21 @@ class DAT_CFGS(WIB_CFGS):
 
 
     def dat_monadcs(self, mode="fe"):
-        if mode != "fe" and mode != "adc":
-            print("dat_monadcs: mode can be 'fe' or 'adc'")
+        if mode != "fe" and mode != "adc"and mode != "cd":
+            print("dat_monadcs: mode can be 'fe' or 'adc' or 'cd'")
             return
+        if "cd" in mode:
+            chips = 2
+        else:
+            chips = 8
+
         avg_datas = [[],[],[],[],[],[],[],[]]
         avg = self.monadc_avg
+        avg = 20
         for avgi in range(avg):            
             self.dat_monadc_trig() #get rid of previous result    
             self.dat_monadc_trig() #get rid of previous result   
-            for chip in range(8):
+            for chip in range(chips):
                 for check in range(10):
                     if mode == "fe":
                         if not self.dat_monadc_busy(fe=chip):
@@ -1367,16 +1398,21 @@ class DAT_CFGS(WIB_CFGS):
                     elif mode == "adc":
                         if not self.dat_monadc_busy(adc=chip):
                             break;                        
+                    elif mode == "cd":
+                        if not self.dat_monadc_busy(cd=chip):
+                            break;                        
                     if check is 9:
                         print("Timed out while waiting for AD7274 controller to finish")
                 if mode == "fe":
                     data = self.dat_monadc_getdata(fe=chip)
                 elif mode == "adc":
                     data = self.dat_monadc_getdata(adc=chip)
+                elif mode == "cd":
+                    data = self.dat_monadc_getdata(cd=chip)
                 avg_datas[chip].append(data)
         datas = []
         datas_std = []
-        for chip in range(8):
+        for chip in range(chips):
             if avg == 1:
                 datas.append(avg_datas[chip][0])
                 datas_std.append(0)
@@ -1639,6 +1675,97 @@ class DAT_CFGS(WIB_CFGS):
             mon_datas["MON_Isrc"] = [datas, datas_v]
             
         return mon_datas
+
+    def dat_cd_mons(self,femb_id=0, mon_type=0xff):
+        mon_datas = {} 
+        
+        if mon_type&0x01:
+            mux_cs = 0
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL, mux_cs)   
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_GND"] = [datas, datas_v]    
+            
+        if mon_type&0x02:
+            mux_cs = 1
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs)    
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VCEXT"] = [datas, datas_v]     
+        
+        if mon_type&0x04:
+            mux_cs = 2
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs) 
+            time.sleep(0.2) #delay 200 ms to allow voltage to settle            
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_LOCK"] = [datas, datas_v]     
+
+        if mon_type&0x08:
+            mux_cs = 3
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs)  
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_ATO"] = [datas, datas_v]  
+
+        if mon_type&0x10:
+            mux_cs = 4
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs)  
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VDDIO"] = [datas, datas_v]
+
+        if mon_type&0x20:
+            mux_cs = 5
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs)    
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VDDA"] = [datas, datas_v]
+
+        if mon_type&0x40:
+            mux_cs = 6
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL, mux_cs) 
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle            
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VDDCORE"] = [datas, datas_v]
+
+        if mon_type&0x80:
+            mux_cs = 7
+            #mux_name = self.mon_cd_cs[mux_cs]
+            mux_cs = (mux_cs&0x07) + ((mux_cs&0x07)<<4) #INH = 0
+            print (hex(mux_cs), hex(mux_cs&0x07 + ((mux_cs&0x07)<<4)))
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL, mux_cs)
+            time.sleep(0.1) #delay 200 ms to allow voltage to settle
+            datas = self.dat_monadcs(mode="cd")[0]
+            datas_v = np.array(datas)*self.AD_LSB
+            mon_datas["MON_VDDD"] = [datas, datas_v]
+
+        if True: #disable monitoring
+            mux_cs=0x88
+            self.cdpoke(femb_id, 0xC, 0, self.DAT_CD_AMON_SEL,  mux_cs)    
+            
+        return mon_datas
+
     
     def adc_histbuf(self): #adapted from llc.spybuf()
         HIST_MEM_SIZE = 0x8000 #rom A00C8000 to A00CFFFF
