@@ -14,7 +14,7 @@ system_info = platform.system()
 
 index_tmts = 5
 if system_info == 'Linux':
-    index_tmts = 4
+    index_tmts = 5
 elif system_info == 'Windows':
     index_tmts = 5
 
@@ -270,7 +270,7 @@ class ana_tools:
                 chunkdata = all_data[achn][istart : iend]
                 chdata.append(chunkdata)
             chdata = np.array(chdata)
-            avg_wf = np.average(np.transpose(chdata), axis = 1, keepdims = False)
+            avg_wf = np.average(np.transpose(chdata), axis = 1)
             wfsf.append(avg_wf)
             amax = np.max(avg_wf)
             amin = np.min(avg_wf)
@@ -300,7 +300,6 @@ class ana_tools:
             wfs.append(tmpwf[ppos-50:ppos+150])
 
             plt.subplot(1, 2, 1)
-            print(len(tmpwf))
             plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
 
             if achn == 64:
@@ -716,7 +715,8 @@ class ana_tools:
 
         CC=1.85*pow(10,-13)
         e=1.602*pow(10,-19)
-
+        print(namepat)
+        print('debug')
         if "sgp1" in namepat:
             dac_du = dac_v['4_7mVfC']
             fname = '{}_{}_{}_sgp1'.format(snc,sgs,sts)

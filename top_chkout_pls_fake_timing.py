@@ -9,8 +9,9 @@ import time, datetime, random, statistics
 if len(sys.argv) < 2:
     print('Please specify at least one FEMB # to test')
     print('Usage: python wib.py 0')
-    exit()    
+    exit()
 
+pos = 0
 if 'save' in sys.argv:
     save = True
     for i in range(len(sys.argv)):
@@ -36,10 +37,9 @@ time.sleep(1)
 #step 1
 #reset all FEMBs on WIB
 chk.wib_femb_link_en(fembs)
-
+i = 0
 while True:
     chk.femb_cd_rst()
-    
     cfg_paras_rec = []
     for femb_id in fembs:
     #step 2
@@ -62,6 +62,7 @@ while True:
         chk.set_fe_board(sts=1, snc=sample_N%2,sg0=0, sg1=0, st0=0, st1=0, swdac=1, sdd=sdd,dac=0x20 )
         adac_pls_en = 1 #enable LArASIC interal calibraiton pulser
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
+        chk.femb_adc_cfg(femb_id)
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )
     i = i+1

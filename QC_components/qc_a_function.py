@@ -255,7 +255,6 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
 
 
         rpk = [a-b for a, b in zip(ppk, bl)]
-        print(fname)
         tmp = QC_check.CHKPulse(rpk, pulse_range, type = 'pedestal')
         if tmp[0] == False:
             log.tmp_log[femb_id]["ppk_mean"] = '<span style="color: red;">' + str(ppk_mean) + '</span>'

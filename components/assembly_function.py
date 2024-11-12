@@ -87,7 +87,7 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
             if Decision:
                 log.report_log03[femb_id]["Result"] = True
 
-        errflag = chk.femb_adc_chkreg(ifemb)
+        errflag, null = chk.femb_adc_chkreg(ifemb)
         if errflag:
             print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
             log.report_log03[femb_id]["ColdADC_REG_CHK_{}".format(times)] = ("FEMB ID {} faild ColdADC register 1 check".format(fembNo['femb%d' % ifemb]))
