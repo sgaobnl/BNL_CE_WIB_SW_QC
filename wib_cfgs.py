@@ -1088,9 +1088,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         vdac_mons = []
 
         for vdac in vdacs:
+            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
             self.fembs_fe_cfg(femb_ids)
-            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
             time.sleep(0.01)
             for femb_id in femb_ids:
                 #     self.femb_fe_cfg(femb_id)
@@ -1171,12 +1171,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         # step 2
         mon_items = []
         mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
+        for femb_id in femb_ids:
+            self.femb_adc_cfg(femb_id)
         for mon_i in range(8):
             print(f"Monitor ADC {mons[mon_i]}")
             mon_dict = {}
             for mon_chip in range(8):
                 for femb_id in femb_ids:
-                    self.femb_adc_cfg(femb_id)
+                    # self.femb_adc_cfg(femb_id)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i)
                     # print (f"FEMB{femb_id} is configurated")
                 adcss = []

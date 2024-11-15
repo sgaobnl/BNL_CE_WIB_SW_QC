@@ -4,9 +4,9 @@ import time
 import subprocess
 from datetime import datetime
 
-target_folder = 'D:\FEMB_QC\Data'
+target_folder = 'D:/FEMB_QC/Data'
 
-last_scan_file = 'D:\FEMB_QC\Data\last_scan_results.txt'
+last_scan_file = 'D:/FEMB_QC/Data/last_scan_results.txt'
 
 def save_last_scan_results(results):
     with open(last_scan_file, 'w') as f:
@@ -96,7 +96,7 @@ def real_time_monitor():
                     time.sleep(c*30)  # the time is used to copy the whole .bin file
                 else:
                     time.sleep(c*7)  # the time is used to copy the whole .bin file
-                command = ["python", "QC_report_all.py", path, "-n"]
+                command = ["python3", "QC_report_all.py", path, "-n"]
                 command.extend(map(str, n))  # Convert integers to strings
                 command.extend(["-t", t_num])  # Add other arguments
                 print(command)

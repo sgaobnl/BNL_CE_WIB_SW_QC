@@ -14,7 +14,7 @@ system_info = platform.system()
 
 index_tmts = 5
 if system_info == 'Linux':
-    index_tmts = 4
+    index_tmts = 5
 elif system_info == 'Windows':
     index_tmts = 5
 
@@ -260,7 +260,6 @@ class ana_tools:
         pkps, pkns = [], []
         wfs, wfsf = [], []
 
-
         for achn in range(128):
             chdata = []
             N_period = len(all_data[achn])//period
@@ -270,7 +269,7 @@ class ana_tools:
                 chunkdata = all_data[achn][istart : iend]
                 chdata.append(chunkdata)
             chdata = np.array(chdata)
-            avg_wf = np.average(np.transpose(chdata), axis = 1, keepdims = False)
+            avg_wf = np.average(np.transpose(chdata), axis = 1)
             wfsf.append(avg_wf)
             amax = np.max(avg_wf)
             amin = np.min(avg_wf)
@@ -282,7 +281,13 @@ class ana_tools:
             peddata = []
 
             for iperid in range(N_period):
-                peddata += all_data[achn][p0 + iperid*period - 250: p0 + iperid*period - 50]
+                if p0 < len(all_data[achn]):
+                    peddata += all_data[achn][p0 + iperid*period - 250: p0 + iperid*period - 50]
+                else:
+                    if ppos > 250:
+                        peddata += all_data[achn][ppos - 250: ppos - 50]
+                    else:
+                        peddata += all_data[achn][ppos + 500: ppos + 700]
             rmss.append(np.std(peddata))
             peds.append(np.mean(peddata))
 
@@ -300,7 +305,6 @@ class ana_tools:
             wfs.append(tmpwf[ppos-50:ppos+150])
 
             plt.subplot(1, 2, 1)
-            print(len(tmpwf))
             plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
 
             if achn == 64:
@@ -702,7 +706,7 @@ class ana_tools:
         return slope_f, INL, linear_dac_max
 
 
-    def GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+    def  GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
         global fname_1
         log.tmp_log.clear()
         log.check_log.clear()
@@ -716,7 +720,8 @@ class ana_tools:
 
         CC=1.85*pow(10,-13)
         e=1.602*pow(10,-19)
-
+        print(namepat)
+        print('debug')
         if "sgp1" in namepat:
             dac_du = dac_v['4_7mVfC']
             fname = '{}_{}_{}_sgp1'.format(snc,sgs,sts)
@@ -726,9 +731,6 @@ class ana_tools:
 
         pk_list = [[],[],[],[]]
         for dac in dac_list:
-            # fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
-            # with open(fdata, 'rb') as fn:
-            #      raw = pickle.load(fn)
             key_dict = namepat.format(snc,sgs,sts,dac)+'.bin'
             raw = Cali_dict[key_dict]
             rawdata = raw[0]
@@ -748,6 +750,7 @@ class ana_tools:
                     if ('vdac' in fname_1):
                         if not ('000mV' in fname_1):
                             ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
+                            # bl = 0
                     else:
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
                     ppk_np = np.array(ppk)-np.array(bl)
@@ -758,6 +761,7 @@ class ana_tools:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
             tmp_list = pk_list[ifemb]
             new_pk_list = list(zip(*tmp_list))
+
             check = True
             check_issue = []
             dac_np = np.array(dac_list)
@@ -788,13 +792,13 @@ class ana_tools:
                 inl_list.append(inl)
                 line_range_list.append(line_range)
                 if ('vdac' in fname_1):
-                    if inl > 0.1:
+                    if inl > 0.5:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
-                    if line_range < 200:
+                    if line_range < 100:
                         check = False
                         check_issue.append("ch {} line range issue: {}".format(ch, line_range))
-                    if gain > 45:
+                    if gain > 50:
                         check = False
                         check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 else:

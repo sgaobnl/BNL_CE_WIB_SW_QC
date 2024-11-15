@@ -51,17 +51,8 @@ def FEMB_QC(input_info):
     # ======== Button 00 WIB initial =====================
     # input("\033[35m" + 'Enter to Begin!' + "\033[0m")
     QC_Process(QC_TST_EN=0, input_info=input_info)  # initial wib
-
-    # ======== Button 01 WIB FEMB ========================
-    # input('Button#01 FEMB Initial SLOT')
     QC_Process(QC_TST_EN=1, input_info=input_info)  # initial FEMB I2C
-
-    # ======== Button 02 Checkout ========================
-    # input('Button#02 FEMB Assembly Checkout')
-    # time.sleep(1)
     QC_Process(QC_TST_EN=2, input_info=input_info)  # assembly checkout
-    # ======== Button 03 QC ==============================
-    # input('Button#03 FEMB Quality Control')
     QC_Process(QC_TST_EN=3, input_info=input_info)  # QC
     # storage the log file
     QC_Process(QC_TST_EN=10, input_info=input_info)  # QC
@@ -92,7 +83,7 @@ elif Next == 'e':
     if Next2 != 'y':
         sys.exit()
 else:
-    FEMB_QC(inform)
+    FEMB_QC(input_info=inform)
     print("Warm FEMB QC Done!")
     print("Please Turn OFF the Power!")
 

@@ -26,6 +26,7 @@ import webbrowser
 class QC_reports:
 
     def __init__(self, fdir, fembs=[]):
+        print(fdir.split("/"))
         savedir = 'D:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
         self.datadir = fdir + "/"
         self.report_source_doc = 0
@@ -1276,25 +1277,26 @@ class QC_reports:
             plt.title("SE OFF 200 mV RMS Distribution", fontsize=12)
             plt.subplot(1, 3, 2)
             x_sticks = range(0, 129, 16)
-            plt.plot(range(128), log.mon_pulse["200mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf0')
-            plt.plot(range(128), log.mon_pulse["900mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf0')
+            plt.plot(range(128), log.mon_pulse["200mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mV Baseline sdf = 0')
+            plt.plot(range(128), log.mon_pulse["900mVBL_sdf0"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mV Baseline sdf = 0')
             plt.xlabel("FEMB Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
-            plt.ylim(0, 1000)
+            plt.ylim(0, 1200)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
             plt.legend()
-            plt.title("200mVBL_900mVBL_sdf0", fontsize=12)
+            plt.title("200mV & 900mV Baseline SDF = 0", fontsize=12)
             plt.subplot(1, 3, 3)
-            plt.plot(range(24), log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mVBL_sdf1')
-            plt.plot(range(24), log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mVBL_sdf1')
+            plt.plot([0, 8, 15, 16, 24, 31, 32, 40, 47, 48, 56, 63, 64, 72, 79, 80, 88, 95, 96, 104, 111, 112, 120, 127], log.mon_pulse["200mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '200mV Baseline sdf = 1')
+            plt.plot([0, 8, 15, 16, 24, 31, 32, 40, 47, 48, 56, 63, 64, 72, 79, 80, 88, 95, 96, 104, 111, 112, 120, 127], log.mon_pulse["900mVBL_sdf1"][femb_id], marker='|', linestyle='-', alpha=0.7, label = '900mV Baseline sdf = 1')
             plt.xlabel("Channel", fontsize=12)
             plt.ylabel("ADC", fontsize=12)
-            plt.ylim(0, 1000)
+            plt.ylim(0, 1200)
             # plt.xticks(np.arange(0, 129, step = 16))
+            plt.xticks([0, 16, 32, 48, 64, 80, 96, 112])
             plt.grid(axis='x')
             plt.legend()
-            plt.title("200mVBL_900mVBL_sdf1", fontsize=12)
+            plt.title("200mV & 900mV Baseline SDF = 1", fontsize=12)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.savefig(report_dir + 'FE_Mon.png', transparent = True)
             plt.close()
@@ -1349,20 +1351,18 @@ class QC_reports:
     def CALI_report_5(self):
         log.test_label.append(13)
         qc=ana_tools()
-        dac_list = list(range(125, 325, 25))
+        dac_list = list(range(75, 235, 50))
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
 
         f_pwr = datadir + "QC_Cali05_t13.bin"
         with open(f_pwr, 'rb') as fn:
             Cali05_dict = pickle.load(fn)
-        print(len(Cali05_dict))
-        print(type(Cali05_dict))
         keys_list = list(Cali05_dict.keys())
         print(keys_list)
 
         print("analyze CALI5 900mVBL 14_0mVfC External")
-        qc.GetGain(self.fembs, self.fembsID, Cali05_dict, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 7500, 4)
+        qc.GetGain(self.fembs, self.fembsID, Cali05_dict, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 300, 50)
 
         #   Get RMS
         # datafiles = datadir+'CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin'
@@ -1386,7 +1386,7 @@ class QC_reports:
     def CALI_report_6(self):
         log.test_label.append(14)
         qc=ana_tools()
-        dac_list = list(range(125, 500, 25))
+        dac_list = list(range(75, 550, 50))
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
 
@@ -1399,7 +1399,7 @@ class QC_reports:
         print(keys_list)
 
         print("analyze CALI6 200mVBL 14_0mVfC External")
-        qc.GetGain(self.fembs, self.fembsID, Cali06_dict, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 15000, 4)
+        qc.GetGain(self.fembs, self.fembsID, Cali06_dict, self.savedir, "CALI6/", "CALI6_SE_{}_{}_{}_vdac{:06d}mV", "200mVBL", "14_0mVfC", "2_0us", dac_list, 500, 50)
         #   Get RMS
         # datafiles = datadir+'CALI6_SE_200mVBL_14_0mVfC_2_0us_RMS.bin'
         # with open(datafiles, 'rb') as fn:
@@ -1511,9 +1511,6 @@ class QC_reports:
                 log.report_log1601[femb_id][fname] = check
 
             log.check_log1601[femb_id]["Result"] = all(value for value in log.report_log1601[femb_id].values())
-            print(log.report_log1601[femb_id])
-            print(log.check_log1601[femb_id]["Result"])
-            print('xxxxxxxxxxxxxxxxxxxxx')
             self.Gather_PNG_PDF(fp)
 
         for ifemb in self.fembs:

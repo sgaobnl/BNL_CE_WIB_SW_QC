@@ -1,3 +1,5 @@
+import glob
+
 from wib_cfgs import WIB_CFGS
 import time
 import sys
@@ -10,7 +12,6 @@ import subprocess
 import QC_components.qc_function as a_func
 import QC_components.qc_log as log
 from QC_tools import ana_tools
-import QC_components.qc_a_function as a_func
 #import TestPattern_chk as PLL_TP
 
 class QC_Runs:
@@ -20,8 +21,8 @@ class QC_Runs:
         self.fembNo={}
         self.fembName={}
         self.vgndoft = 0
-        self.vdacmax = 0.8
-        self.vstep = 20
+        self.vdacmax = 0.5
+        self.vstep = 10
         self.chk = WIB_CFGS()
         self.LAr_Dalay = 3.5
         self.sdd0 = 0
@@ -569,56 +570,121 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.sample_N = 1
 
-
-
         fp = datadir + "CHK_EX_{}_{}_{}.bin".format("200mVBL", "14_0mVfC", "2_0us")
-        datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
 
-        fp = datadir + "femb_chk_pulse_t4" + ".bin"
-        with open(fp, 'wb') as fn:
-            pickle.dump(datad, fn)
-            f_pwr = datadir + "femb_chk_pulse_t4.bin"
+        cfg_paras_rec = []
+        datad = {}
+        self.chk.adcs_paras = [ # c_id, data_fmt(0x89), diff_en(0x84), sdc_en(0x80), vrefp, vrefn, vcmo, vcmi,
+                            [0x4, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x5, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x6, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x7, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x8, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0x9, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xA, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0],
+                            [0xB, 0x08, 0, 0, 0xDF, 0x33, 0x89, 0x67, 0]
+                          ]
+        #external DAC is enabled
+        self.chk.set_fe_board(sts=1,snc=1,sg0=0,sg1=0, st0=1, st1=1, swdac=2, dac=0, sdd=0,sdf=0,slk0=0,slk1=0,sgp=0)
+        adac_pls_en = 0
+        ext_cali_flg = True
 
-        self.fembsName={}
-        self.fembsID={}
-        fembs = []
-        if fembs:
-            self.fembs = fembs
-            for ifemb in fembs:
-                self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
-                self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
-        else:
-            # self.fembsID = logs['femb id']
-            self.fembs=[]
-            for key,value in self.logs['femb id'].items():
-                self.fembs.append(int(key[-1]))
-            for ifemb in self.fembs:
-                self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
-                self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
+        for femb_id in self.fembs:
+            self.chk.fe_flg[femb_id] = True
+            cfg_paras_rec.append( (femb_id, copy.deepcopy(self.chk.adcs_paras), copy.deepcopy(self.chk.regs_int8), adac_pls_en) )
+            self.chk.femb_cfg(femb_id, adac_pls_en )
+        #self.sdd0 = sdd
+        time.sleep(1) #temperary
 
-        f_pwr = datadir + "femb_chk_pulse_t4.bin"
-        with open(f_pwr, 'rb') as fn:
-            CHKPULSE_dict = pickle.load(fn)
-        keys_list = list(CHKPULSE_dict.keys())
-        print(keys_list)
-        qc = ana_tools()
-        # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-        for ifemb in range(len(self.fembs)):
-            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-            log.check_log04_01[femb_id]['Result'] = True
-        for afile in CHKPULSE_dict.keys():
-            raw = CHKPULSE_dict[afile]
-            rawdata = raw[0]
-            pwr_meas = raw[1]
-            # =======================================
-            pldata = qc.data_decode(rawdata, self.fembs)
-            if '\\' in afile:
-                fname = afile.split("\\")[-1][:-4]
-                print(fname)
-            else:
-                fname = afile.split("/")[-1][:-4]
-                print(fname)
-            a_func.pulse_ana(pldata, self.fembs, self.fembsID, datadir, fname, '')
+        if self.chk.align_flg == True:
+            self.chk.data_align(self.fembs)
+            self.chk.align_flg = False
+            time.sleep(0.001)
+
+
+        time.sleep(0.01)
+        pwr_meas = None
+
+        if ext_cali_flg:
+            datae = {}
+            print ("Calibration with pulser from WIB starts...")
+            cp_period = 1000
+            vdacmax=self.vdacmax
+            vdacs = np.arange(vdacmax,self.vgndoft,-(vdacmax-self.vgndoft)/self.vstep)
+            dac0_sel = 0
+            dac1_sel = 0
+            dac2_sel = 0
+            dac3_sel = 0
+            for vdac in vdacs:
+                self.chk.wib_cali_dac(dacvol=vdac)
+                for femb_id in self.fembs:
+                    if femb_id == 0:
+                        dac0_sel=1
+                    if femb_id == 1:
+                        dac1_sel=1
+                    if femb_id == 2:
+                        dac2_sel=1
+                    if femb_id == 3:
+                        dac3_sel=1
+                self.chk.wib_mon_switches(dac0_sel, dac1_sel, dac2_sel, dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                cp_high_time = int(cp_period*32*7/8)
+                self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
+                rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
+                fplocal = fp[0:-4] + "_vdac%06dmV"%(int((vdac+0.0001)*1000))+fp[-4:]
+                fsubdirs = fplocal.split("/")
+                print(fsubdirs)
+                print(fsubdirs[-1])
+                datad[fsubdirs[-1]] = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
+                with open(fplocal, 'wb') as fn:
+                    pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
+            self.chk.wib_mon_switches()  # close wib_mon
+
+        # qc = ana_tools()
+        # files = sorted(glob.glob(datadir + "*.bin"), key = os.path.getmtime)
+        # with open(fp, 'wb') as fn:
+        #     pickle.dump(datad, fn)
+        #     f_pwr = datadir + "femb_chk_pulse_t4.bin"
+        #
+        # self.fembsName={}
+        # self.fembsID={}
+        # fembs = []
+        # if fembs:
+        #     self.fembs = fembs
+        #     for ifemb in fembs:
+        #         self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
+        #         self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
+        # else:
+        #     # self.fembsID = logs['femb id']
+        #     self.fembs=[]
+        #     for key,value in self.logs['femb id'].items():
+        #         self.fembs.append(int(key[-1]))
+        #     for ifemb in self.fembs:
+        #         self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
+        #         self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
+        #
+        # f_pwr = datadir + "femb_chk_pulse_t4.bin"
+        # with open(f_pwr, 'rb') as fn:
+        #     CHKPULSE_dict = pickle.load(fn)
+        # keys_list = list(CHKPULSE_dict.keys())
+        # print(keys_list)
+        # qc = ana_tools()
+        # # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
+        # for ifemb in range(len(self.fembs)):
+        #     femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
+        #     log.check_log04_01[femb_id]['Result'] = True
+        # for afile in CHKPULSE_dict.keys():
+        #     raw = CHKPULSE_dict[afile]
+        #     rawdata = raw[0]
+        #     pwr_meas = raw[1]
+        #     # =======================================
+        #     pldata = qc.data_decode(rawdata, self.fembs)
+        #     if '\\' in afile:
+        #         fname = afile.split("\\")[-1][:-4]
+        #         print(fname)
+        #     else:
+        #         fname = afile.split("/")[-1][:-4]
+        #         print(fname)
+        #     a_func.pulse_ana(pldata, self.fembs, self.fembsID, datadir, fname, '')
 
     ##
     def femb_rms(self):
@@ -984,7 +1050,7 @@ class QC_Runs:
         self.sample_N = 5
         # get baseline
         fp = datadir + "CALI5_SE_{}_{}_{}_RMS.bin".format("900mVBL","14_0mVfC","2_0us")
-        datad["CALI5_SE_{}_{}_{}_RMS.bin".format("900mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+        datad["CALI5_SE_{}_{}_{}_RMS.bin".format("900mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
         fp = datadir + "CALI5_SE_{}_{}_{}.bin".format("900mVBL","14_0mVfC","2_0us")
         datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
 
@@ -1012,7 +1078,7 @@ class QC_Runs:
         self.sample_N = 5
         # get baseline
         fp = datadir + "CALI6_SE_{}_{}_{}_RMS.bin".format("200mVBL","14_0mVfC","2_0us")
-        datad["CALI6_SE_{}_{}_{}_RMS.bin".format("200mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
+        datad["CALI6_SE_{}_{}_{}_RMS.bin".format("200mVBL","14_0mVfC","2_0us")] = self.take_data(0, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False)
         fp = datadir + "CALI6_SE_{}_{}_{}.bin".format("200mVBL","14_0mVfC","2_0us")
         datad.update(self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, swdac=2, pwr_flg=False))
 
@@ -1130,7 +1196,7 @@ class QC_Runs:
         print ("monitor LArASIC DAC sgp=1")
         mon_fedacs_sgp1 = {}
         #vdacs=range(64)
-        vdacs=range(0,64,8)
+        vdacs=range(1,64,8)
         for mon_chip in range(chips):
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=True, vdacs=vdacs, sps=sps )
@@ -1138,7 +1204,7 @@ class QC_Runs:
 
         print ("monitor LArASIC DAC 14 mV/fC")
         mon_fedacs_14mVfC = {}
-        vdacs=range(64)
+        vdacs=range(1,64)
         for mon_chip in range(chips):
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=0, vdacs=vdacs, sps=sps)
@@ -1147,7 +1213,7 @@ class QC_Runs:
         print ("monitor LArASIC DAC 7.8 mV/fC")
         mon_fedacs_7_8mVfC = {}
         #vdacs=range(64)
-        vdacs=range(0,64,8)
+        vdacs=range(1,64,8)
         for mon_chip in range(chips):
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=0, sg1=1, vdacs=vdacs, sps=sps)
@@ -1156,7 +1222,7 @@ class QC_Runs:
         print ("monitor LArASIC DAC 25 mV/fC")
         mon_fedacs_25mVfC = {}
         #vdacs=range(64)
-        vdacs=range(0,64,8)
+        vdacs=range(1,64,8)
         for mon_chip in range(chips):
             print ("measure chip#%d of all boards..."%mon_chip)
             adcrst = self.chk.wib_fe_dac_mon(femb_ids=self.fembs, mon_chip=mon_chip, sgp=False, sg0=1, sg1=0, vdacs=vdacs, sps=sps)
@@ -1208,7 +1274,6 @@ class QC_Runs:
         fp = datadir + "ColdADC_mon_t12.bin"
         with open(fp, 'wb') as fn:
             pickle.dump( [mon_adc_default, mon_adc, self.logs], fn)
-        print (int((time.time_ns() - t0)/1e9), "AAAAAAAAA")
 
 if __name__=='__main__':
 

@@ -1,10 +1,11 @@
 import sys 
 import numpy as np
 import pickle
+from scipy.fft import fft, fftfreq
 import time, datetime, random, statistics
 import matplotlib.pyplot as plt
 import copy
-
+from mpl_toolkits.mplot3d import Axes3D
 import struct
 from spymemory_decode import wib_dec
 
@@ -24,16 +25,19 @@ dac = fp[p+31:-4]
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-fembs = [2]
+fembs = [int(sys.argv[2])]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=5)
 
-datd = []
+mean = 0
+datdi = [0, 1, 2, 3, 4]
 fechndata = []
-for i in [0]:
+for i in range(5):
     wibdatai = wibdata[i]
-    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
-
+    datdi[i] = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+datd = np.concatenate((datdi[0],datdi[1],datdi[2],datdi[3],datdi[4]), axis = 1)
+print('debug');
+print(len(datd))
 ref_chn = 7
 if 1:
     import matplotlib.pyplot as plt
@@ -41,9 +45,11 @@ if 1:
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
+
     for fe in [0,1,2,3,4,5,6,7]:#range(8):[0, 6]:#
         for fe_chn in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:#range(16):[9]:#
             fechndata = np.array(datd[fe*16+fe_chn], dtype = np.int32)
+
             rms.append(np.mean(fechndata))
             rms_tmp = round(np.std(fechndata), 2)
             maxpos = np.argmax(fechndata[100:]) + 100
@@ -57,7 +63,46 @@ if 1:
             #     plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
             # else:
             #     plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='green', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
-            plt.plot(range(len(fechndata)),fechndata)
+            # if fe == 0 and fe_chn == 1:
+            #     plt.plot(range(len(fechndata)),fechndata)
+            # mean = np.mean(fechndata)
+
+            if(fe ==0 and fe_chn == 0):
+                N = len(fechndata)
+                yf = fft(fechndata)
+                xf = fftfreq(N, 0.000000512)[:N//2]
+                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1000),label="#0 normal connect with 50 pF Toy_TPC (*1000)", marker = '.')
+                plt.yscale('log')
+            if(fe ==0 and fe_chn == 15):
+                N = len(fechndata)
+                yf = fft(fechndata)
+                xf = fftfreq(N, 0.000000512)[:N//2]
+                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*100),label="#15 connect with GND via a 2 Mohm resistor (*100)", marker = '.')
+                plt.yscale('log')
+            # if(fe ==1 and fe_chn == 2):
+            #     N = len(fechndata)
+            #     yf = fft(fechndata)
+            #     xf = fftfreq(N, 0.000000512)[:N//2]
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]),label="#18 short to GND directly", marker = '.')
+            #     plt.yscale('log')
+            # if(fe ==6 and fe_chn == 0):
+            #     N = len(fechndata)
+            #     yf = fft(fechndata)
+            #     xf = fftfreq(N, 0.000000512)[:N//2]
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]),label="#96 short to Pin 97 directly", marker = '.')
+            #     plt.yscale('log')
+            if(fe ==5 and fe_chn == 3):
+                N = len(fechndata)
+                yf = fft(fechndata)
+                xf = fftfreq(N, 0.000000512)[:N//2]
+                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*10),label="#83 connect to Pin 79 via a 10 Mohm (*10)", marker = '.')
+                plt.yscale('log')
+            if(fe ==6 and fe_chn == 9):
+                N = len(fechndata)
+                yf = fft(fechndata)
+                xf = fftfreq(N, 0.000000512)[:N//2]
+                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1),label="#105 connect to Pin 109 via a 2 Mohm", marker = '.')
+                plt.yscale('log')
 #    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #
@@ -81,13 +126,14 @@ if 1:
 #    #plt.title("ADC pedestal distribution (bypass SHA) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
-plt.title("{}".format(fp))
-# plt.legend()
-plt.ylabel("ADC count / bit")
-# plt.ylim((-1000,6500))
-plt.xlabel("time / 500 ns")
+# plt.title("{}".format(fp))
+plt.title('Frequency Spectrum of Noise (Log Scale)')
+plt.legend()
+plt.ylabel('Magnitude (Log Scale)')
+# plt.ylim((mean-50,mean+50))
+plt.xlabel('Frequency (Hz)')
 plt.grid()
-plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+# plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
 plt.show()
 plt.close()
 
