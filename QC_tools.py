@@ -438,11 +438,9 @@ class ana_tools:
                 for key,mon_list in sub_dict.items():
                     data_list=[]
                     dac_list = mon_list[1]
-                    # print(dac_list)
                     mon_data = mon_list[0]
                     sps = mon_data[0][3]
                     item = item + 1
-                    print(dac_list)
                     for i in range(len(dac_list)):
                         sps_list=[]
                         for j in range(sps):
@@ -477,9 +475,6 @@ class ana_tools:
                     if inl > 1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False
-                        # print(issue_inl)
-                        # print(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
-                        # input()
             fp = savedir[nfemb] + fdir + "/mon_{}.png".format(main_key)
             plt.legend()
             plt.grid(True, axis='y', linestyle='--')
@@ -491,7 +486,6 @@ class ana_tools:
             plt.tight_layout()
             plt.savefig(fp, transparent = True)
             plt.close(fig)
-            print(issue_inl)
         return issue_inl
 
 
@@ -515,16 +509,7 @@ class ana_tools:
                     vset_list.append(mon_list[i][0])
                     mon_data = mon_list[i][1]
                     chip_dic = mon_data[imon]
-                    # for key, chip_data in chip_dic.items():
-                    #     print(key)
-                    #     print(chip_data)
-                    #     print('\n')
-                    # input('debug')
                     for key,chip_data in chip_dic.items():
-                        # print(key)
-                        # print(chip_data)
-                        # print(chip_data[3])
-
                         sps = len(chip_data[3])
                         sps_list=[]
                         for j in range(sps):
@@ -547,17 +532,12 @@ class ana_tools:
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data[0:14])
                     inl = round(np.max(abs(fit_y - y_data[0:14]) * 100 / abs(y_data[0] - y_data[-1])), 2)
-                    # print(key)
-                    # print(mon_items[imon])
-                    # print(inl)
                     if inl < 1:
                         log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] = "{}".format(inl)
                     else:
                         check = False
                         check_issue.append("ADC ref voltage: {}, chip: {}, inl issue: {} \n".format(imon, key, inl))
                         log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] =  "<span style = 'color:red;'> {} </span>".format(inl)
-                # print(log.ADCMON_table_cell)
-                # input()
 
                 for key,values in data_dic.items():
                     ax.plot(vset_list, data_dic[key], marker='.',label=key)
@@ -645,8 +625,6 @@ class ana_tools:
                 linear_dac_max = dac_list[i-1]
                 index=i
                 break
-        # print(linear_dac_max)
-        # print(index)
 
         if index==0:
             fig2,ax2 = plt.subplots(1,2, figsize=(12,6))
@@ -676,7 +654,6 @@ class ana_tools:
             print("fail at first linear range searching: inl=%f for dac=0 is bigger than 0.03"%inl)
             return 0,0,0
 
-        # print(dac_list[:index])
 #   second linear fit, with all linear area
         try:
             slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
@@ -695,7 +672,6 @@ class ana_tools:
         y_max = pk_list[index-1]
         y_min = pk_list[0]
         INL=0
-        # print(index)
         for i in range(index):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_f + intercept_f
@@ -720,8 +696,6 @@ class ana_tools:
 
         CC=1.85*pow(10,-13)
         e=1.602*pow(10,-19)
-        print(namepat)
-        print('debug')
         if "sgp1" in namepat:
             dac_du = dac_v['4_7mVfC']
             fname = '{}_{}_{}_sgp1'.format(snc,sgs,sts)
