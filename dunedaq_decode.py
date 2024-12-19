@@ -5,7 +5,7 @@ import ctypes
 import struct
 
 #Let Python see the C++ libary file
-sys.path.append('./decoding_cpp/build/') 
+sys.path.append('./decoding_cpp/build/')
 
 
 from _daq_rawdatautils_py.unpack.wibeth import *

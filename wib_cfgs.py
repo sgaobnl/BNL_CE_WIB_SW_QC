@@ -312,7 +312,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.poke(0xA00C0004, rdreg & 0xfffBffff)  # set bit22 to 0
         time.sleep(0.001)
 
-    def wib_pls_gen(self, fembs=[0, 1, 2, 3], cp_period=500, cp_phase=0, cp_high_time=500 * 16 / 2):
+    def wib_pls_gen(self, fembs=[0, 1, 2, 3], cp_period=500, cp_phase=0, cp_high_time=500 * 16 / 2, inj_cal_pulse_sw=0):
         if cp_period <= 1:
             cp_period = 1
         cp_period = cp_period - 1
@@ -328,15 +328,18 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
         rdreg = self.peek(0xA00C003C)
         wrreg = (rdreg & 0xffff803f)
-        for fembid in fembs:
-            if fembid == 0:
-                wrreg = wrreg | 0x800
-            if fembid == 1:
-                wrreg = wrreg | 0x1000
-            if fembid == 2:
-                wrreg = wrreg | 0x2000
-            if fembid == 3:
-                wrreg = wrreg | 0x4000
+        if inj_cal_pulse_sw == 0:
+            for fembid in fembs:
+                if fembid == 0:
+                    wrreg = wrreg | 0x800
+                if fembid == 1:
+                    wrreg = wrreg | 0x1000
+                if fembid == 2:
+                    wrreg = wrreg | 0x2000
+                if fembid == 3:
+                    wrreg = wrreg | 0x4000
+        else:
+            wrreg = wrreg | 0x8000
         wrreg = wrreg | ((cp_phase & 0x1f) << 6)
         self.poke(0xA00C003C, wrreg)
         for fembid in fembs:
@@ -441,7 +444,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.poke(btr + 0x8, 1)  # issue stimulus
             time.sleep(0.01)
             rdreg = self.peek(btr + 0x8)  # read measured latency
-            print(hex(rdreg))
             self.poke(btr + 0x8, 0)  # dummy writes
             self.femb_i2c_wr(femb_id, chip_addr=3, reg_page=0, reg_addr=0x20, wrdata=0x00)
 
@@ -1088,9 +1090,9 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         vdac_mons = []
 
         for vdac in vdacs:
+            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
             self.set_fe_sync()
             self.fembs_fe_cfg(femb_ids)
-            self.set_fechip_global(chip=mon_chip & 0x07, swdac=3, dac=vdac, sgp=sgp)
             time.sleep(0.01)
             for femb_id in femb_ids:
                 #     self.femb_fe_cfg(femb_id)
@@ -1171,12 +1173,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         # step 2
         mon_items = []
         mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
+        for femb_id in femb_ids:
+            self.femb_adc_cfg(femb_id)
         for mon_i in range(8):
             print(f"Monitor ADC {mons[mon_i]}")
             mon_dict = {}
             for mon_chip in range(8):
                 for femb_id in femb_ids:
-                    self.femb_adc_cfg(femb_id)
+                    # self.femb_adc_cfg(femb_id)
                     self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i)
                     # print (f"FEMB{femb_id} is configurated")
                 adcss = []

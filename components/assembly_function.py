@@ -87,7 +87,7 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
             if Decision:
                 log.report_log03[femb_id]["Result"] = True
 
-        errflag = chk.femb_adc_chkreg(ifemb)
+        errflag, null = chk.femb_adc_chkreg(ifemb)
         if errflag:
             print("FEMB ID {} faild COLDADC register check 1, continue testing".format(fembNo['femb%d' % ifemb]))
             log.report_log03[femb_id]["ColdADC_REG_CHK_{}".format(times)] = ("FEMB ID {} faild ColdADC register 1 check".format(fembNo['femb%d' % ifemb]))
@@ -164,11 +164,13 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
             mvold[key] = [vfm, vfstd]
 #   print value into table and also highlight the issue value while check them out
         mvvold = {}
+        csvold = {}
         check = True
         check_list = []
         for key in vkeys:
             if "GND" in key:
                 voltage_temp = abs(int(mvold[key][0] * LSB * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - gnd_ref) < gnd_err :
                     mvvold[key] = "{}".format(voltage_temp)
                 else:
@@ -177,6 +179,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check_list.append("LDO Monitor {} = {}, issue".format(key, voltage_temp))
             elif "HALF" in key:
                 voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 2 * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - adc_p_ref) < adc_p_err :
                     mvvold[key.replace("_HALF", "")] = "{}".format(voltage_temp)
                 else:
@@ -185,6 +188,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check_list.append("LDO Monitor {} = {}, issue".format(key.replace("_HALF", ""), voltage_temp))
             elif "CDVDDA" in key:
                 voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - CDVDDA_ref) < CDVDDA_err :
                     mvvold[key] = "{}".format(voltage_temp)
                 else:
@@ -193,6 +197,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check_list.append("LDO Monitor {} = {}, issue".format(key, voltage_temp))
             elif "CDVDDIO" in key:
                 voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - CDVDDIO_ref) < CDVDDIO_err :
                     mvvold[key] = "{}".format(voltage_temp)
                 else:
@@ -201,6 +206,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check_list.append("LDO Monitor {} = {}, issue".format(key, voltage_temp))
             elif "VDDD1P2" in key:
                 voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - ACCVDD1P2_ref) < ACCVDD1P2_err :
                     mvvold[key] = "{}".format(voltage_temp)
                 else:
@@ -209,6 +215,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check_list.append("LDO Monitor {} = {}, issue".format(key, voltage_temp))
             else:
                 voltage_temp = abs(int((mvold[key][0] - mvold["GND"][0]) * LSB * 1000))
+                csvold[key] = "{}".format(voltage_temp)
                 if abs(voltage_temp - FE_ref) < FE_err :
                     mvvold[key] = "{}".format(voltage_temp)
                 else:
@@ -216,6 +223,7 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
                     check = False
                     check_list.append("LDO Monitor {} = {}, issue".format(key, voltage_temp))
         log.power_rail_report_log[femb_id] = mvvold
+        log.power_rail_report_csv[femb_id] = csvold
         log.check_log[femb_id]["Result"] = check
         log.check_log[femb_id]["Issue List"] = check_list
 
@@ -269,7 +277,7 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
     pldata = qc_tools.data_decode(rms_rawdata, fembs)
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])
-        ped, rms = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
+        ped, rms, pedmax, pedmin = qc_tools.GetRMS(pldata, fembs[ifemb], datareport[fembs[ifemb]], fname)
         tmp = QC_check.CHKPulse(ped, 1500, type = 'pedestal')
         log.chkflag["BL"]=(tmp[0])
         log.badlist["BL"]=(tmp[1])
@@ -283,6 +291,10 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
         rms_err_flag = tmp[0]
         rms_err_status = tmp[1]
         log.report_log04[femb_id]["RMS 128-CH std"] = tmp[2]
+        log.report_log04csv[femb_id]["ped"] = ped
+        log.report_log04csv[femb_id]["rms"] = rms
+        log.report_log04csv[femb_id]["pedmax"] = pedmax
+        log.report_log04csv[femb_id]["pedmin"] = pedmin
         if (ped_err_flag == True) and (rms_err_flag == True):
             log.report_log04[femb_id]["Result"] = True
         else:
@@ -447,14 +459,23 @@ def se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname):
 
         log.chkflag["Pulse_SE"]["PPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["PPK"]=(tmp[1])
+        log.report_log07csv[femb_id]["PPK_mean"] = tmp[4]
+        log.report_log07csv[femb_id]["PPK_max"] = tmp[5]
+        log.report_log07csv[femb_id]["PPK_min"] = tmp[6]
 
         tmp = QC_check.CHKPulse(npk, 1000, type = 'pedestal')
         log.chkflag["Pulse_SE"]["NPK"]=(tmp[0])
         log.badlist["Pulse_SE"]["NPK"]=(tmp[1])
+        log.report_log07csv[femb_id]["NPK_mean"] = tmp[4]
+        log.report_log07csv[femb_id]["NPK_max"] = tmp[5]
+        log.report_log07csv[femb_id]["NPK_min"] = tmp[6]
 
         tmp = QC_check.CHKPulse(bl, 1000, type = 'pedestal')
         log.chkflag["Pulse_SE"]["BL"]=(tmp[0])
         log.badlist["Pulse_SE"]["BL"]=(tmp[1])
+        log.report_log07csv[femb_id]["BL_mean"] = tmp[4]
+        log.report_log07csv[femb_id]["BL_max"] = tmp[5]
+        log.report_log07csv[femb_id]["BL_min"] = tmp[6]
 
 
         if (log.chkflag["Pulse_SE"]["PPK"] == True) and (log.chkflag["Pulse_SE"]["NPK"] == True) and (log.chkflag["Pulse_SE"]["BL"] == True):
@@ -540,12 +561,14 @@ def single_check(pwr_meas, temp_name, ref, error):
         output = "<span style = 'color':red;'> {} </span>".format(temp)
     return output, check, check_issue
 #   Data Analysis
-def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env):
+def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB = False):
     nchips = range(8)
     #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
     log.report_log11["ITEM"] = "5 Monitoring Path"
-    #fadc = 1/(2**14)*2500   # NEW WIB IS 2500
-    fadc = 1/(2**14)*2048   # NEW WIB IS 2500
+    if NewWIB:
+        fadc = 1/(2**14)*2500   # NEW WIB IS 2500
+    else:
+        fadc = 1/(2**14)*2048   # NEW WIB IS 2500
     fe_t = [None] * 8;    fe_bgp = [None] * 8;    vcmi = [None] * 8;    vcmo = [None] * 8
     vrefp = [None] * 8;    vrefn = [None] * 8;    vssa = [None] * 8
     for ifemb in fembs:

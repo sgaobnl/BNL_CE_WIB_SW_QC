@@ -57,6 +57,8 @@ def read_csv_to_dict(filename, env):
         for row in reader:
             if len(row) >= 2:
                 key = row[0]
+                if row[1] == '':
+                    row[1] = ' '
                 value = row[1]
                 data[key] = value
             print("\033[96m" + key + "\t\t:\t\t" + data[key] + "\033[0m")
@@ -291,62 +293,6 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             print('Exit ...')
             print('Please Power OFF the Power Supply and Restart')
             sys.exit()
-        #     press = input()
-        #     print(press) if press != 'y':
-        #     print('power off')
-        #     power_off = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
-        #     subrun(power_off, timeout=60)
-        #     print("\033[34m" + 'Power OFF and Stop to Check SLOT' + "\033[0m")
-        #     sys.exit()
-
-        # # add slot and FEMB into list
-        # if Slot_change:
-        #     slot_list = ''
-        #     FEMB_list = ''
-        #     power_en = ''
-        #     savename = ''
-        #     if slot0 != ' ':
-        #         slot_list += ' 0 '
-        #         FEMB_list += slot0 + '\n'
-        #         power_en += ' on '
-        #         savename += '_S0{}'.format(slot0)
-        #     else:
-        #         power_en += ' off '
-        #     if slot1 != ' ':
-        #         slot_list += ' 1 '
-        #         FEMB_list += slot1 + '\n'
-        #         power_en += ' on '
-        #         savename += '_S1{}'.format(slot1)
-        #     else:
-        #         power_en += ' off '
-        #     if slot2 != ' ':
-        #         slot_list += ' 2 '
-        #         FEMB_list += slot2 + '\n'
-        #         power_en += ' on '
-        #         savename += '_S2{}'.format(slot2)
-        #     else:
-        #         power_en += ' off '
-        #     if slot3 != ' ':
-        #         slot_list += ' 3 '
-        #         FEMB_list += slot3 + '\n'
-        #         power_en += ' on '
-        #         savename += '_S3{}'.format(slot3)
-        #     else:
-        #         power_en += ' off '
-        #
-        #     if input_info['env'] == 'n':
-        #         savename += '_RT'.format(slot3)
-        #     else:
-        #         savename += '_LN'.format(slot3)
-        #
-        #     print(slot_list)
-        #     print(power_en)
-        #     print(savename)
-        #     logs['PC_rawdata_root'] = root + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
-        #     logs['PC_WRCFG_FN'] = "./femb_info.csv" # rewrite this part
-        #
-        #     command1 = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC;  python3 top_femb_powering.py {}".format(power_en)]
-        #     result1 = subrun(command1, timeout=60)
 
         time.sleep(1)
         command2 = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC;  python3 top_chkout_pls_fake_timing.py {} save 5".format(slot_list)]
@@ -372,7 +318,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     if QC_TST_EN == 2:
         print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 120s)")
         print(datetime.utcnow(), " : New Test Item Starts, please wait...")
-        print("\033[96m 0 : Initilization Room Temperature Checkout\033[0m")
+        print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(input_info['env']))
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
         result = subrun(command, timeout=160, user_input=user_input_1)  # rewrite with Popen later
@@ -582,7 +528,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print("wib data remove at {}".format(fdir))
                 time.sleep(1)
                 command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
-                result = subrun(command, timeout=60)
+                result = subrun(command, timeout=90)
                 if result != None:
                     logs['remove_wib_raw_dir'] = fdir  # later save it into log file
                     print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")

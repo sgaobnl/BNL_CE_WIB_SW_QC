@@ -72,7 +72,7 @@ for tm in tasks:
         t0=time.time()
         vdac_offset = 0.025
         qc.vgndoft = 0 + vdac_offset  # to be added later
-        qc.vdacmax = 0.50 + vdac_offset
+        qc.vdacmax = 0.30 + vdac_offset
         qc.femb_CALI_5()  # external calibration 900mV BL
 
     if tm==14:

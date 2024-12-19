@@ -140,31 +140,32 @@ def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # a
     flag = True
     bad_chan=[]
     bad_chip=[]
+    pulse_mean = []
+    pulse_max = []
+    pulse_min = []
     print(para_range)
 #   半高全宽
     if type == 'rms':
         for ch in range(128):
+            pulse_mean.append(np.mean(para_np[ch]))
+            pulse_max.append(np.max(para_np[ch]))
+            pulse_min.append(np.min(para_np[ch]))
             if (abs(para_np[ch]-para_med)/para_med > para_range):
-               flag = False
-               bad_chan.append(ch)
-               bad_chip.append(ch//16)
+                flag = False
+                bad_chan.append(ch)
+                bad_chip.append(ch//16)
     else:
         for ch in range(128):
+            pulse_mean.append(np.mean(para_np[ch]))
+            pulse_max.append(np.max(para_np[ch]))
+            pulse_min.append(np.min(para_np[ch]))
             if (abs(para_np[ch]-para_med) > para_range):
                 flag = False
                 bad_chan.append(ch)
                 bad_chip.append(ch//16)
-                # print(int_para)
-                # print(para_np)
-                # print(tmp_std)  #730
-                # print(para_med) #9939
-                # print(abs(para_np[ch]-para_med))    #3729
-                # print(para_range)
-                # input('debug')
-               #
 
 
-    return flag,[bad_chan,bad_chip], para_med, tmp_std
+    return flag,[bad_chan,bad_chip], para_med, tmp_std, pulse_mean, pulse_max, pulse_min
        
 
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):

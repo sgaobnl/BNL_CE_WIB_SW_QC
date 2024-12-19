@@ -8,6 +8,7 @@ import components.assembly_parameter as paras
 import components.assembly_log as log
 import components.assembly_function as a_func
 import components.assembly_report as a_repo
+import components.assembly_CSV_report as a_CSV
 import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
@@ -37,6 +38,16 @@ if 'sp' in sys.argv:
     ship = True
 else:
     ship = False
+
+if 'LF' in sys.argv:
+    Rail = False
+else:
+    Rail = True
+
+if 'OW' in sys.argv:
+    NewWIB = False
+else:
+    NewWIB = True
 
 ###########################################
 #      PART 01 Input test information     #
@@ -360,19 +371,23 @@ if save:
 #for ifemb in fembs:
 
 ################# monitoring power rails ###################
-log.report_log06["ITEM"] = "3.3 No Buffer Interface power rail"
-power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo)
-log06 = dict(log.power_rail_report_log)
-log.report_log06.update(log06)
-log.report_log061 = dict(log.check_log)
+if Rail:
+    log.report_log06["ITEM"] = "3.3 No Buffer Interface power rail"
+    power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
+    power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo)
+    log06 = dict(log.power_rail_report_log)
+    log06csv = dict(log.power_rail_report_csv)
+    log.report_log06.update(log06)
+    log.report_log06csv.update(log06csv)
+    log.report_log061 = dict(log.check_log)
+
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
 print("Take single-ended pulse data")
 fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
 snc = 0 # 900 mV
 sg0 = 0; sg1 = 0 # 14mV/fC
-st0 = 1; st1 = 1 # 2us
+st0 = 1; st1 = 1 # 2us3
 log.report_log07["ITEM"] = "3.4 No Buffer Interface Pulse at 900mV 14mV/fC 2us"
 #   initial configuration
 chk.femb_cd_rst()
@@ -403,17 +418,6 @@ a_func.se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname)
 #      PART 04 DIFF Performance Measurement  #
 ##############################################
 
-############ Take pulse data 900mV 14mV/fC 2us (DIFF) ##################
-#   take pulse structure:
-#   initial <print note>    <fname>
-#   cd_rst
-#   LArASIC parameter
-#   Coldadc parameter
-#   set fe
-#   femb cfg
-#   data_align
-#   spybuf
-#   save
 #Note: accually, all test actions could have a same general mode and we can just build a mode and reuse it with different items thus it could be concise for us
 print("Take differential pulse data")
 fname = "Raw_DIFF_{}_{}_{}_0x{:02x}".format("900mVBL","14_0mVfC","2_0us",0x10)
@@ -497,12 +501,15 @@ if save:
 
 
 ######   6   DIFF monitor power rails   ######
-log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
-power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
-power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo)
-log10 = dict(log.power_rail_report_log)
-log.report_log10.update(log10)
-log.report_log101 = dict(log.check_log)
+if Rail:
+    log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
+    power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
+    power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo)
+    log10 = dict(log.power_rail_report_log)
+    log10csv = dict(log.power_rail_report_csv)
+    log.report_log10.update(log10)
+    log.report_log10csv.update(log10csv)
+    log.report_log101 = dict(log.check_log)
 
 ##################################
 #      PART 05 Monitor Path      #
@@ -512,10 +519,10 @@ chk.femb_cd_rst()
 
 mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
 
-a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env)
+a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB)
 
 #================   Final Report    ===================================
-a_repo.final_report(datareport, fembs, fembNo)
+a_CSV.final_CSV(datareport, fembs, fembNo, Rail)
 
 t2=time.time()
 print(t2-t1)

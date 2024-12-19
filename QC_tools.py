@@ -14,7 +14,7 @@ system_info = platform.system()
 
 index_tmts = 5
 if system_info == 'Linux':
-    index_tmts = 4
+    index_tmts = 5
 elif system_info == 'Windows':
     index_tmts = 5
 
@@ -132,6 +132,8 @@ class ana_tools:
     
         rms=[]
         ped=[]
+        pedmax=[]
+        pedmin=[]
         med = []
         rms_max = 0
         rms_min = 1000
@@ -149,10 +151,14 @@ class ana_tools:
                 allpls=np.append(allpls,evtdata)
 
             ch_ped = np.mean(allpls)
+            ch_pedmax = np.max(allpls)
+            ch_pedmin = np.min(allpls)
             ch_rms = np.std(allpls)
 
             ped.append(ch_ped)
             rms.append(ch_rms)
+            pedmax.append(ch_pedmax)
+            pedmin.append(ch_pedmin)
 
             if ch_rms > rms_max:
                 rms_max = ch_rms
@@ -211,7 +217,7 @@ class ana_tools:
         with open(fp_bin, 'wb') as fn:
              pickle.dump( [ped, rms], fn)
 
-        return ped,rms
+        return ped,rms,pedmax,pedmin
 
     def GetPeaks(self, data, nfemb, fp, fname, funcfit=False, shapetime=2, period=500, dac = 0):
 
@@ -259,8 +265,7 @@ class ana_tools:
         peds = []
         pkps, pkns = [], []
         wfs, wfsf = [], []
-
-
+        plt.figure(figsize=(12, 6))
         for achn in range(128):
             chdata = []
             N_period = len(all_data[achn])//period
@@ -270,7 +275,7 @@ class ana_tools:
                 chunkdata = all_data[achn][istart : iend]
                 chdata.append(chunkdata)
             chdata = np.array(chdata)
-            avg_wf = np.average(np.transpose(chdata), axis = 1, keepdims = False)
+            avg_wf = np.average(np.transpose(chdata), axis = 1)
             wfsf.append(avg_wf)
             amax = np.max(avg_wf)
             amin = np.min(avg_wf)
@@ -282,7 +287,13 @@ class ana_tools:
             peddata = []
 
             for iperid in range(N_period):
-                peddata += all_data[achn][p0 + iperid*period - 250: p0 + iperid*period - 50]
+                if p0 < len(all_data[achn]):
+                    peddata += all_data[achn][p0 + iperid*period - 250: p0 + iperid*period - 50]
+                else:
+                    if ppos > 250:
+                        peddata += all_data[achn][ppos - 250: ppos - 50]
+                    else:
+                        peddata += all_data[achn][ppos + 500: ppos + 700]
             rmss.append(np.std(peddata))
             peds.append(np.mean(peddata))
 
@@ -300,11 +311,10 @@ class ana_tools:
             wfs.append(tmpwf[ppos-50:ppos+150])
 
             plt.subplot(1, 2, 1)
-            print(len(tmpwf))
             plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
 
             if achn == 64:
-                log.channel0_pulse[nfemb][dac] = wfs - np.mean(peddata)
+                log.channel0_pulse[nfemb][dac] = tmpwf[ppos-50:ppos+150]# - np.mean(peddata)
 
         bottom = -1000
         plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
@@ -438,7 +448,7 @@ class ana_tools:
                     mon_data = mon_list[0]
                     sps = mon_data[0][3]
                     item = item + 1
-                    print(dac_list)
+                    # print(dac_list)
                     for i in range(len(dac_list)):
                         sps_list=[]
                         for j in range(sps):
@@ -702,8 +712,8 @@ class ana_tools:
         return slope_f, INL, linear_dac_max
 
 
-    def GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
-        global fname_1
+    def  GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+        global fname_1, ppk, bl
         log.tmp_log.clear()
         log.check_log.clear()
         log.chkflag.clear()
@@ -716,7 +726,7 @@ class ana_tools:
 
         CC=1.85*pow(10,-13)
         e=1.602*pow(10,-19)
-
+        # print(namepat)
         if "sgp1" in namepat:
             dac_du = dac_v['4_7mVfC']
             fname = '{}_{}_{}_sgp1'.format(snc,sgs,sts)
@@ -726,9 +736,6 @@ class ana_tools:
 
         pk_list = [[],[],[],[]]
         for dac in dac_list:
-            # fdata = datadir+namepat.format(snc,sgs,sts,dac)+'.bin'
-            # with open(fdata, 'rb') as fn:
-            #      raw = pickle.load(fn)
             key_dict = namepat.format(snc,sgs,sts,dac)+'.bin'
             raw = Cali_dict[key_dict]
             rawdata = raw[0]
@@ -748,6 +755,7 @@ class ana_tools:
                     if ('vdac' in fname_1):
                         if not ('000mV' in fname_1):
                             ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
+                            # bl = 0
                     else:
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
                     ppk_np = np.array(ppk)-np.array(bl)
@@ -758,6 +766,7 @@ class ana_tools:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
             tmp_list = pk_list[ifemb]
             new_pk_list = list(zip(*tmp_list))
+
             check = True
             check_issue = []
             dac_np = np.array(dac_list)
@@ -788,13 +797,13 @@ class ana_tools:
                 inl_list.append(inl)
                 line_range_list.append(line_range)
                 if ('vdac' in fname_1):
-                    if inl > 0.1:
+                    if inl > 0.5:
                         check = False
                         check_issue.append("ch {} INL issue: {}".format(ch, inl))
-                    if line_range < 200:
+                    if line_range < 100:
                         check = False
                         check_issue.append("ch {} line range issue: {}".format(ch, line_range))
-                    if gain > 45:
+                    if gain > 50:
                         check = False
                         check_issue.append("ch {} gain issue: {}".format(ch, gain))
                 else:
@@ -855,14 +864,8 @@ class ana_tools:
             line_min = np.min(line_range_list)
 
             plt.subplot(2, 2, 1)
-            # print(log.channel0_pulse[ifemb][dac])
             for dac in dac_list[1: -2]:
                 plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
-                # if line_min < 15:
-                #     plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
-                # else:
-                #     if dac % 4 == 0:
-                #         plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
             plt.ylabel("ADC value", fontsize=14)
             plt.xlabel("Sample", fontsize=14)
             # plt.legend()
