@@ -5,6 +5,4 @@
 !.gitignore
 !README.md
 *.swp
-*.pof
-*.sof
 *.swo
