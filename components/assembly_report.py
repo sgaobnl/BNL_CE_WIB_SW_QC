@@ -92,7 +92,7 @@ def final_report(datareport, fembs, fembNo, Rail = True):
                     issue_note += "{} \n".format(dict[femb_id])
             note = "### Here is the issue: \n" + str(issue_note) + "\n"
 
-        fpmd = datareport[ifemb] + 'report_FEMB_{}_N{}_{}.md'.format(fembNo['femb%d' % ifemb], ifemb ,status)
+        fpmd = datareport[ifemb] + 'report_FEMB_{}_Slot{}_{}.md'.format(fembNo['femb%d' % ifemb], ifemb ,status)
 
         with open(fpmd, 'w', encoding = "utf-8") as file:
             file.write('\n')

@@ -178,6 +178,8 @@ report_log053_rms = defaultdict(dict)
 report_log055_rms_issue = defaultdict(dict)
 report_log056_fembrms = defaultdict(dict)
 report_log057_fembrmsstd = defaultdict(dict)
+report_log057_fembrmsmax = defaultdict(dict)
+report_log057_fembrms = defaultdict(dict)
 report_log059_rms_table_log = defaultdict(dict)
 
 # 06
@@ -187,14 +189,27 @@ item062 = "CALI1_DIFF"
 
 tmp_log = defaultdict(dict)
 report_log0601 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0601csvgain = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0601csvinl = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0601csvlinerange = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0602 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
+report_log0602csvgain = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0602csvinl = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0602csvlinerange = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0603 = defaultdict(dict)  # SE 200 mV 14 mV INL
+report_log0603csv = defaultdict(dict)  # SE 200 mV 14 mV INL
 report_log0604 = defaultdict(dict)  # SE 200 mV 25 mV INL
+report_log0604csvgain = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0604csvinl = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0604csvlinerange = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0605 = defaultdict(dict)  # DIFF 200 mV 25 mV INL
 
 check_log0601 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 check_log0602 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 check_log0603 = defaultdict(dict)  # SE 200 mV 14 mV INL
+report_log0603csvgain = defaultdict(dict)  # SE 200 mV 14 mV INL
+report_log0603csvinl = defaultdict(dict)  # SE 200 mV 14 mV INL
+report_log0603csvlinerange = defaultdict(dict)  # SE 200 mV 14 mV INL
 check_log0604 = defaultdict(dict)  # SE 200 mV 25 mV INL
 check_log0605 = defaultdict(dict)  # DIFF 200 mV 25 mV INL
 # 07
@@ -206,6 +221,10 @@ report_log0701 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0702 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 
 check_log0701 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0701csvgain = defaultdict(dict)
+report_log0701csvinl = defaultdict(dict)
+report_log0701csvlinerange = defaultdict(dict)
+
 check_log0702 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 
 report_log07_fin_result = defaultdict(dict)
@@ -216,6 +235,9 @@ item081 = "CALI3"
 item082 = "CALI3_DIFF"
 
 report_log0801 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
+report_log0801csvgain = defaultdict(dict)
+report_log0801csvinl = defaultdict(dict)
+report_log0801csvlinerange = defaultdict(dict)
 report_log0802 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 
 check_log0801 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
@@ -225,6 +247,9 @@ report_log08_fin_result = defaultdict(dict)
 
 # 09
 report_log09 = defaultdict(dict)    # input information
+report_log0901csvgain = defaultdict(dict)
+report_log0901csvinl = defaultdict(dict)
+report_log0901csvlinerange = defaultdict(dict)
 item091 = "CALI4"
 item092 = "CALI4_DIFF"
 
@@ -253,6 +278,7 @@ mon_pulse = defaultdict(dict)
 item11 = "MON_FE"
 report_log11_01 = defaultdict(dict)
 check_log1101 = defaultdict(dict)
+report_log1101csv = defaultdict(dict)
 
 
 
@@ -273,6 +299,10 @@ report_log1302 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 check_log1301 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 check_log1302 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 
+report_log1301csvgain = defaultdict(dict)
+report_log1301csvinl = defaultdict(dict)
+report_log1301csvlinerange = defaultdict(dict)
+
 report_log13_fin_result = defaultdict(dict)
 
 # 14
@@ -287,6 +317,10 @@ check_log1402 = defaultdict(dict)  # SE 200 mV 7.8 mV INL
 
 report_log14_fin_result = defaultdict(dict)
 
+report_log1401csvgain = defaultdict(dict)
+report_log1401csvinl = defaultdict(dict)
+report_log1401csvlinerange = defaultdict(dict)
+
 # 15
 item15 = "ADC_SYNC_PAT"
 # ADCMON_table_cell = defaultdict(dict)
@@ -294,6 +328,7 @@ item15 = "ADC_SYNC_PAT"
 check_log1501 = defaultdict(dict)
 check_log1502 = defaultdict(dict)
 check_log1503 = defaultdict(dict)
+check_log15csv = defaultdict(dict)
 
 chkflag = defaultdict(dict)    # input information
 badlist = defaultdict(dict)    # input information
@@ -306,6 +341,7 @@ tmp_pulse = defaultdict(dict)
 item16 = "PLL_PAT"
 check_log1601 = defaultdict(dict)
 report_log1601 = defaultdict(dict)
+check_log16csv = defaultdict(dict)
 # 06 calibration
 channel0_pulse = defaultdict(dict)
 

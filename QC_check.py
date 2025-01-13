@@ -143,7 +143,6 @@ def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # a
     pulse_mean = []
     pulse_max = []
     pulse_min = []
-    print(para_range)
 #   半高全宽
     if type == 'rms':
         for ch in range(128):
@@ -167,7 +166,48 @@ def CHKPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # a
 
     return flag,[bad_chan,bad_chip], para_med, tmp_std, pulse_mean, pulse_max, pulse_min
        
+def csvPulse(para, para_range = 0.4, errbar=10, refmean = 0, type = 'rms'):  # assume the input is a list
+    # para_range    rms : para_range = 7     ped : para_range = 350
+    print("start check pulse")
+    int_para = [int(x) for x in para]
+    para_np = np.array(int_para)
+    tmp_std = np.std(para_np)
+    if type == '25mVfC':
+        para_med = (np.max(para_np)+np.min(para_np))/2
+    else:
+        para_med = np.mean(para_np)
 
+    # refine_para = [x for x in para_np if (abs(x - para_med) < para_range)]
+    # fit_range = errbar * np.std(refine_para)
+
+    flag = True
+    bad_chan=[]
+    bad_chip=[]
+    pulse_mean = []
+    pulse_max = []
+    pulse_min = []
+#   半高全宽
+    if type == 'rms':
+        for ch in range(128):
+            pulse_mean.append(np.mean(para_np[ch]))
+            pulse_max.append(np.max(para_np[ch]))
+            pulse_min.append(np.min(para_np[ch]))
+            if (abs(para_np[ch]-para_med)/para_med > para_range):
+                flag = False
+                bad_chan.append(ch)
+                bad_chip.append(ch//16)
+    else:
+        for ch in range(128):
+            pulse_mean.append(np.mean(para_np[ch]))
+            pulse_max.append(np.max(para_np[ch]))
+            pulse_min.append(np.min(para_np[ch]))
+            if (abs(para_np[ch]-para_med) > para_range):
+                flag = False
+                bad_chan.append(ch)
+                bad_chip.append(ch//16)
+
+
+    return flag,[bad_chan,bad_chip], para_med, tmp_std, pulse_mean, pulse_max, pulse_min
 #    def ChkRMS(self, env, fp, fname, snc, sgs, sts):
 #
 #        infile = fp+"RMS_{}.bin".format(fname)

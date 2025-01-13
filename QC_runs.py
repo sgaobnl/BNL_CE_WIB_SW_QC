@@ -24,7 +24,7 @@ class QC_Runs:
         self.vdacmax = 0.5
         self.vstep = 10
         self.chk = WIB_CFGS()
-        self.LAr_Dalay = 3.5
+        self.LAr_Dalay = 10
         self.sdd0 = 0
         self.sdf0 = 0
         self.sncs = ["900mVBL", "200mVBL"]
@@ -37,7 +37,6 @@ class QC_Runs:
 
         tester=input("please input your name:  ")
         self.logs['tester']=tester
-
         env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
         if ("Y" in env_cs) or ("y" in env_cs):
             env = "LN"
@@ -183,7 +182,8 @@ class QC_Runs:
 
         if autocali&0x01:
             return  None
-
+        if dac == 0:
+            time.sleep(self.LAr_Dalay)
         if ext_cali_flg:
             if excali == False:
                 datae = {}
@@ -229,10 +229,6 @@ class QC_Runs:
                     print(dacvol)
                     self.chk.wib_cali_dac(dacvol=dacvol)
                     for fembid in self.fembs:
-                        dac0_sel = 0
-                        dac1_sel = 0
-                        dac2_sel = 0
-                        dac3_sel = 0
                         if fembid == 0:
                             dac0_sel = 1
                         if fembid == 1:
@@ -241,10 +237,9 @@ class QC_Runs:
                             dac2_sel = 1
                         if fembid == 3:
                             dac3_sel = 1
-                            dac0_sel = 1
                     self.chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel, dac2_sel=dac2_sel, dac3_sel=dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
                     print('DAC value: {}'.format(dacvol))
-                    input('debug dac, enable route')
+                    # input('debug dac, enable route')
                     cp_period = 500
                     cp_high_time = int(cp_period * 32 * 3 / 4)
                     # cp_high_time = int(cp_period*32*1/2)
@@ -942,15 +937,15 @@ class QC_Runs:
         cfg_paras_rec = []
         # for i in range(8):
         #     self.chk.adcs_paras[i][2] = 1
-        self.sample_N = 5
-        sg0 = 0;        sg1 = 0 # 14mV/fC
-        for dac in range(0, 64, 4):
-            fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
-            datad["CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
-
-        fp = datadir + "QC_Cali01_t6" + ".bin"
-        with open(fp, 'wb') as fn:
-            pickle.dump(datad, fn)
+        # self.sample_N = 5
+        # sg0 = 0;        sg1 = 0 # 14mV/fC
+        # for dac in range(0, 64, 4):
+        #     fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
+        #     datad["CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
+        #
+        # fp = datadir + "QC_Cali01_t6" + ".bin"
+        # with open(fp, 'wb') as fn:
+        #     pickle.dump(datad, fn)
         # for i in range(8):
         #     self.chk.adcs_paras[i][2] = 0
 

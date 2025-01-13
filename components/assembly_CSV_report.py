@@ -32,68 +32,13 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
     return table
 
 def final_CSV(datareport, fembs, fembNo, Rail = True):
-    print("\n\n\n")
-    print("==================================================================================")
-    print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
-    print("+++++++                                                                    +++++++")
-    print("==================================================================================")
-    print("\n")
-    print(log.report_log01["ITEM"])
     for key, value in log.report_log01["Detail"].items():
         print(f"{key}: {value}")
-
-    print('\n')
-
     all_true = {}
+    status = 'P'
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-
-        log.final_status[femb_id]["item2"] = log.report_log021[femb_id]["Result"]
-        log.final_status[femb_id]["item3"] = log.report_log03[femb_id]["Result"]
-        log.final_status[femb_id]["item4"] = log.report_log04[femb_id]["Result"]
-        log.final_status[femb_id]["item5"] = log.report_log051[femb_id]["Result"]
-        if Rail:
-            log.final_status[femb_id]["item6"] = log.report_log061[femb_id]["Result"]
-        log.final_status[femb_id]["item7"] = log.report_log07[femb_id]["Result"]
-        log.final_status[femb_id]["item8"] = log.report_log08[femb_id]["Result"]
-        log.final_status[femb_id]["item9"] = log.report_log091[femb_id]["Result"]
-        if Rail:
-            log.final_status[femb_id]["item10"] = log.report_log101[femb_id]["Result"]
-        log.final_status[femb_id]["Monitor_Path"] = log.report_log111[femb_id]["Result"]
-        #log.final_status[femb_id]["item9"] = log.report_log09[femb_id]["Result"]
-
-        all_true[femb_id] = all(value for value in log.final_status[femb_id].values())
-
-        if all_true[femb_id]:
-            print("FEMB ID {}\t Slot {} PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d'%ifemb], ifemb))
-        else:
-            print("femb id {}\t Slot {} faild\t the assembly checkout".format(fembNo['femb%d' % ifemb], ifemb))
-    print("\n\n")
-    print("Detail for Issues")
-
-    for ifemb in fembs:
-        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-        if Rail:
-            dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log061, log.report_log07, log.report_log08, log.report_log091, log.report_log101, log.report_log111]
-        else:
-            dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log07, log.report_log08, log.report_log091, log.report_log111]
-
-        issue_note = ""
-        if all_true[femb_id]:
-            pass
-            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
-            note = "### See the Report"
-            status = 'P'
-        else:
-            print(femb_id)
-            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
-            status = 'P'
-            for dict in dict_list:
-                if dict[femb_id]["Result"] == False:
-                    print(dict[femb_id])
-                    issue_note += "{} \n".format(dict[femb_id])
-            note = "### Here is the issue: \n" + str(issue_note) + "\n"
-
+        print("CSV Generated")
         fpmd = datareport[ifemb] + 'DataBase_FEMB_{}_S{}_{}.csv'.format(fembNo['femb%d' % ifemb], ifemb ,status)
 
         with open(fpmd, 'w', newline='', encoding = "utf-8") as file:
@@ -116,7 +61,6 @@ def final_CSV(datareport, fembs, fembNo, Rail = True):
                 writer.writerow([key, value])
             for key, value in log.report_log05[femb_id].items():
                 writer.writerow([key, value])
-            print(log.report_log06csv[femb_id])
             for key, value in log.report_log06csv[femb_id].items():
                 writer.writerow([key, value])
             for key, value in log.report_log07[femb_id].items():

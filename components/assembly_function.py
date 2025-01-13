@@ -130,7 +130,7 @@ def monitor_power_rail(interface, fembs, datadir, save = False):
             pickle.dump([vold, fembs], fn)
     return vold
 
-def monitor_power_rail_analysis(interface, datadir, fembNo):
+def monitor_power_rail_analysis(interface, datadir, fembNo, NewWIB = False):
     log.tmp_log.clear()
     log.check_log.clear()
     # parameter
@@ -148,8 +148,12 @@ def monitor_power_rail_analysis(interface, datadir, fembNo):
         vfembs = monvols[1]
         vold = monvols[0]
     vkeys = list(vold.keys())
+    if NewWIB:
+        LSB = 1/(2**14)*2.500   # NEW WIB IS 2500
+    else:
+        LSB = 1/(2**14)*2.048   # NEW WIB IS 2500
     #LSB = 2.5 / 16384
-    LSB = 2.048 / 16384
+    #LSB = 2.048 / 16384
     for ifemb in range(len(vfembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % vfembs[ifemb]])
         mvold = {}

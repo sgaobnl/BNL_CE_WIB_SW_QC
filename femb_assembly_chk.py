@@ -12,7 +12,7 @@ import components.assembly_CSV_report as a_CSV
 import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
-LAr_Dalay = 5
+LAr_Dalay = 10
 
 ####### Input FEMB slots #######
 if len(sys.argv) < 2:
@@ -374,7 +374,7 @@ if save:
 if Rail:
     log.report_log06["ITEM"] = "3.3 No Buffer Interface power rail"
     power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
-    power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo)
+    power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo, NewWIB = NewWIB)
     log06 = dict(log.power_rail_report_log)
     log06csv = dict(log.power_rail_report_csv)
     log.report_log06.update(log06)
@@ -504,7 +504,7 @@ if save:
 if Rail:
     log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
     power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
-    power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo)
+    power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo, NewWIB = NewWIB)
     log10 = dict(log.power_rail_report_log)
     log10csv = dict(log.power_rail_report_csv)
     log.report_log10.update(log10)
@@ -522,6 +522,7 @@ mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datad
 a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB)
 
 #================   Final Report    ===================================
+a_repo.final_report(datareport, fembs, fembNo, Rail)
 a_CSV.final_CSV(datareport, fembs, fembNo, Rail)
 
 t2=time.time()

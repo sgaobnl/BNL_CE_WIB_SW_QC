@@ -1,6 +1,8 @@
 import sys 
 import numpy as np
 import pickle
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from scipy.fft import fft, fftfreq
 import time, datetime, random, statistics
 import matplotlib.pyplot as plt
@@ -36,20 +38,19 @@ for i in range(5):
     wibdatai = wibdata[i]
     datdi[i] = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
 datd = np.concatenate((datdi[0],datdi[1],datdi[2],datdi[3],datdi[4]), axis = 1)
-print('debug');
-print(len(datd))
+
 ref_chn = 7
 if 1:
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
     plt.rcParams.update({'font.size': 14})
     rms = []
+    mean = []
+    std = []
     pkp  = []
-
     for fe in [0,1,2,3,4,5,6,7]:#range(8):[0, 6]:#
         for fe_chn in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:#range(16):[9]:#
             fechndata = np.array(datd[fe*16+fe_chn], dtype = np.int32)
-
             rms.append(np.mean(fechndata))
             rms_tmp = round(np.std(fechndata), 2)
             maxpos = np.argmax(fechndata[100:]) + 100
@@ -57,54 +58,66 @@ if 1:
             baseline = fechndata[maxpos-30]
             # print(baseline)
             subaseline = [x - baseline for x in fechndata]
-            # print(subaseline)
-            # plt.text(maxpos, maxvalue+300, '{}'.format(maxvalue))
             # if fe_chn == ref_chn:
             #     plt.plot(range(0, 150,1), fechndata[maxpos-30 : maxpos + 120], marker='.', color='blue', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
             # else:
             #     plt.plot(range(0, 150, 1), fechndata[maxpos - 30: maxpos + 120], marker='.', linestyle='--', alpha=0.7, color='green', label="chip{}_ch{}_{}".format(fe, fe_chn, dac))
             # if fe == 0 and fe_chn == 1:
-            #     plt.plot(range(len(fechndata)),fechndata)
-            # mean = np.mean(fechndata)
+            plt.plot(range(len(fechndata)),fechndata)
+            mean.append(np.mean(fechndata))
+            std.append(np.std(fechndata))
+            print(mean)
+            print(std)
+    data = np.column_stack((std,mean))
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data)
+    kmeans = KMeans(n_clusters=8)
+    kmeans.fit(data_scaled)
+    # labels = kmeans.predict(data_scaled)
+    # print(kmeans.cluster_centers_)
+    stdd = np.std(mean)
+    yerr = stdd
+    # plt.scatter(data[:, 0], data[:, 1],  cmap = 'viridis', s =50)
+    m = np.mean(std)
+    s = np.std(std)
+    # print(m)
+    # print(s)
+    # print(m+s)
+    # print(m+s+s)
+    # print(m+s+s+s)
+    # print(m+s+s+s+s)
+    # print(m+s+s+s+s+s)
+    # plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], c = 'red', marker = 'x', s = 100)
+    # plt.errorbar(std, mean, yerr=yerr, fmt='o', label='Data with error bars', ecolor='red', capsize=3)
 
-            if(fe ==0 and fe_chn == 0):
-                N = len(fechndata)
-                yf = fft(fechndata)
-                xf = fftfreq(N, 0.000000512)[:N//2]
-                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1000),label="#0 normal connect with 50 pF Toy_TPC (*1000)", marker = '.')
-                plt.yscale('log')
-            if(fe ==0 and fe_chn == 15):
-                N = len(fechndata)
-                yf = fft(fechndata)
-                xf = fftfreq(N, 0.000000512)[:N//2]
-                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*100),label="#15 connect with GND via a 2 Mohm resistor (*100)", marker = '.')
-                plt.yscale('log')
-            # if(fe ==1 and fe_chn == 2):
+# FFT
+            # if(fe ==0 and fe_chn == 0):
             #     N = len(fechndata)
             #     yf = fft(fechndata)
             #     xf = fftfreq(N, 0.000000512)[:N//2]
-            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]),label="#18 short to GND directly", marker = '.')
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1000),label="#0 normal connect with 50 pF Toy_TPC (*1000)", marker = '.')
             #     plt.yscale('log')
-            # if(fe ==6 and fe_chn == 0):
+            # if(fe ==0 and fe_chn == 15):
             #     N = len(fechndata)
             #     yf = fft(fechndata)
             #     xf = fftfreq(N, 0.000000512)[:N//2]
-            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]),label="#96 short to Pin 97 directly", marker = '.')
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*100),label="#15 connect with GND via a 2 Mohm resistor (*100)", marker = '.')
             #     plt.yscale('log')
-            if(fe ==5 and fe_chn == 3):
-                N = len(fechndata)
-                yf = fft(fechndata)
-                xf = fftfreq(N, 0.000000512)[:N//2]
-                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*10),label="#83 connect to Pin 79 via a 10 Mohm (*10)", marker = '.')
-                plt.yscale('log')
-            if(fe ==6 and fe_chn == 9):
-                N = len(fechndata)
-                yf = fft(fechndata)
-                xf = fftfreq(N, 0.000000512)[:N//2]
-                plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1),label="#105 connect to Pin 109 via a 2 Mohm", marker = '.')
-                plt.yscale('log')
-#    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
-#    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
+            #
+            # if(fe ==5 and fe_chn == 3):
+            #     N = len(fechndata)
+            #     yf = fft(fechndata)
+            #     xf = fftfreq(N, 0.000000512)[:N//2]
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*10),label="#83 connect to Pin 79 via a 10 Mohm (*10)", marker = '.')
+            #     plt.yscale('log')
+            # if(fe ==6 and fe_chn == 9):
+            #     N = len(fechndata)
+            #     yf = fft(fechndata)
+            #     xf = fftfreq(N, 0.000000512)[:N//2]
+            #     plt.plot(xf, 2/len(fechndata) * np.abs(yf[:N//2]*1),label="#105 connect to Pin 109 via a 2 Mohm", marker = '.')
+            #     plt.yscale('log')
+# plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS") # rms
+# plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #
 #    plt.grid()
 #
@@ -113,12 +126,14 @@ if 1:
 #
 #    plt.title("ADC noise distribution (bypass SHA) ")
 #    plt.title("ADC noise distribution (known anlog patten, SHA) ")
-#    plt.ylabel("RMS noise / bit")
-#    plt.ylim((-1,5))
-#    plt.xlim((-1,130))
+# plt.ylabel("Mean")
+# plt.xlabel("RMS")
+# plt.ylim((-1,2300))
+plt.xlim((0,2300))
 #    plt.xlabel("Channel")
-###    plt.grid()
-#    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+# plt.xticks([m-s-s-s-s-s, m-s-s-s-s, m-s-s-s, m-s-s, m-s, m, m+s, m+s+s, m+s+s+s, m+s+s+s+s, m+s+s+s+s+s])
+# plt.grid(True, which = 'major', axis = 'y')
+
 #    plt.show()
 #    plt.close()
 #
@@ -127,11 +142,11 @@ if 1:
 #    plt.title("ADC pedestal distribution (known anlog patten, diff) ")
 #    plt.title("ADC pedestal distribution (known anlog patten, SHA) ")
 # plt.title("{}".format(fp))
-plt.title('Frequency Spectrum of Noise (Log Scale)')
-plt.legend()
-plt.ylabel('Magnitude (Log Scale)')
+# plt.title('Frequency Spectrum of Noise (Log Scale)')
+# plt.legend()
+# plt.ylabel('Magnitude (Log Scale)')
 # plt.ylim((mean-50,mean+50))
-plt.xlabel('Frequency (Hz)')
+# plt.xlabel('Frequency (Hz)')
 plt.grid()
 # plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
 plt.show()

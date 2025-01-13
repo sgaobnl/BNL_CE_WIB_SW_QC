@@ -20,12 +20,13 @@ from PIL import Image
 import QC_components.qc_a_function as a_func
 import QC_components.qc_log as log
 import QC_components.All_Report as a_repo
+import QC_components.QC_CSV_Report as csv_repo
 # use webbrowser to show the issue report
 import webbrowser
 
 class QC_reports:
 
-    def __init__(self, fdir, fembs=[]):
+    def __init__(self, fdir, fembs=[], NewWIB = True):
         print(fdir.split("/"))
         savedir = 'D:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
         self.datadir = fdir + "/"
@@ -38,6 +39,7 @@ class QC_reports:
         self.logs= logs
         self.fembsName={}
         self.fembsID={}
+        self.NewWIB = NewWIB
         if fembs:
             self.fembs = fembs
             for ifemb in fembs:
@@ -135,7 +137,7 @@ class QC_reports:
         log.check_log01_12.update(pulse_check)
 #     01_13 SE OFF Power Rail             Rail
         monvols = pwr_meas_dict["MON_Regular_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"]
-        a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, monvols, self.fembsID, '01_13 SE OFF Power Rail -- Regular')
+        a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, monvols, self.fembsID, '01_13 SE OFF Power Rail -- Regular', NewWIB = self.NewWIB)
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_13.update(power_rail)
@@ -164,7 +166,7 @@ class QC_reports:
 
 #     SE ON Power Rail             Rail
         monvols = pwr_meas_dict["MON_Regular_SE_ON_200mVBL_14_0mVfC_2_0us_0x00.bin"]
-        a_func.monitor_power_rail_analysis("SE_ON", self.fembs, monvols, self.fembsID, '01_23 SE ON Power Rail')
+        a_func.monitor_power_rail_analysis("SE_ON", self.fembs, monvols, self.fembsID, '01_23 SE ON Power Rail', NewWIB = self.NewWIB)
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_23.update(power_rail)
@@ -196,7 +198,7 @@ class QC_reports:
 
 #     DIFF Power Rail
         monvols = pwr_meas_dict["MON_Regular_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"]
-        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", self.fembs, monvols, self.fembsID, 'DIFF Power Rail')
+        power_rail_diff = a_func.monitor_power_rail_analysis("DIFF", self.fembs, monvols, self.fembsID, 'DIFF Power Rail', NewWIB = self.NewWIB)
         power_rail = dict(log.tmp_log)
         power_rail_check = dict(log.check_log)
         log.report_log01_33.update(power_rail)
@@ -313,10 +315,10 @@ class QC_reports:
         f_pwr = datadir + "QC_femb_leakage_cur_t3.bin"
         with open(f_pwr, 'rb') as fn:
             LCCHKPULSE_dict = pickle.load(fn)
-        print(len(LCCHKPULSE_dict))
-        print(type(LCCHKPULSE_dict))
-        keys_list = list(LCCHKPULSE_dict.keys())
-        print(keys_list)
+        # print(len(LCCHKPULSE_dict))
+        # print(type(LCCHKPULSE_dict))
+        # keys_list = list(LCCHKPULSE_dict.keys())
+        # print(keys_list)
 
         log_dict = log.report_log3
         qc=ana_tools()
@@ -390,8 +392,6 @@ class QC_reports:
         f_pwr = datadir + "femb_chk_pulse_t4.bin"
         with open(f_pwr, 'rb') as fn:
             CHKPULSE_dict = pickle.load(fn)
-        keys_list = list(CHKPULSE_dict.keys())
-        print(keys_list)
 
         qc=ana_tools()
         # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
@@ -724,10 +724,6 @@ class QC_reports:
         f_pwr = datadir + "QC_femb_rms_t5.bin"
         with open(f_pwr, 'rb') as fn:
             femb_rms_dict = pickle.load(fn)
-        print(len(femb_rms_dict))
-        print(type(femb_rms_dict))
-        keys_list = list(femb_rms_dict.keys())
-        print(keys_list)
 
         section_status = True
         check = True
@@ -748,20 +744,22 @@ class QC_reports:
             pldata = qc.data_decode(rawdata, self.fembs)
             for ifemb in self.fembs:
                 fp = self.savedir[ifemb]+"RMS/"
-                ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
-                tmp = QC_check.CHKPulse(ped, 800)
+                ped, rms, pedmax, pedmin = qc.GetRMS(pldata, ifemb, fp, fname)
+                tmp = QC_check.CHKPulse(ped, 1500)
                 log.chkflag["BL"] = (tmp[0])
                 log.badlist["BL"] = (tmp[1])
                 ped_status = tmp[0]
                 baseline_err_content = tmp[1]
                 log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
-                tmp = QC_check.CHKPulse(rms, 0.3)
+                tmp = QC_check.CHKPulse(rms, 0.6)
                 log.chkflag["RMS"] = (tmp[0])
                 log.badlist["RMS"] = (tmp[1])
                 rms_status = tmp[0]
                 rms_err_content = tmp[1]
                 log.report_log056_fembrms[ifemb][fname] = tmp[2]
                 log.report_log057_fembrmsstd[ifemb][fname] = tmp[3]
+                # log.report_log057_fembrmsmax[ifemb][fname] = tmp[4]
+                log.report_log057_fembrms[ifemb][fname] = '\nmean {},\nstd {},\nmax {},\nmin {}'.format(ped,rms,pedmax,pedmin)
                 index_of_keyword = fname.find("mVfC_")
                 keyword = fname[index_of_keyword-4 : index_of_keyword]
                 if (ped_status == True) and (rms_status == True):
@@ -985,6 +983,7 @@ class QC_reports:
     def report(self):
         print(self.savedir)
         path = a_repo.section_report(self.savedir, self.fembs, self.fembsID)
+        pathcsv = csv_repo.CSV_section_report(self.savedir, self.fembs, self.fembsID)
         if '_F_S' in path:
             preview_url = f'file://{path}'
             webbrowser.open(preview_url)
@@ -1017,6 +1016,12 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0603.update(inl_gain)
         log.check_log0603.update(inl_gain_check)
+
+        for ifemb in self.fembs:
+            log.report_log0603csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0603csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0603csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
         dac_list = range(0, 64, 8)
         print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "4_7mVfC", "2_0us", dac_list, 10000)
@@ -1025,7 +1030,12 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0601.update(inl_gain)
         log.check_log0601.update(inl_gain_check)
-        #
+
+        for ifemb in self.fembs:
+            log.report_log0601csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0601csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0601csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
         print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
         a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "7_8mVfC", "2_0us", 0, self.savedir, "CALI1/")
@@ -1033,6 +1043,12 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0602.update(inl_gain)
         log.check_log0602.update(inl_gain_check)
+
+        for ifemb in self.fembs:
+            log.report_log0602csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0602csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0602csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
         #
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "25_0mVfC", "2_0us", dac_list)
@@ -1041,6 +1057,12 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0604.update(inl_gain)
         log.check_log0604.update(inl_gain_check)
+
+        for ifemb in self.fembs:
+            log.report_log0604csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0604csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0604csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
@@ -1139,6 +1161,12 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0701.update(inl_gain)
         log.check_log0701.update(inl_gain_check)
+
+        for ifemb in self.fembs:
+            log.report_log0701csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0701csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0701csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
         dac_list = range(0, 32, 4)
         self.CreateDIR("CALI2_DIFF")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
@@ -1198,6 +1226,11 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0801.update(inl_gain)
         log.check_log0801.update(inl_gain_check)
+        for ifemb in self.fembs:
+            log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+
 
     #   9  CALI_report_4
     def CALI_report_4(self):
@@ -1222,6 +1255,10 @@ class QC_reports:
         inl_gain_check = dict(log.check_log)
         log.report_log0901.update(inl_gain)
         log.check_log0901.update(inl_gain_check)
+        for ifemb in self.fembs:
+            log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
         # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
         # self.CreateDIR("CALI4_DIFF")
         # datadir = self.datadir+"CALI4/"
@@ -1312,21 +1349,13 @@ class QC_reports:
              raw = pickle.load(fn)
         print("analyze file: %s"%fp)
         mon_sgp1=raw[0]
-        # print(mon_sgp1)
         mon_14mVfC=raw[1]
         mon_7_8mVfC=raw[2]
         mon_25mVfC=raw[3]
-        #mon_dict = {'dict1' : mon_sgp1}
         mon_dict = {'LArASIC_DAC_sgp1': mon_sgp1, 'LArASIC_DAC_14mVfC': mon_14mVfC, 'LArASIC_DAC_7_8mVfC': mon_7_8mVfC, 'LArASIC_DAC_25mVfC': mon_25mVfC}
         qc = ana_tools()
-        #qc.plotDACMon(self.fembs, mon_dic, self.savedir, "MON_FE", "LArASIC_DAC_sgp1")
-        #
-        chip_inl = qc.PlotMonDAC(self.fembs, mon_dict, self.savedir, "MON_FE", self.fembsID)
+        chip_inl = qc.PlotMonDAC(self.fembs, mon_dict, self.savedir, "MON_FE", self.fembsID, NewWIB = self.NewWIB)
         log.check_log1101.update(chip_inl)
-        # print(log.report_log11_01)
-        # qc.PlotMonDAC(self.fembs, mon_14mVfC, self.savedir, "MON_FE", "LArASIC_DAC_14mVfC")
-        # qc.PlotMonDAC(self.fembs, mon_7_8mVfC, self.savedir, "MON_FE", "LArASIC_DAC_7_8mVfC")
-        # qc.PlotMonDAC(self.fembs, mon_25mVfC, self.savedir, "MON_FE", "LArASIC_DAC_25mVfC")
 
     #   12  ColdADC_DAC_MON_report
     def ColdADC_DAC_MON_report(self):
@@ -1341,9 +1370,7 @@ class QC_reports:
         mon_dac=raw[1]
         qc=ana_tools()
         qc.PlotADCMon(self.fembs, mon_dac, self.savedir, "MON_ADC",  self.fembsID)
-        # inl_gain = dict(log.tmp_log)
         inl_check = dict(log.check_log)
-        # log.report_log1202.update(inl_gain)
         log.check_log1201.update(inl_check)
 
 
@@ -1351,7 +1378,7 @@ class QC_reports:
     def CALI_report_5(self):
         log.test_label.append(13)
         qc=ana_tools()
-        dac_list = list(range(75, 235, 50))
+        dac_list = list(range(50, 250, 50));print(dac_list)
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
 
@@ -1362,31 +1389,28 @@ class QC_reports:
         print(keys_list)
 
         print("analyze CALI5 900mVBL 14_0mVfC External")
-        qc.GetGain(self.fembs, self.fembsID, Cali05_dict, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 300, 50)
-
-        #   Get RMS
-        # datafiles = datadir+'CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin'
-        # with open(datafiles, 'rb') as fn:
-        #     raw = pickle.load(fn)
+        qc.GetGain(self.fembs, self.fembsID, Cali05_dict, self.savedir, "CALI5/", "CALI5_SE_{}_{}_{}_vdac{:06d}mV", "900mVBL", "14_0mVfC", "2_0us", dac_list, 200, 50)
         raw = Cali05_dict['CALI5_SE_900mVBL_14_0mVfC_2_0us_RMS.bin']
         rawdata=raw[0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             fp = self.savedir[ifemb]+"CALI5/"
-            ped, rms = qc.GetRMS(pldata, ifemb, fp, "900mVBL_14_0mVfC_2_0us")
+            ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, "900mVBL_14_0mVfC_2_0us")
+            log.report_log1301csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log1301csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log1301csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
 
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log1301.update(inl_gain)
         log.check_log1301.update(inl_gain_check)
-        # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 0, "CALI5/")
 
     #   14  Calibration for External Pulse 200 mV Baseline
     def CALI_report_6(self):
         log.test_label.append(14)
         qc=ana_tools()
-        dac_list = list(range(75, 550, 50))
+        dac_list = list(range(50, 600, 50))
         self.CreateDIR("CALI6")
         datadir = self.datadir+"CALI6/"
 
@@ -1410,7 +1434,10 @@ class QC_reports:
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             fp = self.savedir[ifemb]+"CALI6/"
-            ped, rms = qc.GetRMS(pldata, ifemb, fp, "200mVBL_14_0mVfC_2_0us")
+            ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, "200mVBL_14_0mVfC_2_0us")
+            log.report_log1401csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log1401csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log1401csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
         qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1449,18 +1476,24 @@ class QC_reports:
             for ifemb in self.fembs:
                 femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
                 fp = self.savedir[ifemb] + fdir+"/"
-                ped, rms = qc.GetRMS(pldata, ifemb, fp, fname)
+                ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, fname)
                 if 'DC_Noise' in fname:
+                    log.check_log15csv[femb_id]['DC_Noise_ped'] = ped
+                    log.check_log15csv[femb_id]['DC_Noise_rms'] = rms
                     if np.max(rms) > 2:
                         log.check_log1501[femb_id]['Result'] = "False"
                     else:
                         log.check_log1501[femb_id]['Result'] = "True"
                 if "SHA_SE" in fname:
+                    log.check_log15csv[femb_id]['SHA_SE_ped'] = ped
+                    log.check_log15csv[femb_id]['SHA_SE_rms'] = rms
                     if np.max(rms) > 4:
                         log.check_log1502[femb_id]['Result'] = "False"
                     else:
                         log.check_log1502[femb_id]['Result'] = "True"
                 if "SHA_DIFF" in fname:
+                    log.check_log15csv[femb_id]['SHA_DIFF_ped'] = ped
+                    log.check_log15csv[femb_id]['SHA_DIFF_rms'] = rms
                     if np.max(rms) > 4:
                         log.check_log1503[femb_id]['Result'] = "False"
                     else:
@@ -1485,8 +1518,9 @@ class QC_reports:
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             fp = self.savedir[ifemb] + fdir + "/"
+            check = True
             for afile in QC_femb_test_pattern_pll_dict.keys():
-                check = True
+
                 # with open(afile, 'rb') as fn:
                 #     raw = pickle.load(fn)
                 raw = QC_femb_test_pattern_pll_dict[afile]
@@ -1502,15 +1536,18 @@ class QC_reports:
                     fname = afile.split("\\")[-1][:-4]
                 else:
                     fname = afile.split("/")[-1][:-4]
-                ped,rms=qc.GetRMS(pldata, ifemb, fp, fname)
+                ped,rms, _, _=qc.GetRMS(pldata, ifemb, fp, fname)
                 if not(max(rms) == 0):
                     check = False
                 for i in ped:
                     if not((int(i) == 10901) or (int(i) == 5482)):
                         check = False
                 log.report_log1601[femb_id][fname] = check
+                log.check_log16csv[femb_id]['{}_ped'.format(fname)] = ped
+                log.check_log16csv[femb_id]['{}_rms'.format(fname)] = rms
 
             log.check_log1601[femb_id]["Result"] = all(value for value in log.report_log1601[femb_id].values())
+
             self.Gather_PNG_PDF(fp)
 
         for ifemb in self.fembs:

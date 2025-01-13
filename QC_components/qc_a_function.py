@@ -12,7 +12,7 @@ import QC_components.qc_log as log
 import QC_check
 
 qc_tools = ana_tools()
-def monitor_power_rail_analysis(interface,  fembs, monvols, fembNo, label = 'test'):
+def monitor_power_rail_analysis(interface,  fembs, monvols, fembNo, label = 'test', NewWIB = True):
     log.tmp_log.clear()
     log.check_log.clear()
     log.chkflag.clear()
@@ -26,15 +26,13 @@ def monitor_power_rail_analysis(interface,  fembs, monvols, fembNo, label = 'tes
     ACCVDD1P2_ref = 1097;    ACCVDD1P2_err = 100
     FE_ref = 1797;    FE_err = 200
 
-    # fsub = "MON_Regular_" + interface + "_200mVBL_14_0mVfC_2_0us_0x00.bin"
-    # fpwr = datadir + fsub
-    # with open(fpwr, 'rb') as fn:
-    # monvols = pickle.load(fn)
     vfembs = monvols[1]
     vold = monvols[0]
     vkeys = list(vold.keys())
-    # LSB = 2.5 / 16384
-    LSB = 2.048 / 16384
+    if NewWIB:
+        LSB = 1 / (2 ** 14) * 2.500  # NEW WIB IS 2500
+    else:
+        LSB = 1 / (2 ** 14) * 2.048  # NEW WIB IS 2500
 
     for ifemb in range(len(fembs)):
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % fembs[ifemb]])

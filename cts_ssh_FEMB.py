@@ -321,7 +321,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(input_info['env']))
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
-        result = subrun(command, timeout=160, user_input=user_input_1)  # rewrite with Popen later
+        result = subrun(command, timeout=200, user_input=user_input_1)  # rewrite with Popen later
         if result != None:
             resultstr = result.stdout
             logs["QC_TestItemID_%03d" % 0] = [command, resultstr]
@@ -384,25 +384,25 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         # ##############################################
         check_tmp = True
         if '0' in slot_list:
-            if 'N0 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+            if 'Slot 0 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
                 print("\033[32m" + 'SLOT#0 CHECKOUT Normal' + "\033[0m")
             else:
                 print("\033[33m" + 'SLOT#0 LOSS CHECKOUT Warning !!!' + "\033[0m")
                 check_tmp = False
         if '1' in slot_list:
-            if 'N1 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+            if 'Slot 1 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
                 print("\033[32m" + 'SLOT#1 CHECKOUT Normal' + "\033[0m")
             else:
                 print("\033[33m" + 'SLOT#1 LOSS CHECKOUT Warning !!!' + "\033[0m")
                 check_tmp = False
         if '2' in slot_list:
-            if 'N2 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+            if 'Slot 2 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
                 print("\033[32m" + 'SLOT#2 CHECKOUT Normal' + "\033[0m")
             else:
                 print("\033[33m" + 'SLOT#2 LOSS CHECKOUT Warning !!!' + "\033[0m")
                 check_tmp = False
         if '3' in slot_list:
-            if 'N3 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
+            if 'Slot 3 PASS	 ALL ASSEMBLY CHECKOUT' in chkcheck:
                 print("\033[32m" + 'SLOT#3 CHECKOUT Normal' + "\033[0m")
             else:
                 print("\033[33m" + 'SLOT#3 LOSS CHECKOUT Warning !!!' + "\033[0m")
@@ -432,6 +432,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     #    ###################################################
         # remove raw folder in wib side
         for i in range (3):
+            print('Begin to remove data at WIB')
             time.sleep(1)
             command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
             result = subrun(command, timeout=30)
@@ -439,6 +440,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print("wib data remove at {}".format(fdir))
                 logs['remove_wib_raw_dir'] = fdir  # later save it into log file
                 print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                break
             else:
                 print("FAIL!")
                 if i == 3:

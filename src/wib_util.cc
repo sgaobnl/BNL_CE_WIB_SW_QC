@@ -124,7 +124,7 @@ void cdpoke(uint8_t femb_idx, uint8_t chip_addr, uint8_t reg_page, uint8_t reg_a
 //HERMES
 void bufread(char* dest, size_t buf_num) { ///FOR NEW FIRMWARE
 	size_t daq_spy_addr;
-	
+
 	if (buf_num==0) daq_spy_addr = DAQ_SPY_FEMB0_CD0;
 	else if (buf_num==1) daq_spy_addr = DAQ_SPY_FEMB0_CD1;
 	else if (buf_num==2) daq_spy_addr = DAQ_SPY_FEMB1_CD0;
@@ -133,18 +133,18 @@ void bufread(char* dest, size_t buf_num) { ///FOR NEW FIRMWARE
 	else if (buf_num==5) daq_spy_addr = DAQ_SPY_FEMB2_CD1;
 	else if (buf_num==6) daq_spy_addr = DAQ_SPY_FEMB3_CD0;
 	else if (buf_num==7) daq_spy_addr = DAQ_SPY_FEMB3_CD1;
-	else return;    
-	
-	//see WIB_upgrade::WIB_upgrade		
-    int daq_spy_fd = open("/dev/mem",O_RDWR); // File descriptor for the daq spy mapped memory    
+	else return;
+
+	//see WIB_upgrade::WIB_upgrade
+    int daq_spy_fd = open("/dev/mem",O_RDWR); // File descriptor for the daq spy mapped memory
     void *daq_spy = mmap(NULL,DAQ_SPY_SIZE,PROT_READ,MAP_SHARED,daq_spy_fd,daq_spy_addr); // Pointer to the daq spy firmware buffers
-	
+
 	close(daq_spy_fd); //"After mmap() call has returned, fd can be closed immediately without invalidating the mapping.
 	if (daq_spy == MAP_FAILED) return; //mmap failed
-	
+
 	memcpy(dest, daq_spy, DAQ_SPY_SIZE);
-	
-	munmap(daq_spy,DAQ_SPY_SIZE); 
+
+	munmap(daq_spy,DAQ_SPY_SIZE);
 }
 
 uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
@@ -157,9 +157,9 @@ uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
 		printf("Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
 		return -1;
 	}
-	if (fail) printf("i2c_init failed\n");	
-	
-	uint8_t val;	
+	if (fail) printf("i2c_init failed\n");
+
+	uint8_t val;
 	for(int tries=0; tries<10; tries++) {
 		val = i2c_reg_read(&i2c_bus, chip, reg);
 		if (val >= 0) break;
@@ -169,13 +169,13 @@ uint8_t i2cread(uint8_t bus, uint8_t chip, uint8_t reg) {
 	//printf("bus:%d addr:0x%02X reg:0x%02X -> 0x%02X\n",bus,chip,reg,val);
 	i2c_free(&i2c_bus);
 	//For some reason WIB::~WIB() doesn't free pwr i2c bus, I assume this is intentional
-	
+
 	return val;
-	
+
 }
 void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data) {
 	i2c_t i2c_bus;
-	
+
 	if (bus == 0) i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
     //else if (bus == 1) i2c_init(&i2c_bus, (char*)"/dev/i2c-1");
 	else if (bus == 2) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
@@ -185,11 +185,11 @@ void i2cwrite(uint8_t bus, uint8_t chip, uint8_t reg, uint8_t data) {
 	}
 
 	i2c_reg_write(&i2c_bus, chip, reg, data);
-	//printf("bus:%d addr:0x%02X reg:0x%02X <- 0x%02X\n",bus,chip,reg,data);	
-	
+	//printf("bus:%d addr:0x%02X reg:0x%02X <- 0x%02X\n",bus,chip,reg,data);
+
 	i2c_free(&i2c_bus);
-	//For some reason WIB::~WIB() doesn't free pwr i2c bus, I assume this is intentional	
-	
+	//For some reason WIB::~WIB() doesn't free pwr i2c bus, I assume this is intentional
+
 }
 
 void i2cselect(uint8_t device) {
@@ -201,21 +201,21 @@ void i2cselect(uint8_t device) {
     //printf ("reg=%08x, val=%08x\n",regaddr , next);
 }
 
-double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {	
+double read_ltc2990(uint8_t slave, bool differential, uint8_t ch) {
 	i2c_t i2c_bus;
 	i2c_init(&i2c_bus,(char*)"/dev/i2c-1");
     //i2cselect(I2C_SENSOR);
 	//else if (bus == 1) i2c_init(&i2c_bus,(char*)"/dev/i2c-2");
-	
+
 	//uint8_t buf[1] = {0x7};
 	//i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
-	
+
 	enable_ltc2990(&i2c_bus, slave, differential);//enable and trigger
 	double voltage = 0.00030518*read_ltc2990_value(&i2c_bus,slave,ch);
-	
+
 	i2c_free(&i2c_bus);
 	return voltage;
-} 
+}
 
 double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch) { //ltc2991 are on 2 different buses
 	i2c_t i2c_bus;
@@ -225,11 +225,11 @@ double read_ltc2991(uint8_t bus, uint8_t slave, bool differential, uint8_t ch) {
 	else {
 		printf("read_ltc2991 Unknown bus %d. Accepted buses are 0 (sel) and 2 (pwr).\n",bus);
 		return 0;
-	}		
+	}
 
 	enable_ltc2991(&i2c_bus, slave, differential);
 	double voltage = 0.00030518*read_ltc2991_value(&i2c_bus,slave,ch);
-	
+
 	i2c_free(&i2c_bus);
 	return voltage;
 }
@@ -244,7 +244,7 @@ double read_ad7414(uint8_t slave) {
 	//i2c_write(&i2c_bus,0x70,buf,1);	 // enable i2c repeater
 
 	double temp = read_ad7414_temp(&i2c_bus, slave);
-	
+
 	i2c_free(&i2c_bus);
 	return temp;
 }
@@ -269,7 +269,7 @@ double read_ina226_v(uint8_t slave) {
 
 	double val= read_ina226_vbus(&i2c_bus, slave);
     val=val*1.25/1000;
-	
+
 	i2c_free(&i2c_bus);
 	return val;
 }
@@ -286,9 +286,9 @@ double read_ltc2499(uint8_t ch) {
 	usleep(175000);
 	double temp = read_ltc2499_temp(&i2c_bus, ch+1);
 	usleep(175000);
-	
+
 	i2c_free(&i2c_bus);
-	return temp;	
+	return temp;
 }
 
 bool femb_power_reg_ctrl(uint8_t femb_id, uint8_t regulator_id, double voltage) {
@@ -405,7 +405,7 @@ bool femb_power_en_ctrl(int femb_id, uint8_t dc2dco1, uint8_t dc2dco2, uint8_t d
             return false;
     }
     i2cwrite(bus, i2c_addr, i2c_reg, reg_val);
-	int rd_val;	
+	int rd_val;
     rd_val = i2cread(bus, i2c_addr, i2c_reg);
     usleep(100000);
     //printf ("%x, %x\n", reg_val, rd_val);
@@ -417,7 +417,7 @@ bool script_cmd(char* line) {
 	// printf("Printing line:%s",line);
 	char* token = strtok(line, " \n");
 	if (token == NULL or token[0] == '#') return true;
-	
+
     if (not strcmp(token,"delay")) {
 		token = strtok(NULL," \n");
 		if (token == NULL) { //no more arguments
@@ -441,7 +441,7 @@ bool script_cmd(char* line) {
 		if (token == NULL) { //no more arguments, strcmp has undefined behavior with NULL
             printf("Invalid i2c\n");
             return false;
-        }        
+        }
         i2c_t i2c_bus;
         if (not strcmp(bus,"sel")) {  // i2c sel chip addr data [...]
             i2c_init(&i2c_bus, (char*)"/dev/i2c-0");
@@ -455,28 +455,28 @@ bool script_cmd(char* line) {
 		if (token == NULL) { //no more arguments
             printf("Invalid i2c\n");
             return false;
-        }			
+        }
         uint8_t chip = (uint8_t)strtoull(token,NULL,16);
-		
+
 		token = strtok(NULL," \n");
 		if (token == NULL) { //no more arguments
             printf("Invalid i2c\n");
             return false;
-        }						
+        }
         uint8_t addr = (uint8_t)strtoull(token,NULL,16);
-		
+
 		token = strtok(NULL," \n");
 		if (token == NULL) { //no more arguments
             printf("Invalid i2c\n");
             return false;
-        }						
-        uint8_t data = (uint8_t)strtoull(token,NULL,16);		
-		
+        }
+        uint8_t data = (uint8_t)strtoull(token,NULL,16);
+
 		token = strtok(NULL," \n");
-		if (token == NULL) { //no more arguments = single register to write            
+		if (token == NULL) { //no more arguments = single register to write
 			res = i2c_reg_write(&i2c_bus, chip, addr, data);
 			//printf("res is %d\n",res);
-            return (res > -1);		
+            return (res > -1);
 		} else {			//rest of arguments are block of data to write
 			uint8_t *buf = new uint8_t[32]; //max length of data that can be written
 			buf[0] = data;
@@ -484,13 +484,13 @@ bool script_cmd(char* line) {
 			for (i = 1; i < 32 and token != NULL; i++) {
 				buf[i] = (uint8_t)strtoull(token,NULL,16);
 				token = strtok(NULL," \n");
-			} 
+			}
             res = i2c_block_write(&i2c_bus, chip, addr, buf, i); //i is now = total number of data arguments
             //printf("res is %d\n",res);
 			delete [] buf;
 			return (res > -1);
-		}			
-		
+		}
+
 		i2c_free(&i2c_bus);
     } else if (not strcmp(token,"mem")) {
 		token = strtok(NULL," \n");
@@ -499,14 +499,14 @@ bool script_cmd(char* line) {
             return false;
         }
 		uint32_t addr = strtoull(token,NULL,16);
-		
+
 		token = strtok(NULL," ");
 		if (token == NULL) { //no more arguments
             printf("Invalid arguments to mem\n");
             return false;
         }
 		uint32_t value = strtoull(token,NULL,16);
-		
+
 		token = strtok(NULL," \n");
 		if (token == NULL) { // mem addr value
 			printf("poke 0x%x 0x%x\n",addr,value);
@@ -517,13 +517,13 @@ bool script_cmd(char* line) {
 			uint32_t mask = strtoull(token,NULL,16);
             uint32_t prev = peek(addr);
             poke(addr, (prev & (~mask)) | (value & mask));
-            return true;			
+            return true;
 		}
-				
+
     } else {
         printf("Invalid script command: %s\n", token);
     }
-    return false;	
+    return false;
 }
 
-} 
+}

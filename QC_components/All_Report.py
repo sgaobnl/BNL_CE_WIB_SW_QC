@@ -93,16 +93,12 @@ def section_report(datareport, fembs, fembNo):
                 if dict_i['Result'] == False:
                     check_status01 = False
                     Status = 'F'
-                    # check_list01.append(str(dict_i['Label']) + "\n")
-                    # check_list01.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status01)
         if 2 in log.test_label:
             # dict_list01 = [log.check_log01_11[femb_id], log.check_log01_12[femb_id], log.check_log01_13[femb_id], log.check_log01_21[femb_id], log.check_log01_22[femb_id], log.check_log01_23[femb_id], log.check_log01_31[femb_id], log.check_log01_32[femb_id], log.check_log01_33[femb_id]]
 
             check_list02 = []
             check_status02 = True
-                    # check_list01.append(str(dict_i['Label']) + "\n")
-                    # check_list01.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status02)
 
         if 3 in log.test_label:
@@ -113,8 +109,6 @@ def section_report(datareport, fembs, fembNo):
                 if dict_i['Result'] == False:
                     check_status03 = False
                     Status = 'F'
-                    # check_list03.append(str(dict_i['Label']) + "\n")
-                    # check_list03.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status03)
 
         if 4 in log.test_label:
@@ -125,32 +119,19 @@ def section_report(datareport, fembs, fembNo):
                 if dict_i['Result'] == False:
                     check_status04 = False
                     Status = 'F'
-                    # check_list04.append(str(dict_i['Label']) + "\n")
-                    # check_list04.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status04)
 
         if 5 in log.test_label:
-            # dict_list05 = [log.report_log0500[femb_id]]
-
-            # check_list05 = []
-            # for dict_i in dict_list05:
             if log.report_log0500[femb_id] == False:
                 check_status05 = False
                 Status = 'F'
-                # check_list05.append(str(dict_i['Label']) + "\n")
-                # check_list05.append(str(dict_i['Issue List']) + "\n")
-            # check_list.append(check_status05)
 
         if 6 in log.test_label:
             dict_list06 = [log.check_log0601[femb_id], log.check_log0602[femb_id], log.check_log0603[femb_id], log.check_log0604[femb_id]]#, log.check_log0605[femb_id]]
-
-            check_list06 = []
             for dict_i in dict_list06:
                 if dict_i['Result'] == False:
                     check_status06 = False
                     Status = 'F'
-                    # check_list06.append(str(dict_i['Label']) + "\n")
-                    # check_list06.append(str(dict_i['Issue List']) + "\n")
             check_list.append(check_status06)
 
         if 7 in log.test_label:

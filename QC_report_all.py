@@ -13,7 +13,14 @@ fdir = args.folder
 tasks = args.tasks
 fembs = args.fembs
 
-rp = QC_reports(fdir, fembs)
+if 'OW' in sys.argv:
+    NewWIB = False
+else:
+    NewWIB = True
+
+
+
+rp = QC_reports(fdir, fembs, NewWIB = NewWIB)
 
 tt={}
 t1=time.time()

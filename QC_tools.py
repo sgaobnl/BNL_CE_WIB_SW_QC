@@ -139,7 +139,7 @@ class ana_tools:
         rms_min = 1000
         ped_max = 0
         ped_min = 10000
-    
+
         for ich in range(128):
             global_ch = nfemb*128+ich
             peddata=np.empty(0)
@@ -172,11 +172,11 @@ class ana_tools:
 
         # abstract assume valid parameter to calculate median and std of ped, which used to static valid parameters
         fe_rms_med = np.median(rms)
-        refine_rms = [x for x in rms if (abs(x-fe_rms_med) < 7)]
-        rms_5std = 5 * np.std(refine_rms)
+        # refine_rms = [x for x in rms if (abs(x-fe_rms_med) < 7)]
+        # rms_5std = 5 * np.std(refine_rms)
         fe_ped_med = np.median(ped)
-        refine_ped = [x for x in ped if (abs(x-fe_ped_med) < 350)]
-        ped_5std = 5 * np.std(refine_ped)
+        # refine_ped = [x for x in ped if (abs(x-fe_ped_med) < 350)]
+        # ped_5std = 5 * np.std(refine_ped);print(11111111111111111111111111)
 
         plt.figure(figsize=(12, 4))
         plt.subplot(1, 2, 2)
@@ -433,12 +433,16 @@ class ana_tools:
             # plt.close(fig)
         return issue_log, pulse_log
 
-    def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fembNo):
+    def PlotMonDAC(self, fembs, mon_dic, savedir, fdir, fembNo, NewWIB = True):
         issue_inl = defaultdict(dict)
         for nfemb in fembs:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
             fig, ax = plt.subplots(figsize=(6, 5))
             issue_inl[femb_id]["Result"] = True
+            if NewWIB:
+                fadc = 1 / (2 ** 14) * 2500
+            else:
+                fadc = 1 / (2 ** 14) * 2048
             for main_key, sub_dict in mon_dic.items():
                 item = 0
                 for key,mon_list in sub_dict.items():
@@ -463,7 +467,7 @@ class ana_tools:
                         else:
                            mon_mean = sps_list[0]
 
-                        data_list.append(mon_mean*self.fadc)
+                        data_list.append(mon_mean*fadc)
 
                     if item == 8:
                         plt.plot(dac_list, data_list, marker='.', label = main_key)
@@ -482,7 +486,10 @@ class ana_tools:
                     inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-1]))
                     if inl > 1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
+                        log.report_log1101csv[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False
+                    else:
+                        log.report_log1101csv[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         # print(issue_inl)
                         # print(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
                         # input()
@@ -497,16 +504,19 @@ class ana_tools:
             plt.tight_layout()
             plt.savefig(fp, transparent = True)
             plt.close(fig)
-            print(issue_inl)
         return issue_inl
 
 
-    def PlotADCMon(self, fembs, mon_list, savedir, fdir, fembNo):
+    def PlotADCMon(self, fembs, mon_list, savedir, fdir, fembNo, NewWIB = True):
         issue_inl = defaultdict(dict)
         mon_items = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
         mon_items_n=[1,2,3,4]
         nvset = len(mon_list)
         status = True
+        if NewWIB:
+            fadc = 1 / (2 ** 14) * 2500
+        else:
+            fadc = 1 / (2 ** 14) * 2048
 
         for nfemb in fembs:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
@@ -543,7 +553,7 @@ class ana_tools:
                            mon_mean = sps_list[0]
                         if key not in data_dic:
                            data_dic[key]=[]
-                        data_dic[key].append(mon_mean*self.fadc)  ###
+                        data_dic[key].append(mon_mean*fadc)  ###
 
                 for key, chip_data in chip_dic.items():
                     #   INL judgement
@@ -713,7 +723,7 @@ class ana_tools:
 
 
     def  GetGain(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
-        global fname_1, ppk, bl
+        global fname_1, ppk, bl, line_range_list, inl_list, gain_list
         log.tmp_log.clear()
         log.check_log.clear()
         log.chkflag.clear()
@@ -747,7 +757,7 @@ class ana_tools:
                 fp = savedir[ifemb]+fdir
                 if dac==0:
                     fname_1 = namepat.format(snc, sgs, sts, dac)
-                    ped,rms = self.GetRMS(pldata, ifemb, fp, fname)
+                    ped,rms,_,_ = self.GetRMS(pldata, ifemb, fp, fname)
                     if not('vdac' in fname_1):
                         pk_list[ifemb].append(np.zeros(128))
                 else:
@@ -775,6 +785,7 @@ class ana_tools:
              
             gain_list = []
             inl_list = []
+            inl_listcsv = []
             line_range_list = []
             max_dac_list = []
             plt.figure(figsize=(9, 6))
@@ -784,7 +795,7 @@ class ana_tools:
             plt.subplot(2, 2, 2)
             for ch in range(128):
                 uplim = np.max(pk_np[ch])*4/5
-                lodac = np.max(pk_np[ch])*1/5
+                lodac = np.max(pk_np[ch])*1/7
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
                 if gain==0:
                     print("femb%d ch%d gain is zero"%(ifemb,ch))
@@ -793,9 +804,10 @@ class ana_tools:
                         gain = 1/gain/1000 *CC/e
                     else:
                         gain = 1 / gain * dac_du / 1000 * CC / e
-                gain_list.append(gain)
+                gain_list.append(round(gain))
                 inl_list.append(inl)
-                line_range_list.append(line_range)
+                inl_listcsv.append(round(inl*100, 2))
+                line_range_list.append(round(line_range))
                 if ('vdac' in fname_1):
                     if inl > 0.5:
                         check = False
@@ -858,6 +870,10 @@ class ana_tools:
             log.check_log[femb_id]["Result"] = check
             log.check_log[femb_id]["Issue List"] = check_issue
 
+            log.tmp_log[ifemb]["inl_list"] = inl_listcsv
+            log.tmp_log[ifemb]["gain_list"] = gain_list
+            log.tmp_log[ifemb]["line_range_list"] = line_range_list
+
             plt.ylabel("Peak Value", fontsize=14)
             plt.xlabel("DAC", fontsize=14)
             plt.title("Peak vs. DAC Linearity", fontsize=14)
@@ -891,10 +907,6 @@ class ana_tools:
             plt.xticks(x_sticks)
             plt.grid(axis='x')
             plt.title("INL Distribution for the 128-Channel", fontsize=14)
-            # plt.plot(range(128), max_dac_list, marker='.')
-            # plt.xlabel("chan")
-            # plt.ylabel("linear_range")
-            # plt.title("linear range")
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.tight_layout()
             plt.savefig(fp + 'gain_{}.png'.format(fname), transparent = True)
