@@ -10,38 +10,65 @@ import csv
 import webbrowser
 
 
-def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
+def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False):
     result = None
-    try:
-        result = subprocess.run(command,
-                                input=user_input,
-                                capture_output=True,
-                                text=True,
-                                timeout=timeout,
-                                shell=True,
-                                # stdout=subprocess.PIPE,
-                                # stderr=subprocess.PIPE,
-                                check=check
-                                )
-    except subprocess.CalledProcessError as e:
-        print("Call Error", e.returncode)
-        if exitflg:
-            print("Call Error FAIL!")
-            print("Exit anyway")
-            return None
-            # exit()
+    if check:
+        try:
+            result = subprocess.run(command,
+                                    input=user_input,
+                                    capture_output=check,
+                                    text=True,
+                                    timeout=timeout,
+                                    shell=True,
+                                    # stdout=subprocess.PIPE,
+                                    # stderr=subprocess.PIPE,
+                                    check=check
+                                    )
+        except subprocess.CalledProcessError as e:
+            print("Call Error", e.returncode)
+            if exitflg:
+                print("Call Error FAIL!")
+                print("Exit anyway")
+                return None
+                # exit()
 
-        # continue
-    except subprocess.TimeoutExpired as e:
-        print("No reponse in %d seconds" % (timeout))
-        if exitflg:
-            # print (result.stdout)
-            print("Timoout FAIL!")
-            print("Exit anyway")
-            return None
+            # continue
 
-        # continue
-    return result
+        except subprocess.TimeoutExpired as T:
+            print("No reponse in %d seconds" % (timeout))
+            if exitflg:
+                # print (result.stdout)
+                print("Timeout FAIL!")
+                print("Exit anyway")
+                return None
+
+            # continue
+        return result
+    else:
+        try:
+            result = subprocess.run(command,
+                                    input=user_input,
+                                    capture_output=check,
+                                    text=True,
+                                    timeout=timeout,
+                                    shell=True,
+                                    # stdout=subprocess.PIPE,
+                                    # stderr=subprocess.PIPE,
+                                    check=check
+                                    )
+        except subprocess.CalledProcessError as e:
+            print("Call Error", e.returncode)
+            if exitflg:
+                print("Call Error FAIL!")
+                print("Exit anyway")
+                return None
+                # exit()
+
+            # continue
+
+        except subprocess.TimeoutExpired as T:
+            print("No reponse in %d seconds" % (timeout))
+            return None
 
 # =================#
 # FEMB QC Script: #
@@ -435,18 +462,18 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             print('Begin to remove data at WIB')
             time.sleep(1)
             command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
-            result = subrun(command, timeout=30)
+            result = subrun(command, timeout=30, check=False)
             if result != None:
                 print("wib data remove at {}".format(fdir))
                 logs['remove_wib_raw_dir'] = fdir  # later save it into log file
                 print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
                 break
             else:
-                print("FAIL!")
+                print("Data Remove Waring!")
                 if i == 3:
-                    break
+                    continue
                 else:
-                    return None
+                    continue
 
         if check_tmp:
             print('Assembly Checkout Completed!')
@@ -530,17 +557,17 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print("wib data remove at {}".format(fdir))
                 time.sleep(1)
                 command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
-                result = subrun(command, timeout=90)
+                result = subrun(command, timeout=30, check=False)
                 if result != None:
                     logs['remove_wib_raw_dir'] = fdir  # later save it into log file
                     print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
                     break
                 else:
-                    print("FAIL!")
+                    print("Remove warning!")
                     if i == 3:
-                        break
+                        continue
                     else:
-                        return None
+                        continue
 
     # ========== end of 03 QC ==========================
 
