@@ -96,7 +96,7 @@ def real_time_monitor():
                     time.sleep(c*30)  # the time is used to copy the whole .bin file
                 else:
                     time.sleep(c*7)  # the time is used to copy the whole .bin file
-                command = ["python3", "QC_report_all.py", path, "-n"]
+                command = ["python", "QC_report_all.py", path, "-n"]
                 command.extend(map(str, n))  # Convert integers to strings
                 command.extend(["-t", t_num])  # Add other arguments
                 print(command)

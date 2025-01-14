@@ -69,6 +69,7 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = 
         except subprocess.TimeoutExpired as T:
             print("No reponse in %d seconds" % (timeout))
             return None
+        return result
 
 # =================#
 # FEMB QC Script: #
@@ -518,7 +519,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                     # exit()
             else:
                 print("FAIL!")
-                print(result.stdout)
+                #print(result.stdout)
                 return None
 
             # 03_2 QC data transfer to PC
@@ -557,7 +558,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print("wib data remove at {}".format(fdir))
                 time.sleep(1)
                 command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
-                result = subrun(command, timeout=30, check=False)
+                result = subrun(command, timeout=10, check=False)
                 if result != None:
                     logs['remove_wib_raw_dir'] = fdir  # later save it into log file
                     print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")

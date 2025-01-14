@@ -24,7 +24,7 @@ class QC_Runs:
         self.vdacmax = 0.5
         self.vstep = 10
         self.chk = WIB_CFGS()
-        self.LAr_Dalay = 10
+        self.LAr_Dalay = 5
         self.sdd0 = 0
         self.sdf0 = 0
         self.sncs = ["900mVBL", "200mVBL"]
@@ -217,6 +217,7 @@ class QC_Runs:
                     print(fsubdirs)
                     print(fsubdirs[-1])
                     datad[fsubdirs[-1]] = [rawdata, pwr_meas, cfg_paras_rec, self.logs]
+                self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=0)
                 self.chk.wib_mon_switches() #close wib_mon
             else:
                 time.sleep(0.5)
@@ -237,18 +238,18 @@ class QC_Runs:
                             dac2_sel = 1
                         if fembid == 3:
                             dac3_sel = 1
-                    self.chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel, dac2_sel=dac2_sel, dac3_sel=dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+                    self.chk.wib_mon_switches(dac0_sel=dac0_sel, dac1_sel=dac1_sel, dac2_sel=dac2_sel, dac3_sel=dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=0)
                     print('DAC value: {}'.format(dacvol))
                     # input('debug dac, enable route')
                     cp_period = 500
-                    cp_high_time = int(cp_period * 32 * 3 / 4)
+                    cp_high_time = int(cp_period * 32 * 7 / 8)
                     # cp_high_time = int(cp_period*32*1/2)
                     self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time, inj_cal_pulse_sw=1)
                     # input('debug pulse enable')
                     for femb_id in self.fembs:
                         self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
                     # input('debug enable FEMB external pulse route')
-                    time.sleep(0.02)
+                    time.sleep(0.1)
 
                     ####################FEMBs Data taking################################
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N, trig_cmd=0)
