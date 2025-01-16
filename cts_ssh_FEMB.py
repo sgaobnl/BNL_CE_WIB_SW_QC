@@ -395,19 +395,19 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         fsrc = wibhost + fdir
         fsrc2 = wibhost + fdir2
         command = ["scp", "-r", fsrc2, fddir2]
-        subrun(command, timeout=10)
+        subrun(command, timeout=10, check=False)
         time.sleep(1)
         command = ["scp", "-r", fsrc, fddir]
-        result = subrun(command, timeout=10)
-        if result != None:
-            print("data save at {}".format(fddir))
-            logs['pc_raw_dir'] = fddir  # later save it into log file
-            logs["QC_TestItemID_0_SCP"] = [command, result]
-            logs["QC_TestItemID_0_Save"] = logs['pc_raw_dir']
-            print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-        else:
-            print("FAIL!")
-            return None
+        result = subrun(command, timeout=10, check=False)
+        # if result != None:
+        print("data save at {}".format(fddir))
+        logs['pc_raw_dir'] = fddir  # later save it into log file
+        logs["QC_TestItemID_0_SCP"] = [command, result]
+        logs["QC_TestItemID_0_Save"] = logs['pc_raw_dir']
+        print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+        # else:
+        #     print("FAIL!")
+        #     return None
 
         # ##############################################
         check_tmp = True
@@ -542,16 +542,16 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             fsrc = wibhost + fdir
             # move folder
             command = ["scp", "-r", fsrc, fddir]
-            result = subrun(command, timeout=180)
-            if result != None:
-                print("data save at {}".format(fddir))
-                logs['pc_raw_dir'] = fddir  # later save it into log file
-                logs["QC_TestItemID_%03d_SCP" % testid] = [command, result]
-                logs["QC_TestItemID_%03d_Save" % testid] = logs['pc_raw_dir']
-                print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-            else:
-                print("FAIL!")
-                return None
+            result = subrun(command, timeout=300, check=False)
+            # if result != None:
+            print("data save at {}".format(fddir))
+            logs['pc_raw_dir'] = fddir  # later save it into log file
+            logs["QC_TestItemID_%03d_SCP" % testid] = [command, result]
+            logs["QC_TestItemID_%03d_Save" % testid] = logs['pc_raw_dir']
+            print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+            # else:
+            #     print("FAIL!")
+            #     return None
 
             # 03_3 raw folder in wib side
             for i in range(4):

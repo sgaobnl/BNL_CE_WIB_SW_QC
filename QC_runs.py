@@ -246,8 +246,8 @@ class QC_Runs:
                     # cp_high_time = int(cp_period*32*1/2)
                     self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time, inj_cal_pulse_sw=1)
                     # input('debug pulse enable')
-                    for femb_id in self.fembs:
-                        self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+                    # for femb_id in self.fembs:
+                    #     self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
                     # input('debug enable FEMB external pulse route')
                     time.sleep(0.1)
 
@@ -944,11 +944,11 @@ class QC_Runs:
         #     fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
         #     datad["CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
         #
-        # fp = datadir + "QC_Cali01_t6" + ".bin"
-        # with open(fp, 'wb') as fn:
-        #     pickle.dump(datad, fn)
-        # for i in range(8):
-        #     self.chk.adcs_paras[i][2] = 0
+        fp = datadir + "QC_Cali01_t6" + ".bin"
+        with open(fp, 'wb') as fn:
+            pickle.dump(datad, fn)
+        for i in range(8):
+            self.chk.adcs_paras[i][2] = 0
 
     def femb_CALI_2(self):
 
