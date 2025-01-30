@@ -112,6 +112,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     FEMB_list = ''
     power_en = ''
     savename = ''
+    tmp = ''
     if slot0 != ' ':
         slot_list += ' 0 '
         FEMB_list += slot0 + '\n'
@@ -142,9 +143,11 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         power_en += ' off '
 
     if input_info['env'] == 'n':
+        tmp = 'room 25C'
         savename += '_RT'.format(slot3)
     else:
         savename += '_LN'.format(slot3)
+        tmp = 'LN -200C'
 
     print(slot_list)
     print(power_en)
@@ -346,7 +349,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     if QC_TST_EN == 2:
         print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 120s)")
         print(datetime.utcnow(), " : New Test Item Starts, please wait...")
-        print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(input_info['env']))
+        print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(tmp))
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
         result = subrun(command, timeout=200, user_input=user_input_1)  # rewrite with Popen later
@@ -542,7 +545,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             fsrc = wibhost + fdir
             # move folder
             command = ["scp", "-r", fsrc, fddir]
-            result = subrun(command, timeout=300, check=False)
+            result = subrun(command, timeout=100, check=False)
             # if result != None:
             print("data save at {}".format(fddir))
             logs['pc_raw_dir'] = fddir  # later save it into log file

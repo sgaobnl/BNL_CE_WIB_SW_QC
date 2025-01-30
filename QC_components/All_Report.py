@@ -122,7 +122,7 @@ def section_report(datareport, fembs, fembNo):
             check_list.append(check_status04)
 
         if 5 in log.test_label:
-            if log.report_log0500[femb_id] == False:
+            if log.report_log0500[ifemb]['Result'] == False:
                 check_status05 = False
                 Status = 'F'
 
@@ -767,7 +767,7 @@ def section_report(datareport, fembs, fembNo):
                     file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "RMS Evaluation"  + '    < Pass >' + '</span>' + '\n')
                 else:
                     file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "RMS Evaluation" + '    < Fail >' + '</span>'  + '\n')
-                    file.write(log.report_log0500[ifemb]['Issue List'])
+                    file.write(str(log.report_log0500[ifemb]['Issue List']))
                 file.write('#### ' + "1. Single-Ended Interface &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
                 file.write('<img src="./{}/SE_200_900_mV_RMS_ErrorBar.png" alt="picture" height="350">'.format(log.item05) + "\n\n")  # width="200"
                 file.write('#### ' + "2. Single-Ended-to-Differential Conversion Interface &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
@@ -834,12 +834,12 @@ def section_report(datareport, fembs, fembNo):
                     log.item061) + "\n\n")  # width="200"
                 file.write("![ped](./{}/gain_200mVBL_25_0mVfC_2_0us.png)".format(log.item061) + "\n")
 
-                file.write('### 6_5 Calibration DIFF 200 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
-                    log.item062) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
-                    log.item062) + "\n\n")  # width="200"
-                file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "\n")
+                # file.write('### 6_5 Calibration DIFF 200 mVBL    14_0 mVfC    2 us' + '\n')
+                # file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                #     log.item062) + "\n")  # width="200"
+                # file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(
+                #     log.item062) + "\n\n")  # width="200"
+                # file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item062) + "\n")
 
 #   07      Calibration 02:
             if 7 in log.test_label:

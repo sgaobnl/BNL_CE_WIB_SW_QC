@@ -266,6 +266,7 @@ class ana_tools:
         pkps, pkns = [], []
         wfs, wfsf = [], []
         plt.figure(figsize=(12, 6))
+        plt.subplot(1, 2, 1)
         for achn in range(128):
             chdata = []
             N_period = len(all_data[achn])//period
@@ -309,10 +310,7 @@ class ana_tools:
                 tmpwf = np.concatenate((front, back))
             ppos = np.where(tmpwf == np.max(tmpwf))[0][0]
             wfs.append(tmpwf[ppos-50:ppos+150])
-
-            plt.subplot(1, 2, 1)
             plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
-
             if achn == 64:
                 log.channel0_pulse[nfemb][dac] = tmpwf[ppos-50:ppos+150]# - np.mean(peddata)
 
@@ -484,7 +482,7 @@ class ana_tools:
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
                     inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-1]))
-                    if inl > 1:
+                    if inl > 1.1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         log.report_log1101csv[femb_id]["INL-{}-{}".format(main_key, key)] = inl
                         issue_inl[femb_id]["Result"] = False

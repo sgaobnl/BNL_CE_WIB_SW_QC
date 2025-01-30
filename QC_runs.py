@@ -246,10 +246,10 @@ class QC_Runs:
                     # cp_high_time = int(cp_period*32*1/2)
                     self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time, inj_cal_pulse_sw=1)
                     # input('debug pulse enable')
-                    # for femb_id in self.fembs:
-                    #     self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+                    for femb_id in self.fembs:
+                        self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
                     # input('debug enable FEMB external pulse route')
-                    time.sleep(0.1)
+                    time.sleep(2)
 
                     ####################FEMBs Data taking################################
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N, trig_cmd=0)

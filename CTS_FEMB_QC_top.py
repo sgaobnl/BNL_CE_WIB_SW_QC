@@ -107,7 +107,7 @@ Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip
 if Next == 'n':
     print('No Cold QC execute!')
 elif Next == 'e':
-    Next2 = input("\nEnter Any Key to exit ...\nEnter 'y' to continue the LN test")
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'y' to exit the LN test")
     if Next2 != 'y':
         sys.exit()
 else:
@@ -116,8 +116,37 @@ else:
 print("Please Turn OFF the Power!")
 
 print("Please wait for Warm UP (45 Minutes)")
-print("Final Quick Checkout (2 Minutes)")
-QC_Process(QC_TST_EN=2, input_info=inform)  # Final assembly checkout
+print("Enter to Final Quick Checkout")
+input()
+print("Final Quick Checkout (3 Minutes)")
+
+Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Final Checkout")
+if Next == 'n':
+    print('No Final Checkout execute!')
+elif Next == 'e':
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'y' to exit the Final Checkout test")
+    if Next2 != 'y':
+        sys.exit()
+else:
+    print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
+    input("Enter to next ...\n")
+    print("\033[35m" + "B01 : Please Wait the Fiber Converter Light on (30 second)" + "\033[0m")
+
+    print("If Fiber Converter works, Enter to next ...\n")
+    input()
+    # first run
+    # ###############STEP1#################################
+    skts = [0, 1, 2, 3, 4, 5, 6, 7]
+
+    # C FEMB QC
+    print("\033[35m" + "C1 : FEMB Quality Control Execution (takes < 1800s)" + "\033[0m")
+
+    # ======== Button 00 WIB initial =====================
+    # input("\033[35m" + 'Enter to Begin!' + "\033[0m")
+    QC_Process(QC_TST_EN=0, input_info=inform)  # initial wib
+    QC_Process(QC_TST_EN=1, input_info=inform)  # initial FEMB I2C
+    QC_Process(QC_TST_EN=2, input_info=inform)  # assembly checkout
+    print("Final Checkout Done!")
 
 print("Please Close all Power and Pick up FEMB CE boards")
 

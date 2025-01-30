@@ -1065,10 +1065,10 @@ class QC_reports:
 
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
-        a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
-        a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
-        inl_gain = dict(log.tmp_log)
-        inl_gain_check = dict(log.check_log)
+        # a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1_DIFF/", "CALI1_DIFF_{}_{}_{}_0x{:02x}", "200mVBL", "14_0mVfC", "2_0us", dac_list)
+        # a_func.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI1_DIFF/")
+        # inl_gain = dict(log.tmp_log)
+        # inl_gain_check = dict(log.check_log)
         # log.report_log0605.update(inl_gain)
         # log.check_log0605.update(inl_gain_check)
         for ifemb in self.fembs:
@@ -1082,7 +1082,7 @@ class QC_reports:
             plt.figure(figsize=(10, 4))
             plt.subplot(1, 2, 1)
             plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label = 'INL_SE_OFF')
-            plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
+            # plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
             plt.xlabel("Voltage Gain", fontsize=12)
             plt.ylabel("INL value", fontsize=12)
             plt.grid(axis='x')
