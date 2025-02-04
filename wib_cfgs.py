@@ -1205,7 +1205,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.femb_cd_rst()
 
         mon_dict = {}
-        mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VSSA"]
+        mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA"]
         for mon_i in range(len(mons)):
             print(f"Monitor ADC {mons[mon_i]}")
             for femb_id in femb_ids:
