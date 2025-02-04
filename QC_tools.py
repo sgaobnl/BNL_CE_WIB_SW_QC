@@ -126,29 +126,17 @@ class ana_tools:
                 log.report_log07[femb_id]["Result"] = False
 
     def GetRMS(self, data, nfemb, fp, fname):
-        # acquire and plot the  < PED & RMS> characters for each channel
-    
-        nevent = len(data)
-    
-        rms=[]
-        ped=[]
-        pedmax=[]
-        pedmin=[]
-        med = []
-        rms_max = 0
-        rms_min = 1000
-        ped_max = 0
-        ped_min = 10000
+        """Calculate and plot the pedestal (PED) and root mean square (RMS) for each channel."""
 
-        for ich in range(128):
-            global_ch = nfemb*128+ich
-            peddata=np.empty(0)
-            npulse=0
-            first = True
-            allpls=np.empty(0)
-            for itr in range(nevent):
-                evtdata = data[itr][nfemb][ich]
-                allpls=np.append(allpls,evtdata)
+        nevent = len(data)
+        num_channels = 128
+
+        ped, rms, pedmax, pedmin = [], [], [], []
+        rms_max, rms_min = float('-inf'), float('inf')
+        ped_max, ped_min = float('-inf'), float('inf')
+
+        for ich in range(num_channels):
+            allpls = np.concatenate([data[itr][nfemb][ich] for itr in range(nevent)])
 
             ch_ped = np.mean(allpls)
             ch_pedmax = np.max(allpls)
@@ -160,64 +148,44 @@ class ana_tools:
             pedmax.append(ch_pedmax)
             pedmin.append(ch_pedmin)
 
-            if ch_rms > rms_max:
-                rms_max = ch_rms
-            if ch_rms < rms_min:
-                rms_min = ch_rms
+            rms_max = max(rms_max, ch_rms)
+            rms_min = min(rms_min, ch_rms)
+            ped_max = max(ped_max, ch_ped)
+            ped_min = min(ped_min, ch_ped)
 
-            if ch_ped > ped_max:
-                ped_max = ch_ped
-            if ch_ped < ped_min:
-                ped_min = ch_ped
+        fe_rms_med, fe_ped_med = np.median(rms), np.median(ped)
 
-        # abstract assume valid parameter to calculate median and std of ped, which used to static valid parameters
-        fe_rms_med = np.median(rms)
-        # refine_rms = [x for x in rms if (abs(x-fe_rms_med) < 7)]
-        # rms_5std = 5 * np.std(refine_rms)
-        fe_ped_med = np.median(ped)
-        # refine_ped = [x for x in ped if (abs(x-fe_ped_med) < 350)]
-        # ped_5std = 5 * np.std(refine_ped);print(11111111111111111111111111)
+        self._plot_data(range(num_channels), rms, fname, "Root Mean Square", "rms", fp, fe_rms_med, 8, rms_max, rms_min)
+        self._plot_data(range(num_channels), ped, fname, "Pedestal", "ped", fp, fe_ped_med, 500, ped_max, ped_min)
 
-        plt.figure(figsize=(12, 4))
-        plt.subplot(1, 2, 2)
-        plt.plot(range(128), rms, marker='o', linestyle = '-', alpha = 0.7, label='pos')
-        plt.title(fname, fontsize = 14)
-        plt.xlabel("Channel", fontsize = 14)
-        plt.ylabel("Root Mean Square", fontsize = 14)
-        x_sticks = range(0, 129, 16)
-        plt.xticks(x_sticks)
+        self._save_data(fp, fname, ped, rms)
+
+        return ped, rms, pedmax, pedmin
+
+    def _plot_data(self, x, y, fname, ylabel, fprefix, fp, median, threshold, max_val, min_val):
+        """Helper function to plot and save figures."""
+        plt.figure(figsize=(6, 4))
+        plt.plot(x, y, marker='o', linestyle='-', alpha=0.7)
+        plt.title(fname, fontsize=14)
+        plt.xlabel("Channel", fontsize=14)
+        plt.ylabel(ylabel, fontsize=14)
+        plt.xticks(range(0, 129, 16))
         plt.grid(axis='x')
-        if (rms_max < (fe_rms_med + 8)) and (rms_min > (fe_rms_med - 8)):
-            plt.ylim(fe_rms_med - 8, fe_rms_med + 8)
+
+        if median - threshold < min_val < max_val < median + threshold:
+            plt.ylim(median - threshold, median + threshold)
         else:
             plt.grid(axis='y')
-        # fp_fig = fp+"rms_{}.png".format(fname)
-        # plt.savefig(fp_fig)
-        # plt.close()
 
-        plt.subplot(1, 2, 1)
-        plt.plot(range(128), ped, marker='.', linestyle = '-', alpha = 0.7, label='pos')
-        plt.title(fname, fontsize = 14)
-        plt.xlabel("Channel", fontsize = 14)
-        plt.ylabel("Pedestal", fontsize = 14)
-        x_sticks = range(0, 129, 16)
-        plt.xticks(x_sticks)
-        plt.grid(axis = 'x')
-        if (ped_max < (fe_ped_med + 500)) and (ped_min > (fe_ped_med - 500)):
-            plt.ylim(fe_ped_med - 500, fe_ped_med + 500)
-        else:
-            plt.grid(axis = 'y')
-        fp_fig = fp+"ped_{}.png".format(fname)
-        plt.gca().set_facecolor('none')  # set background as transparent
+        plt.gca().set_facecolor('none')
         plt.tight_layout()
-        plt.savefig(fp_fig, transparent = True)
+        plt.savefig(f"{fp}{fprefix}_{fname}.png", transparent=True)
         plt.close()
 
-        fp_bin = fp+"RMS_{}.bin".format(fname)
-        with open(fp_bin, 'wb') as fn:
-             pickle.dump( [ped, rms], fn)
-
-        return ped,rms,pedmax,pedmin
+    def _save_data(self, fp, fname, ped, rms):
+        """Helper function to save pedestal and RMS data."""
+        with open(f"{fp}RMS_{fname}.bin", 'wb') as fn:
+            pickle.dump([ped, rms], fn)
 
     def GetPeaks(self, data, nfemb, fp, fname, funcfit=False, shapetime=2, period=500, dac = 0):
 

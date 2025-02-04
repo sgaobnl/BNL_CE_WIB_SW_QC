@@ -726,14 +726,13 @@ class QC_reports:
             femb_rms_dict = pickle.load(fn)
 
         section_status = True
-        check = True
-        check_list = []
-        datafiles = sorted(glob.glob(datadir+"RMS*.bin"), key=os.path.getmtime)
+        check = [True,True,True,True]
+        check_list = [0,1,2,3]
+        # datafiles = sorted(glob.glob(datadir+"RMS*.bin"), key=os.path.getmtime)
         for afile in femb_rms_dict.keys():
             # with open(afile, 'rb') as fn:
             #     raw = pickle.load(fn)
             print("analyze file: %s"%afile)
-            print(afile)
             raw = femb_rms_dict[afile]
             rawdata=raw[0]
             if '\\' in afile:
@@ -770,23 +769,17 @@ class QC_reports:
                     log.report_log055_rms_issue[ifemb][fname] = rms_err_content
                     section_status = False
                     log.report_log05_result[ifemb][fname] = False
-                    check = False
-                    check_list.append(rms_err_content)
+                    check[ifemb] = False
+                    check_list[ifemb] = (rms_err_content)
                     log.report_log05_tablecell[ifemb][fname] = "<span style = 'color:red;'> {} </span>".format(keyword)
                 log.report_log052_pedestal[ifemb][fname] = ped
                 log.report_log053_rms[ifemb][fname] = rms
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + "RMS/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-            print('\n')
-            print('\n')
-            print('\n')
             print(log.report_log05_tablecell[ifemb])
-            print('\n')
-            print('\n')
-            print('\n')
-            log.report_log0500[ifemb]['Result'] = check
-            log.report_log0500[ifemb]['Issue List'] = check_list
+            log.report_log0500[ifemb]['Result'] = check[ifemb]
+            log.report_log0500[ifemb]['Issue List'] = check_list[ifemb]
             log.report_log05_table[femb_id]["Baseline"] = "200 mV | | | | | |"
             log.report_log05_table[femb_id]["interface"] = "SE OFF | | | | SE ON | DIFF | SE Leakage Current"
             log.report_log05_table[femb_id]["peak time"] = "0.5 us | 1 us | 2 us | 3 us | 2 us | 2 us | 2 us 14 mVfC "
