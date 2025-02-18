@@ -3,6 +3,7 @@ import pickle
 import csv
 import QC_components.qc_log as log
 import re
+import QC_components.csv_style as csv_style
 
 
 def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
@@ -44,6 +45,74 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
     return table
 
 
+# write pulse response parameter
+def write_pulse_to_csv(line1, line2, line3, file_path, test, configuration, data_dict, femb_id):
+    """
+    Writes multiple QC-related data entries to a CSV file with user-defined line numbers and incrementing test names.
+
+    Parameters:
+    - file_path: Path to the CSV file
+    - test: Base test name (e.g., 'QC_03_03_Leakage_Current')
+    - configuration: Configuration string
+    - data_dict: Dictionary containing QC data
+    - femb_id: Identifier for the FEMB being tested
+    - line1, line2, line3: Custom line numbers for writing each entry
+    """
+
+    entries = [
+        (line1, f"{test}_01", 'Positive Peak Mean', 'ppk'),
+        (line2, f"{test}_02", 'Baseline Mean', 'bbl'),
+        (line3, f"{test}_03", 'Negative Peak Mean', 'npk')
+    ]
+
+    for line, test_variant, label, key in entries:
+        data = [
+                   test_variant,  # Incrementing test name
+                   configuration,
+                   label, '{}'.format(data_dict[femb_id][f"{key}_mean"]),
+                   '5-sigma-STD', '{}'.format(5 * data_dict[femb_id][f"{key}_std"]),
+                   'MAX', '{}'.format(data_dict[femb_id][f"{key}_max"]),
+                   'MIN', '{}'.format(data_dict[femb_id][f"{key}_min"]),
+                   '128-Ch Distribution'
+               ] + data_dict[femb_id][key]
+
+        csv_style.write_to_csv_line(file_path, line, data)
+
+def write_bandgap_to_csv(line, file_path, test, fname, ifemb):
+    """
+    Writes QC Bandgap RMS data to a CSV file.
+
+    Parameters:
+    - file_path: Path to the CSV file
+    - line: Line number where the data should be written
+    - test: Test name (e.g., 'QC_05_01_Bandgap_RMS')
+    - configuration: Configuration string (e.g., '1nA_SEOFF_200mVBL_14_0mVfC_2_0us_0x20')
+    - fname: Key used to access specific data (e.g., 'SE_900mVBL_14_0mVfC_1_0us')
+    - ifemb: Identifier for the FEMB being tested
+    """
+
+    # Directly access the predefined dictionaries
+    mean_data = log.report_log057_fembrmsmean[ifemb][fname]
+    std_data = log.report_log057_fembrmsstd[ifemb][fname]
+    max_data = log.report_log057_fembrmsmax[ifemb][fname]
+    min_data = log.report_log057_fembrmsmin[ifemb][fname]
+    rms_data = log.report_log053_rms[ifemb][fname]  # 128-Ch Distribution
+
+    # Format the data for CSV writing
+    data = [
+        test,
+        '{}_DAC0x10'.format(fname),
+        'Positive Peak Mean', str(mean_data),
+        '5-sigma-STD', str(5 * std_data),
+        'MAX', str(max_data),
+        'MIN', str(min_data),
+        '128-Ch Distribution'
+    ] + rms_data  # Append the 128-Ch Distribution list
+
+    # Write to CSV
+    csv_style.write_to_csv_line(file_path, line, data)
+
+
 
 
 def CSV_section_report(datareport, fembs, fembNo):
@@ -52,724 +121,398 @@ def CSV_section_report(datareport, fembs, fembNo):
 #   Start Markdown
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-        fpmd = datareport[ifemb] + 'report_FEMB_{}_item{}_slot{}.csv'.format(fembNo['femb%d' % ifemb], log.test_label, ifemb)
-        print(datareport[ifemb])
-
-        with open(fpmd, 'w', encoding = "utf-8") as file:
-# Title        FEMB ID
-# 00           Print <Input Information>
-            writer = csv.writer(file)
-            info = log.report_log00
-            for key, value in log.report_log00.items():
-                log.report_log00[key] = re.sub(r'\\.', '', str(value))
-                writer.writerow([key, value])
-
-            if 1 in log.test_label:
-                # csv REPORT
-                # POWER CONSUMPTION
-                section = 'Single-End Interface OFF\n'
-                file.write(section)
-                for key, value in log.report_log01_11[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'Single-End Interface ON\n'
-                file.write(section)
-                for key, value in log.report_log01_21[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'Differential Interface ON\n'
-                file.write(section)
-                for key, value in log.report_log01_31[femb_id].items():
-                    writer.writerow([key, value])
-
-
-                section = 'SE OFF Voltage power rail\n'
-                file.write(section)
-                for key, value in log.report_log01_13[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE ON Voltage power rail\n'
-                file.write(section)
-                for key, value in log.report_log01_23[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'DIFF Voltage power rail\n'
-                file.write(section)
-                for key, value in log.report_log01_33[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'General Pulse Review at Power Consumption Test\n'
-                file.write(section)
-                section = 'SE OFF\n'
-                file.write(section)
-                for key, value in log.report_log01_12[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE ON\n'
-                file.write(section)
-                for key, value in log.report_log01_22[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SEDC (DIFF)\n'
-                file.write(section)
-                for key, value in log.report_log01_32[femb_id].items():
-                    writer.writerow([key, value])
-
-            # if 2 in log.test_label:
-
-            if 3 in log.test_label:
-                section = 'Pulse check at 4 Leakage current setting\n'
-                file.write(section)
-                section = '100 pA\n'
-                file.write(section)
-                for key, value in log.report_log03_02[femb_id].items():
-                    writer.writerow([key, value])
-                section = '500 pA\n'
-                file.write(section)
-                for key, value in log.report_log03_01[femb_id].items():
-                    writer.writerow([key, value])
-                section = '1 nA\n'
-                file.write(section)
-                for key, value in log.report_log03_04[femb_id].items():
-                    writer.writerow([key, value])
-                section = '5 nA\n'
-                file.write(section)
-                for key, value in log.report_log03_03[femb_id].items():
-                    writer.writerow([key, value])
-
-            if 4 in log.test_label:
-                section = 'Pulse response at different setting\n'
-                file.write(section)
-                section = 'SE OFF baseline = 200 mV 4.7 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_4705[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 4.7 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_4710[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 4.7 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_4720[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 4.7 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_4730[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 200 mV 7.8 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_7805[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 7.8 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_7810[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 7.8 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_7820[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 7.8 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_7830[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 200 mV 14 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_1405[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 14 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_1410[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 14 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_1420[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 14 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_1430[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 200 mV 25 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_2505[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 25 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_2510[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 25 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_2520[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 200 mV 25 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_01_2530[femb_id].items():
-                    writer.writerow([key, value])
-
-
-
-
-                section = 'Pulse response at different setting\n'
-                file.write(section)
-                section = 'SE OFF baseline = 900 mV 4.7 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_4705[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 4.7 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_4710[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 4.7 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_4720[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 4.7 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_4730[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 900 mV 7.8 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_7805[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 7.8 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_7810[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 7.8 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_7820[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 7.8 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_7830[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 900 mV 14 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_1405[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 14 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_1410[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 14 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_1420[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 14 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_1430[femb_id].items():
-                    writer.writerow([key, value])
-
-                section = 'SE OFF baseline = 900 mV 25 mV/fC 0.5 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_2505[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 25 mV/fC 1 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_2510[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 25 mV/fC 2 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_2520[femb_id].items():
-                    writer.writerow([key, value])
-                section = 'SE OFF baseline = 900 mV 25 mV/fC 3 us \n'
-                file.write(section)
-                for key, value in log.report_log04_02_2530[femb_id].items():
-                    writer.writerow([key, value])
-
-            if 5 in log.test_label:
-                section = 'RMS noise at different setting\n'
-                file.write(section)
-                section = 'Mean, std, max, min\n'
-                file.write(section)
-                print(log.report_log057_fembrms[ifemb])
-                print(121212121)
-                for key, value in log.report_log057_fembrms[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 6 in log.test_label:
-                section = 'CALI1 200mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0603csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0603csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0603csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-                section = 'CALI1 200mVBL 4_7mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0601csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0601csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0601csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-                section = 'CALI1 200mVBL 7_8mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0602csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0602csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0602csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-                section = 'CALI1 200mVBL 25_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0604csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0604csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0604csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 7 in log.test_label:
-                section = 'CALI2 900mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0701csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0701csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0701csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 8 in log.test_label:
-                section = 'CALI3 SGP=1 200mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0801csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0801csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0801csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 9 in log.test_label:
-                section = 'CALI4 SGP=1 900mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log0901csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0901csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log0901csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 10 in log.test_label:
-                # femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-                section = 'Item #10 LArASIC Sensor (Bandgap, Baseline)\n'
-                file.write(section)
-                print(log.mon_pulse["bandgap"][femb_id])
-                # for key, value in log.mon_pulse["bandgap"][femb_id]:
-                writer.writerow(log.mon_pulse["bandgap"][femb_id])
-                writer.writerow(log.mon_pulse["temperature"][femb_id])
-                writer.writerow(log.mon_pulse["200mVBL_sdf0"][femb_id])
-                writer.writerow(log.mon_pulse["900mVBL_sdf0"][femb_id])
-                writer.writerow(log.mon_pulse["200mVBL_sdf1"][femb_id])
-                writer.writerow(log.mon_pulse["900mVBL_sdf1"][femb_id])
-
-            if 11 in log.test_label:
-                # femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-                section = 'Item #11 LArASIC Linearity\n'
-                file.write(section)
-                # for key, value in log.mon_pulse[bandgap"][femb_id]:
-                for key, value in log.report_log1101csv[femb_id].items():
-                    writer.writerow([key, value])
-
-            if 12 in log.test_label:
-                # femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
-                section = 'Item #12 ColdADC ref_voltage Linearity\n'
-                file.write(section)
-                # for key, value in log.mon_pulse[bandgap"][femb_id]:
-                for key, value in log.ADCMON_table_cell[femb_id].items():
-                    writer.writerow([key, value])
-
-            if 13 in log.test_label:
-                section = 'CALI5 external pulse 900mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log1301csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log1301csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log1301csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 14 in log.test_label:
-                section = 'CALI6 external pulse 200mVBL 14_0mVfC 2_0us\n'
-                file.write(section)
-                for key, value in log.report_log1401csvgain[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log1401csvinl[ifemb].items():
-                    writer.writerow([key, value])
-                for key, value in log.report_log1401csvlinerange[ifemb].items():
-                    writer.writerow([key, value])
-
-            if 15 in log.test_label:
-                section = 'QC_femb_adc_sync_pat_t15\n'
-                file.write(section)
-                for key, value in log.check_log15csv[femb_id].items():
-                    writer.writerow([key, value])
-
-            if 16 in log.test_label:
-                section = 'QC_femb_test_pattern_pll_t16\n'
-                file.write(section)
-                for key, value in log.check_log16csv[femb_id].items():
-                    writer.writerow([key, value])
-
-##  Detail Pages ================================================
-'''
-
-#   08      Calibration 03:
-            if 8 in log.test_label:
-                if check_status08:
-                    Head08 = '### ' + '</span>' + '<span id="item8"> Chapter_8 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM_08_Cali_3 SE 200 SGP' + '    < Pass >' + '</span>' + '\n'
-                else:
-                    Head08 = '### ' + '</span>' + '<span id="item8"> Chapter_8 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_08_Cali_3 SE 200 SGP' + '    < Fail >' + '</span>' + '\n'
-            # SE    200 mVBL    4_7 mVfC       2 us    SGP1
-                file.write(Head08 + '\n')
-                file.write('### Calibration 03 SE SGP1 200 mVBL    4_7 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
-                # file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
-                file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
-            # # DIFF  900 mVBL    4_7 mVfC     2 us
-            # file.write('### Calibration 022 DIFF 900 mVBL    4_7 mVfC    2 us' + '\n')
-            # file.write("![ped](./{}/enc_900mVBL_4_7mVfC_2_0us.png)".format(log.item072) + "![ped](./{}/ped_900mVBL_4_7mVfC_2_0us.png)".format(log.item072) + "\n")
-            # file.write("![ped](./{}/gain_900mVBL_4_7mVfC_2_0us.png)".format(log.item072) + "\n")
-
-#   09      Calibration 04:
-            if 9 in log.test_label:
-                if check_status09:
-                    Head09 = '### ' + '</span>' + '<span id="item9"> Chapter_9 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM_09_Cali_4 SE 900 SGP1' + '    < Pass >' + '</span>' + '\n'
-                else:
-                    Head09 = '### ' + '</span>' + '<span id="item9"> Chapter_9 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_09_Cali_4 SE 900 SGP1' + '    < Fail >' + '</span>' + '\n'
-                file.write(Head09 + '\n')
-                file.write('### Calibration 04 SE SGP1 900 mVBL    4_7 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n\n")  # width="200"
-                file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item091) + "\n")
-            # DIFF  900 mVBL    14 mVfC     2 us
-            # file.write('### Calibration 022 DIFF 900 mVBL    14_0 mVfC    2 us' + '\n')
-            # file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item092) + "![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item092) + "\n")
-            # file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item092) + "\n")
-            
-
-
-# 10        print <FE_MON>
-            if 10 in log.test_label:
-                if check_status10 == True:
-                    file.write('### ' + '</span>' + '<span id="item10"> Chapter_10 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "FE Mon"  + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item10"> Chapter_10 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' "FE Mon" + '    < Pass >' + '</span>' + '\n')
-                    file.write(log.report_log10_01[ifemb])
-                file.write('#### mon_bandgap' + '\n')
-                info = dict_to_markdown_table(log.report_log10_01[femb_id], VALUE="Horizontal")
-                file.write(info + '\n')
-                file.write("![ped](./{}/FE_Mon.png)".format(log.item10) + "\n")
-
-# 11        print <FE_DAC_MON>
-            # 11_01
-            if 11 in log.test_label:
-                if check_status11 == True:
-                    file.write('### ' + '</span>' + '<span id="item11"> Chapter_11 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "FE DAC linearity"  + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item11"> Chapter_11 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "FE DAC linearity"  + '    < Pass >' + '</span>' + '\n')
-                file.write('### FE_DAC_MON' + '\n')
-                info = dict_to_markdown_table(log.check_log1101[femb_id])
-                file.write(info + '\n')
-                file.write("![ped](./{}/mon_LArASIC_DAC_25mVfC.png)".format(log.item11) + "\n")
-
-# 12        print <ADC_MON>
-            # 12_01
-            if 12 in log.test_label:
-                if check_status12 == True:
-                    file.write(
-                        '### ' + '</span>' + '<span id="item12"> Chapter_12 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "ColdADC linearity" + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item12"> Chapter_12 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "ColdADC linearity"  + '    < Pass >' + '</span>' + '\n')
-
-                file.write('### FE_ADC_MON' + '\n')
-                info = dict_to_markdown_table(log.ADCMON_table[femb_id], VALUE="ADC_MON")
-                file.write(info + '\n')
-                file.write(
-                    '<img src="./{}/mon_VCMI.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
-                file.write(
-                    '<img src="./{}/mon_VCMO.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
-                file.write(
-                    '<img src="./{}/mon_VREFN.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
-                file.write(
-                    '<img src="./{}/mon_VREFP.png" alt="picture" height="230">'.format(log.item12) + "\n")  # width="200"
-                file.write('\n')
-
-#   13      Calibration 04:
-            if 13 in log.test_label:
-                if check_status13 == True:
-                    file.write('### ' + '</span>' + '<span id="item13"> Chapter_13 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "External Pulse Calibration 900mV baseline" + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item13"> Chapter_13 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "External Pulse Calibration 900mV baseline" + '    < fail >' + '</span>' + '\n')
-
-                # SE    900 mVBL    14_0 mVfC       2 us
-                file.write('### Calibration 05 SE 900 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(log.item13) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(log.item13) + "\n\n")  # width="200"
-                # file.write("![ped](./{}/enc_900mVBL_14_0mVfC_2_0us.png)".format(log.item13) + "![ped](./{}/Line_range_900mVBL_14_0mVfC_2_0us.png)".format(log.item13) + "\n")
-                file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us.png)".format(log.item13) + "\n")
-                # file.write("![ped](./{}/ped_900mVBL_14_0mVfC_2_0us.png)".format(log.item13) + "\n")
-
-            #   14      Calibration 04:
-            if 14 in log.test_label:
-                if check_status14 == True:
-                    file.write('### ' + '</span>' + '<span id="item14"> Chapter_14 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "External Pulse Calibration 200mV baseline" + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item14"> Chapter_14 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "External Pulse Calibration 200mV baseline" + '    < fail >' + '</span>' + '\n')
-                # SE    900 mVBL    14_0 mVfC       2 us
-                file.write('### Calibration 06 200 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(log.item14) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us.png" alt="picture" height="230">'.format(log.item14) + "\n\n")  # width="200"
-                # file.write("![ped](./{}/enc_200mVBL_14_0mVfC_2_0us.png)".format(log.item14) + "![ped](./{}/Line_range_200mVBL_14_0mVfC_2_0us.png)".format(log.item14) + "\n")
-                file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us.png)".format(log.item14) + "\n")
-                # file.write("![ped](./{}/ped_200mVBL_14_0mVfC_2_0us.png)".format(log.item14) + "\n")
-
-# 15        print <ADC_DC noise measurement>
-            # 12_01
-            if 15 in log.test_label:
-                if check_status15:
-                    file.write(
-                        '### ' + '</span>' + '<span id="item15"> Chapter_15 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "ColdADC_sync_pat_report" + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write(
-                        '### ' + '</span>' + '<span id="item15"> Chapter_15 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "ColdADC_sync_pat_report" + '    < fail >' + '</span>' + '\n')
-
-                file.write('### ADC_DC noise measurement' + '\n')
-                # info = dict_to_markdown_table(log.ADCMON_table[femb_id], VALUE="ADC_MON")
-                # file.write(info + '\n')
-                file.write("![ped](./{}/ped_ADC_Test_mode_DC_Noise_SE.png)".format(log.item15))
-                file.write("![ped](./{}/ped_ADC_SYNC_PAT_SHA_SE.png)".format(log.item15))
-                file.write("![ped](./{}/ped_ADC_SYNC_PAT_SHA_DIFF.png)".format(log.item15))
-                file.write('\n\n')
-# 16        print <ADC_DC noise measurement>
-            # 12_01
-            if 16 in log.test_label:
-                if check_status16 == True:
-                    file.write('### ' + '</span>' + '<span id="item16"> Chapter_16 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "PLL_scan_report" + '    < Pass >' + '</span>' + '\n')
-                else:
-                    file.write('### ' + '</span>' + '<span id="item16"> Chapter_16 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "PLL_scan_report" + '    < Fail >' + '</span>'  + '\n')
-                info = dict_to_markdown_table(log.report_log1601[femb_id])
-                file.write(info + '\n')
-                file.write("[PDF](./{}/report.pdf)".format(log.item16) + "\n")
-    return fpmd
-
-
-
-
-
-
-
-# final report, generate every analysis
-def final_report(datareport, fembs, fembNo):
-    print("\n\n\n")
-    print("==================================================================================")
-    print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
-    print("+++++++                                                                    +++++++")
-    print("==================================================================================")
-    print("\n")
-    print(log.report_log01["ITEM"])
-    for key, value in log.report_log01["Detail"].items():
-        print(f"{key}: {value}")
-
-    print('\n')
-
-    all_true = {}
-    PH = 250
-    for ifemb in fembs:
-        femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-###======================== Whole judgement =============================
-#   item 01 Power Consumption
-        check_list = []
-        check_status = [None for _ in range(1, 17)]
-        item_file = [None for _ in range(1, 17)]
-        print(check_status)
-
-        for root, dirs, files in os.walk(datareport[ifemb]):
-            for file in files:
-                if file.endswith('.md'):
-                    for i in range(1,17,1):
-                        if 't{}_F'.format(i) in file:
-                            check_status[i - 1] = False
-                            item_file[i - 1] = file
-                        elif 't{}_P'.format(i) in file:
-                            check_status[i - 1] = True
-                            item_file[i - 1] = file
-        print(check_status)
-        all_true = all(check_status)
-        if None in check_status:
-            summary = '<span style="color: dark;">' + " FEMB # {}\t       Quality Control in Test ".format(fembNo['femb%d' % ifemb]) + '</span>' + '\n'
-        else:
-            if all_true:
-                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
-            else:
-                summary = '<span style="color: red;">' + " FEMB # {}\t      fail\t    the Quality Control tests".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
-        print(summary)
-
-###======================================================================
-
-#   Start Markdown
-
-        print('\n')
-        frmd = datareport[ifemb] + 'Final_Report_FEMB_{}_S{}.md'.format(fembNo['femb%d' % ifemb], ifemb)
-        print(datareport[ifemb])
-        with open(frmd, 'w', encoding = "utf-8") as file:
-            # file.write('')
-            file.write('\n')
-            file.write('\n')
-            file.write('# ' + summary + '\n')
-            file.write('\n')
-            file.write('\n')
-# Title     FEMB ID
-# 00        Print <Input Information>
-            file.write('## INPUT INFORMATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {}'.format(femb_id) + '\n')
-            info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
-            file.write(info + '\n')
-
-            file.write('## Test Content' + '\n')
-
-
-##  Content Pages ================================================
-
-            if check_status[1-1] is True:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[1-1]) + '</span>'
-            elif check_status[1-1] is False:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[1-1]) + '</span>'
-            else:
-                Item01 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_01 POWER CONSUMPTION' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item01 + '\n\n')
-
-            if check_status[2-1] is True:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[2-1]) + '</span>'
-            elif check_status[2 - 1] is False:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[2-1]) + '</span>'
-            else:
-                Item02 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_02 Power Cycle' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item02 + '\n\n')
-
-            if check_status[3-1] is True:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[3-1]) + '</span>'
-            elif check_status[3 - 1] is False:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[3-1]) + '</span>'
-            else:
-                Item03 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_03 Leakage Current Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item03 + '\n\n')
-
-            if check_status[4-1] is True:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[4-1]) + '</span>'
-            elif check_status[4 - 1] is False:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[4-1]) + '</span>'
-            else:
-                Item04 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_04 Whole Pulse Response' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item04 + '\n\n')
-
-            if check_status[5-1] is True:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[5-1]) + '</span>'
-            elif check_status[5 - 1] is False:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[5-1]) + '</span>'
-            else:
-                Item05 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_05 RMS Evaluation' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item05 + '\n\n')
-
-            if check_status[6-1] is True:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[6-1]) + '</span>'
-            elif check_status[6 - 1] is False:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[6-1]) + '</span>'
-            else:
-                Item06 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_06 Cali_1 configuration SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item06 + '\n\n')
-
-            if check_status[7-1] is True:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[7-1]) + '</span>'
-            elif check_status[7 - 1] is False:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[7-1]) + '</span>'
-            else:
-                Item07 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_07 Cali_2 configuration SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item07 + '\n\n')
-
-            if check_status[8-1] is True:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[8-1]) + '</span>'
-            elif check_status[8 - 1] is False:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[8-1]) + '</span>'
-            else:
-                Item08 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_08 Cali_3 SGP1 SE 200 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item08 + '\n\n')
-
-            if check_status[9-1] is True:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[9-1]) + '</span>'
-            elif check_status[9 - 1] is False:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[9-1]) + '</span>'
-            else:
-                Item09 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_09 Cali_4 SGP1 SE 900 mV' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item09 + '\n\n')
-
-            if check_status[10-1] is True:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[10-1]) + '</span>'
-            elif check_status[10 - 1] is False:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[10-1]) + '</span>'
-            else:
-                Item10 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_10 FE Monitor' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item10 + '\n\n')
-
-            if check_status[11-1] is True:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[11-1]) + '</span>'
-            elif check_status[11 - 1] is False:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[11-1]) + '</span>'
-            else:
-                Item11 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_11 FE DAC Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item11 + '\n\n')
-
-            if check_status[12-1] is True:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[12-1]) + '</span>'
-            elif check_status[12 - 1] is False:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[12-1]) + '</span>'
-            else:
-                Item12 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_12 ColdADC ref_voltage Linearity' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item12 + '\n\n')
-
-            if check_status[13-1] is True:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[13-1]) + '</span>'
-            elif check_status[13 - 1] is False:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[13-1]) + '</span>'
-            else:
-                Item13 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_13 External Pulse Calibration 900mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item13 + '\n\n')
-
-            if check_status[14-1] is True:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[14-1]) + '</span>'
-            elif check_status[14 - 1] is False:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[14-1]) + '</span>'
-            else:
-                Item14 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_14 External Pulse Calibration 200mV baseline' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item14 + '\n\n')
-
-            if check_status[15-1] is True:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[15-1]) + '</span>'
-            elif check_status[15 - 1] is False:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[15-1]) + '</span>'
-            else:
-                Item15 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_15 ColdADC_sync_pat_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item15 + '\n\n')
-
-            if check_status[16-1] is True:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Pass > [Detail](./{})'.format(item_file[16-1]) + '</span>'
-            elif check_status[16 - 1] is False:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < Fail > [Detail](./{})'.format(item_file[16-1]) + '</span>'
-            else:
-                Item16 = '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: gray;">' + 'Item_16 PLL_scan_report' + '&nbsp;&nbsp;&nbsp;&nbsp; < No Test >' + '</span>'
-            file.write(Item16 + '\n\n')
-
-            file.write("------\n")
-
-            if check_status[1-1] is not None:
-                file.write('<img src="./PWR_Meas/Power_Total.png" alt="picture" height="250">' + "\n\n")  # width="200"
-            if check_status[6-1] is not None:
-                file.write('<img src="./CALI1_DIFF/SE_Gain.png" alt="picture" height="250">' + "\n\n")  # width="200"
-                file.write('<img src="./CALI1_DIFF/SE_ENC.png" alt="picture" height="250">' + "\n\n")  # width="200"
-            if check_status[11-1] is not None:
-                file.write('<img src="./MON_FE/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">' + "\n\n")  # width="200"
-
-            file.write("------\n")
-'''
+        print(ifemb)
+        print(femb_id)
+        fpmd = datareport[ifemb] + 'report_FEMB_{}_slot{}.csv'.format(fembNo['femb%d' % ifemb], ifemb)
+        info = log.report_log00
+        # initial part
+        file_path = fpmd
+        line_number = 1;        data = ['CTS_Time', info['date']]
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 2;        data = ['Test_Site', 'BNL']
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 3;        data = ['CTS_ID', '1']
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 4;        data = ['Tester', info['tester'].replace('\r','')]
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 5;        data = ['Environment', info['env']]
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 6;        data = ['Toy_TPC', info['toytpc']]
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        line_number = 7;        data = ['SLOT{}_FEMBID'.format(ifemb), info['femb id']['femb{}'.format(ifemb)]]
+        csv_style.write_to_csv_line(file_path, line_number, data)
+        if 1 in log.test_label:
+            print(log.report_log01_11[femb_id])
+        # Item#01 Power Consumption
+            line_number = 8;        data = ['QC_01_01_Power_Consumption', 'Signal-End-OFF', 'BIAS_Voltage={}'.format(log.check_log01_11[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log01_11[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log01_11[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log01_11[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log01_11[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log01_11[femb_id]['LArASIC_p']), 'ColdADC_Voltage={}'.format(log.check_log01_11[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log01_11[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log01_11[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log01_11[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log01_11[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log01_11[femb_id]['COLDATA_p']), 'Total_Power={}'.format(log.check_log01_11[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 9;        data = ['QC_01_02_Power_Consumption', 'Signal-End-ON', 'BIAS_Voltage={}'.format(log.check_log01_21[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log01_21[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log01_21[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log01_21[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log01_21[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log01_21[femb_id]['LArASIC_p']), 'ColdADC_Voltage={}'.format(log.check_log01_21[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log01_21[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log01_21[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log01_21[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log01_21[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log01_21[femb_id]['COLDATA_p']), 'Total_Power={}'.format(log.check_log01_21[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 10;        data = ['QC_01_03_Power_Consumption', 'DIFF-Interface', 'BIAS_Voltage={}'.format(log.check_log01_31[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log01_31[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log01_31[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log01_31[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log01_31[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log01_31[femb_id]['LArASIC_p']), 'ColdADC_Voltage={}'.format(log.check_log01_31[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log01_31[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log01_31[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log01_31[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log01_31[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log01_31[femb_id]['COLDATA_p']), 'Total_Power={}'.format(log.check_log01_31[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+            line_number = 11;        data = ['QC_01_04_Power_LDO_output', 'Signal-End-OFF', 'CDVDDA={}'.format(log.report_log01_13[femb_id]['CDVDDA']), 'CDVDDIO={}'.format(log.report_log01_13[femb_id]['CDVDDIO']), 'ADCRVDDD1P2={}'.format(log.report_log01_13[femb_id]['ADCRVDDD1P2']), 'ADCLVDDD1P2={}'.format(log.report_log01_13[femb_id]['ADCLVDDD1P2']), 'ADCRP25V={}'.format(log.report_log01_13[femb_id]['ADCRP25V']), 'ADCLP25V={}'.format(log.report_log01_13[femb_id]['ADCLP25V']), 'FERVDDP={}'.format(log.report_log01_13[femb_id]['FERVDDP']), 'FELVDDP={}'.format(log.report_log01_13[femb_id]['FELVDDP']), 'GND={}'.format(log.report_log01_13[femb_id]['GND'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 12;        data = ['QC_01_05_Power_LDO_output', 'Signal-End-ON', 'CDVDDA={}'.format(log.report_log01_23[femb_id]['CDVDDA']), 'CDVDDIO={}'.format(log.report_log01_23[femb_id]['CDVDDIO']), 'ADCRVDDD1P2={}'.format(log.report_log01_23[femb_id]['ADCRVDDD1P2']), 'ADCLVDDD1P2={}'.format(log.report_log01_23[femb_id]['ADCLVDDD1P2']), 'ADCRP25V={}'.format(log.report_log01_23[femb_id]['ADCRP25V']), 'ADCLP25V={}'.format(log.report_log01_23[femb_id]['ADCLP25V']), 'FERVDDP={}'.format(log.report_log01_23[femb_id]['FERVDDP']), 'FELVDDP={}'.format(log.report_log01_23[femb_id]['FELVDDP']), 'GND={}'.format(log.report_log01_13[femb_id]['GND'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 13;        data = ['QC_01_06_Power_LDO_output', 'DIFF-Interface', 'CDVDDA={}'.format(log.report_log01_33[femb_id]['CDVDDA']), 'CDVDDIO={}'.format(log.report_log01_33[femb_id]['CDVDDIO']), 'ADCRVDDD1P2={}'.format(log.report_log01_33[femb_id]['ADCRVDDD1P2']), 'ADCLVDDD1P2={}'.format(log.report_log01_33[femb_id]['ADCLVDDD1P2']), 'ADCRP25V={}'.format(log.report_log01_33[femb_id]['ADCRP25V']), 'ADCLP25V={}'.format(log.report_log01_33[femb_id]['ADCLP25V']), 'FERVDDP={}'.format(log.report_log01_33[femb_id]['FERVDDP']), 'FELVDDP={}'.format(log.report_log01_33[femb_id]['FELVDDP']), 'GND={}'.format(log.report_log01_33[femb_id]['GND'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+            write_pulse_to_csv(14, 15, 16, file_path, 'QC_01_07_Power_GeneralPulseChk_output', 'Signal-End-OFF_DAC0x10', log.check_log01_12, femb_id)
+            write_pulse_to_csv(17, 18, 19, file_path, 'QC_01_08_Power_GeneralPulseChk_output', 'Signal-End-ON_DAC0x10', log.check_log01_22, femb_id)
+            write_pulse_to_csv(20, 21, 22, file_path, 'QC_01_09_Power_GeneralPulseChk_output', 'DIFF_DAC0x10', log.check_log01_32, femb_id)
+
+        if 2 in log.test_label:
+            line_number = 23;
+            data = ['QC_02_01_Power_Cycle', 'Signal-End-OFF', 'BIAS_Voltage={}'.format(log.check_log02_01[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log02_01[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log02_01[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log02_01[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log02_01[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log02_01[femb_id]['LArASIC_p']),
+                    'ColdADC_Voltage={}'.format(log.check_log02_01[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log02_01[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log02_01[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log02_01[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log02_01[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log02_01[femb_id]['COLDATA_p']),
+                    'Total_Power={}'.format(log.check_log02_01[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 24;
+            data = ['QC_02_03_Power_Cycle', 'Signal-End-OFF', 'BIAS_Voltage={}'.format(log.check_log02_02[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log02_02[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log02_02[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log02_02[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log02_02[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log02_02[femb_id]['LArASIC_p']),
+                    'ColdADC_Voltage={}'.format(log.check_log02_02[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log02_02[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log02_02[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log02_02[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log02_02[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log02_02[femb_id]['COLDATA_p']),
+                    'Total_Power={}'.format(log.check_log02_02[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 25;
+            data = ['QC_02_03_Power_Cycle', 'Signal-End-OFF', 'BIAS_Voltage={}'.format(log.check_log02_03[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log02_03[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log02_03[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log02_03[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log02_03[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log02_03[femb_id]['LArASIC_p']),
+                    'ColdADC_Voltage={}'.format(log.check_log02_03[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log02_03[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log02_03[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log02_03[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log02_03[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log02_03[femb_id]['COLDATA_p']),
+                    'Total_Power={}'.format(log.check_log02_03[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 26;
+            data = ['QC_02_04_Power_Cycle', 'DIFF-Interface', 'BIAS_Voltage={}'.format(log.check_log02_04[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log02_04[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log02_04[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log02_04[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log02_04[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log02_04[femb_id]['LArASIC_p']),
+                    'ColdADC_Voltage={}'.format(log.check_log02_04[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log02_04[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log02_04[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log02_04[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log02_04[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log02_04[femb_id]['COLDATA_p']),
+                    'Total_Power={}'.format(log.check_log02_04[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 27;
+            data = ['QC_02_05_Power_Cycle', 'SDF', 'BIAS_Voltage={}'.format(log.check_log02_05[femb_id]['BIAS_V']), 'BIAS_Current={}'.format(log.check_log02_05[femb_id]['BIAS_I']), 'BIAS_Power={}'.format(log.check_log02_05[femb_id]['bias_p']), 'LArASIC_Voltage={}'.format(log.check_log02_05[femb_id]['LArASIC_V']), 'LArASIC_Current={}'.format(log.check_log02_05[femb_id]['LArASIC_I']), 'LArASIC_Power={}'.format(log.check_log02_05[femb_id]['LArASIC_p']),
+                    'ColdADC_Voltage={}'.format(log.check_log02_05[femb_id]['ColdADC_V']), 'ColdADC_Current={}'.format(log.check_log02_05[femb_id]['ColdADC_I']), 'ColdADC_Power={}'.format(log.check_log02_05[femb_id]['ColdADC_p']), 'COLDATA_Voltage={}'.format(log.check_log02_05[femb_id]['COLDATA_V']), 'COLDATA_Current={}'.format(log.check_log02_05[femb_id]['COLDATA_I']), 'COLDATA_Power={}'.format(log.check_log02_05[femb_id]['COLDATA_p']),
+                    'Total_Power={}'.format(log.check_log02_05[femb_id]['TPower'])]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 3 in log.test_label:
+            write_pulse_to_csv(28, 29, 30, file_path, 'QC_03_01_Leakage_Current', '100pA_SEOFF_200mVBL_14_0mVfC_2_0us_DAC0x20', log.check_log03_02, femb_id)
+            write_pulse_to_csv(31, 32, 33, file_path, 'QC_03_02_Leakage_Current', '500pA_SEOFF_200mVBL_14_0mVfC_2_0us_DAC0x20', log.check_log03_01, femb_id)
+            write_pulse_to_csv(34, 35, 36, file_path, 'QC_03_03_Leakage_Current', '1nA_SEOFF_200mVBL_14_0mVfC_2_0us_DAC0x20', log.check_log03_04, femb_id)
+            write_pulse_to_csv(37, 38, 39, file_path, 'QC_03_04_Leakage_Current', '5nA_SEOFF_200mVBL_14_0mVfC_2_0us_DAC0x20', log.check_log03_03, femb_id)
+
+        if 4 in log.test_label:
+            # SE_OFF 200 mV baseline, DAC=0x10
+            write_pulse_to_csv(40, 41, 42, file_path, 'QC_04_01_Check_Pulse', 'SEOFF_200mVBL_4_7mVfC_0_5us_DAC0x10', log.check_log04_01_4705, femb_id)
+            write_pulse_to_csv(43, 44, 45, file_path, 'QC_04_02_Check_Pulse', 'SEOFF_200mVBL_4_7mVfC_1_0us_DAC0x10', log.check_log04_01_4710, femb_id)
+            write_pulse_to_csv(46, 47, 48, file_path, 'QC_04_03_Check_Pulse', 'SEOFF_200mVBL_4_7mVfC_2_0us_DAC0x10', log.check_log04_01_4720, femb_id)
+            write_pulse_to_csv(49, 50, 51, file_path, 'QC_04_04_Check_Pulse', 'SEOFF_200mVBL_4_7mVfC_3_0us_DAC0x10', log.check_log04_01_4730, femb_id)
+
+            write_pulse_to_csv(52, 53, 54, file_path, 'QC_04_05_Check_Pulse', 'SEOFF_200mVBL_7_8mVfC_0_5us_DAC0x10', log.check_log04_01_7805, femb_id)
+            write_pulse_to_csv(55, 56, 57, file_path, 'QC_04_06_Check_Pulse', 'SEOFF_200mVBL_7_8mVfC_1_0us_DAC0x10', log.check_log04_01_7810, femb_id)
+            write_pulse_to_csv(58, 59, 60, file_path, 'QC_04_07_Check_Pulse', 'SEOFF_200mVBL_7_8mVfC_2_0us_DAC0x10', log.check_log04_01_7820, femb_id)
+            write_pulse_to_csv(61, 62, 63, file_path, 'QC_04_08_Check_Pulse', 'SEOFF_200mVBL_7_8mVfC_3_0us_DAC0x10', log.check_log04_01_7830, femb_id)
+
+            write_pulse_to_csv(64, 65, 66, file_path, 'QC_04_09_Check_Pulse', 'SEOFF_200mVBL_14_0mVfC_0_5us_DAC0x10', log.check_log04_01_1405, femb_id)
+            write_pulse_to_csv(67, 68, 69, file_path, 'QC_04_10_Check_Pulse', 'SEOFF_200mVBL_14_0mVfC_1_0us_DAC0x10', log.check_log04_01_1410, femb_id)
+            write_pulse_to_csv(70, 71, 72, file_path, 'QC_04_11_Check_Pulse', 'SEOFF_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_01_1420, femb_id)
+            write_pulse_to_csv(73, 74, 75, file_path, 'QC_04_12_Check_Pulse', 'SEOFF_200mVBL_14_0mVfC_3_0us_DAC0x10', log.check_log04_01_1430, femb_id)
+
+            write_pulse_to_csv(76, 77, 78, file_path, 'QC_04_13_Check_Pulse', 'SEOFF_200mVBL_25_0mVfC_0_5us_DAC0x10', log.check_log04_01_2505, femb_id)
+            write_pulse_to_csv(79, 80, 81, file_path, 'QC_04_14_Check_Pulse', 'SEOFF_200mVBL_25_0mVfC_1_0us_DAC0x10', log.check_log04_01_2510, femb_id)
+            write_pulse_to_csv(82, 83, 84, file_path, 'QC_04_15_Check_Pulse', 'SEOFF_200mVBL_25_0mVfC_2_0us_DAC0x10', log.check_log04_01_2520, femb_id)
+            write_pulse_to_csv(85, 86, 87, file_path, 'QC_04_16_Check_Pulse', 'SEOFF_200mVBL_25_0mVfC_3_0us_DAC0x10', log.check_log04_01_2530, femb_id)
+
+            # SE_OFF 900 mV baseline, DAC=0x10
+            write_pulse_to_csv(88, 89, 90, file_path, 'QC_04_17_Check_Pulse', 'SEOFF_900mVBL_4_7mVfC_0_5us_DAC0x10', log.check_log04_02_4705, femb_id)
+            write_pulse_to_csv(91, 92, 93, file_path, 'QC_04_18_Check_Pulse', 'SEOFF_900mVBL_4_7mVfC_1_0us_DAC0x10', log.check_log04_02_4710, femb_id)
+            write_pulse_to_csv(94, 95, 96, file_path, 'QC_04_19_Check_Pulse', 'SEOFF_900mVBL_4_7mVfC_2_0us_DAC0x10', log.check_log04_02_4720, femb_id)
+            write_pulse_to_csv(97, 98, 99, file_path, 'QC_04_20_Check_Pulse', 'SEOFF_900mVBL_4_7mVfC_3_0us_DAC0x10', log.check_log04_02_4730, femb_id)
+
+            write_pulse_to_csv(100, 101, 102, file_path, 'QC_04_21_Check_Pulse', 'SEOFF_900mVBL_7_8mVfC_0_5us_DAC0x10', log.check_log04_02_7805, femb_id)
+            write_pulse_to_csv(103, 104, 105, file_path, 'QC_04_22_Check_Pulse', 'SEOFF_900mVBL_7_8mVfC_1_0us_DAC0x10', log.check_log04_02_7810, femb_id)
+            write_pulse_to_csv(106, 107, 108, file_path, 'QC_04_23_Check_Pulse', 'SEOFF_900mVBL_7_8mVfC_2_0us_DAC0x10', log.check_log04_02_7820, femb_id)
+            write_pulse_to_csv(109, 110, 111, file_path, 'QC_04_24_Check_Pulse', 'SEOFF_900mVBL_7_8mVfC_3_0us_DAC0x10', log.check_log04_02_7830, femb_id)
+
+            write_pulse_to_csv(112, 113, 114, file_path, 'QC_04_25_Check_Pulse', 'SEOFF_900mVBL_14_0mVfC_0_5us_DAC0x10', log.check_log04_02_1405, femb_id)
+            write_pulse_to_csv(115, 116, 117, file_path, 'QC_04_26_Check_Pulse', 'SEOFF_900mVBL_14_0mVfC_1_0us_DAC0x10', log.check_log04_02_1410, femb_id)
+            write_pulse_to_csv(118, 119, 120, file_path, 'QC_04_27_Check_Pulse', 'SEOFF_900mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_02_1420, femb_id)
+            write_pulse_to_csv(121, 122, 123, file_path, 'QC_04_28_Check_Pulse', 'SEOFF_900mVBL_14_0mVfC_3_0us_DAC0x10', log.check_log04_02_1430, femb_id)
+
+            write_pulse_to_csv(124, 125, 126, file_path, 'QC_04_29_Check_Pulse', 'SEOFF_900mVBL_25_0mVfC_0_5us_DAC0x10', log.check_log04_02_2505, femb_id)
+            write_pulse_to_csv(127, 128, 129, file_path, 'QC_04_30_Check_Pulse', 'SEOFF_900mVBL_25_0mVfC_1_0us_DAC0x10', log.check_log04_02_2510, femb_id)
+            write_pulse_to_csv(130, 131, 132, file_path, 'QC_04_31_Check_Pulse', 'SEOFF_900mVBL_25_0mVfC_2_0us_DAC0x10', log.check_log04_02_2520, femb_id)
+            write_pulse_to_csv(133, 134, 135, file_path, 'QC_04_32_Check_Pulse', 'SEOFF_900mVBL_25_0mVfC_3_0us_DAC0x10', log.check_log04_02_2530, femb_id)
+
+            # SGP=1 200 mV baseline, DAC=0x10
+            write_pulse_to_csv(136, 137, 138, file_path, 'QC_04_33_Check_Pulse', 'SGP_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_03_4720, femb_id)
+            write_pulse_to_csv(139, 140, 141, file_path, 'QC_04_34_Check_Pulse', 'SGP_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_03_7820, femb_id)
+            write_pulse_to_csv(142, 143, 144, file_path, 'QC_04_35_Check_Pulse', 'SGP_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_03_1420, femb_id)
+            write_pulse_to_csv(145, 146, 147, file_path, 'QC_04_36_Check_Pulse', 'SGP_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_03_2520, femb_id)
+
+            # SEON DAC=0x10
+            write_pulse_to_csv(148, 149, 150, file_path, 'QC_04_37_Check_Pulse', 'SEON_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_04_14201, femb_id)
+            write_pulse_to_csv(151, 152, 153, file_path, 'QC_04_38_Check_Pulse', 'SEON_900mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_04_14202, femb_id)
+            # SEON DAC=0x10
+            write_pulse_to_csv(154, 155, 156, file_path, 'QC_04_39_Check_Pulse', 'DIFF_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_04_14203, femb_id)
+            write_pulse_to_csv(157, 158, 159, file_path, 'QC_04_40_Check_Pulse', 'DIFF_900mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_04_14204, femb_id)
+            # DIFF
+            write_pulse_to_csv(160, 161, 162, file_path, 'QC_04_41_Check_Pulse', 'CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000050mV', log.check_log04_05_14201, femb_id)
+            write_pulse_to_csv(163, 164, 165, file_path, 'QC_04_42_Check_Pulse', 'CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000150mV', log.check_log04_05_14202, femb_id)
+            write_pulse_to_csv(166, 167, 168, file_path, 'QC_04_43_Check_Pulse', 'CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000350mV', log.check_log04_05_14203, femb_id)
+            #write_pulse_to_csv(145, 146, 147, file_path, 'QC_04_36_Check_Pulse', 'SGP_200mVBL_14_0mVfC_2_0us_DAC0x10', log.check_log04_03_2520, femb_id)
+
+        if 5 in log.test_label:
+            # Baseline = 200 mV
+            write_bandgap_to_csv(169, file_path, 'QC_05_01_Bandgap_RMS', 'SE_200mVBL_4_7mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(170, file_path, 'QC_05_02_Bandgap_RMS', 'SE_200mVBL_4_7mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(171, file_path, 'QC_05_03_Bandgap_RMS', 'SE_200mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(172, file_path, 'QC_05_04_Bandgap_RMS', 'SE_200mVBL_4_7mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(173, file_path, 'QC_05_05_Bandgap_RMS', 'SE_200mVBL_7_8mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(174, file_path, 'QC_05_06_Bandgap_RMS', 'SE_200mVBL_7_8mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(175, file_path, 'QC_05_07_Bandgap_RMS', 'SE_200mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(176, file_path, 'QC_05_08_Bandgap_RMS', 'SE_200mVBL_7_8mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(177, file_path, 'QC_05_09_Bandgap_RMS', 'SE_200mVBL_14_0mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(178, file_path, 'QC_05_10_Bandgap_RMS', 'SE_200mVBL_14_0mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(179, file_path, 'QC_05_11_Bandgap_RMS', 'SE_200mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(180, file_path, 'QC_05_12_Bandgap_RMS', 'SE_200mVBL_14_0mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(181, file_path, 'QC_05_13_Bandgap_RMS', 'SE_200mVBL_25_0mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(182, file_path, 'QC_05_14_Bandgap_RMS', 'SE_200mVBL_25_0mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(183, file_path, 'QC_05_15_Bandgap_RMS', 'SE_200mVBL_25_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(184, file_path, 'QC_05_16_Bandgap_RMS', 'SE_200mVBL_25_0mVfC_3_0us', ifemb)
+
+            # Baseline = 900 mV
+            write_bandgap_to_csv(185, file_path, 'QC_05_17_Bandgap_RMS', 'SE_900mVBL_4_7mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(186, file_path, 'QC_05_18_Bandgap_RMS', 'SE_900mVBL_4_7mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(187, file_path, 'QC_05_19_Bandgap_RMS', 'SE_900mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(188, file_path, 'QC_05_20_Bandgap_RMS', 'SE_900mVBL_4_7mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(189, file_path, 'QC_05_21_Bandgap_RMS', 'SE_900mVBL_7_8mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(190, file_path, 'QC_05_22_Bandgap_RMS', 'SE_900mVBL_7_8mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(191, file_path, 'QC_05_23_Bandgap_RMS', 'SE_900mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(192, file_path, 'QC_05_24_Bandgap_RMS', 'SE_900mVBL_7_8mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(193, file_path, 'QC_05_25_Bandgap_RMS', 'SE_900mVBL_14_0mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(194, file_path, 'QC_05_26_Bandgap_RMS', 'SE_900mVBL_14_0mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(195, file_path, 'QC_05_27_Bandgap_RMS', 'SE_900mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(196, file_path, 'QC_05_28_Bandgap_RMS', 'SE_900mVBL_14_0mVfC_3_0us', ifemb)
+
+            write_bandgap_to_csv(197, file_path, 'QC_05_29_Bandgap_RMS', 'SE_900mVBL_25_0mVfC_0_5us', ifemb)
+            write_bandgap_to_csv(198, file_path, 'QC_05_30_Bandgap_RMS', 'SE_900mVBL_25_0mVfC_1_0us', ifemb)
+            write_bandgap_to_csv(199, file_path, 'QC_05_31_Bandgap_RMS', 'SE_900mVBL_25_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(200, file_path, 'QC_05_32_Bandgap_RMS', 'SE_900mVBL_25_0mVfC_3_0us', ifemb)
+
+            # DIFF interface
+            write_bandgap_to_csv(201, file_path, 'QC_05_33_Bandgap_RMS', 'DIFF_200mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(202, file_path, 'QC_05_34_Bandgap_RMS', 'DIFF_200mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(203, file_path, 'QC_05_35_Bandgap_RMS', 'DIFF_200mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(204, file_path, 'QC_05_36_Bandgap_RMS', 'DIFF_200mVBL_25_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(205, file_path, 'QC_05_37_Bandgap_RMS', 'DIFF_900mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(206, file_path, 'QC_05_38_Bandgap_RMS', 'DIFF_900mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(207, file_path, 'QC_05_39_Bandgap_RMS', 'DIFF_900mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(208, file_path, 'QC_05_40_Bandgap_RMS', 'DIFF_900mVBL_25_0mVfC_2_0us', ifemb)
+
+            # SE-ON interface
+            write_bandgap_to_csv(209, file_path, 'QC_05_41_Bandgap_RMS', 'SEON_200mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(210, file_path, 'QC_05_42_Bandgap_RMS', 'SEON_200mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(211, file_path, 'QC_05_43_Bandgap_RMS', 'SEON_200mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(212, file_path, 'QC_05_44_Bandgap_RMS', 'SEON_200mVBL_25_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(213, file_path, 'QC_05_45_Bandgap_RMS', 'SEON_900mVBL_4_7mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(214, file_path, 'QC_05_46_Bandgap_RMS', 'SEON_900mVBL_7_8mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(215, file_path, 'QC_05_47_Bandgap_RMS', 'SEON_900mVBL_14_0mVfC_2_0us', ifemb)
+            write_bandgap_to_csv(216, file_path, 'QC_05_48_Bandgap_RMS', 'SEON_900mVBL_25_0mVfC_2_0us', ifemb)
+
+            # SE-OFF Leakage Current test
+            write_bandgap_to_csv(217, file_path, 'QC_05_49_Bandgap_RMS', 'SELC_200mVBL_14_0mVfC_2_0us_100pA', ifemb)
+            write_bandgap_to_csv(218, file_path, 'QC_05_50_Bandgap_RMS', 'SELC_200mVBL_14_0mVfC_2_0us_500pA', ifemb)
+            write_bandgap_to_csv(219, file_path, 'QC_05_51_Bandgap_RMS', 'SELC_200mVBL_14_0mVfC_2_0us_1nA', ifemb)
+            write_bandgap_to_csv(220, file_path, 'QC_05_52_Bandgap_RMS', 'SELC_200mVBL_14_0mVfC_2_0us_5nA', ifemb)
+
+        if 6 in log.test_label: # LSB =         dac_v['4_7mVfC']=18.66        dac_v['7_8mVfC']=14.33        dac_v['14_0mVfC']=8.08        dac_v['25_0mVfC']=4.61
+            line_number = 221;
+            data = ['QC_06_01_4_7mVfC_Calibration_GAIN_01', 'SEOFF_200mVBL_4_7mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0601csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0601csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0601csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0601csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0601csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 222;
+            data = ['QC_06_01_4_7mVfC_Calibration_INL_02', 'SEOFF_200mVBL_4_7mVfC_2_0us', 'INL Mean / %', '{}'.format(log.report_log0601csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0601csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0601csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0601csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0601csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 223;
+            data = ['QC_06_01_4_7mVfC_Calibration_Linearity_Range_03', 'SEOFF_200mVBL_4_7mVfC_2_0us', 'Linearity_Range / fc', '{}'.format(log.report_log0601csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0601csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0601csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0601csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0601csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+            line_number = 224;
+            data = ['QC_06_02_7_8mVfC_Calibration_GAIN_01', 'SEOFF_200mVBL_7_8mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0602csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0602csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0602csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0602csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0602csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 225;
+            data = ['QC_06_02_7_8mVfC_Calibration_INL_02', 'SEOFF_200mVBL_7_8mVfC_2_0us', 'INL Mean / %', '{}'.format(log.report_log0602csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0602csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0602csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0602csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0602csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 226;
+            data = ['QC_06_02_7_8mVfC_Calibration_Linearity_Range_03', 'SEOFF_200mVBL_7_8mVfC_2_0us', 'Linearity_Range / fc', '{}'.format(log.report_log0602csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0602csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0602csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0602csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0602csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+            line_number = 227;
+            data = ['QC_06_03_14_0mVfC_Calibration_GAIN_01', 'SEOFF_200mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0603csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0603csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0603csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0603csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0603csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 228;
+            data = ['QC_06_03_14_0mVfC_Calibration_INL_02', 'SEOFF_200mVBL_14_0mVfC_2_0us', 'INL Mean / %', '{}'.format(log.report_log0603csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0603csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0603csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0603csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0603csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 229;
+            data = ['QC_06_03_14_0mVfC_Calibration_Linearity_Range_03', 'SEOFF_200mVBL_14_0mVfC_2_0us', 'Linearity_Range / fc', '{}'.format(log.report_log0603csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0603csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0603csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0603csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0603csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+            line_number = 230;
+            data = ['QC_06_04_25_0mVfC_Calibration_GAIN_01', 'SEOFF_200mVBL_25_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0604csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0604csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0604csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0604csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0604csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 231;
+            data = ['QC_06_04_25_0mVfC_Calibration_INL_02', 'SEOFF_200mVBL_25_0mVfC_2_0us', 'INL Mean / %', '{}'.format(log.report_log0604csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0604csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0604csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0604csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0604csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 232;
+            data = ['QC_06_04_25_0mVfC_Calibration_Linearity_Range_03', 'SEOFF_200mVBL_25_0mVfC_2_0us', 'Linearity_Range / fc', '{}'.format(log.report_log0604csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0604csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0604csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0604csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0604csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 7 in log.test_label:
+            line_number = 233;
+            data = ['QC_07_01_14_0mVfC_Calibration_GAIN_01', 'SEOFF_900mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0701csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0701csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0701csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0701csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0701csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 234;
+            data = ['QC_07_01_14_0mVfC_Calibration_INL_02', 'SEOFF_900mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0701csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0701csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0701csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0701csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0701csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 235;
+            data = ['QC_07_01_14_0mVfC_Calibration_Linearity_Range_03', 'SEOFF_900mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0701csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0701csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0701csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0701csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0701csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+        if 8 in log.test_label:
+            line_number = 236;
+            data = ['QC_08_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_200mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0801csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 237;
+            data = ['QC_08_01_14_0mVfC_Calibration_INL_02', 'SGP1_200mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0801csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 238;
+            data = ['QC_08_01_14_0mVfC_Calibration_Linearity_Range_03', 'SGP1_200mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0801csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+        if 9 in log.test_label:
+            line_number = 239;
+            data = ['QC_09_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_900mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0901csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 240;
+            data = ['QC_09_01_14_0mVfC_Calibration_INL_02', 'SGP1_900mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0901csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 241;
+            data = ['QC_09_01_14_0mVfC_Calibration_Linearity_Range_03', 'SGP1_900mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0901csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 10 in log.test_label:
+            line_number = 242;
+            data = ['QC_10_01_LArASIC_Mon', 'bandgap', 'Bandgap_mean', '{}'.format(log.mon_pulse["bandgap_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["bandgap_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["bandgap_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["bandgap_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["bandgap"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 243;
+            data = ['QC_10_02_LArASIC_Mon', 'temperature', 'temperature_mean', '{}'.format(log.mon_pulse["temperature_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["temperature_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["temperature_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["temperature_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["temperature"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 244;
+            data = ['QC_10_03_LArASIC_Mon', '200mVBL_sdf1', '200mVBL_sdf1_mean', '{}'.format(log.mon_pulse["200mVBL_sdf1_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["200mVBL_sdf1_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["200mVBL_sdf1_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["200mVBL_sdf1_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["200mVBL_sdf1"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 245;
+            data = ['QC_10_04_LArASIC_Mon', '200mVBL_sdf0', '200mVBL_sdf0_mean', '{}'.format(log.mon_pulse["200mVBL_sdf0_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["200mVBL_sdf0_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["200mVBL_sdf0_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["200mVBL_sdf0_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["200mVBL_sdf0"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 246;
+            data = ['QC_10_05_LArASIC_Mon', '900mVBL_sdf1', '900mVBL_sdf1_mean', '{}'.format(log.mon_pulse["900mVBL_sdf1_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["900mVBL_sdf1_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["900mVBL_sdf1_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["900mVBL_sdf1_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["900mVBL_sdf1"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 247;
+            data = ['QC_10_06_LArASIC_Mon', '900mVBL_sdf0', '900mVBL_sdf0_mean', '{}'.format(log.mon_pulse["900mVBL_sdf0_mean"][femb_id]), '5-sigma-STD', '{}'.format(5*log.mon_pulse["900mVBL_sdf0_std"][femb_id]), 'MAX', '{}'.format(log.mon_pulse["900mVBL_sdf0_max"][femb_id]), 'MIN', '{}'.format(log.mon_pulse["900mVBL_sdf0_min"][femb_id]), '128-Ch Distribution'] + log.mon_pulse["900mVBL_sdf0"][femb_id]
+            csv_style.write_to_csv_line(file_path, line_number, data)
+        if 11 in log.test_label:
+            line_number = 248;
+            list = []
+            for key, value in log.report_log1101csv[femb_id].items():
+                list.append(value)
+            print(list)
+            data = ['QC_11_01_LArASIC_DAC_LSB', 'LSB_of_LArASIC_DAC', 'LSB'] + list
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 249;
+            list = []
+            for key, value in log.report_log1102csv[femb_id].items():
+                list.append(value)
+            print(list)
+            data = ['QC_11_02_LArASIC_DAC_LSB', 'INL_of_LArASIC_DAC', 'INL'] + list
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 12 in log.test_label:
+            line_number = 250;
+            list = []
+            for key, value in log.report_log1202csv[femb_id].items():
+                list.append(value)
+            print(list)
+            data = ['QC_12_01_ColdADC_iDAC_LSB', 'LSB_of_ColdADC_iDAC', 'LSB'] + list
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 251;
+            list = []
+            for key, value in log.report_log1201csv[femb_id].items():
+                list.append(value)
+            print(list)
+            data = ['QC_12_02_ColdADC_iDAC_INL', 'INL_of_ColdADC_iDAC', 'INL'] + list
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 13 in log.test_label:
+            line_number = 252;
+            data = ['QC_13_01_14_0mVfC_Calibration_GAIN_01', 'EX_900mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log1301csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1301csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log1301csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log1301csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log1301csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 253;
+            data = ['QC_13_01_14_0mVfC_Calibration_INL_02', 'EX_900mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log1301csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1301csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log1301csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log1301csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log1301csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 254;
+            data = ['QC_13_01_14_0mVfC_Calibration_Linearity_Range_03', 'EX_900mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log1301csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1301csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log1301csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log1301csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log1301csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+        if 14 in log.test_label:
+            line_number = 255;
+            data = ['QC_14_01_14_0mVfC_Calibration_GAIN_01', 'EX_200mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log1401csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1401csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log1401csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log1401csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log1401csvgain[ifemb]['gain_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 256;
+            data = ['QC_14_01_14_0mVfC_Calibration_INL_02', 'EX_200mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log1401csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1401csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log1401csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log1401csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log1401csvinl[ifemb]['inl_list / %']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 257;
+            data = ['QC_14_01_14_0mVfC_Calibration_Linearity_Range_03', 'EX_200mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log1401csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log1401csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log1401csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log1401csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log1401csvlinerange[ifemb]['line_range_list']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 15 in log.test_label:
+            line_number = 258;
+            data = ['QC_15_01_ColdADC', 'ColdADC_DC_Noise_ped', 'DC_Noise_ped'] + log.check_log15csv[femb_id]['DC_Noise_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 259;
+            data = ['QC_15_02_ColdADC', 'ColdADC_DC_Noise_rms', 'DC_Noise_rms'] + log.check_log15csv[femb_id]['DC_Noise_rms']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 260;
+            data = ['QC_15_03_ColdADC', 'ColdADC_DC_SHA_SE_ped', 'SHA_SE_ped'] + log.check_log15csv[femb_id]['SHA_SE_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 261;
+            data = ['QC_15_04_ColdADC', 'ColdADC_DC_SHA_SE_rms', 'SHA_SE_rms'] + log.check_log15csv[femb_id]['SHA_SE_rms']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 262;
+            data = ['QC_15_05_ColdADC', 'ColdADC_DC_SHA_DIFF_ped', 'SHA_DIFF_ped'] + log.check_log15csv[femb_id]['SHA_DIFF_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 263;
+            data = ['QC_15_06_ColdADC', 'ColdADC_DC_SHA_DIFF_rms', 'SHA_DIFF_rms'] + log.check_log15csv[femb_id]['SHA_DIFF_rms']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+        if 16 in log.test_label:
+            line_number = 264;
+            data = ['QC_16_01_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x21', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x21'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x21_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 265;
+            data = ['QC_16_02_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x22', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x22'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x22_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 266;
+            data = ['QC_16_03_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x23', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x23'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x23_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 267;
+            data = ['QC_16_04_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x24', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x24'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x24_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 268;
+            data = ['QC_16_05_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x25', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x25'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x25_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 269;
+            data = ['QC_16_06_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x26', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x26'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x26_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 270;
+            data = ['QC_16_07_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x27', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x27'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x27_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+            line_number = 271;
+            data = ['QC_16_08_PLL', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x28', 'Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x28'] + log.check_log16csv[femb_id]['Raw_SE_200mVBL_14_0mVfC_2_0us_0x00_0x28_ped']
+            csv_style.write_to_csv_line(file_path, line_number, data)
+
+

@@ -111,8 +111,6 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
 
     check = True
     check_issue = []
-
-
     # parameter
     #           BIAS    LArASIC ColdADC COLDATA
     ref_v       = [5,     3,      3.5,    3]
@@ -143,6 +141,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("bias_i = {} out of [{} +- {}]\n".format(temp_i, bias_i_ref, bias_i_err))
         bias_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
     bias_p = abs(round(temp_v * temp_i, 3))
+    log.check_log[femb_id]["bias_p"] = bias_p
 
     # LArASIC_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],0)],3)
@@ -164,6 +163,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("LArASIC_i = {} out of [{}/{} +- {}]\n".format(temp_i, LArASIC_i_ref1, LArASIC_i_ref2, LArASIC_i_err))
         LArASIC_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
     LArASIC_p = round(temp_v * temp_i, 3)
+    log.check_log[femb_id]["LArASIC_p"] = LArASIC_p
 
     # COLDATA_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],1)],3)
@@ -185,7 +185,7 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("COLDATA_i = {} out of [{}/{} +- {}]\n".format(temp_i, COLDATA_i_ref1, COLDATA_i_ref2, COLDATA_i_err))
         COLDATA_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
     COLDATA_p = round(temp_v * temp_i, 3)
-
+    log.check_log[femb_id]["COLDATA_p"] = COLDATA_p
     # ColdADC_v i p
     temp_v = round(pwr_meas['FEMB{}_DC2DC{}_V'.format(fembs[ifemb],2)],3)
     log.check_log[femb_id]["ColdADC_V"] = temp_v
@@ -206,9 +206,10 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env, label = 'test'):
         check_issue.append("ColdADC_i = {} out of [{}/{} +- {}]\n".format(temp_i, ColdADC_i_ref1, ColdADC_i_ref2, ColdADC_i_err))
         ColdADC_i = "<span style = 'color:red;'> {} </span>".format(temp_i)
     ColdADC_p = round(temp_v * temp_i, 3)
+    log.check_log[femb_id]["ColdADC_p"] = ColdADC_p
 
     total_p = bias_p + LArASIC_p + COLDATA_p + ColdADC_p
-    log.check_log[femb_id]["TPower"] = total_p
+    log.check_log[femb_id]["TPower"] = np.round(total_p,2)
 
     # the | is used in Markdown table
     log.tmp_log[femb_id]["Measure Items"] = "BIAS | LArASIC | ColdADC | COLDATA "
@@ -236,15 +237,23 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
 
         report_addr = ReportDir[fembs[ifemb]] + doc
         ppk, npk, bl = qc_tools.GetPeaks(pls_rawdata, fembs[ifemb], report_addr, fname, funcfit=False)
-
+        ppk = [int(a-b) for a, b in zip(ppk,bl)]
+        ppk_max = int(np.max(ppk))
+        ppk_min = int(np.min(ppk))
         ppk_mean = int(np.mean(ppk))
         ppk_err = int(np.std(ppk))
 
+        zero = [int(a - b) for a, b in zip(bl, bl)]
+        bbl = [int(a - b) for a, b in zip(bl, zero)]
         bbl_mean = int(np.mean(bl))
         bbl_err = int(np.std(bl))
-
+        bbl_max = int(np.min(bl))
+        bbl_min = int(np.min(bl))
+        npk = [int(a - b) for a, b in zip(bl, npk)]
         npk_mean = int(np.mean(npk))
         npk_err = int(np.std(npk))
+        npk_max = int(np.min(npk))
+        npk_min = int(np.min(npk))
 
         if '5nA' in label:
             pulse_range = 5000
@@ -289,9 +298,18 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
         log.check_log[femb_id]["Label"] = label
         log.check_log[femb_id]["ppk_mean"] = ppk_mean
         log.check_log[femb_id]["ppk_std"] = ppk_err
+        log.check_log[femb_id]["ppk_max"] = ppk_max
+        log.check_log[femb_id]["ppk_min"] = ppk_min
+        log.check_log[femb_id]["ppk"] = ppk
         log.check_log[femb_id]["bbl_mean"] = bbl_mean
         log.check_log[femb_id]["bbl_std"] = bbl_err
+        log.check_log[femb_id]["bbl_max"] = bbl_max
+        log.check_log[femb_id]["bbl_min"] = bbl_min
+        log.check_log[femb_id]["bbl"] = bbl
         log.check_log[femb_id]["npk_mean"] = npk_mean
         log.check_log[femb_id]["npk_std"] = npk_err
+        log.check_log[femb_id]["npk"] = npk
+        log.check_log[femb_id]["npk_max"] = npk_max
+        log.check_log[femb_id]["npk_min"] = npk_min
 
 

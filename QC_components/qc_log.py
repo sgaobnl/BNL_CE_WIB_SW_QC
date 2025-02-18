@@ -29,6 +29,12 @@ check_log01_31 = defaultdict(dict)
 check_log01_32 = defaultdict(dict)
 check_log01_33 = defaultdict(dict)
 
+#   02  Power Cycle
+check_log02_01 = defaultdict(dict)
+check_log02_02 = defaultdict(dict)
+check_log02_03 = defaultdict(dict)
+check_log02_04 = defaultdict(dict)
+check_log02_05 = defaultdict(dict)
 # 03
 item3 = "Leakage_Current"
 report_log03_01 = defaultdict(dict)    # input information
@@ -133,6 +139,10 @@ report_log04_04_14204 = defaultdict(dict)
 report_log04_04_14205 = defaultdict(dict)
 report_log04_04_14206 = defaultdict(dict)
 
+report_log04_05_14201 = defaultdict(dict)
+report_log04_05_14202 = defaultdict(dict)
+report_log04_05_14203 = defaultdict(dict)
+
 check_log04_04_14201 = defaultdict(dict)
 check_log04_04_14202 = defaultdict(dict)
 check_log04_04_14203 = defaultdict(dict)
@@ -140,6 +150,10 @@ check_log04_04_14204 = defaultdict(dict)
 check_log04_04_14205 = defaultdict(dict)
 check_log04_04_14206 = defaultdict(dict)
 
+
+check_log04_05_14201 = defaultdict(dict)
+check_log04_05_14202 = defaultdict(dict)
+check_log04_05_14203 = defaultdict(dict)
 
 report_log04_02 = defaultdict(dict)    # input information
 report_log04_03 = defaultdict(dict)    # input information
@@ -175,10 +189,13 @@ report_log051_pulse = defaultdict(dict)
 report_log052_pedestal = defaultdict(dict)
 report_log054_pedestal_issue = defaultdict(dict)
 report_log053_rms = defaultdict(dict)
+report_log057_rmsfemb = defaultdict(dict)
 report_log055_rms_issue = defaultdict(dict)
 report_log056_fembrms = defaultdict(dict)
+report_log057_fembrmsmean = defaultdict(dict)
 report_log057_fembrmsstd = defaultdict(dict)
 report_log057_fembrmsmax = defaultdict(dict)
+report_log057_fembrmsmin = defaultdict(dict)
 report_log057_fembrms = defaultdict(dict)
 report_log059_rms_table_log = defaultdict(dict)
 
@@ -188,6 +205,7 @@ item061 = "CALI1"
 item062 = "CALI1_DIFF"
 
 tmp_log = defaultdict(dict)
+csv_log = defaultdict(dict)
 report_log0601 = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0601csvgain = defaultdict(dict)  # SE 200 mV 4.7 mV INL
 report_log0601csvinl = defaultdict(dict)  # SE 200 mV 4.7 mV INL
@@ -279,6 +297,7 @@ item11 = "MON_FE"
 report_log11_01 = defaultdict(dict)
 check_log1101 = defaultdict(dict)
 report_log1101csv = defaultdict(dict)
+report_log1102csv = defaultdict(dict)
 
 
 
@@ -288,6 +307,8 @@ ADCMON_table_cell = defaultdict(dict)
 ADCMON_table = defaultdict(dict)
 
 check_log1201 = defaultdict(dict)
+report_log1201csv = defaultdict(dict)
+report_log1202csv = defaultdict(dict)
 
 # 13
 report_log13 = defaultdict(dict)    # input information

@@ -250,61 +250,51 @@ class QC_reports:
         f_pwr = datadir + "QC_PWR_Cycle_t2.bin"
         with open(f_pwr, 'rb') as fn:
             pwr_cycle_dict = pickle.load(fn)
-        print(len(pwr_cycle_dict))
-        print(type(pwr_cycle_dict))
         keys_list = list(pwr_cycle_dict.keys())
-        print(keys_list)
-
+        dict_list01 = [log.check_log02_01,log.check_log02_02,log.check_log02_03]
         qc=ana_tools()
         for i in range(3):
-            # f_pwr = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)
-            # with open(f_pwr, 'rb') as fn:
-            #      pwr_meas = pickle.load(fn)[1]
             pwr_meas = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][1]
-            # f_pl = datadir+"PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x20.bin".format(i)
-            # with open(f_pl, 'rb') as fn:
-            #      rawdata = pickle.load(fn)[0]
             rawdata = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][0]
             pldata = qc.data_decode(rawdata, self.fembs)
             for ifemb in self.fembs:
+                femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
                 fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_pwr_meas".format(i)
                 qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
+                a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '02 SE OFF Power Consumption Cycle{}'.format(i))
+                check1 = dict(log.check_log)
+                dict_list01[i].update(check1)
                 fp = self.savedir[ifemb] + "PWR_Cycle/"
                 qc.GetPeaks(pldata, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us".format(i))
-
-        # f_pwr = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        # with open(f_pwr, 'rb') as fn:
-        #      pwr_meas = pickle.load(fn)[1]
+        print(log.check_log02_01)
+        print(log.check_log02_02)
+        print(log.check_log02_03)
         pwr_meas = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        # f_pl = datadir+"PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        # with open(f_pl, 'rb') as fn:
-        #      rawdata = pickle.load(fn)[0]
         rawdata = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
+            a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '02 SE OFF Power Consumption Cycle{}'.format(i))
+            check1 = dict(log.check_log)
+            log.check_log02_04.update(check1)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
 
-        # f_pwr = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"
-        # with open(f_pwr, 'rb') as fn:
-        #      pwr_meas = pickle.load(fn)[1]
         pwr_meas = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        # f_pl = datadir+"PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"
-        # with open(f_pl, 'rb') as fn:
-        #      rawdata = pickle.load(fn)[0]
         rawdata = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
+            femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
+            a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'], '02 SE OFF Power Consumption Cycle{}'.format(i))
+            check1 = dict(log.check_log)
+            log.check_log02_05.update(check1)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
-        # for ifemb in self.fembs:
-        #     fdir = self.savedir[ifemb] + "PWR_Cycle/"
-        #     fembid = int(self.fembsID[f'femb{ifemb}'])
-            # self.GEN_PWR_PDF(fdir, fembid)
+
 
 #     03
     def LCCHKPULSE(self, fdir):
@@ -399,7 +389,6 @@ class QC_reports:
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             log.check_log04_01[femb_id]['Result'] = True
-
         for afile in CHKPULSE_dict.keys():
             raw = CHKPULSE_dict[afile]
             rawdata = raw[0]
@@ -507,10 +496,14 @@ class QC_reports:
                     log.report_log04_04_14203[femb_id].update(pulse[femb_id]); log.check_log04_04_14203[femb_id].update(pulse_check[femb_id])
                 if "DIFF_900mVBL" in afile:
                     log.report_log04_04_14204[femb_id].update(pulse[femb_id]); log.check_log04_04_14204[femb_id].update(pulse_check[femb_id])
-                if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000000mV" in afile:
-                    log.report_log04_04_14205[femb_id].update(pulse[femb_id]); log.check_log04_04_14205[femb_id].update(pulse_check[femb_id])
+
                 if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000050mV" in afile:
-                    log.report_log04_04_14206[femb_id].update(pulse[femb_id]); log.check_log04_04_14206[femb_id].update(pulse_check[femb_id])
+                    log.report_log04_05_14201[femb_id].update(pulse[femb_id]); log.check_log04_05_14201[femb_id].update(pulse_check[femb_id])
+                if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000150mV" in afile:
+                    log.report_log04_05_14202[femb_id].update(pulse[femb_id]); log.check_log04_05_14202[femb_id].update(pulse_check[femb_id])
+                if "CHK_EX_200mVBL_14_0mVfC_2_0us_vdac000350mV" in afile:
+                    log.report_log04_05_14203[femb_id].update(pulse[femb_id]); log.check_log04_05_14203[femb_id].update(pulse_check[femb_id])
+
 
 
         for ifemb in self.fembs:
@@ -749,15 +742,13 @@ class QC_reports:
                 log.badlist["BL"] = (tmp[1])
                 ped_status = tmp[0]
                 baseline_err_content = tmp[1]
-                log.tmp_log[ifemb]["PED 128-CH std"] = tmp[2]
+                log.tmp_log[ifemb]["PED 128-CH std"] = tmp[3]
                 tmp = QC_check.CHKPulse(rms, 0.6)
                 log.chkflag["RMS"] = (tmp[0])
                 log.badlist["RMS"] = (tmp[1])
                 rms_status = tmp[0]
                 rms_err_content = tmp[1]
                 log.report_log056_fembrms[ifemb][fname] = tmp[2]
-                log.report_log057_fembrmsstd[ifemb][fname] = tmp[3]
-                # log.report_log057_fembrmsmax[ifemb][fname] = tmp[4]
                 log.report_log057_fembrms[ifemb][fname] = '\nmean {},\nstd {},\nmax {},\nmin {}'.format(ped,rms,pedmax,pedmin)
                 index_of_keyword = fname.find("mVfC_")
                 keyword = fname[index_of_keyword-4 : index_of_keyword]
@@ -773,7 +764,12 @@ class QC_reports:
                     check_list[ifemb] = (rms_err_content)
                     log.report_log05_tablecell[ifemb][fname] = "<span style = 'color:red;'> {} </span>".format(keyword)
                 log.report_log052_pedestal[ifemb][fname] = ped
+                rms = [np.round(x,1) for x in rms]
                 log.report_log053_rms[ifemb][fname] = rms
+                log.report_log057_fembrmsmean[ifemb][fname] = np.round(np.mean(rms),1)
+                log.report_log057_fembrmsstd[ifemb][fname] = np.round(np.std(rms),1)
+                log.report_log057_fembrmsmax[ifemb][fname] = np.max(rms)
+                log.report_log057_fembrmsmin[ifemb][fname] = np.min(rms)
         for ifemb in self.fembs:
             fp = self.savedir[ifemb] + "RMS/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
@@ -1012,8 +1008,20 @@ class QC_reports:
 
         for ifemb in self.fembs:
             log.report_log0603csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0603csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0603csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0603csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0603csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log0603csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0603csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0603csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0603csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0603csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0603csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0603csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0603csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0603csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0603csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
 
         dac_list = range(0, 64, 8)
         print("analyze CALI1 200mVBL 4_7mVfC 2_0us")
@@ -1026,8 +1034,20 @@ class QC_reports:
 
         for ifemb in self.fembs:
             log.report_log0601csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0601csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0601csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0601csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0601csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log0601csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0601csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0601csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0601csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0601csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0601csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0601csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0601csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0601csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0601csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
 
         print("analyze CALI1 200mVBL 7_8mVfC 2_0us")
         a_func.GetGain(self.fembs, self.fembsID, Cali01_dict, self.savedir, "CALI1/", "CALI1_SE_{}_{}_{}_0x{:02x}", "200mVBL", "7_8mVfC", "2_0us", dac_list)
@@ -1039,8 +1059,20 @@ class QC_reports:
 
         for ifemb in self.fembs:
             log.report_log0602csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0602csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0602csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0602csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0602csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log0602csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0602csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0602csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0602csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0602csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0602csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0602csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0602csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0602csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0602csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
 
         #
         print("analyze CALI1 200mVBL 25_0mVfC 2_0us")
@@ -1053,8 +1085,20 @@ class QC_reports:
 
         for ifemb in self.fembs:
             log.report_log0604csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0604csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0604csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0604csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0604csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log0604csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0604csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0604csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0604csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0604csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0604csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0604csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0604csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0604csvlinerange[ifemb]["max"] = np.round(np.max(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0604csvlinerange[ifemb]["min"] = np.round(np.min(log.tmp_log[ifemb]["line_range_list"]), 2)
 
         datadir = self.datadir+"CALI1/"
         print("analyze CALI1 DIFF 200mVBL 14_0mVfC 2_0us")
@@ -1159,6 +1203,21 @@ class QC_reports:
             log.report_log0701csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
             log.report_log0701csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
             log.report_log0701csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0701csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0701csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0701csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0701csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0701csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0701csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0701csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0701csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0701csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0701csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0701csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0701csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0701csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0701csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0701csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
 
         dac_list = range(0, 32, 4)
         self.CreateDIR("CALI2_DIFF")
@@ -1223,6 +1282,21 @@ class QC_reports:
             log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
             log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
             log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0801csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0801csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0801csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0801csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0801csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0801csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0801csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0801csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0801csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0801csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0801csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0801csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
 
 
     #   9  CALI_report_4
@@ -1252,6 +1326,21 @@ class QC_reports:
             log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
             log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
             log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log0901csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0901csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log0901csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0901csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
+            log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log0901csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log0901csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log0901csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0901csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
+            log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log0901csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0901csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log0901csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log0901csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
         # self.GenCALIPDF("900mVBL", "14_0mVfC", "2_0us", 1, "CALI4/")
         # self.CreateDIR("CALI4_DIFF")
         # datadir = self.datadir+"CALI4/"
@@ -1281,7 +1370,15 @@ class QC_reports:
         sdf1_200, log.mon_pulse["200mVBL_sdf1"] = qc.PlotMon(self.fembs, mon_200bls_sdf1, self.savedir, "MON_FE", "200mVBL_sdf1", self.fembsID)
         sdf0_200, log.mon_pulse["200mVBL_sdf0"] = qc.PlotMon(self.fembs, mon_200bls_sdf0, self.savedir, "MON_FE", "200mVBL_sdf0", self.fembsID)
         sdf1_900, log.mon_pulse["900mVBL_sdf1"] = qc.PlotMon(self.fembs, mon_900bls_sdf1, self.savedir, "MON_FE", "900mVBL_sdf1", self.fembsID)
+        # log.mon_pulse['900mVBL_sdf1_mean'] = np.mean(log.mon_pulse["900mVBL_sdf1"])
+        # log.mon_pulse['900mVBL_sdf1_std'] = np.std(log.mon_pulse["900mVBL_sdf1"])
+        # log.mon_pulse['900mVBL_sdf1_max'] = np.max(log.mon_pulse["900mVBL_sdf1"])
+        # log.mon_pulse['900mVBL_sdf1_min'] = np.min(log.mon_pulse["900mVBL_sdf1"])
         sdf0_900, log.mon_pulse["900mVBL_sdf0"] = qc.PlotMon(self.fembs, mon_900bls_sdf0, self.savedir, "MON_FE", "900mVBL_sdf0", self.fembsID)
+        # log.mon_pulse['900mVBL_sdf0_mean'] = np.mean(log.mon_pulse["900mVBL_sdf0"])
+        # log.mon_pulse['900mVBL_sdf0_std'] = np.std(log.mon_pulse["900mVBL_sdf0"])
+        # log.mon_pulse['900mVBL_sdf0_max'] = np.max(log.mon_pulse["900mVBL_sdf0"])
+        # log.mon_pulse['900mVBL_sdf0_min'] = np.min(log.mon_pulse["900mVBL_sdf0"])
         for ifemb in self.fembs:
             report_dir = self.savedir[ifemb] + "MON_FE/"
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
@@ -1291,6 +1388,32 @@ class QC_reports:
             log.report_log10_01[femb_id]["200mVBL_sdf0"] = sdf0_200[femb_id]["Result"]
             log.report_log10_01[femb_id]["900mVBL_sdf1"] = sdf1_900[femb_id]["Result"]
             log.report_log10_01[femb_id]["900mVBL_sdf0"] = sdf0_900[femb_id]["Result"]
+            # csv part
+            log.mon_pulse['bandgap_std'][femb_id] = np.std(log.mon_pulse["bandgap"][femb_id])
+            log.mon_pulse['bandgap_max'][femb_id] = np.max(log.mon_pulse["bandgap"][femb_id])
+            log.mon_pulse['bandgap_min'][femb_id] = np.min(log.mon_pulse["bandgap"][femb_id])
+            log.mon_pulse['bandgap_mean'][femb_id] = np.mean(log.mon_pulse["bandgap"][femb_id])
+            log.mon_pulse['temperature_mean'][femb_id] = np.mean(log.mon_pulse["temperature"][femb_id])
+            log.mon_pulse['temperature_std'][femb_id] = np.std(log.mon_pulse["temperature"][femb_id])
+            log.mon_pulse['temperature_max'][femb_id] = np.max(log.mon_pulse["temperature"][femb_id])
+            log.mon_pulse['temperature_min'][femb_id] = np.min(log.mon_pulse["temperature"][femb_id])
+            log.mon_pulse['200mVBL_sdf1_mean'][femb_id] = np.mean(log.mon_pulse["200mVBL_sdf1"][femb_id])
+            log.mon_pulse['200mVBL_sdf1_std'][femb_id] = np.std(log.mon_pulse["200mVBL_sdf1"][femb_id])
+            log.mon_pulse['200mVBL_sdf1_max'][femb_id] = np.max(log.mon_pulse["200mVBL_sdf1"][femb_id])
+            log.mon_pulse['200mVBL_sdf1_min'][femb_id] = np.min(log.mon_pulse["200mVBL_sdf1"][femb_id])
+            log.mon_pulse['200mVBL_sdf0_mean'][femb_id] = np.mean(log.mon_pulse["200mVBL_sdf0"][femb_id])
+            log.mon_pulse['200mVBL_sdf0_std'][femb_id] = np.std(log.mon_pulse["200mVBL_sdf0"][femb_id])
+            log.mon_pulse['200mVBL_sdf0_max'][femb_id] = np.max(log.mon_pulse["200mVBL_sdf0"][femb_id])
+            log.mon_pulse['200mVBL_sdf0_min'][femb_id] = np.min(log.mon_pulse["200mVBL_sdf0"][femb_id])
+            log.mon_pulse['900mVBL_sdf1_mean'][femb_id] = np.mean(log.mon_pulse["900mVBL_sdf1"][femb_id])
+            log.mon_pulse['900mVBL_sdf1_std'][femb_id] = np.std(log.mon_pulse["900mVBL_sdf1"][femb_id])
+            log.mon_pulse['900mVBL_sdf1_max'][femb_id] = np.max(log.mon_pulse["900mVBL_sdf1"][femb_id])
+            log.mon_pulse['900mVBL_sdf1_min'][femb_id] = np.min(log.mon_pulse["900mVBL_sdf1"][femb_id])
+            log.mon_pulse['900mVBL_sdf0_mean'][femb_id] = np.mean(log.mon_pulse["900mVBL_sdf0"][femb_id])
+            log.mon_pulse['900mVBL_sdf0_std'][femb_id] = np.std(log.mon_pulse["900mVBL_sdf0"][femb_id])
+            log.mon_pulse['900mVBL_sdf0_max'][femb_id] = np.max(log.mon_pulse["900mVBL_sdf0"][femb_id])
+            log.mon_pulse['900mVBL_sdf0_min'][femb_id] = np.min(log.mon_pulse["900mVBL_sdf0"][femb_id])
+
             if ((bandgap[femb_id]) and (temp[femb_id]) and (sdf1_200[femb_id]) and (sdf0_200[femb_id]) and (sdf1_900[femb_id]) and (sdf0_900[femb_id])):
                 log.check_log1001[femb_id]['Result'] = True
             else:
@@ -1390,9 +1513,20 @@ class QC_reports:
             fp = self.savedir[ifemb]+"CALI5/"
             ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, "900mVBL_14_0mVfC_2_0us")
             log.report_log1301csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log1301csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log1301csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log1301csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log1301csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log1301csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log1301csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log1301csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log1301csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log1301csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log1301csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
-
+            log.report_log1301csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log1301csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log1301csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log1301csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
         qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI5/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1429,8 +1563,20 @@ class QC_reports:
             fp = self.savedir[ifemb]+"CALI6/"
             ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, "200mVBL_14_0mVfC_2_0us")
             log.report_log1401csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            log.report_log1401csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log1401csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            log.report_log1401csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            log.report_log1401csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
             log.report_log1401csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            log.report_log1401csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            log.report_log1401csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            log.report_log1401csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            log.report_log1401csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log1401csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            log.report_log1401csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log1401csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
+            log.report_log1401csvlinerange[ifemb]["max"] = np.max(log.tmp_log[ifemb]["line_range_list"])
+            log.report_log1401csvlinerange[ifemb]["min"] = np.min(log.tmp_log[ifemb]["line_range_list"])
         qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 0, self.savedir, "CALI6/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
@@ -1447,10 +1593,7 @@ class QC_reports:
         f_pwr = datadir + "QC_femb_adc_sync_pat_t15.bin"
         with open(f_pwr, 'rb') as fn:
             QC_t15_dict = pickle.load(fn)
-        print(len(QC_t15_dict))
-        print(type(QC_t15_dict))
         keys_list = list(QC_t15_dict.keys())
-        print(keys_list)
 
         qc = ana_tools()
         files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
@@ -1471,22 +1614,22 @@ class QC_reports:
                 fp = self.savedir[ifemb] + fdir+"/"
                 ped, rms, _, _ = qc.GetRMS(pldata, ifemb, fp, fname)
                 if 'DC_Noise' in fname:
-                    log.check_log15csv[femb_id]['DC_Noise_ped'] = ped
-                    log.check_log15csv[femb_id]['DC_Noise_rms'] = rms
+                    log.check_log15csv[femb_id]['DC_Noise_ped'] = [round(val,2) for val in ped]
+                    log.check_log15csv[femb_id]['DC_Noise_rms'] = [round(val,2) for val in rms]
                     if np.max(rms) > 2:
                         log.check_log1501[femb_id]['Result'] = "False"
                     else:
                         log.check_log1501[femb_id]['Result'] = "True"
                 if "SHA_SE" in fname:
-                    log.check_log15csv[femb_id]['SHA_SE_ped'] = ped
-                    log.check_log15csv[femb_id]['SHA_SE_rms'] = rms
+                    log.check_log15csv[femb_id]['SHA_SE_ped'] = [round(val,2) for val in ped]
+                    log.check_log15csv[femb_id]['SHA_SE_rms'] = [round(val,2) for val in rms]
                     if np.max(rms) > 4:
                         log.check_log1502[femb_id]['Result'] = "False"
                     else:
                         log.check_log1502[femb_id]['Result'] = "True"
                 if "SHA_DIFF" in fname:
-                    log.check_log15csv[femb_id]['SHA_DIFF_ped'] = ped
-                    log.check_log15csv[femb_id]['SHA_DIFF_rms'] = rms
+                    log.check_log15csv[femb_id]['SHA_DIFF_ped'] = [round(val,2) for val in ped]
+                    log.check_log15csv[femb_id]['SHA_DIFF_rms'] = [round(val,2) for val in rms]
                     if np.max(rms) > 4:
                         log.check_log1503[femb_id]['Result'] = "False"
                     else:
@@ -1513,18 +1656,11 @@ class QC_reports:
             fp = self.savedir[ifemb] + fdir + "/"
             check = True
             for afile in QC_femb_test_pattern_pll_dict.keys():
-
-                # with open(afile, 'rb') as fn:
-                #     raw = pickle.load(fn)
                 raw = QC_femb_test_pattern_pll_dict[afile]
                 # =========== analysis ===================
                 rmsdata = raw[0]
                 fembs = raw[2]
-
-                    #pldata,_ = qc_tools.data_decode(rmsdata, fembs)
                 pldata = qc.data_decode(rmsdata, fembs)
-                    # pldata = np.array(pldata)
-
                 if '\\' in afile:
                     fname = afile.split("\\")[-1][:-4]
                 else:
@@ -1536,13 +1672,10 @@ class QC_reports:
                     if not((int(i) == 10901) or (int(i) == 5482)):
                         check = False
                 log.report_log1601[femb_id][fname] = check
-                log.check_log16csv[femb_id]['{}_ped'.format(fname)] = ped
-                log.check_log16csv[femb_id]['{}_rms'.format(fname)] = rms
-
+                log.check_log16csv[femb_id]['{}_ped'.format(fname)] = [round(val,2) for val in ped]
+                log.check_log16csv[femb_id]['{}_rms'.format(fname)] = [round(val,2) for val in rms]
             log.check_log1601[femb_id]["Result"] = all(value for value in log.report_log1601[femb_id].values())
-
             self.Gather_PNG_PDF(fp)
-
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
 

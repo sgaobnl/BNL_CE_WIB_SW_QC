@@ -232,6 +232,7 @@ class ana_tools:
         rmss = []
         peds = []
         pkps, pkns = [], []
+        pulse = []
         wfs, wfsf = [], []
         plt.figure(figsize=(12, 6))
         plt.subplot(1, 2, 1)
@@ -265,7 +266,7 @@ class ana_tools:
                         peddata += all_data[achn][ppos + 500: ppos + 700]
             rmss.append(np.std(peddata))
             peds.append(np.mean(peddata))
-
+            pulse.append(np.round(avg_wf, 1))
             tmpwf =  avg_wf
             if ppos-50 < 0:
                 front = avg_wf[-50 :]
@@ -281,6 +282,8 @@ class ana_tools:
             plt.plot(range(len(tmpwf[ppos-50:ppos+150])), tmpwf[ppos-50:ppos+150])
             if achn == 64:
                 log.channel0_pulse[nfemb][dac] = tmpwf[ppos-50:ppos+150]# - np.mean(peddata)
+
+
 
         bottom = -1000
         plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
@@ -312,6 +315,11 @@ class ana_tools:
         fp_bin = fp + "Pulse_{}.bin".format(fname)
         with open(fp_bin, 'wb') as fn:
             pickle.dump([pkps, pkns, peds], fn)
+
+        # fp_bin = fp + "allPulse_{}.csv".format(fname)
+        # with open(fp_bin, 'w') as fn:
+        #     writer = csv.writer(fn)
+        #     writer.writerows(pulse)
 
         return pkps, pkns, peds
 
@@ -450,15 +458,16 @@ class ana_tools:
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data)
                     inl = np.max(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[-1]))
+                    LSB = np.round(abs(y_data[0]-y_data[-1])/abs(x_data[0]-x_data[-1]), 2)
                     if inl > 1.1:
                         issue_inl[femb_id]["INL-{}-{}".format(main_key, key)] = inl
-                        log.report_log1101csv[femb_id]["INL-{}-{}".format(main_key, key)] = inl
+                        log.report_log1102csv[femb_id]["INL-{}-{}".format(main_key, key)] = "INL-{}-{}".format(main_key, inl)
                         issue_inl[femb_id]["Result"] = False
                     else:
-                        log.report_log1101csv[femb_id]["INL-{}-{}".format(main_key, key)] = inl
-                        # print(issue_inl)
-                        # print(abs(fit_y - y_data)*100/abs(data_list[0]-data_list[63]))
-                        # input()
+                        log.report_log1102csv[femb_id]["INL-{}-{}".format(main_key, key)] = "INL-{}-{}".format(main_key, inl)
+                        issue_inl[femb_id]["Result"] = True
+                    log.report_log1101csv[femb_id]["LSB-{}-{}".format(main_key, key)] = 'LSB-{}-{}={}'.format(main_key, key, LSB)
+                    print(log.report_log1101csv[femb_id]["LSB-{}-{}".format(main_key, key)])
             fp = savedir[nfemb] + fdir + "/mon_{}.png".format(main_key)
             plt.legend()
             plt.grid(True, axis='y', linestyle='--')
@@ -529,18 +538,15 @@ class ana_tools:
                     fit_function = np.poly1d(coefficients)
                     fit_y = fit_function(x_data[0:14])
                     inl = round(np.max(abs(fit_y - y_data[0:14]) * 100 / abs(y_data[0] - y_data[-1])), 2)
-                    # print(key)
-                    # print(mon_items[imon])
-                    # print(inl)
+                    LSB = np.round(abs(y_data[0]-y_data[-1])/abs(x_data[0]-x_data[-1]), 2)
+                    log.report_log1201csv[femb_id]["INL-{}-{}".format(mon_items[imon], key)] = 'INL-{}-{}={}'.format(mon_items[imon], key, inl)
+                    log.report_log1202csv[femb_id]["LSB-{}-{}".format(mon_items[imon], key)] = 'LSB-{}-{}={}'.format(mon_items[imon], key, LSB)
                     if inl < 1:
                         log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] = "{}".format(inl)
                     else:
                         check = False
                         check_issue.append("ADC ref voltage: {}, chip: {}, inl issue: {} \n".format(imon, key, inl))
                         log.ADCMON_table_cell[femb_id]["{}_{}".format(mon_items[imon], key)] =  "<span style = 'color:red;'> {} </span>".format(inl)
-                # print(log.ADCMON_table_cell)
-                # input()
-
                 for key,values in data_dic.items():
                     ax.plot(vset_list, data_dic[key], marker='.',label=key)
                 ax.set_ylabel(mon_items[imon])
@@ -724,17 +730,19 @@ class ana_tools:
                 if dac==0:
                     fname_1 = namepat.format(snc, sgs, sts, dac)
                     ped,rms,_,_ = self.GetRMS(pldata, ifemb, fp, fname)
+                    ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac=dac)
+                    ppk_np = np.array(ppk) - np.array(bl)
                     if not('vdac' in fname_1):
-                        pk_list[ifemb].append(np.zeros(128))
+                        pk_list[ifemb].append(ppk_np)
                 else:
                     fname_1 = namepat.format(snc,sgs,sts,dac)
                     if ('vdac' in fname_1):
                         if not ('000mV' in fname_1):
-                            ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 1000, dac = dac)
+                            ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, period = 500, dac = dac)
                             # bl = 0
                     else:
                         ppk,bpk,bl=self.GetPeaks(pldata, ifemb, fp, fname_1, dac = dac)
-                    ppk_np = np.array(ppk)-np.array(bl)
+                    ppk_np = np.array(ppk) - np.array(bl)
                     pk_list[ifemb].append(ppk_np)
 
 
@@ -773,7 +781,7 @@ class ana_tools:
                 gain_list.append(round(gain))
                 inl_list.append(inl)
                 inl_listcsv.append(round(inl*100, 2))
-                line_range_list.append(round(line_range))
+                line_range_list.append(round(line_range*dac_du / 1000 * 185))
                 if ('vdac' in fname_1):
                     if inl > 0.5:
                         check = False
@@ -888,7 +896,7 @@ class ana_tools:
             if 'vdac' in namepat:
                 plt.ylim(0, 700)
             else:
-                plt.ylim(0, 70)
+                plt.ylim(0, 200)
             plt.xlabel("Channel", fontsize = 14)
             plt.ylabel("Line_range", fontsize = 14)
             plt.title(fname, fontsize = 14)
