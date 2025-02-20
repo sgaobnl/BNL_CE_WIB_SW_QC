@@ -366,9 +366,13 @@ class ana_tools:
         # fig.savefig(fp+".png")
         # plt.close(fig)
 
-    def PlotMon(self, fembs, mon_dic, savedir, fdir, fname, fembNo):
+    def PlotMon(self, fembs, mon_dic, savedir, fdir, fname, fembNo, NewWIB = True):
         issue_log = defaultdict(dict)
         pulse_log = defaultdict(dict)
+        if NewWIB:
+            fadc = 1 / (2 ** 14) * 2500
+        else:
+            fadc = 1 / (2 ** 14) * 2048
         for nfemb in fembs:
             mon_list=[]
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
