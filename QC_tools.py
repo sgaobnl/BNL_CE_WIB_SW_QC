@@ -390,7 +390,7 @@ class ana_tools:
                 else:
                    mon_mean = chip_list[0]
 
-                mon_list.append(mon_mean*self.fadc)
+                mon_list.append(mon_mean*fadc)
 
             # fig,ax = plt.subplots(figsize=(6,4))
             xx=range(len(mon_dic))
@@ -782,7 +782,7 @@ class ana_tools:
                         gain = 1/gain/1000 *CC/e
                     else:
                         gain = 1 / gain * dac_du / 1000 * CC / e
-                gain_list.append(round(gain))
+                gain_list.append(round(gain, 3))
                 inl_list.append(inl)
                 inl_listcsv.append(round(inl*100, 2))
                 line_range_list.append(round(line_range*dac_du / 1000 * 185))
@@ -952,7 +952,7 @@ class ana_tools:
             plt.savefig(fp, transparent = True)
             plt.close()
 
-            log.tmp_log[femb_id]["ENC"] = enc_mean
+            log.tmp_log[femb_id]["ENC"] = round(enc_mean)
             log.tmp_log[femb_id]["ENC_std"] = enc_std
 
             fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
