@@ -184,8 +184,8 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     if QC_TST_EN == 0:
         print(datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)")
         timeout = 10
-        command = ["ping", "192.168.121.123"]
-        print("COMMAND:", command)
+        command = ["ping ", "192.168.121.123"]
+        print("COMMAND: ", command)
         attempt = 0
         for i in range(5):
             result = subrun(command=command, timeout=timeout, exitflg=False)

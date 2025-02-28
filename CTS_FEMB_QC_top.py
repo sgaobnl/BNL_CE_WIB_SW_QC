@@ -1,9 +1,11 @@
 import os
 import sys
 import time
-
-# from cts_ssh_FEMB import cts_ssh_FEMB
 import cts_ssh_FEMB as cts
+from PIL import Image
+import csv
+from GUI.initial_csv import check_csv
+from ast import literal_eval
 
 # Please Open Real_Time_Monitor.py and run first
 # Then, Run this CTS_FEMB_QC_top.py
@@ -69,16 +71,70 @@ def FEMB_QC(input_info):
 csv_file = 'femb_info.csv'
 file_path = r'.\femb_info.csv'
 print("\033[35m" + "A_RT00 : Install FEMB boards, check the connection of Data and Power Cables" + "\033[0m")
-input('Please Install FEMB #0 #1 #2 #3 into SLOT #0 #1 #2 #3; Enter to next ...')
+input_name = input('Please input your name: ')
+Initial_Scaner = input("Initial Scaner. \n\tEnter Any Key to exit ...\n\tEnter 'H' to check help")
+if (Initial_Scaner == 'H') or (Initial_Scaner == 'h'):
+    image = Image.open('D:\GitHub\BNL_CE_WIB_SW_QC\BNL_CE_WIB_SW_QC\Help\Initial_Scaner.png')
+    print('Close the picture to continue')
+    image.show()
+femb_id_0 = input('Scan FEMB ID in Slot #0\t')
+femb_id_1 = input('Scan FEMB ID in Slot #1\t')
+csv_data = {}
+with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+    reader = csv.reader(file)
+    for row in reader:
+        if len(row) == 2:
+            key, value = row
+            csv_data[key.strip()] = value.strip()
+print(csv_data)
+if 'tester' not in csv_data:
+    csv_data['tester'] = 'sgao'
+else:
+    csv_data['tester'] = input_name
+if 'SLOT0' not in csv_data:
+    csv_data['SLOT0'] = 'H01'
+    print(232323232)
+else:
+    csv_data['SLOT0'] = femb_id_0
+    print(femb_id_0)
+if 'SLOT1' not in csv_data:
+    csv_data['SLOT1'] = 'H02'
+else:
+    csv_data['SLOT1'] = femb_id_1
+if 'SLOT2' not in csv_data:
+    csv_data['SLOT2'] = ' '
+if 'SLOT3' not in csv_data:
+    csv_data['SLOT3'] = ' '
+if 'test_site' not in csv_data:
+    csv_data['test_site'] = 'BNL'
+if 'toy_TPC' not in csv_data:
+    csv_data['toy_TPC'] = 'y'
+if 'comment' not in csv_data:
+    csv_data['comment'] = 'QC test'
+with open(csv_file, mode="w", newline="", encoding='utf-8-sig') as file:
+    writer = csv.writer(file)
+    for key, value in csv_data.items():
+        writer.writerow([key, value])
+inform = cts.read_csv_to_dict(csv_file, 'RT')
+info_check = input('please review the test information. \n\tIf the info is not right, enter "m" to modify the info. \n\tIf the info is right, jsut enter to next')
+if info_check == 'm':
+    os.system(f'notepad {file_path}')
+    inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
+
+input('Please Install FEMB #0 #1 #2 #3 into SLOT #0 #1 #2 #3; Enter to next ... \n')
+# with open(csv_file, mode='w', newline='', encoding='utf-8-sig') as file:
+#     writer = csv.DictWriter(file)
+#     writer.writeheader()
+#     writer = writer.writerows(csv_data)
 # print("00 : Please Review the information")
-print("\033[35m" + "A_RT01 : Please Review the information" + "\033[0m")
-os.system(f'notepad {file_path}')
-inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
-Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC")
+# print("\033[35m" + "A_RT01 : Please Review the information" + "\033[0m")
+# os.system(f'notepad {file_path}')
+# inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
+Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC \n")
 if Next == 'n':
     print('No Warm QC execute!')
 elif Next == 'e':
-    Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test")
+    Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test \n")
     if Next2 != 'y':
         sys.exit()
 else:
@@ -101,8 +157,11 @@ file_path = r'.\femb_info.csv'
 print("\033[35m" + "A_LN00 : Put FEMB; Please check the connection of Data and Power Cables" + "\033[0m")
 # print("00 : Please Review the information")
 print("\033[35m" + "A_LN01 : Please Review the information" + "\033[0m")
-os.system(f'notepad {file_path}')
-infoln = cts.read_csv_to_dict(csv_file, 'LN')  # Cold test in Liquid Nitrogen
+infoln = cts.read_csv_to_dict(csv_file, 'LN')
+info_check = input('please review the test information. \n\tIf the info is not right, enter "m" to modify the info. \n\tIf the info is right, jsut enter to next')
+if info_check == 'm':
+    os.system(f'notepad {file_path}')
+    infoln = cts.read_csv_to_dict(csv_file, 'LN')  # Warm test in Room Temperature
 Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Cold QC")
 if Next == 'n':
     print('No Cold QC execute!')

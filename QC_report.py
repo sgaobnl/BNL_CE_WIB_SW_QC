@@ -44,7 +44,7 @@ class QC_reports:
             self.fembs = fembs
             for ifemb in fembs:
                 self.fembsName[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}']
-                self.fembsID[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}'][1:]
+                self.fembsID[f'femb{ifemb}'] = ifemb
         else:
             # self.fembsID = logs['femb id']
             self.fembs=[]
@@ -52,7 +52,7 @@ class QC_reports:
                 self.fembs.append(int(key[-1]))
             for ifemb in self.fembs:
                 self.fembsName[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}']
-                self.fembsID[f'femb{ifemb}'] = logs['femb id'][f'femb{ifemb}'][1:]
+                self.fembsID[f'femb{ifemb}'] = ifemb
         self.savedir={}
         print("Will analyze the following fembs: ", self.fembs)
         ##### create results dir for each FEMB #####
@@ -971,12 +971,12 @@ class QC_reports:
 
     def report(self):
         print(self.savedir)
-        path = a_repo.section_report(self.savedir, self.fembs, self.fembsID)
+        path = a_repo.section_report(self.savedir, self.fembs, self.fembsID, self.fembsName)
         pathcsv = csv_repo.CSV_section_report(self.savedir, self.fembs, self.fembsID)
         if '_F_S' in path:
             preview_url = f'file://{path}'
             webbrowser.open(preview_url)
-        a_repo.final_report(self.savedir, self.fembs, self.fembsID)
+        a_repo.final_report(self.savedir, self.fembs, self.fembsID, self.fembsName)
 
 
         return path

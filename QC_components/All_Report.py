@@ -47,7 +47,7 @@ def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
 
 
 
-def section_report(datareport, fembs, fembNo):
+def section_report(datareport, fembs, fembNo, fembsName):
     global fpmd
     print("\n\n\n")
     print("==================================================================================")
@@ -249,18 +249,18 @@ def section_report(datareport, fembs, fembNo):
 
         all_true = all(value for value in check_list)
         if all_true:
-            summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
+            summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
         else:
-            summary = '<span style="color: red;">' + " FEMB # {}\t      Fail\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
+            summary = '<span style="color: red;">' + " FEMB # {}\t      Fail\t    ALL Quality Control".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
 ###======================================================================
 
 #   Start Markdown
 
         print(Status)
         if Status:
-            print("\033[32m" + "The FEMB {} PASS the ITEM {} QC test".format(fembNo['femb%d' % ifemb], *log.test_label) + "\033[0m")
+            print("\033[32m" + "The FEMB {} PASS the ITEM {} QC test".format(fembsName['femb%d' % ifemb], *log.test_label) + "\033[0m")
         else:
-            print("\033[31m" + "The FEMB {} fail the ITEM {} QC test".format(fembNo['femb%d' % ifemb], *log.test_label) + "\033[0m")
+            print("\033[31m" + "The FEMB {} fail the ITEM {} QC test".format(fembsName['femb%d' % ifemb], *log.test_label) + "\033[0m")
         print('\n')
         fpmd = datareport[ifemb] + 'report_FEMB_{}_t{}_{}_S{}.md'.format(fembNo['femb%d' % ifemb], *log.test_label, Status, ifemb)
         print(datareport[ifemb])
@@ -1017,7 +1017,7 @@ def section_report(datareport, fembs, fembNo):
 
 
 # final report, generate every analysis
-def final_report(datareport, fembs, fembNo):
+def final_report(datareport, fembs, fembNo, fembsName):
     print("\n\n\n")
     print("==================================================================================")
     print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
@@ -1054,12 +1054,12 @@ def final_report(datareport, fembs, fembNo):
         print(check_status)
         all_true = all(check_status)
         if None in check_status:
-            summary = '<span style="color: dark;">' + " FEMB # {}\t       Quality Control in Test ".format(fembNo['femb%d' % ifemb]) + '</span>' + '\n'
+            summary = '<span style="color: dark;">' + " FEMB # {}\t       Quality Control in Test ".format(fembsName['femb%d' % ifemb]) + '</span>' + '\n'
         else:
             if all_true:
-                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
+                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
             else:
-                summary = '<span style="color: red;">' + " FEMB # {}\t      fail\t    the Quality Control tests".format(fembNo['femb%d' % ifemb]) + '</span>'  + '\n'
+                summary = '<span style="color: red;">' + " FEMB # {}\t      fail\t    the Quality Control tests".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
         print(summary)
 
 ###======================================================================
@@ -1067,7 +1067,7 @@ def final_report(datareport, fembs, fembNo):
 #   Start Markdown
 
         print('\n')
-        frmd = datareport[ifemb] + 'Final_Report_FEMB_{}_S{}.md'.format(fembNo['femb%d' % ifemb], ifemb)
+        frmd = datareport[ifemb] + 'Final_Report_FEMB_{}_S{}.md'.format(fembsName['femb%d' % ifemb], ifemb)
         print(datareport[ifemb])
         with open(frmd, 'w', encoding = "utf-8") as file:
             # file.write('')
