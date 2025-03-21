@@ -3,10 +3,13 @@ import os
 import time
 import subprocess
 from datetime import datetime
+import QC_components.qc_log as main_dict
 
-target_folder = 'D:/FEMB_QC/Data'
-
-last_scan_file = 'D:/FEMB_QC/Data/last_scan_results.txt'
+main_dict.top_path = 'D:/'
+top_path = main_dict.top_path
+print(top_path)
+target_folder = top_path + 'FEMB_QC/Data'
+last_scan_file = top_path + 'FEMB_QC/Data/last_scan_results.txt'
 
 def save_last_scan_results(results):
     with open(last_scan_file, 'w') as f:

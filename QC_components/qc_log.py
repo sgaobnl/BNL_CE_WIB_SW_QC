@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+top_path = defaultdict(dict)
 report_log00 = defaultdict(dict)    # input information
 test_label = []
 #   01  Power Consumption

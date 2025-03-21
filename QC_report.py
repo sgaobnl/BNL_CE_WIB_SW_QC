@@ -23,12 +23,15 @@ import QC_components.All_Report as a_repo
 import QC_components.QC_CSV_Report as csv_repo
 # use webbrowser to show the issue report
 import webbrowser
+import QC_components.qc_log as main_dict
 
+main_dict.top_path = 'D:/'
+top_path = main_dict.top_path
 class QC_reports:
 
     def __init__(self, fdir, fembs=[], NewWIB = True):
         print(fdir.split("/"))
-        savedir = 'D:/FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
+        savedir = top_path + 'FEMB_QC/Report/' + fdir.split("/")[-2] + '/'
         self.datadir = fdir + "/"
         self.report_source_doc = 0
         fp = self.datadir+"logs_env.bin"

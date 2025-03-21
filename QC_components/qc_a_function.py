@@ -237,19 +237,20 @@ def pulse_ana(pls_rawdata, fembs, fembNo, ReportDir, fname, doc = "PWR_Meas/", l
 
         report_addr = ReportDir[fembs[ifemb]] + doc
         ppk, npk, bl = qc_tools.GetPeaks(pls_rawdata, fembs[ifemb], report_addr, fname, funcfit=False)
-        ppk = [int(a-b) for a, b in zip(ppk,bl)]
+        ppk_csv = [int(a-b) for a, b in zip(ppk,bl)]
         ppk_max = int(np.max(ppk))
         ppk_min = int(np.min(ppk))
         ppk_mean = int(np.mean(ppk))
         ppk_err = int(np.std(ppk))
 
         zero = [int(a - b) for a, b in zip(bl, bl)]
-        bbl = [int(a - b) for a, b in zip(bl, zero)]
+        bbl_csv = [int(a - b) for a, b in zip(bl, zero)]
+        bbl = bl
         bbl_mean = int(np.mean(bl))
         bbl_err = int(np.std(bl))
         bbl_max = int(np.min(bl))
         bbl_min = int(np.min(bl))
-        npk = [int(a - b) for a, b in zip(bl, npk)]
+        npk_csv = [int(a - b) for a, b in zip(bl, npk)]
         npk_mean = int(np.mean(npk))
         npk_err = int(np.std(npk))
         npk_max = int(np.min(npk))

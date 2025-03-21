@@ -9,7 +9,7 @@ from datetime import datetime
 import csv
 import webbrowser
 
-
+proc = subprocess.Popen(["python', 'CTS_Real_Time_Monitor.py"], stdin=subprocess.PIPE)
 def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False):
     result = None
     if check:
@@ -182,13 +182,14 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     logs['PC_WRCFG_FN'] = "./femb_info.csv"
 
     if QC_TST_EN == 0:
+        proc.communicate(input=b"\n")
         print(datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)")
-        timeout = 10
-        command = ["ping ", "192.168.121.123"]
+        command = ["ping", "192.168.121.123"]
         print("COMMAND: ", command)
         attempt = 0
         for i in range(5):
-            result = subrun(command=command, timeout=timeout, exitflg=False)
+            result = subrun(command, timeout=10)
+            time.sleep(0.01)
             if result:
                 log = result.stdout
                 chk1 = "Reply from 192.168.121.123: bytes=32"
@@ -205,7 +206,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                     choice = input('Fail Connection\nEnter y to continue\nEnter n to Exit ...')
                     if choice == 'n':
                         print('Exit ...')
-                        break
+                        sys.exit()
                     else:
                         break
 

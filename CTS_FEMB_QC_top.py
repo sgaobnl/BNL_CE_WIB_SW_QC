@@ -86,7 +86,6 @@ with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
         if len(row) == 2:
             key, value = row
             csv_data[key.strip()] = value.strip()
-print(csv_data)
 if 'tester' not in csv_data:
     csv_data['tester'] = 'sgao'
 else:
