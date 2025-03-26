@@ -25,7 +25,16 @@ import QC_components.QC_CSV_Report as csv_repo
 import webbrowser
 import QC_components.qc_log as main_dict
 
-main_dict.top_path = 'D:/'
+csv_data = {}
+csv_file = 'femb_info.csv'
+file_path = r'.\femb_info.csv'
+with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+    reader = csv.reader(file)
+    for row in reader:
+        if len(row) == 2:
+            key, value = row
+            csv_data[key.strip()] = value.strip()
+main_dict.top_path = csv_data['top_path']
 top_path = main_dict.top_path
 class QC_reports:
 

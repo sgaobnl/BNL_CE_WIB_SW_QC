@@ -8,8 +8,8 @@ import os
 from datetime import datetime
 import csv
 import webbrowser
+from colorama import Fore, Style
 
-proc = subprocess.Popen(["python', 'CTS_Real_Time_Monitor.py"], stdin=subprocess.PIPE)
 def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False):
     result = None
     if check:
@@ -181,8 +181,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     logs['PC_rawreport_root'] = "D:/FEMB_QC/Report/" + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
     logs['PC_WRCFG_FN'] = "./femb_info.csv"
 
-    if QC_TST_EN == 0:
-        proc.communicate(input=b"\n")
+    if QC_TST_EN == 77:
         print(datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)")
         command = ["ping", "192.168.121.123"]
         print("COMMAND: ", command)
@@ -218,6 +217,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         formatted_now = now.strftime('%a %b %d %H:%M:%S UTC %Y')
         command = ["ssh", "root@192.168.121.123", "date -s \'{}\'".format(formatted_now)]
         result = subrun(command, timeout=30)
+        time.sleep(0.01)
         if result != None:
             print("WIB Time: ", result.stdout)
             print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
@@ -230,6 +230,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         print(datetime.utcnow(), " : Start WIB initialization (it takes < 30s)")
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC;  python3 wib_startup.py"]
         result = subrun(command, timeout=30)
+        time.sleep(0.01)
         if result != None:
             if "Done" in result.stdout:
                 print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
@@ -251,6 +252,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         print(logs['PC_WRCFG_FN'])
         command = ["scp", "-r", logs['PC_WRCFG_FN'], wibdst]
         result = subrun(command, timeout=20)
+        time.sleep(0.01)
         if result != None:
             logs['CFG_wrto_WIB'] = [command, result.stdout]
 
@@ -258,6 +260,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             pcdst = "./readback/"
             command = ["scp", "-r", wibsrc, pcdst]
             result = subrun(command, timeout=20)
+            time.sleep(0.01)
             if result != None:
                 logs['CFG_rbfrom_WIB'] = [command, result.stdout]
                 logs['PC_RBCFG_fn'] = pcdst + "femb_info.csv"
@@ -354,6 +357,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
         result = subrun(command, timeout=200, user_input=user_input_1)  # rewrite with Popen later
+        time.sleep(0.01)
         if result != None:
             resultstr = result.stdout
             logs["QC_TestItemID_%03d" % 0] = [command, resultstr]
@@ -403,6 +407,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         time.sleep(1)
         command = ["scp", "-r", fsrc, fddir]
         result = subrun(command, timeout=10, check=False)
+        time.sleep(0.01)
         # if result != None:
         print("data save at {}".format(fddir))
         logs['pc_raw_dir'] = fddir  # later save it into log file
@@ -467,7 +472,8 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             print('Begin to remove data at WIB')
             time.sleep(1)
             command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
-            result = subrun(command, timeout=30, check=False)
+            result = subrun(command, timeout=10, check=False)
+            time.sleep(0.01)
             if result != None:
                 print("wib data remove at {}".format(fdir))
                 logs['remove_wib_raw_dir'] = fdir  # later save it into log file
@@ -504,13 +510,14 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid)]
             user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
             result = subrun(command, timeout=1000, user_input=user_input_1)  # rewrite with Popen later
+            time.sleep(0.01)
             if result != None:
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d" % testid] = [command, resultstr]
                 if "Pass!" in result.stdout:
-                    print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                    print(datetime.utcnow(), "\033[92m  : Mission SUCCESS!  \033[0m")
                 elif "is on" in result.stdout:
-                    print(datetime.utcnow(), "\033[92m  : SUCCESS & Turn FEMB on!  \033[0m")
+                    print(datetime.utcnow(), "\033[92m  : FEMB on!  \033[0m")
                     # continue #in FEMB QC, we want to send the data first
                 elif "Turn All FEMB off" in result.stdout:
                     print(datetime.utcnow(), "\033[92m  : SUCCESS & Done!  \033[0m")
@@ -560,12 +567,13 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             # 03_3 raw folder in wib side
             for i in range(4):
                 print("wib data remove at {}".format(fdir))
-                time.sleep(1)
+                time.sleep(0.01)
                 command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
                 result = subrun(command, timeout=10, check=False)
+                time.sleep(0.01)
                 if result != None:
                     logs['remove_wib_raw_dir'] = fdir  # later save it into log file
-                    print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                    print(datetime.utcnow(), "\033[92m  : Remove SUCCESS!  \033[0m")
                     break
                 else:
                     print("Remove warning!")

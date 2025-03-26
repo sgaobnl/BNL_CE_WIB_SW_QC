@@ -4,15 +4,14 @@ import time
 import cts_ssh_FEMB as cts
 from PIL import Image
 import csv
-from GUI.initial_csv import check_csv
-from ast import literal_eval
+from colorama import init, Fore, Style
 
 # Please Open Real_Time_Monitor.py and run first
 # Then, Run this CTS_FEMB_QC_top.py
 ############################################################
 #       01 Function Part                                   #
 ############################################################
-
+init()
 def QC_Process(QC_TST_EN=None, input_info=None):
     while True:
         QCresult = cts.cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=QC_TST_EN, input_info=input_info)
@@ -38,10 +37,10 @@ def FEMB_QC(input_info):
     # B Power On Warm Interface Board
     print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
     input("Enter to next ...\n")
-    print("\033[35m" + "B01 : Please Wait the Fiber Converter Light on (30 second)" + "\033[0m")
-
-    print("If Fiber Converter works, Enter to next ...\n")
-    input()
+    print("\033[35m" + "B01 : wait to Enable Fiber Converter [30 second]" + "\033[0m")
+    time.sleep(30)
+    print("\033[35m" + "B02 : Begin to Ping Warm Interface Board" + "\033[0m")
+    QC_Process(QC_TST_EN=77, input_info=input_info)  # initial wib
     # first run
     # ###############STEP1#################################
     skts = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -70,15 +69,19 @@ def FEMB_QC(input_info):
 
 csv_file = 'femb_info.csv'
 file_path = r'.\femb_info.csv'
-print("\033[35m" + "A_RT00 : Install FEMB boards, check the connection of Data and Power Cables" + "\033[0m")
+print(Fore.GREEN + "A_RT00 : Install FEMB boards, check the connection of Data and Power Cables" + Style.RESET_ALL)
 input_name = input('Please input your name: ')
-Initial_Scaner = input("Initial Scaner. \n\tEnter Any Key to exit ...\n\tEnter 'H' to check help")
-if (Initial_Scaner == 'H') or (Initial_Scaner == 'h'):
-    image = Image.open('D:\GitHub\BNL_CE_WIB_SW_QC\BNL_CE_WIB_SW_QC\Help\Initial_Scaner.png')
-    print('Close the picture to continue')
-    image.show()
-femb_id_0 = input('Scan FEMB ID in Slot #0\t')
-femb_id_1 = input('Scan FEMB ID in Slot #1\t')
+print('\n')
+# Initial_Scaner = input("Initial Scaner. \n\tEnter Any Key to exit ...\n\tEnter 'H' to check help")
+# if (Initial_Scaner == 'H') or (Initial_Scaner == 'h'):
+#     image = Image.open('D:\GitHub\BNL_CE_WIB_SW_QC\BNL_CE_WIB_SW_QC\Help\Initial_Scaner.png')
+#     print('Close the picture to continue')
+#     image.show()
+print(Fore.CYAN + 'Record QR Code [with scaner or keyboard]' + Style.RESET_ALL)
+femb_id_0 = input('Scan the QR ID and assemble the CE box in the Bottom slot (Slot #0)\t')
+femb_id_1 = input('Scan the QR ID and assemble the CE box in the top slot [Slot #1]\t')
+print('\n')
+print(Fore.GREEN + 'Please Review the info and put CE box into CTS chamber' + Style.RESET_ALL)
 csv_data = {}
 with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
     reader = csv.reader(file)
@@ -92,10 +95,8 @@ else:
     csv_data['tester'] = input_name
 if 'SLOT0' not in csv_data:
     csv_data['SLOT0'] = 'H01'
-    print(232323232)
 else:
     csv_data['SLOT0'] = femb_id_0
-    print(femb_id_0)
 if 'SLOT1' not in csv_data:
     csv_data['SLOT1'] = 'H02'
 else:
@@ -110,29 +111,26 @@ if 'toy_TPC' not in csv_data:
     csv_data['toy_TPC'] = 'y'
 if 'comment' not in csv_data:
     csv_data['comment'] = 'QC test'
+if 'top_path' not in csv_data:
+    csv_data['top_path'] = 'D:/'
 with open(csv_file, mode="w", newline="", encoding='utf-8-sig') as file:
     writer = csv.writer(file)
     for key, value in csv_data.items():
         writer.writerow([key, value])
 inform = cts.read_csv_to_dict(csv_file, 'RT')
-info_check = input('please review the test information. \n\tIf the info is not right, enter "m" to modify the info. \n\tIf the info is right, jsut enter to next')
+print('\n')
+print(Fore.GREEN + 'If the info is not right, enter "m" to modify the info. Else, just enter to next. [Enter "e" to exit; Enter "n" to skip the Warm QC]' + Style.RESET_ALL)
+info_check = input()
 if info_check == 'm':
     os.system(f'notepad {file_path}')
     inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
+    print(Fore.YELLOW + 'please run the CTS_Real_Time_Monitor.py again, if the top_path is updated' + Style.RESET_ALL)
 
-input('Please Install FEMB #0 #1 #2 #3 into SLOT #0 #1 #2 #3; Enter to next ... \n')
-# with open(csv_file, mode='w', newline='', encoding='utf-8-sig') as file:
-#     writer = csv.DictWriter(file)
-#     writer.writeheader()
-#     writer = writer.writerows(csv_data)
-# print("00 : Please Review the information")
-# print("\033[35m" + "A_RT01 : Please Review the information" + "\033[0m")
-# os.system(f'notepad {file_path}')
-# inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
-Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Warm QC \n")
-if Next == 'n':
+# print(Fore.GREEN + "\nEnter Any Key to continue [Enter 'e' to exit;\tEnter 'n' to skip the Warm QC]" + Style.RESET_ALL)
+# Next = input()
+elif info_check == 'n':
     print('No Warm QC execute!')
-elif Next == 'e':
+elif info_check == 'e':
     Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test \n")
     if Next2 != 'y':
         sys.exit()
