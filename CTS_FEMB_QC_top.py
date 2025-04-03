@@ -36,7 +36,7 @@ def QC_Process(QC_TST_EN=None, input_info=None):
 def FEMB_QC(input_info):
     # B Power On Warm Interface Board
     print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
-    input("Enter to next ...\n")
+    # input("Enter to next ...\n")
     print("\033[35m" + "B01 : wait to Enable Fiber Converter [30 second]" + "\033[0m")
     time.sleep(30)
     print("\033[35m" + "B02 : Begin to Ping Warm Interface Board" + "\033[0m")
@@ -126,11 +126,11 @@ if info_check == 'm':
     inform = cts.read_csv_to_dict(csv_file, 'RT')  # Warm test in Room Temperature
     print(Fore.YELLOW + 'please run the CTS_Real_Time_Monitor.py again, if the top_path is updated' + Style.RESET_ALL)
 
-# print(Fore.GREEN + "\nEnter Any Key to continue [Enter 'e' to exit;\tEnter 'n' to skip the Warm QC]" + Style.RESET_ALL)
-# Next = input()
-elif info_check == 'n':
+print(Fore.GREEN + "\nPlease Power On the WIB [Enter 'e' to exit;\tEnter 'n' to skip the Warm QC]" + Style.RESET_ALL)
+Next = input()
+if Next == 'n':
     print('No Warm QC execute!')
-elif info_check == 'e':
+elif Next == 'e':
     Next2 = input("\nEnter Any Key to exit ...\nEnter 'N' to continue the LN test \n")
     if Next2 != 'y':
         sys.exit()
@@ -159,7 +159,7 @@ info_check = input('please review the test information. \n\tIf the info is not r
 if info_check == 'm':
     os.system(f'notepad {file_path}')
     infoln = cts.read_csv_to_dict(csv_file, 'LN')  # Warm test in Room Temperature
-Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Cold QC")
+Next = input("\nPlease Power On the WIB \nEnter 'e' to exit\nEnter 'n' to skip the Cold QC")
 if Next == 'n':
     print('No Cold QC execute!')
 elif Next == 'e':

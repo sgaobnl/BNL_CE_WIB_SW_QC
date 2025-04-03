@@ -324,7 +324,7 @@ class QC_Runs:
         ####### SE with LArASIC buffer on #######
         #self.chk.femb_cd_rst()
         dac = 0x00
-        sts=0
+        sts=1
         fp = datadir + "PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         datad["PWR_SE_ON_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
 
@@ -337,7 +337,7 @@ class QC_Runs:
         ####### DIFF #######
         #self.chk.femb_cd_rst()
         dac = 0x00
-        sts = 0
+        sts = 1
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1    # enable differential interface
         fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
@@ -379,7 +379,7 @@ class QC_Runs:
         self.sample_N = 1
         for i in range(3):
             dac = 0
-            sts = 0
+            sts = 1
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
             datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True)
             dac = 0x20
@@ -404,7 +404,7 @@ class QC_Runs:
         ####### SE with LArASIC buffer on (1 cycle)#######
         self.chk.femb_cd_rst()
         dac = 0
-        sts = 0
+        sts = 1
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
         dac = 0x20

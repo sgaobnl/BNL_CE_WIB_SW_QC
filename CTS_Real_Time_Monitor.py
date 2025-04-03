@@ -118,14 +118,14 @@ def real_time_monitor():
                 result = subrun(command, timeout=1000)  # rewrite with Popen later
         time.sleep(5)   # when monitor works in wait, 5 seconds wait in one scan cycle
 
-directory__Report_path = 'D:/FEMB_QC/Report'
+directory__Report_path = top_path + '/FEMB_QC/Report'
 if not os.path.exists(directory__Report_path):
     os.makedirs(directory__Report_path)
     print(f"Directory '{directory__Report_path}' created.")
 else:
     print(f"Directory '{directory__Report_path}' already exists. ")
 
-directory_Data_path = 'D:/FEMB_QC/Data'
+directory_Data_path = top_path + 'FEMB_QC/Data'
 if not os.path.exists(directory_Data_path):
     os.makedirs(directory_Data_path)
     print(f"Directory '{directory_Data_path}' created.")
