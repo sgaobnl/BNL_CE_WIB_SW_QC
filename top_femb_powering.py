@@ -32,7 +32,7 @@ chk.wib_fw()
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
-chk.femb_powering(fembs)
+chk.femb_safe_powering(fembs, bias_ilim=0.3, dc0_ilim=1.5, dc1_ilim=1.5, dc2_ilim=2.5)
 
 if len(fembs) != 0:
     print (f"Turn FEMB {fembs} on")
@@ -84,6 +84,16 @@ if 'on' in sys.argv[4]:
         print("\033[32m" + 'SLOT#3 Power Connection Normal' + "\033[0m")
     else:
         print("\033[33m" + 'Warning: SLOT#3 LOSS Power Connection !!!' + "\033[0m")
+
+
+
+print(pwr_meas)
+markdown = "| Key | Value |\n|-----|-------|\n"
+for key, value in pwr_meas.items():
+    markdown += f"| {key} | {value:.3f} |\n"
+
+print(markdown)
+
 
 print('\n')
 print('\n')

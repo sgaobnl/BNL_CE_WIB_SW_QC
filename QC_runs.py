@@ -188,7 +188,7 @@ class QC_Runs:
             if excali == False:
                 datae = {}
                 print ("Calibration with pulser from WIB starts...")
-                cp_period = 1000
+                cp_period = 500
                 vdacmax=self.vdacmax
                 vdacs = np.arange(vdacmax,self.vgndoft,-(vdacmax-self.vgndoft)/self.vstep)
                 dac0_sel = 0
@@ -225,9 +225,8 @@ class QC_Runs:
                 dac1_sel = 0
                 dac2_sel = 0
                 dac3_sel = 0
-                for x in range(25):
+                for x in [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]:
                     dacvol = x * 0.05
-                    print(dacvol)
                     self.chk.wib_cali_dac(dacvol=dacvol)
                     for fembid in self.fembs:
                         if fembid == 0:
@@ -242,18 +241,19 @@ class QC_Runs:
                     print('DAC value: {}'.format(dacvol))
                     # input('debug dac, enable route')
                     cp_period = 500
-                    cp_high_time = int(cp_period * 32 * 7 / 8)
+                    cp_high_time = int(cp_period * 32 * 1 / 8)
                     # cp_high_time = int(cp_period*32*1/2)
                     self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time, inj_cal_pulse_sw=1)
                     # input('debug pulse enable')
                     for femb_id in self.fembs:
                         self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
                     # input('debug enable FEMB external pulse route')
-                    time.sleep(2)
-
+                    time.sleep(0.01)
                     ####################FEMBs Data taking################################
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N, trig_cmd=0)
                     fplocal = fp[0:-4] + "_vdac%06dmV" % (int((dacvol + 0.0001) * 1000)) + fp[-4:]
+                    with open(fplocal, 'wb') as fn:
+                        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, x], fn)
                     fsubdirs = fplocal.split("/")
                     print(fsubdirs)
                     print(fsubdirs[-1])

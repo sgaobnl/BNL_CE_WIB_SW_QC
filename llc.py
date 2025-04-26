@@ -340,9 +340,9 @@ class LLC():
                 bufs_bytes[femb*2] = None
                 bufs_bytes[femb*2+1] = None
 	
-        return bufs_bytes 
-        
-    def get_sensors(self):
+        return bufs_bytes
+
+    def get_sensors(self, sensors=["WIB", "FEMB0", "FEMB1", "FEMB2", "FEMB3"]):
         r357 = 0.001
         r350 = 0.001
         r351 = 0.001
@@ -350,132 +350,140 @@ class LLC():
         r416 = 0.001
         r352 = 0.001
         r353 = 0.001
-        power_meas = { }
-        ltc2990_4e_vs = []
-        for i  in range(1,5,1):
-            v = self.wib.read_ltc2990(0x4E, False, i) 
-            ltc2990_4e_vs.append(v)
-        power_meas["P0.9V_V"] = ltc2990_4e_vs[1]
-        power_meas["P0.9V_I"] = (ltc2990_4e_vs[0] - ltc2990_4e_vs[1]) / r357
-        power_meas["VCCPSPLL_Z_1P2V_V"] = ltc2990_4e_vs[2]
-        power_meas["PS_DDR4_vtt_V"] = ltc2990_4e_vs[3]
+        power_meas = {}
+        if "WIB" in sensors:
+            ltc2990_4e_vs = []
+            for i in range(1, 5, 1):
+                v = self.wib.read_ltc2990(0x4E, False, i)
+                ltc2990_4e_vs.append(v)
+            power_meas["P0.9V_V"] = ltc2990_4e_vs[1]
+            power_meas["P0.9V_I"] = (ltc2990_4e_vs[0] - ltc2990_4e_vs[1]) / r357
+            power_meas["VCCPSPLL_Z_1P2V_V"] = ltc2990_4e_vs[2]
+            power_meas["PS_DDR4_vtt_V"] = ltc2990_4e_vs[3]
 
-        ltc2990_4c_vs = []
-        for i  in range(1,5,1):
-            v = self.wib.read_ltc2990(0x4C, False, i) 
-            ltc2990_4c_vs.append(v)
-        power_meas["P1.2V_V"] = ltc2990_4c_vs[1]
-        power_meas["P1.2V_I"] = (ltc2990_4c_vs[0] - ltc2990_4c_vs[1])/r351
-        power_meas["P3.3V_V"] = ltc2990_4c_vs[3]
-        power_meas["P3.3V_I"] = (ltc2990_4c_vs[2] - ltc2990_4c_vs[3])/r350
+            ltc2990_4c_vs = []
+            for i in range(1, 5, 1):
+                v = self.wib.read_ltc2990(0x4C, False, i)
+                ltc2990_4c_vs.append(v)
+            power_meas["P1.2V_V"] = ltc2990_4c_vs[1]
+            power_meas["P1.2V_I"] = (ltc2990_4c_vs[0] - ltc2990_4c_vs[1]) / r351
+            power_meas["P3.3V_V"] = ltc2990_4c_vs[3]
+            power_meas["P3.3V_I"] = (ltc2990_4c_vs[2] - ltc2990_4c_vs[3]) / r350
 
-        bus = 1
-        ltc2991_48_vs = []
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x48, False, i) 
-            ltc2991_48_vs.append(v)
-        power_meas["P0.85V_V"] =  ltc2991_48_vs[1]
-        power_meas["P0.85V_I"] = (ltc2991_48_vs[0] - ltc2991_48_vs[1])/r413
-        power_meas["P5V_V"] =     ltc2991_48_vs[3]
-        power_meas["P5V_I"] =    (ltc2991_48_vs[2] - ltc2991_48_vs[3])/r416
-        power_meas["P2.5V_V"] =   ltc2991_48_vs[5]
-        power_meas["P2.5V_I"] =  (ltc2991_48_vs[4] - ltc2991_48_vs[5])/r352
-        power_meas["P1.8V_V"] =   ltc2991_48_vs[7]
-        power_meas["P1.8V_I"] =  (ltc2991_48_vs[6] - ltc2991_48_vs[7])/r353
+            bus = 1
+            ltc2991_48_vs = []
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x48, False, i)
+                ltc2991_48_vs.append(v)
+            power_meas["P0.85V_V"] = ltc2991_48_vs[1]
+            power_meas["P0.85V_I"] = (ltc2991_48_vs[0] - ltc2991_48_vs[1]) / r413
+            power_meas["P5V_V"] = ltc2991_48_vs[3]
+            power_meas["P5V_I"] = (ltc2991_48_vs[2] - ltc2991_48_vs[3]) / r416
+            power_meas["P2.5V_V"] = ltc2991_48_vs[5]
+            power_meas["P2.5V_I"] = (ltc2991_48_vs[4] - ltc2991_48_vs[5]) / r352
+            power_meas["P1.8V_V"] = ltc2991_48_vs[7]
+            power_meas["P1.8V_I"] = (ltc2991_48_vs[6] - ltc2991_48_vs[7]) / r353
 
-        vcco_psddr_504_c =  self.wib.read_ina226_c(0x46)
-        vcco_psddr_504_v =  self.wib.read_ina226_v(0x46)
-        power_meas["VCCO_PSDDR_504_V"] = vcco_psddr_504_c 
-        power_meas["VCCO_PSDDR_504_I"] = vcco_psddr_504_v 
+            vcco_psddr_504_c = self.wib.read_ina226_c(0x46)
+            vcco_psddr_504_v = self.wib.read_ina226_v(0x46)
+            power_meas["VCCO_PSDDR_504_V"] = vcco_psddr_504_c
+            power_meas["VCCO_PSDDR_504_I"] = vcco_psddr_504_v
 
-        ad7414_4d = self.wib.read_ad7414(0x4d)
-        power_meas["Temp_U42_0x4d"] =  ad7414_4d
+            ad7414_4d = self.wib.read_ad7414(0x4d)
+            power_meas["Temp_U42_0x4d"] = ad7414_4d
 
-        if False:
-            ad7414_49 = self.wib.read_ad7414(0x49)
-            ad7414_4a = self.wib.read_ad7414(0x4a)
-            power_meas["Temp_U47_0x49"] =  ad7414_49
-            power_meas["Temp_U64_0x4a"] =  ad7414_4a
+            if False:
+                ad7414_49 = self.wib.read_ad7414(0x49)
+                ad7414_4a = self.wib.read_ad7414(0x4a)
+                power_meas["Temp_U47_0x49"] = ad7414_49
+                power_meas["Temp_U64_0x4a"] = ad7414_4a
 
-        ltc2499_15s = [] 
-        for i  in range(0,7,1):
-            t = self.wib.read_ltc2499(i)
-            ltc2499_15s.append(t)
-        power_meas["LTC4644_BRD0_temp"] = ltc2499_15s[0]
-        power_meas["LTC4644_BRD1_temp"] = ltc2499_15s[1]
-        power_meas["LTC4644_BRD2_temp"] = ltc2499_15s[2]
-        power_meas["LTC4644_BRD3_temp"] = ltc2499_15s[3]
-        power_meas["LTC4644_WIB1_temp"] = ltc2499_15s[4]
-        power_meas["LTC4644_WIB2_temp"] = ltc2499_15s[5]
-        power_meas["LTC4644_WIB3_temp"] = ltc2499_15s[6]
+            ltc2499_15s = []
+            for i in range(0, 7, 1):
+                t = self.wib.read_ltc2499(i)
+                ltc2499_15s.append(t)
+            power_meas["LTC4644_BRD0_temp"] = ltc2499_15s[0]
+            power_meas["LTC4644_BRD1_temp"] = ltc2499_15s[1]
+            power_meas["LTC4644_BRD2_temp"] = ltc2499_15s[2]
+            power_meas["LTC4644_BRD3_temp"] = ltc2499_15s[3]
+            power_meas["LTC4644_WIB1_temp"] = ltc2499_15s[4]
+            power_meas["LTC4644_WIB2_temp"] = ltc2499_15s[5]
+            power_meas["LTC4644_WIB3_temp"] = ltc2499_15s[6]
 
-        bus = 2 #FEMB power monitoring
-        bus2_ltc2991_48_vs = [] #DCDC for FEMB0
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x48, False, i) 
-            bus2_ltc2991_48_vs.append(v)
-        bus2_ltc2991_49_vs = [] #DCDC for FEMB1
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x49, False, i) 
-            bus2_ltc2991_49_vs.append(v)
-        bus2_ltc2991_4a_vs = [] #DCDC for FEMB2
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x4A, False, i) 
-            bus2_ltc2991_4a_vs.append(v)
-        bus2_ltc2991_4b_vs = [] #DCDC for FEMB3
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x4B, False, i) 
-            bus2_ltc2991_4b_vs.append(v)
-        bus2_ltc2991_4e_vs = [] #DCDC for FEMB BIAS(0-3)
-        for i  in range(1,9,1):
-            v = self.wib.read_ltc2991(bus, 0x4E, False, i) 
-            bus2_ltc2991_4e_vs.append(v)
-        time.sleep(0.1)
-        power_meas["FEMB0_BIAS_V"]   =  bus2_ltc2991_4e_vs[1]
-        power_meas["FEMB0_BIAS_I"]   = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1])/0.1
-        power_meas["FEMB0_DC2DC0_V"] =  bus2_ltc2991_48_vs[1]
-        power_meas["FEMB0_DC2DC0_I"] = (bus2_ltc2991_48_vs[0] - bus2_ltc2991_48_vs[1])/0.1
-        power_meas["FEMB0_DC2DC1_V"] =  bus2_ltc2991_48_vs[3]
-        power_meas["FEMB0_DC2DC1_I"] = (bus2_ltc2991_48_vs[2] - bus2_ltc2991_48_vs[3])/0.1
-        power_meas["FEMB0_DC2DC2_V"] =  bus2_ltc2991_48_vs[5]
-        power_meas["FEMB0_DC2DC2_I"] = (bus2_ltc2991_48_vs[4] - bus2_ltc2991_48_vs[5])/0.01
-        power_meas["FEMB0_DC2DC3_V"] =  bus2_ltc2991_48_vs[7]
-        power_meas["FEMB0_DC2DC3_I"] = (bus2_ltc2991_48_vs[6] - bus2_ltc2991_48_vs[7])/0.1
-        power_meas["FEMB1_BIAS_V"]   =  bus2_ltc2991_4e_vs[1+2]
-        power_meas["FEMB1_BIAS_I"]   = (bus2_ltc2991_4e_vs[0+2] - bus2_ltc2991_4e_vs[1+2])/0.1
-        power_meas["FEMB1_DC2DC0_V"] =  bus2_ltc2991_49_vs[1]
-        power_meas["FEMB1_DC2DC0_I"] = (bus2_ltc2991_49_vs[0] - bus2_ltc2991_49_vs[1])/0.1
-        power_meas["FEMB1_DC2DC1_V"] =  bus2_ltc2991_49_vs[3]
-        power_meas["FEMB1_DC2DC1_I"] = (bus2_ltc2991_49_vs[2] - bus2_ltc2991_49_vs[3])/0.1
-        power_meas["FEMB1_DC2DC2_V"] =  bus2_ltc2991_49_vs[5]
-        power_meas["FEMB1_DC2DC2_I"] = (bus2_ltc2991_49_vs[4] - bus2_ltc2991_49_vs[5])/0.01
-        power_meas["FEMB1_DC2DC3_V"] =  bus2_ltc2991_49_vs[7]
-        power_meas["FEMB1_DC2DC3_I"] = (bus2_ltc2991_49_vs[6] - bus2_ltc2991_49_vs[7])/0.1
-        power_meas["FEMB2_BIAS_V"]   =  bus2_ltc2991_4e_vs[1+2+2]
-        power_meas["FEMB2_BIAS_I"]   = (bus2_ltc2991_4e_vs[0+2+2] - bus2_ltc2991_4e_vs[1+2+2])/0.1
-        power_meas["FEMB2_DC2DC0_V"] =  bus2_ltc2991_4a_vs[1]
-        power_meas["FEMB2_DC2DC0_I"] = (bus2_ltc2991_4a_vs[0] - bus2_ltc2991_4a_vs[1])/0.1
-        power_meas["FEMB2_DC2DC1_V"] =  bus2_ltc2991_4a_vs[3]
-        power_meas["FEMB2_DC2DC1_I"] = (bus2_ltc2991_4a_vs[2] - bus2_ltc2991_4a_vs[3])/0.1
-        power_meas["FEMB2_DC2DC2_V"] =  bus2_ltc2991_4a_vs[5]
-        power_meas["FEMB2_DC2DC2_I"] = (bus2_ltc2991_4a_vs[4] - bus2_ltc2991_4a_vs[5])/0.01
-        power_meas["FEMB2_DC2DC3_V"] =  bus2_ltc2991_4a_vs[7]
-        power_meas["FEMB2_DC2DC3_I"] = (bus2_ltc2991_4a_vs[6] - bus2_ltc2991_4a_vs[7])/0.1
-        power_meas["FEMB3_BIAS_V"]   =  bus2_ltc2991_4e_vs[1+2+2+2]
-        power_meas["FEMB3_BIAS_I"]   = (bus2_ltc2991_4e_vs[0+2+2+2] - bus2_ltc2991_4e_vs[1+2+2+2])/0.1
-        power_meas["FEMB3_DC2DC0_V"] =  bus2_ltc2991_4b_vs[1]
-        power_meas["FEMB3_DC2DC0_I"] = (bus2_ltc2991_4b_vs[0] - bus2_ltc2991_4b_vs[1])/0.1
-        power_meas["FEMB3_DC2DC1_V"] =  bus2_ltc2991_4b_vs[3]
-        power_meas["FEMB3_DC2DC1_I"] = (bus2_ltc2991_4b_vs[2] - bus2_ltc2991_4b_vs[3])/0.1
-        power_meas["FEMB3_DC2DC2_V"] =  bus2_ltc2991_4b_vs[5]
-        power_meas["FEMB3_DC2DC2_I"] = (bus2_ltc2991_4b_vs[4] - bus2_ltc2991_4b_vs[5])/0.01
-        power_meas["FEMB3_DC2DC3_V"] =  bus2_ltc2991_4b_vs[7]
-        power_meas["FEMB3_DC2DC3_I"] = (bus2_ltc2991_4b_vs[6] - bus2_ltc2991_4b_vs[7])/0.1
+        bus = 2  # FEMB power monitoring
+        if ("FEMB0" in sensors) or ("FEMB1" in sensors) or ("FEMB2" in sensors) or ("FEMB3" in sensors):
+            bus2_ltc2991_4e_vs = []  # DCDC for FEMB BIAS(0-3)
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x4E, False, i)
+                bus2_ltc2991_4e_vs.append(v)
 
-#        for key in power_meas:
-#            print (key, ":", power_meas[key])
+        if "FEMB0" in sensors:
+            bus2_ltc2991_48_vs = []  # DCDC for FEMB0
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x48, False, i)
+                bus2_ltc2991_48_vs.append(v)
+            power_meas["FEMB0_BIAS_V"] = bus2_ltc2991_4e_vs[1]
+            power_meas["FEMB0_BIAS_I"] = (bus2_ltc2991_4e_vs[0] - bus2_ltc2991_4e_vs[1]) / 0.1
+            power_meas["FEMB0_DC2DC0_V"] = bus2_ltc2991_48_vs[1]
+            power_meas["FEMB0_DC2DC0_I"] = (bus2_ltc2991_48_vs[0] - bus2_ltc2991_48_vs[1]) / 0.1
+            power_meas["FEMB0_DC2DC1_V"] = bus2_ltc2991_48_vs[3]
+            power_meas["FEMB0_DC2DC1_I"] = (bus2_ltc2991_48_vs[2] - bus2_ltc2991_48_vs[3]) / 0.1
+            power_meas["FEMB0_DC2DC2_V"] = bus2_ltc2991_48_vs[5]
+            power_meas["FEMB0_DC2DC2_I"] = (bus2_ltc2991_48_vs[4] - bus2_ltc2991_48_vs[5]) / 0.01
+            power_meas["FEMB0_DC2DC3_V"] = bus2_ltc2991_48_vs[7]
+            power_meas["FEMB0_DC2DC3_I"] = (bus2_ltc2991_48_vs[6] - bus2_ltc2991_48_vs[7]) / 0.1
+
+        if "FEMB1" in sensors:
+            bus2_ltc2991_49_vs = []  # DCDC for FEMB1
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x49, False, i)
+                bus2_ltc2991_49_vs.append(v)
+            power_meas["FEMB1_BIAS_V"] = bus2_ltc2991_4e_vs[3]
+            power_meas["FEMB1_BIAS_I"] = (bus2_ltc2991_4e_vs[2] - bus2_ltc2991_4e_vs[3]) / 0.1
+            power_meas["FEMB1_DC2DC0_V"] = bus2_ltc2991_49_vs[1]
+            power_meas["FEMB1_DC2DC0_I"] = (bus2_ltc2991_49_vs[0] - bus2_ltc2991_49_vs[1]) / 0.1
+            power_meas["FEMB1_DC2DC1_V"] = bus2_ltc2991_49_vs[3]
+            power_meas["FEMB1_DC2DC1_I"] = (bus2_ltc2991_49_vs[2] - bus2_ltc2991_49_vs[3]) / 0.1
+            power_meas["FEMB1_DC2DC2_V"] = bus2_ltc2991_49_vs[5]
+            power_meas["FEMB1_DC2DC2_I"] = (bus2_ltc2991_49_vs[4] - bus2_ltc2991_49_vs[5]) / 0.01
+            power_meas["FEMB1_DC2DC3_V"] = bus2_ltc2991_49_vs[7]
+            power_meas["FEMB1_DC2DC3_I"] = (bus2_ltc2991_49_vs[6] - bus2_ltc2991_49_vs[7]) / 0.1
+
+        if "FEMB2" in sensors:
+            bus2_ltc2991_4a_vs = []  # DCDC for FEMB2
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x4A, False, i)
+                bus2_ltc2991_4a_vs.append(v)
+            power_meas["FEMB2_BIAS_V"] = bus2_ltc2991_4e_vs[5]
+            power_meas["FEMB2_BIAS_I"] = (bus2_ltc2991_4e_vs[4] - bus2_ltc2991_4e_vs[5]) / 0.1
+            power_meas["FEMB2_DC2DC0_V"] = bus2_ltc2991_4a_vs[1]
+            power_meas["FEMB2_DC2DC0_I"] = (bus2_ltc2991_4a_vs[0] - bus2_ltc2991_4a_vs[1]) / 0.1
+            power_meas["FEMB2_DC2DC1_V"] = bus2_ltc2991_4a_vs[3]
+            power_meas["FEMB2_DC2DC1_I"] = (bus2_ltc2991_4a_vs[2] - bus2_ltc2991_4a_vs[3]) / 0.1
+            power_meas["FEMB2_DC2DC2_V"] = bus2_ltc2991_4a_vs[5]
+            power_meas["FEMB2_DC2DC2_I"] = (bus2_ltc2991_4a_vs[4] - bus2_ltc2991_4a_vs[5]) / 0.01
+            power_meas["FEMB2_DC2DC3_V"] = bus2_ltc2991_4a_vs[7]
+            power_meas["FEMB2_DC2DC3_I"] = (bus2_ltc2991_4a_vs[6] - bus2_ltc2991_4a_vs[7]) / 0.1
+
+        if "FEMB2" in sensors:
+            bus2_ltc2991_4b_vs = []  # DCDC for FEMB3
+            for i in range(1, 9, 1):
+                v = self.wib.read_ltc2991(bus, 0x4B, False, i)
+                bus2_ltc2991_4b_vs.append(v)
+            power_meas["FEMB3_BIAS_V"] = bus2_ltc2991_4e_vs[7]
+            power_meas["FEMB3_BIAS_I"] = (bus2_ltc2991_4e_vs[6] - bus2_ltc2991_4e_vs[7]) / 0.1
+            power_meas["FEMB3_DC2DC0_V"] = bus2_ltc2991_4b_vs[1]
+            power_meas["FEMB3_DC2DC0_I"] = (bus2_ltc2991_4b_vs[0] - bus2_ltc2991_4b_vs[1]) / 0.1
+            power_meas["FEMB3_DC2DC1_V"] = bus2_ltc2991_4b_vs[3]
+            power_meas["FEMB3_DC2DC1_I"] = (bus2_ltc2991_4b_vs[2] - bus2_ltc2991_4b_vs[3]) / 0.1
+            power_meas["FEMB3_DC2DC2_V"] = bus2_ltc2991_4b_vs[5]
+            power_meas["FEMB3_DC2DC2_I"] = (bus2_ltc2991_4b_vs[4] - bus2_ltc2991_4b_vs[5]) / 0.01
+            power_meas["FEMB3_DC2DC3_V"] = bus2_ltc2991_4b_vs[7]
+            power_meas["FEMB3_DC2DC3_I"] = (bus2_ltc2991_4b_vs[6] - bus2_ltc2991_4b_vs[7]) / 0.1
+
+        #        for key in power_meas:
+        #            print (key, ":", power_meas[key])
         return power_meas
-
 
     def femb_power_config(self, femb_id=0, vfe=3.0, vcd=3.0, vadc=3.5):
         self.wib.femb_power_config(femb_id, vfe, vcd, vadc, 0, 0, 0 )
