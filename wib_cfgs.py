@@ -1297,13 +1297,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.wib_mon_switches(dac0_sel=1, dac1_sel=1, dac2_sel=1, dac3_sel=1, mon_vs_pulse_sel=0, inj_cal_pulse=0)
         # reset all FEMBs on WIB
         self.femb_cd_rst()
-
+        for femb_id in femb_ids:
+            self.femb_adc_cfg(femb_id)
         mon_dict = {}
         mons = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA"]
         for mon_i in range(len(mons)):
             print(f"Monitor ADC {mons[mon_i]}")
             for femb_id in femb_ids:
-                self.femb_adc_cfg(femb_id)
+                # self.femb_adc_cfg(femb_id)
                 self.femb_adc_mon(femb_id, mon_chip=mon_chip, mon_i=mon_i)
                 print(f"FEMB{femb_id} is configurated")
             adcss = []
