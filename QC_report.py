@@ -1506,7 +1506,7 @@ class QC_reports:
     def CALI_report_5(self):
         log.test_label.append(13)
         qc=ana_tools()
-        dac_list = list(range(1400, 1600, 50));print(dac_list)
+        dac_list = list(range(1450, 1650, 50));print(dac_list)
         self.CreateDIR("CALI5")
         datadir = self.datadir+"CALI5/"
 

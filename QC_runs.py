@@ -169,6 +169,10 @@ class QC_Runs:
             self.chk.align_flg = False
             time.sleep(0.001)
 
+        # self.chk.wib_pls_gen(fembs=self.fembs, cp_period=500, cp_phase=0, cp_high_time=0)
+        #self.chk.wib_mon_switches(dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        for femb_id in self.fembs:
+            self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x02, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
 
         if pwr_flg==True:
             time.sleep(0.5)
@@ -209,6 +213,9 @@ class QC_Runs:
                     self.chk.wib_mon_switches(dac0_sel, dac1_sel, dac2_sel, dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
                     cp_high_time = int(cp_period*32*7/8)
                     self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
+                    for femb_id in self.fembs:
+                        self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+                    time.sleep(0.01)
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
                     fplocal = fp[0:-4] + "_vdac%06dmV"%(int((vdac+0.0001)*1000))+fp[-4:]
                     # with open(fplocal, 'wb') as fn:
@@ -679,53 +686,6 @@ class QC_Runs:
                     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs], fn)
             self.chk.wib_mon_switches()  # close wib_mon
 
-        # qc = ana_tools()
-        # files = sorted(glob.glob(datadir + "*.bin"), key = os.path.getmtime)
-        # with open(fp, 'wb') as fn:
-        #     pickle.dump(datad, fn)
-        #     f_pwr = datadir + "femb_chk_pulse_t4.bin"
-        #
-        # self.fembsName={}
-        # self.fembsID={}
-        # fembs = []
-        # if fembs:
-        #     self.fembs = fembs
-        #     for ifemb in fembs:
-        #         self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
-        #         self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
-        # else:
-        #     # self.fembsID = logs['femb id']
-        #     self.fembs=[]
-        #     for key,value in self.logs['femb id'].items():
-        #         self.fembs.append(int(key[-1]))
-        #     for ifemb in self.fembs:
-        #         self.fembsName[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}']
-        #         self.fembsID[f'femb{ifemb}'] = self.logs['femb id'][f'femb{ifemb}'][1:]
-        #
-        # f_pwr = datadir + "femb_chk_pulse_t4.bin"
-        # with open(f_pwr, 'rb') as fn:
-        #     CHKPULSE_dict = pickle.load(fn)
-        # keys_list = list(CHKPULSE_dict.keys())
-        # print(keys_list)
-        # qc = ana_tools()
-        # # files = sorted(glob.glob(datadir+"*.bin"), key=os.path.getmtime)  # list of data files in the dir
-        # for ifemb in range(len(self.fembs)):
-        #     femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
-        #     log.check_log04_01[femb_id]['Result'] = True
-        # for afile in CHKPULSE_dict.keys():
-        #     raw = CHKPULSE_dict[afile]
-        #     rawdata = raw[0]
-        #     pwr_meas = raw[1]
-        #     # =======================================
-        #     pldata = qc.data_decode(rawdata, self.fembs)
-        #     if '\\' in afile:
-        #         fname = afile.split("\\")[-1][:-4]
-        #         print(fname)
-        #     else:
-        #         fname = afile.split("/")[-1][:-4]
-        #         print(fname)
-        #     a_func.pulse_ana(pldata, self.fembs, self.fembsID, datadir, fname, '')
-
     ##
     def femb_rms(self):
         datadir = self.save_dir+"RMS/"
@@ -917,9 +877,7 @@ class QC_Runs:
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
         self.sample_N = 5
-        # for sgi in  range(4):
-        #     sg0 = sgi%2
-        #     sg1 = sgi//2
+
         for sgi in  range(4):
             sg0 = sgi%2
             sg1 = sgi//2
@@ -935,15 +893,6 @@ class QC_Runs:
         #   DIFF
         self.chk.femb_cd_rst()
         self.take_data(autocali=1) #ADC autocalibration once after femb_cd_rst()
-        cfg_paras_rec = []
-        # for i in range(8):
-        #     self.chk.adcs_paras[i][2] = 1
-        # self.sample_N = 5
-        # sg0 = 0;        sg1 = 0 # 14mV/fC
-        # for dac in range(0, 64, 4):
-        #     fp = datadir + "CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)
-        #     datad["CALI1_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL", sgs[0], "2_0us", dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd = 1, pwr_flg=False)
-        #
         fp = datadir + "QC_Cali01_t6" + ".bin"
         with open(fp, 'wb') as fn:
             pickle.dump(datad, fn)

@@ -12,7 +12,7 @@ import components.assembly_CSV_report as a_CSV
 import matplotlib.pyplot as plt
 # qc_tools = ana_tools()
 # Create an array to store the merged image
-LAr_Dalay = 3
+LAr_Dalay = 3.5
 
 t1 = time.time()
 ####### Input FEMB slots #######
@@ -128,6 +128,7 @@ for i in range(8):
     chk.adcs_paras[i][8]=1   # enable  auto
 for femb_id in fembs:
     chk.femb_cfg(femb_id, False )
+
 #####   2.1  initial current measure #####
 log.report_log02["ITEM"] = "2.1 Initial Current Measurement"
 pwr_meas1 = chk.get_sensors()
@@ -209,7 +210,6 @@ if len(fembs) == 0:
 
 ################# enable certain fembs ###################
 chk.wib_femb_link_en(fembs)
-t2 = time.time()
 ############################################
 #      PART 03 SE Performance Measurement  #
 ############################################
@@ -249,7 +249,6 @@ if save:
     with open(fp, 'wb') as fn:
         pickle.dump( [rms_rawdata, cfg_paras_rec, fembs], fn)
 a_func.rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname)
-t3 = time.time()
 
 pts = ["1_0us", "0_5us",  "3_0us", "2_0us"]
 if ship:
@@ -364,8 +363,6 @@ if save:
     fp = datadir + "PWR_SE_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",0x00)
     with open(fp, 'wb') as fn:
         pickle.dump([pwr_meas2, fembs], fn)
-
-t4 = time.time()
 #   power analysis
 
 
@@ -414,7 +411,6 @@ if save:
         pickle.dump( [pls_rawdata, cfg_paras_rec, fembs], fn)
 
 a_func.se_pulse_ana(pls_rawdata, fembs, fembNo, datareport, fname)
-t5 = time.time()
 ##############################################
 #      PART 04 DIFF Performance Measurement  #
 ##############################################
@@ -448,7 +444,6 @@ if save:
 #   data analysis
 a_func.DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname)
 
-t6 = time.time()
 #####   4.2  DIFF interface current measure #####
 print("Check DIFF current")
 pwr_meas3 = chk.get_sensors()
@@ -500,7 +495,6 @@ if save:
         pickle.dump([pwr_meas3, fembs], fn)
 #####   ====================== #####
 
-t7 = time.time()
 ######   6   DIFF monitor power rails   ######
 if Rail:
     log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
@@ -517,26 +511,15 @@ if Rail:
 ##################################
 ###### Take monitoring data ######
 chk.femb_cd_rst()
-t8 = time.time()
 mon_refs, mon_temps, mon_adcs = a_func.monitoring_path(fembs, snc, sg0,sg1,datadir, save)
-
 a_func.mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB)
 
 #================   Final Report    ===================================
 a_repo.final_report(datareport, fembs, fembNo, Rail)
 a_CSV.final_CSV(datareport, fembs, fembNo, Rail)
-t9 = time.time()
 t2=time.time()
 print(t2-t1)
-print(t1)
-print(t2)
-print(t3)
-print(t4)
-print(t5)
-print(t6)
-print(t7)
-print(t8)
-print(t9)
+
 ####### Power off FEMBs #######
 print("Turning off FEMBs")
 chk.femb_powering([])

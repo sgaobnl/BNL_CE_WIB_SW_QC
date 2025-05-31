@@ -145,7 +145,7 @@ def final_report(datareport, fembs, fembNo, Rail = True):
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Noise Measurement", VALUE = "VALUE")
-            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
+            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
             file.write(info + '\n')
             # "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" +
             file.write('#### ' + str(log.report_log05["ITEM"]) + '\n')

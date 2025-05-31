@@ -263,7 +263,7 @@ class ana_tools:
                     if ppos > 250:
                         peddata += all_data[achn][ppos - 250: ppos - 50]
                     else:
-                        peddata += all_data[achn][ppos + 500: ppos + 700]
+                        peddata += all_data[achn][ppos + 200: ppos + 400]
             rmss.append(np.std(peddata))
             peds.append(np.mean(peddata))
             pulse.append(np.round(avg_wf, 1))
@@ -623,10 +623,12 @@ class ana_tools:
         y_max = pk_list[-1]
         linear_dac_max=dac_list[-1]
         if 'CALI5' in fp or 'CALI6' in fp:
-            inl_th = 0.08
+            inl_th = 0.01
         else:
-            inl_th = 0.018
-        index=len(dac_init)-1
+            inl_th = 0.015
+        index=len(dac_list)-1
+
+
         for i in range(len(dac_list)):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_i + intercept_i
@@ -671,10 +673,10 @@ class ana_tools:
         # print(dac_list[:index])
 #   second linear fit, with all linear area
         try:
-            slope_f,intercept_f=np.polyfit(dac_list[:index],pk_list[:index],1)
+            slope_f,intercept_f=np.polyfit(dac_list[1:index],pk_list[1:index],1)
         except:
             fig3,ax3 = plt.subplots()
-            ax3.plot(dac_list[:index],pk_list[:index],marker='.')
+            ax3.plot(dac_list[1:index],pk_list[1:index],marker='.')
             ax3.set_xlabel("DAC")
             ax3.set_ylabel("Peak Value") 
             ax3.set_title("chan%d fail second gain fit"%chan)
@@ -685,14 +687,17 @@ class ana_tools:
             return 0,0,0
 
         y_max = pk_list[index-1]
-        y_min = pk_list[0]
+        y_min = pk_list[1]
         INL=0
-        # print(index)
-        for i in range(index):
+        print(index)
+        print(y_max)
+        print(y_min)
+        for i in range(1, index):
             y_r = pk_list[i]
             y_p = dac_list[i]*slope_f + intercept_f
-            inl = abs(y_r-y_p)/((y_max-y_min)*2)
-            if inl>INL:
+            inl = abs(y_r-y_p)/(abs(y_max-y_min)*1.5)
+            print(inl)
+            if inl*100>INL:
                INL=inl
 
         return slope_f, INL, linear_dac_max
@@ -774,6 +779,8 @@ class ana_tools:
             for ch in range(128):
                 uplim = np.max(pk_np[ch])*4/5
                 lodac = np.max(pk_np[ch])*1/7
+                print('--------------')
+                print(ch)
                 gain,inl,line_range = self.CheckLinearty(dac_np,pk_np[ch],uplim,lodac,ch,fp)
                 if gain==0:
                     print("femb%d ch%d gain is zero"%(ifemb,ch))
