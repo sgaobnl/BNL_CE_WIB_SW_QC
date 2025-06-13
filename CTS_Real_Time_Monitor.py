@@ -116,6 +116,7 @@ def real_time_monitor():
                 command.extend(["-t", t_num])  # Add other arguments
                 print(command)
                 result = subrun(command, timeout=1000)  # rewrite with Popen later
+
         time.sleep(5)   # when monitor works in wait, 5 seconds wait in one scan cycle
 
 directory__Report_path = top_path + '/FEMB_QC/Report'

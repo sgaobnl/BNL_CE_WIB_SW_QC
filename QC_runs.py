@@ -169,10 +169,10 @@ class QC_Runs:
             self.chk.align_flg = False
             time.sleep(0.001)
 
-        # self.chk.wib_pls_gen(fembs=self.fembs, cp_period=500, cp_phase=0, cp_high_time=0)
-        #self.chk.wib_mon_switches(dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        self.chk.wib_pls_gen(fembs=self.fembs, cp_period=500, cp_phase=0, cp_high_time=0)
+        self.chk.wib_mon_switches(dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=0, inj_cal_pulse=0)
         for femb_id in self.fembs:
-            self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x02, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+            self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x03, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
 
         if pwr_flg==True:
             time.sleep(0.5)
@@ -186,8 +186,8 @@ class QC_Runs:
 
         if autocali&0x01:
             return  None
-        if dac == 0:
-            time.sleep(self.LAr_Dalay)
+        # if dac == 0:
+        #     time.sleep(self.LAr_Dalay)
         if ext_cali_flg:
             if excali == False:
                 datae = {}

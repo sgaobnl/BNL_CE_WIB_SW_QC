@@ -469,7 +469,6 @@ class ana_tools:
                         issue_inl[femb_id]["Result"] = False
                     else:
                         log.report_log1102csv[femb_id]["INL-{}-{}".format(main_key, key)] = "INL-{}-{}".format(main_key, inl)
-                        issue_inl[femb_id]["Result"] = True
                     log.report_log1101csv[femb_id]["LSB-{}-{}".format(main_key, key)] = 'LSB-{}-{}={}'.format(main_key, key, LSB)
                     print(log.report_log1101csv[femb_id]["LSB-{}-{}".format(main_key, key)])
             fp = savedir[nfemb] + fdir + "/mon_{}.png".format(main_key)
