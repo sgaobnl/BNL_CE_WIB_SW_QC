@@ -79,13 +79,13 @@ def final_report(datareport, fembs, fembNo, Rail = True):
         issue_note = ""
         if all_true[femb_id]:
             pass
-            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
-            note = "### See the Report"
+            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
+            note = "### Here is the Summary"
             status = 'P'
         else:
             print(femb_id)
-            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
-            status = 'P'
+            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
+            status = 'N'
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict[femb_id])
@@ -110,8 +110,6 @@ def final_report(datareport, fembs, fembNo, Rail = True):
             file.write(Head01 + '\n')
             info = dict_to_markdown_table(log.report_log01["Detail"], VALUE = "Horizontal")
             file.write(info + '\n')
-            file.write('### ' + "Configuration:" + '\t')
-            file.write('   ' + "    14 mV/fC;   2 us;  200 mV; SE, DIFF;" + '\n')
             file.write('\n')
             file.write(note + '\n')
             file.write('\n')
@@ -119,29 +117,29 @@ def final_report(datareport, fembs, fembNo, Rail = True):
 
 # 02        Print <Initial test Result>
             if (log.report_log021[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
-                Head02 = '### ' + '<span style="color: green;">' + 'PART 02 Initial Test' + '    < Pass >' + '</span>'  + '\n'
+                Head02 = '### ' + '<span style="color: green;">' + 'PART 02 POR Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
-                Head02 = '### ' + '<span style="color: red;">' + 'PART 02 Initial Test' + ' | Fail' + '</span>' + '\n'
+                Head02 = '### ' + '<span style="color: red;">' + 'PART 02 POR Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log02["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log02[femb_id], KEY = "Initial Current Measurement", VALUE = "PWRVALUE")
+            info = dict_to_markdown_table(log.report_log02[femb_id], KEY = "POR Power Measurement", VALUE = "PWRVALUE")
             file.write(info + '\n')
 
             file.write('#### ' + str(log.report_log03["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log03[femb_id], KEY = "Initial Register Check", VALUE = "Horizontal")
+            info = dict_to_markdown_table(log.report_log03[femb_id], KEY = "POR COLDATA ColdADC Register Two Cycle Check", VALUE = "Horizontal")
             file.write(info + '\n')
 
 # 03        Print <SE OFF RMS, PED, Pulse, Power Current, Power Rail>
             if Rail:
                 if (log.report_log04[femb_id]["Result"] == True) and (log.report_log051[femb_id]["Result"] == True) and (log.report_log061[femb_id]["Result"] == True):
-                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE OFF Measurement' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE Interface Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE OFF Measurement' + ' | Fail' + '</span>' + '\n'
             else:
                 if (log.report_log04[femb_id]["Result"] == True) and (log.report_log051[femb_id]["Result"] == True):
-                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE OFF Measurement' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE Interface Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE OFF Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
             info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Noise Measurement", VALUE = "VALUE")
@@ -149,7 +147,7 @@ def final_report(datareport, fembs, fembNo, Rail = True):
             file.write(info + '\n')
             # "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" +
             file.write('#### ' + str(log.report_log05["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log05[femb_id], KEY = "SE Current Measurement", VALUE = "PWRVALUE")
+            info = dict_to_markdown_table(log.report_log05[femb_id], KEY = "SE OFF Power Measurement", VALUE = "PWRVALUE")
             file.write(info + '\n')
 
             if Rail:

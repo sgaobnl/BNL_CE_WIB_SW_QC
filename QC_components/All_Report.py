@@ -699,58 +699,6 @@ def section_report(datareport, fembs, fembNo, fembsName):
 
 
 
-#   SE 900 mV
-
-
-
-
-# #   SE ON 200 & 900 mV
-#                 file.write('### SE ON    Baseline 200 mV & 900 mV' + '\n')
-#                 file.write('\n')
-#                 log.check_log04_table_03[femb_id][
-#                     'title'] = " | Baseline | Gain | PeakTime | PPK Mean | PPK Error | NPK Mean | NPK Error |\n"
-#                 log.check_log04_table_03[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | --- |\n"
-#
-#                 log.check_log04_table_03[femb_id]['line1'] = " | 200 mV | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(
-#                     log.report_log04_03[femb_id]["CHK_SEON_200mVBL_14_0mVfC_2_0us_0x10_ppk_mean"],
-#                     log.report_log04_03[femb_id]["CHK_SEON_200mVBL_14_0mVfC_2_0us_0x10_ppk_err"],
-#                     log.report_log04_03[femb_id]["CHK_SEON_200mVBL_14_0mVfC_2_0us_0x10_npk_mean"],
-#                     log.report_log04_03[femb_id]["CHK_SEON_200mVBL_14_0mVfC_2_0us_0x10_npk_err"])
-#                 log.check_log04_table_03[femb_id]['line2'] = " | 900 mV | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(
-#                     log.report_log04_03[femb_id]['CHK_SEON_900mVBL_14_0mVfC_2_0us_0x10_ppk_mean'],
-#                     log.report_log04_03[femb_id]["CHK_SEON_900mVBL_14_0mVfC_2_0us_0x10_ppk_err"],
-#                     log.report_log04_03[femb_id]['CHK_SEON_900mVBL_14_0mVfC_2_0us_0x10_npk_mean'],
-#                     log.report_log04_03[femb_id]["CHK_SEON_900mVBL_14_0mVfC_2_0us_0x10_npk_err"])
-#                 file.write('\n')
-#                 file.write(log.check_log04_table_03[femb_id]['title'])
-#                 file.write(log.check_log04_table_03[femb_id]['table line'])
-#                 file.write(log.check_log04_table_03[femb_id]['line1'])
-#                 file.write(log.check_log04_table_03[femb_id]['line2'])
-#
-# #   DIFF 200 & 900 mV
-#                 file.write('### DIFF    Baseline 200 mV & 900 mV' + '\n')
-#                 file.write('\n')
-#                 log.check_log04_table_04[femb_id][
-#                     'title'] = " | Baseline | Gain | PeakTime | PPK Mean | PPK Error | NPK Mean | NPK Error |\n"
-#                 log.check_log04_table_04[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | --- |\n"
-#
-#                 log.check_log04_table_04[femb_id]['line1'] = " | 200 mV | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(
-#                     log.report_log04_04[femb_id]["CHK_DIFF_200mVBL_14_0mVfC_2_0us_0x10_ppk_mean"],
-#                     log.report_log04_04[femb_id]["CHK_DIFF_200mVBL_14_0mVfC_2_0us_0x10_ppk_err"],
-#                     log.report_log04_04[femb_id]["CHK_DIFF_200mVBL_14_0mVfC_2_0us_0x10_npk_mean"],
-#                     log.report_log04_04[femb_id]["CHK_DIFF_200mVBL_14_0mVfC_2_0us_0x10_npk_err"])
-#                 log.check_log04_table_04[femb_id]['line2'] = " | 900 mV | 14 mV/fC | 2 us | {} | {} | {} | {} | \n".format(
-#                     log.report_log04_04[femb_id]['CHK_DIFF_900mVBL_14_0mVfC_2_0us_0x10_ppk_mean'],
-#                     log.report_log04_04[femb_id]["CHK_DIFF_900mVBL_14_0mVfC_2_0us_0x10_ppk_err"],
-#                     log.report_log04_04[femb_id]['CHK_DIFF_900mVBL_14_0mVfC_2_0us_0x10_npk_mean'],
-#                     log.report_log04_04[femb_id]["CHK_DIFF_900mVBL_14_0mVfC_2_0us_0x10_npk_err"])
-#                 file.write('\n')
-#                 file.write(log.check_log04_table_04[femb_id]['title'])
-#                 file.write(log.check_log04_table_04[femb_id]['table line'])
-#                 file.write(log.check_log04_table_04[femb_id]['line1'])
-#                 file.write(log.check_log04_table_04[femb_id]['line2'])
-
-
                 # file.write(log.check_log04_table_06[femb_id]['line2'])
                 file.write('\n\n')
                 file.write("[PDF](./{}/report.pdf)".format(log.item04) + "\n")
@@ -878,7 +826,7 @@ def section_report(datareport, fembs, fembNo, fembsName):
                     Head08 = '### ' + '</span>' + '<span id="item8"> Chapter_8 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_08_Cali_3 SE 200 SGP' + '    < Fail >' + '</span>' + '\n'
             # SE    200 mVBL    4_7 mVfC       2 us    SGP1
                 file.write(Head08 + '\n')
-                file.write('### Calibration 03 SE SGP1 200 mVBL    4_7 mVfC    2 us' + '\n')
+                file.write('### Calibration 03 SE SGP1 200 mVBL    14_0 mVfC    2 us' + '\n')
                 file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
                 file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
                 # file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
@@ -895,7 +843,7 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 else:
                     Head09 = '### ' + '</span>' + '<span id="item9"> Chapter_9 </span>' + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM_09_Cali_4 SE 900 SGP1' + '    < Fail >' + '</span>' + '\n'
                 file.write(Head09 + '\n')
-                file.write('### Calibration 04 SE SGP1 900 mVBL    4_7 mVfC    2 us' + '\n')
+                file.write('### Calibration 04 SE SGP1 900 mVBL    14_0 mVfC    2 us' + '\n')
                 file.write('<img src="./{}/enc_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n")  # width="200"
                 file.write('<img src="./{}/Line_range_900mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item091, PH) + "\n\n")  # width="200"
                 file.write("![ped](./{}/gain_900mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item091) + "\n")

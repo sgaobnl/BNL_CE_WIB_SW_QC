@@ -79,7 +79,9 @@ print('\n')
 #     image.show()
 print(Fore.CYAN + 'Record QR Code [with scaner or keyboard]' + Style.RESET_ALL)
 femb_id_0 = input('Scan the QR ID and assemble the CE box in the Bottom slot (Slot #0)\t')
+femb_id_0 = femb_id_0.replace('/', '_')
 femb_id_1 = input('Scan the QR ID and assemble the CE box in the top slot [Slot #1]\t')
+femb_id_1 = femb_id_1.replace('/', '_')
 print('\n')
 print(Fore.GREEN + 'Please Review the info and put CE box into CTS chamber' + Style.RESET_ALL)
 csv_data = {}
@@ -174,6 +176,9 @@ print("Please Turn OFF the Power!")
 print("Please wait for Warm UP (45 Minutes)")
 print("Enter to Final Quick Checkout")
 input()
+print("Power On the WIB")
+input()
+time.sleep(30)
 print("Final Quick Checkout (3 Minutes)")
 # Final Quick Checkout
 Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Final Checkout")
@@ -195,7 +200,7 @@ else:
     skts = [0, 1, 2, 3, 4, 5, 6, 7]
 
     # C FEMB QC
-    print("\033[35m" + "C1 : FEMB Quality Control Execution (takes < 1800s)" + "\033[0m")
+    print("\033[35m" + "C3 : FEMB Final Checkout (takes < 180s)" + "\033[0m")
 
     # ======== Button 00 WIB initial =====================
     # input("\033[35m" + 'Enter to Begin!' + "\033[0m")
@@ -203,6 +208,7 @@ else:
     QC_Process(QC_TST_EN=1, input_info=inform)  # initial FEMB I2C
     QC_Process(QC_TST_EN=2, input_info=inform)  # assembly checkout
     print("Final Checkout Done!")
+    print("Please Power Off the WIB")
 
-print("Please Close all Power and Pick up FEMB CE boards")
+print("Please Check to Close all Power and Pick up FEMB CE boards")
 

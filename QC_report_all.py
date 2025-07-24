@@ -10,6 +10,7 @@ ag.add_argument("-n", "--fembs", help="a list of fembs to be analyzed", type=int
 args = ag.parse_args()
 
 fdir = args.folder
+fdir = fdir.replace('\\', '/')
 tasks = args.tasks
 fembs = args.fembs
 

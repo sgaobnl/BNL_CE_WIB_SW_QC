@@ -174,6 +174,9 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     tms_items[16] = "\033[96m Item_16 : PLL_scan_report \033[0m"
     logs['tms_items'] = tms_items
 
+
+
+# ==============================
     # if QC_TST_EN == 0:
     tms = list(tms_items.keys())
     current_time = datetime.utcnow()
@@ -472,7 +475,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             print('Begin to remove data at WIB')
             time.sleep(1)
             command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
-            result = subrun(command, timeout=10, check=False)
+            result = subrun(command, timeout=3, check=False)
             time.sleep(0.01)
             if result != None:
                 print("wib data remove at {}".format(fdir))
@@ -480,7 +483,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
                 break
             else:
-                print("Data Remove Waring!")
+                # print("Data Remove Waring!")
                 if i == 3:
                     continue
                 else:
