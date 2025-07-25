@@ -142,7 +142,7 @@ def final_report(datareport, fembs, fembNo, Rail = True):
                     Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE OFF Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head02 + '\n')
             file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE Noise Measurement", VALUE = "VALUE")
+            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE OFF Noise Measurement", VALUE = "VALUE")
             file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
             file.write(info + '\n')
             # "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" +
@@ -152,12 +152,12 @@ def final_report(datareport, fembs, fembNo, Rail = True):
 
             if Rail:
                 file.write('#### ' + str(log.report_log06["ITEM"]) + '\n')
-                info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE Power Rail", VALUE = "Horizontal")
+                info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE OFF Power Rail / mA", VALUE = "Horizontal")
                 file.write(info + '\n')
 
 
             file.write('#### ' + str(log.report_log07["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "SE Pulse Response", VALUE = "VALUE")
+            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "SE OFF Pulse Response", VALUE = "VALUE")
             file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n\n")
             file.write(info + '\n')
 
@@ -172,14 +172,14 @@ def final_report(datareport, fembs, fembNo, Rail = True):
 # 04        Print <DIFF RMS, PED, Pulse, Power Current, Power Rail>
             if Rail:
                 if (log.report_log08[femb_id]["Result"] == True) and (log.report_log091[femb_id]["Result"] == True) and (log.report_log101[femb_id]["Result"] == True):
-                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Measurement' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Interface Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Measurement' + ' | Fail' + '</span>' + '\n'
             else:
                 if (log.report_log08[femb_id]["Result"] == True) and (log.report_log091[femb_id]["Result"] == True):
-                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Interface Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Measurement' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Interface Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Measurement' + ' | Fail' + '</span>' + '\n'
             file.write(Head04 + '\n')
             file.write('## ' + str(log.report_log08["ITEM"]) + '\n')
             # file.write('#### ' + 'Result:    ' + str(log.report_log08[femb_id]["Result"]) + '\n\n')
@@ -195,7 +195,7 @@ def final_report(datareport, fembs, fembNo, Rail = True):
             # file.write('#### ' + 'Result:    ' + str(log.report_log09[femb_id]["Result"]) + '\n\n')
             # for key, value in log.report_log09[femb_id].items():
             #     file.write('#### ' + f"{key}: {value}\n")
-            info = dict_to_markdown_table(log.report_log09[femb_id], KEY = "4.2 DIFF Current Measurement", VALUE = "PWRVALUE")
+            info = dict_to_markdown_table(log.report_log09[femb_id], KEY = "4.2 DIFF Power Measurement", VALUE = "PWRVALUE")
             file.write(info + '\n')
             file.write('\n')
 
@@ -204,14 +204,14 @@ def final_report(datareport, fembs, fembNo, Rail = True):
                 # file.write('#### ' + 'Result:    ' + str(log.report_log10[femb_id]["Result"]) + '\n\n')
                 # for key, value in log.report_log10[femb_id].items():
                 #     file.write('#### ' + f"{key}: {value}\n")
-                info = dict_to_markdown_table(log.report_log10[femb_id], KEY = "4.3 DIFF Power Rail", VALUE = "Horizontal")
+                info = dict_to_markdown_table(log.report_log10[femb_id], KEY = "4.3 DIFF LDO Measurement / mV", VALUE = "Horizontal")
                 file.write(info + '\n')
 
 # 05        PART 05 Monitoring Path Measurement
             if (log.report_log111[femb_id]["Result"] == True):
-                Head05 = '## ' + '<span style="color: green;">' + 'PART 05 Monitoring Path Measurement' + '    < Pass >' + '</span>'  + '\n'
+                Head05 = '## ' + '<span style="color: green;">' + 'PART 05 Monitoring Measurement' + '    < Pass >' + '</span>'  + '\n'
             else:
-                Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Path Measurement' + '{} | Fail'.format(femb_id) + '</span>' + '\n'
+                Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Measurement' + '{} | Fail'.format(femb_id) + '</span>' + '\n'
             file.write(Head05 + '\n')
 
             file.write('## ' + str(log.report_log11["ITEM"]) + '\n')

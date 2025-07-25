@@ -319,10 +319,10 @@ print("Check FEMB current")
 pwr_meas2 = chk.get_sensors()
 result = False
 #####   3.2  SE interface current measure #####
-log.report_log05['ITEM'] = "3.2 No Buffer interface Current Measurement"   #05
+log.report_log05['ITEM'] = "3.2 SE OFF Power Measurement"   #05
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-    bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)  
+    bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)
     fe_i = round(pwr_meas2['FEMB%d_DC2DC0_I'%ifemb],3)
     cd_i = round(pwr_meas2['FEMB%d_DC2DC1_I'%ifemb],3)
     adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
@@ -371,7 +371,7 @@ if save:
 
 ################# monitoring power rails ###################
 if Rail:
-    log.report_log06["ITEM"] = "3.3 No Buffer Interface power rail"
+    log.report_log06["ITEM"] = "3.3 SE OFF LDO Measurement / mV"
     power_rail_d = a_func.monitor_power_rail("SE", fembs, datadir, save)
     power_rail_a = a_func.monitor_power_rail_analysis("SE", datadir, fembNo, NewWIB = NewWIB)
     log06 = dict(log.power_rail_report_log)
@@ -382,12 +382,12 @@ if Rail:
 
 
 ############ Take pulse data 900mV 14mV/fC 2us ##################
-print("Take No Buffer pulse data")
+print("Take SE OFF pulse data")
 fname = "Raw_SE_{}_{}_{}_0x{:02x}.bin".format("900mVBL","14_0mVfC","2_0us",0x10)
 snc = 0 # 900 mV
 sg0 = 0; sg1 = 0 # 14mV/fC
 st0 = 1; st1 = 1 # 2us3
-log.report_log07["ITEM"] = "3.4 No Buffer Interface Pulse at 900mV 14mV/fC 2us"
+log.report_log07["ITEM"] = "3.4 SE OFF Pulse Response [900mV 14mV/fC 2us]"
 #   initial configuration
 chk.femb_cd_rst()
 cfg_paras_rec = []
@@ -448,14 +448,14 @@ a_func.DIFF_pulse_data(pls_rawdata, fembs, fembNo,datareport, fname)
 #####   4.2  DIFF interface current measure #####
 print("Check DIFF current")
 pwr_meas3 = chk.get_sensors()
-log.report_log09['ITEM'] = "4.2 SEDC interface Current Measurement"   #05
+log.report_log09['ITEM'] = "4.2 DIFF Power Measurement"   #05
 result = False
 for ifemb in fembs:
     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
-    bias_i = round(pwr_meas2['FEMB%d_BIAS_I'%ifemb],3)
-    fe_i = round(pwr_meas2['FEMB%d_DC2DC0_I'%ifemb],3)
-    cd_i = round(pwr_meas2['FEMB%d_DC2DC1_I'%ifemb],3)
-    adc_i = round(pwr_meas2['FEMB%d_DC2DC2_I'%ifemb],3)
+    bias_i = round(pwr_meas3['FEMB%d_BIAS_I'%ifemb],3)
+    fe_i = round(pwr_meas3['FEMB%d_DC2DC0_I'%ifemb],3)
+    cd_i = round(pwr_meas3['FEMB%d_DC2DC1_I'%ifemb],3)
+    adc_i = round(pwr_meas3['FEMB%d_DC2DC2_I'%ifemb],3)
 
     hasERROR = False
     if bias_i>0.15 or bias_i<-0.02:
@@ -499,11 +499,9 @@ if save:
 ######   6   DIFF monitor power rails   ######
 power_rail_a = 0
 if Rail:
-    log.report_log10["ITEM"] = "4.3 DIFF Power Rail"
+    log.report_log10["ITEM"] = "4.3 DIFF LDO Measurement / mV"
     power_rail_d = a_func.monitor_power_rail("DIFF", fembs, datadir, save)
     power_rail_a = a_func.monitor_power_rail_analysis("DIFF", datadir, fembNo, NewWIB = NewWIB)
-    print(power_rail_a)
-    print('---------------')
     log10 = dict(log.power_rail_report_log)
     log10csv = dict(log.power_rail_report_csv)
     log.report_log10.update(log10)

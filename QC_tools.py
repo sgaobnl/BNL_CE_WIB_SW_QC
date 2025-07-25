@@ -163,19 +163,19 @@ class ana_tools:
             ped_max = max(ped_max, ch_ped)
             ped_min = min(ped_min, ch_ped)
 
-        fe_rms_med, fe_ped_med = np.median(rms), np.median(ped)
+        fe_rms_mean, fe_ped_mean = np.mean(rms), np.mean(ped)
 
-        self._plot_data(range(num_channels), rms, fname, "Root Mean Square", "rms", fp, fe_rms_med, 8, rms_max, rms_min)
-        self._plot_data(range(num_channels), ped, fname, "Pedestal", "ped", fp, fe_ped_med, 500, ped_max, ped_min)
+        self._plot_data(range(num_channels), rms, fname, "Root Mean Square", "rms", fp, fe_rms_mean, 8, rms_max, rms_min)
+        self._plot_data(range(num_channels), ped, fname, "Pedestal", "ped", fp, fe_ped_mean, 500, ped_max, ped_min)
 
         self._save_data(fp, fname, ped, rms)
 
         return ped, rms, pedmax, pedmin
 
-    def _plot_data(self, x, y, fname, ylabel, fprefix, fp, median, threshold, max_val, min_val):
+    def _plot_data(self, x, y, fname, ylabel, fprefix, fp, mean, threshold, max_val, min_val):
         """Helper function to plot and save figures."""
         plt.figure(figsize=(6, 4))
-        plt.plot(x, y, marker='o', linestyle='-', alpha=0.7)
+        plt.plot(x, y, marker='o', linestyle='-', alpha=0.7, label='mean of {}: {}'.format(fprefix,  f"{mean:.2f}"))
         plt.title('{} Distribution'.format(ylabel), fontsize=14)
         plt.xlabel("Channel", fontsize=14)
         plt.ylabel(ylabel, fontsize=14)
@@ -192,12 +192,13 @@ class ana_tools:
             y_limlow = 7900
             y_limhig = 9400
 
-        if median - threshold < min_val < max_val < median + threshold:
+        if y_limlow < min_val < max_val < y_limhig:
             plt.ylim(y_limlow, y_limhig)
         else:
             plt.grid(axis='y')
 
         plt.gca().set_facecolor('none')
+        plt.legend()
         plt.tight_layout()
         plt.savefig(f"{fp}{fprefix}_{fname}.png", transparent=True)
         plt.close()
@@ -304,20 +305,20 @@ class ana_tools:
                 log.channel0_pulse[nfemb][dac] = tmpwf[ppos - 50:ppos + 150]  # - np.mean(peddata)
 
         bottom = -1000
-        plt.title(fname, fontsize=14)  # "128-CH Pulse Response Overlap"
+        plt.title('128-CH Waveform Overlap', fontsize=14)  # "128-CH Pulse Response Overlap"
         plt.ylim(bottom, 16384 + 1000)
         plt.xlabel("Time (512 ns / step)", fontsize=14)
         plt.ylabel("ADC count", fontsize=14)
         plt.grid(axis='y', color='gray', linestyle='--', alpha=0.5)
 
         plt.subplot(1, 2, 2)
-        plt.plot(range(128), pkps, marker='|', linestyle='-', alpha=0.7, label='pos', color='blue')
-        plt.plot(range(128), peds, marker='|', linestyle='-', alpha=0.9, label='ped', color='0.3')
-        plt.plot(range(128), pkns, marker='|', linestyle='-', alpha=0.7, label='neg', color='orange')
+        plt.plot(range(128), pkps, marker='.', linestyle='-', alpha=0.7, label='Positive Peak', color='blue')
+        plt.plot(range(128), peds, marker='.', linestyle='-', alpha=0.9, label='Pedestal', color='0.3')
+        plt.plot(range(128), pkns, marker='.', linestyle='-', alpha=0.7, label='Negitive Peak', color='orange')
         plt.grid(axis='x', color='gray', linestyle='--', alpha=0.5)
 
         # pl1.plot(range(128), bl_rms)
-        plt.title("Parameater Distribution: PPK, BBL, NPK", fontsize=14)
+        plt.title("Amplitude Distribution", fontsize=14)
         plt.ylim(bottom, 16384 + 1000)
         plt.xlabel("Channel", fontsize=14)
         plt.xticks(np.arange(0, 129, 16))

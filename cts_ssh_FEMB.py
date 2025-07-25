@@ -9,6 +9,7 @@ from datetime import datetime
 import csv
 import webbrowser
 from colorama import Fore, Style
+import pprint
 
 def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False):
     result = None
@@ -388,6 +389,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         fdir2 = '/home/root/BNL_CE_WIB_SW_QC/CHK/Report/'
         # wib_raw_dir = fdir #later save it into log file
         logs['wib_raw_dir'] = fdir
+        logs['checkout_termial'] = result.stdout
         # fs = resultstr[resultstr.find("save_file_start_") + 16:resultstr.find("_end_save_file")]
         fsubdirs = fdir.split("/")
         print(fsubdirs)
@@ -500,6 +502,10 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
                 print('Exit ...')
                 print('Please Power OFF and Close the Power Supply!')
                 sys.exit()
+        filename = os.path.join(fddir, 'logs.txt')
+        with open(filename, 'w') as f:
+            pprint.pprint(logs, stream=f)  # Pretty print to file
+        print(f"Logs saved to {filename}")
 
     # ========== begin of 03 QC ==========================
     if QC_TST_EN == 3:
