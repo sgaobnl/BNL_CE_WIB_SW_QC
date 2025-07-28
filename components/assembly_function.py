@@ -594,7 +594,7 @@ def single_check(pwr_meas, temp_name, ref, error):
 def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB = False, ground = 0):
     nchips = range(8)
     #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
-    log.report_log11["ITEM"] = "Detail"
+    log.report_log11["ITEM"] = "Detail / mV"
     if NewWIB:
         fadc = 1/(2**14)*2500   # NEW WIB IS 2500
     else:
