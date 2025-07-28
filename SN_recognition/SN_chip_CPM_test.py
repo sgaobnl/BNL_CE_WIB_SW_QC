@@ -168,14 +168,14 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir):
     
     try:
         # Open the image
-        print (image_path)
+   #     print (image_path)
         image = Image.open(image_path)
     except IOError as e:
         print(f"Process ID #{image_number}: ERROR (cannot open image). {e}")
         return None
     
     # Rotate the image 180 degrees
-    rotated_image = image.rotate(0)
+    rotated_image = image.rotate(180)
     
     # Crop the image to the central chip
     cropped_chip = rotated_image.crop(crop_box)
@@ -190,7 +190,8 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir):
     cv2.imwrite(ocr_image_dir, resized_image)
     ocr_result = perform_ocr_minicpm(image_path = ocr_image_dir)
 
-    ocr_flg =  validate_ocr_result(ocr_result, image_number)
+    #ocr_flg =  validate_ocr_result(ocr_result, image_number)
+    ocr_flg = True
     if ocr_flg: 
         # Save the resized image tepmorarily to disk
         return ocr_result
@@ -233,7 +234,13 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir):
 
 if __name__ == '__main__':
 
-    fp = """./Tested/B011T0001/images/"""
-    fn = """20240711181524_SN.bmp"""
-    x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = "./Tested/a.png")
-    print (x)
+    root = """E:/tmp/008/"""
+    fss = []
+    for root, dirs, files in os.walk(root):
+        for fn in files:
+            if "_SN.bmp" in fn:
+                x = ocr_chip(image_fp=root, image_fn = fn, ocr_image_dir = root + "ocred/" + fn[0:-4] + ".png")
+                chip_sns = ["3495", "3549", "3493","3497","3525","3529","3555","3551","3490","3518"]
+                for chip_sn in chip_sns:
+                    if chip_sn in x:
+                        print (fn, x)
