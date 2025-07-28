@@ -145,14 +145,14 @@ class QC_Cap_Meas(BaseClass):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             #print('----{}---'.format(FE_ID))
             chipdata = dict()
-            chipdata['logs'] = {
-                    "date": self.logs_dict['date'],
-                    "testsite": self.logs_dict['testsite'],
-                    "env": self.logs_dict['env'],
-                    "note": self.logs_dict['note'],
-                    "DAT_SN": self.logs_dict['DAT_SN'],
-                    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
-                }
+            #chipdata['logs'] = {
+            #        "date": self.logs_dict['date'],
+            #        "testsite": self.logs_dict['testsite'],
+            #        "env": self.logs_dict['env'],
+            #        "note": self.logs_dict['note'],
+            #        "DAT_SN": self.logs_dict['DAT_SN'],
+            #        "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+            #    }
             for c in arranged_data[FE_ID].keys():
                 chipdata[c] = dict()
                 for fechn in arranged_data[FE_ID][c].keys():

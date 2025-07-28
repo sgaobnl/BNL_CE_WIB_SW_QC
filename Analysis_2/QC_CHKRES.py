@@ -164,14 +164,14 @@ class QC_CHKRES(BaseClass):
             ASIC_ID = self.logs_dict['FE{}'.format(ichip)]
             FE_IDs.append(ASIC_ID)
             allchip_data[ASIC_ID] = {
-                "logs":{
-                    "date": self.logs_dict['date'],
-                    "testsite": self.logs_dict['testsite'],
-                    "env": self.logs_dict['env'],
-                    "note": self.logs_dict['note'],
-                    "DAT_SN": self.logs_dict['DAT_SN'],
-                    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
-                }
+#                "logs":{
+#                    "date": self.logs_dict['date'],
+#                    "testsite": self.logs_dict['testsite'],
+#                    "env": self.logs_dict['env'],
+#                    "note": self.logs_dict['note'],
+#                    "DAT_SN": self.logs_dict['DAT_SN'],
+#                    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+#                }
             }
 
         for param_cfg in self.params:

@@ -165,14 +165,14 @@ class QC_CALI(BaseClass):
 
     def getAmplitudes(self, organizedData: dict):
         # logs
-        logs = {
-                "date": self.logs_dict['date'],
-                "testsite": self.logs_dict['testsite'],
-                "env": self.logs_dict['env'],
-                "note": self.logs_dict['note'],
-                "DAT_SN": self.logs_dict['DAT_SN'],
-                "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
-            }
+        #logs = {
+        #        "date": self.logs_dict['date'],
+        #        "testsite": self.logs_dict['testsite'],
+        #        "env": self.logs_dict['env'],
+        #        "note": self.logs_dict['note'],
+        #        "DAT_SN": self.logs_dict['DAT_SN'],
+        #        "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+        #    }
         
         # Pedestal
         pedestals = dict()
@@ -192,7 +192,7 @@ class QC_CALI(BaseClass):
         amplitudes = dict()
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
-            amplitudes[FE_ID] = {'logs': logs}
+            #amplitudes[FE_ID] = {'logs': logs}
             for BL in ['SNC0', 'SNC1']:
                 amplitudes[FE_ID][BL] = dict()
                 for chn in range(16):

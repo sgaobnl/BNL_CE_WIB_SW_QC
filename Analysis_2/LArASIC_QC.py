@@ -116,68 +116,16 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
             ana_cap = QC_Cap_Meas_Ana(root_path=root_path, chipID=FE_ID, output_path=output_path + "_" + env)
             ana_cap.run_Ana()
     
-#def StatisticalAnalysis_func(root_path, output_path, env):
-#    from Init_checkout import QC_INIT_CHK_StatAna
-#    from QC_CALIBRATION import StatAna_cali
-#    from QC_Cap_Meas import Cap_stat_ana
-#    from QC_CHKRES import QC_CHKRES_StatAna
-#    from QC_FE_MON import QC_FE_MON_StatAna
-#    from QC_PWR_CYCLE import PWR_CYCLE_statAna
-#    from QC_PWR import QC_PWR_StatAna
-#    from QC_RMS import RMS_StatAna
-#
-#    list_chipID = os.listdir(root_path)
-#    # initial checkout
-#    # stat_ana = QC_INIT_CHK_StatAna(root_path=root_path, output_path=output_path)
-#    # stat_ana.run_Ana()
-#    # # RMS
-#    # rms_stat = RMS_StatAna(root_path=root_path, output_path=output_path)
-#    # rms_stat.run_Ana()
-#    # calibration
-#    calib_item = ['QC_CALI_ASICDAC', 'QC_CALI_ASICDAC_47', 'QC_CALI_DATDAC', 'QC_CALI_DIRECT']
-#    for cali_item in calib_item:
-#        StatAna_cali(root_path=root_path, output_path=output_path, cali_item=cali_item, saveDist=False)
-#    # # capacitance measurement
-#    # Cap_stat_ana(root_path=root_path, output_path=output_path, list_chipID=list_chipID)
-#    # # checkout response
-#    # chkres_stat = QC_CHKRES_StatAna(root_path=root_path, output_path=output_path)
-#    # chkres_stat.run_Ana()
-#    # # FE monitoring
-#    # femon_stat = QC_FE_MON_StatAna(root_path=root_path, output_path=output_path)
-#    # femon_stat.run_Ana()
-#    # # power consumption
-#    # pwr_ana_stat = QC_PWR_StatAna(root_path=root_path, output_path=output_path)
-#    # pwr_ana_stat.run_Ana()
-#    # # power cycle
-#    # stat = PWR_CYCLE_statAna(root_path=root_path, output_path=output_path)
-#    # stat.run_Ana()
-#
-##def AnalyzeDecodedData_func(root_path, env):
-##    dec_dir = root_path + f'/ana_{env}'
-##    rst_dir = root_path + f'/results'
-##
-##    list_chipID = os.listdir(dec_dir)
-##    for chipID in list_chipID:
-##        ana_flg = False
-##        for root, dirs, files in os.walk(rst_dir):
-##            ana_flg = any(chipID in f for f in files)
-##            break
-##        if ana_flg:
-##            continue #chips were analyzed
-##        else:
-##            report = QC_Report(root_path=dec_dir, chipID=chipID, output_path=rst_dir)
-##            report.generate_summary_csv()
-##
 
 if __name__ =="__main__":
-    root_path = "E:/B009T0008/"
+    root_path = "D:/B009T0008/"
     data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
     env = 'RT'
-#    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
+    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
+#    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
 #    DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)

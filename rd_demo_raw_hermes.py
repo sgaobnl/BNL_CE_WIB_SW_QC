@@ -42,9 +42,10 @@ if 1:
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    #for fe in range(8):
-    for fe in [6]:
+    for fe in range(8):
+    #for fe in [4]:
         for fe_chn in range(16):
+        #for fe_chn in [6,7]:
     
             fechndata = datd[fe*16+fe_chn]
             #if fe == 5 and (fe_chn in [11, 12, 13]):
@@ -53,7 +54,10 @@ if 1:
             #if fe == 4 and (fe_chn in [3, 4,5]):
             #if fe == 7 and (fe_chn in [0, 1,2]):
             #if fe == 3  :
-            if True :
+            #if True :
+            if (fe==6) and (fe_chn in [1,2,3]):
+            #if np.max(fechndata) < 6000 :
+            #    print (fe, fe_chn)
             #if fe == 4 and (fe_chn in [0, 8, 10]):
             #if fe == 1 and (fe_chn in [5, 6,7]):
             #if fe == 2 : #femb1
@@ -61,7 +65,9 @@ if 1:
             #if fe == 6 and (fe_chn in [0, 1]):
             #if fe == 3 and (fe_chn in [0, 1]):
             #if fe == 0 and (fe_chn in [3, 4, 5]):
-                plt.plot(fechndata, label="%d"%fe_chn)
+                npmax =  np.max(fechndata[500:1200]) 
+                pos = np.where(fechndata[500:1200] == npmax)[0][0] + 500
+                plt.plot(fechndata[pos-20: pos+60], label="%d"%fe_chn)
             #if fe == 6 and fe_chn==4:
             #    plt.plot(fechndata)
             #if fe == 6 and fe_chn==5:
@@ -69,9 +75,9 @@ if 1:
     #        print (np.std(fechndata))
 #            rms.append(np.std(fechndata))
 #            pkp.append(np.max(fechndata))
-            rms.append(np.mean(fechndata))
-            if fe==0 and fe_chn==2:
-                print (np.mean(fechndata))
+            #rms.append(np.mean(fechndata))
+            #if fe==0 and fe_chn==2:
+            #    print (np.mean(fechndata))
     plt.legend()
     plt.grid()
     plt.show()
