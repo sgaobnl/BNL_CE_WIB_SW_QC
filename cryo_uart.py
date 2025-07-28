@@ -149,6 +149,6 @@ if __name__=="__main__":
     #cryo.cryo_highlevel(waitminutes=5)
     #cryo.cryo_highlevel(waitminutes=60)
 #    input ("Wait...")
-    cryo.cryo_warmup(waitminutes=40)
+    cryo.cryo_warmup(waitminutes=0.1)
     #cryo.cryo_close()
 

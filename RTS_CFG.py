@@ -7,6 +7,7 @@ class RTS_CFG():
         self.s = None
         self.msg = None
 
+
     def rts_init(self, port=2001, host_ip='192.168.0.2'): # default port for socket 
         while True:
             try: 
@@ -36,6 +37,29 @@ class RTS_CFG():
             else:
                 break
         return self.msg
+
+    def RootDirSet(self, rootdir): #
+        while True:
+            try:
+                msg = "RootDir"
+                self.s.send(msg.encode())
+                self.s.send(b"\r\n") 
+
+                self.msg = rootdir
+                self.s.send(self.msg.encode())
+                self.s.send(b"\r\n")
+
+                self.msg = self.s.recv(1024).decode()
+                self.msg = self.msg.strip()
+                print (self.msg)
+                if "set" in self.msg:
+                    break
+                else:
+                    time.sleep(1)
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+       
 
     def MotorOn(self): #
         while True:
@@ -386,6 +410,36 @@ class RTS_CFG():
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
+    def isChipInTray(self, tray_nr, col_nr, row_nr):
+        while True:
+            try:
+                print ("check if chip is on Tray#{},col#{},row#{}".format(tray_nr, col_nr, row_nr))
+                msg = "isChipInTray"
+                self.s.send(msg.encode())
+                self.s.send(b"\r\n")
+    
+                self.s.send(str(tray_nr).encode())
+                self.s.send(b"\r\n")
+    
+                self.s.send(str(col_nr).encode())
+                self.s.send(b"\r\n")
+    
+                self.s.send(str(row_nr).encode())
+                self.s.send(b"\r\n")
+    
+                self.msg = self.s.recv(1024).decode()
+                self.msg = self.msg.strip()
+                try:
+                    if int(self.msg) >= 0:
+                        return False
+                    else:
+                        return True
+                except ValueError:
+                    time.sleep(1)
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+
     def DropToTray(self): #
         while True:
             try:
@@ -442,6 +496,39 @@ class RTS_CFG():
                     break
                 else:
                     time.sleep(1)
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+
+
+    def ScanTray_Lar(self, rootdir): #
+        while True:
+            try:
+                msg = "ScanTray_Lar"
+                self.s.send(msg.encode())
+                self.s.send(b"\r\n") 
+
+                self.msg = rootdir
+                self.s.send(self.msg.encode())
+                self.s.send(b"\r\n")
+
+                rmsg = ''
+                while True:
+                    self.msg = self.s.recv(1024).decode() 
+                    self.msg = self.msg.strip()
+                    if "DONE" in self.msg:
+                        rmsg += self.msg 
+                        rmsg = rmsg.replace('\r', '')
+                        rmsg = rmsg.replace('\n', '')
+                        with open(rootdir  + "/chips_on_tray.txt", "w") as fp:
+                            fp.write(rmsg) 
+                        return rmsg  
+                    else:
+                        if len(self.msg) > 0:
+                            rmsg += self.msg 
+                        else:
+                            time.sleep(0.02)
+
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')

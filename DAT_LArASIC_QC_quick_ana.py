@@ -826,7 +826,54 @@ def dat_larasic_qc_quick_ana(fdir="/."):
             plt.show()
             plt.close()
         print ("#########################################################################")
+
+    if 65 in tms:
+        print ("-------------------------------------------------------------------------")
+        print (" 65: FE calibration measurement (ASIC-DAC, 4.7mV/fC)")
+        print ("command on WIB terminal to retake data for this test item is as bellow :")
+        print ("python3 LArASIC_QC_top.py -t 65")
+        fp = fdir + "QC_CALI_ASICDAC_47" + ".bin"
+        print ("When it is done, replace {} on the local PC".format(fp) )
+        with open(fp, 'rb') as fn:
+            data = pickle.load( fn)
         
+        dkeys = list(data.keys())
+        
+        logsd = data["logs"]
+        dkeys.remove("logs")
+    
+        for snc in [0, 1]:
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(12,8))
+            plt.rcParams.update({'font.size': 8})
+            ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+            ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+      
+            for onekey in dkeys:
+                if "SNC%d"%snc in onekey:
+                #if "CALI_SNC1_ASICDAC40" in onekey:
+                    print (onekey)
+                    cfgdata = data[onekey]
+                    fembs = cfgdata[0]
+                    rawdata = cfgdata[1]
+                    cfg_info = cfgdata[2]
+                    chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata)
+                    #ax1.plot(wfs[1], label="CH1")
+                    #ax1.plot(wfs[2], label="CH2")
+                    #ax1.plot(wfs[3], label="CH3")
+                    ax1.plot(pkps, marker='.', label=onekey)
+                    ax2.plot(pkns, marker='.', label=onekey)
+            ax1.set_xlim((-10,200))
+            ax1.legend()
+            ax2.set_xlim((-10,200))
+            ax2.legend()
+    
+            plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+            plt.plot()
+            plt.show()
+            plt.close()
+        print ("#########################################################################")
+       
     if 62 in tms:
         print ("-------------------------------------------------------------------------")
         print ("62: FE calibration measurement (DAT-DAC) ")
@@ -1048,7 +1095,7 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
 
 if __name__=="__main__":
-    fdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\Tested\B001T1004\Time_20250513160120_DUT_0000_1001_2002_3003_4004_5005_6006_7007\LN_FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/'''
+    fdir = '''E:\RTS_DAT_LArASIC_QC\B009T0008\Time_20250529153639_DUT_0047_1048_2049_3066_4067_5068_6069_7082\LN_FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/'''
     dat_larasic_qc_quick_ana(fdir=fdir)
     #QCstatus, bads = dat_larasic_initchk(fdir)
     #print (bads)

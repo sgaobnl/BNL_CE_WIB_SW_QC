@@ -36,17 +36,17 @@ class RTS_MANIP():
         self.rts_msg_fp  = rts_msg_wfp[0]
         print (self.rts_msg_fp)
 
-        pic_dir = self.rootdir + "images/"
-        if not os.path.exists(pic_dir):
-            print (pic_dir)
-            try:
-                os.makedirs(pic_dir)
-            except OSError:
-                print ("Error to create folder %s"%pic_dir)
-                sys.exit()
-        else:
-            pass
-        
+#        pic_dir = self.rootdir + "images/"
+#        if not os.path.exists(pic_dir):
+#            print (pic_dir)
+#            try:
+#                os.makedirs(pic_dir)
+#            except OSError:
+#                print ("Error to create folder %s"%pic_dir)
+#                sys.exit()
+#        else:
+#            pass
+#        
         f=self.rts_msg_fp 
         x = f.find("_log.bin")
         msg0 = f[x-14:x]
@@ -73,7 +73,7 @@ class RTS_MANIP():
                 for x in msg_rls:
                     if (msg in x) and (msg not in manip_exist):
                         fn.write(x + "\n")
-                        self.pic_copy(x, pic_dir) 
+                        #self.pic_copy(x, pic_dir) 
                         break
 
 #    def rts_manip(self, msg, dst): 

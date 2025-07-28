@@ -5,6 +5,7 @@ import time
 import random
 import pickle
 
+
 # To send notification email
 import smtplib
 from email.mime.text import MIMEText
@@ -33,10 +34,13 @@ from rts_ssh import rts_ssh
 from set_rootpath import rootdir_cs
 from cryo_uart import cryobox
 
+sys.path.append('./SN_recognition/')  
+from SN_CLASS import SN_CLASS
+
 
 def send_rts_email(message):
     sender_email = "rtshibay@gmail.com"
-    receiver_email = "sgao@bnl.gov; "
+    receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;lke@bnl.gov"
     #receiver_email = ningxuyang0202@gmail.com
     password = "mbqx qfca voue zwfr"
     subject = "Message from RTS"
@@ -63,7 +67,7 @@ def send_rts_email(message):
 def DAT_debug (QCstatus):
     print (QCstatus)
     send_rts_email(message="Please contact tech coordinator (DAT issue)")
-    while True:
+    while True:#
         print ("444-> Move chips back to original positions")
         print ("2->fixed,")
         userinput = input ("Please contact tech coordinator : ")
@@ -84,13 +88,15 @@ def RTS_debug (info, status=None, trayno=None, trayc=None, trayr=None, sinkno=No
     elif "S2T" in info:
         print ("Chip is moved from Socket") 
         print ("Chip on orignial Sinkno(1-2)={}, Skt(1-8)={} ".format(sinkno, sktn)) 
+    elif "T2T" in info:
+        print ("Chip is moved from Tray to Tray") 
 
     rts.rts_idle()
 
     while True:
         print ("444-> Shutdown RTS and exit anyway")
-        print ("1->move chip to Tray#1_Col#15_Row#6")
-        print ("2->move chip to orignal position")
+        #print ("1->move chip to Tray#1_Col#15_Row#6")
+        #print ("2->move chip to orignal position")
         print ("6->fixed,")
 
         userinput = input ("Please contatc tech coordinator : ")
@@ -384,7 +390,7 @@ logs = {}
 
 #chiptype = 1
 #print ("RTS only support FE chip testing at the current development phase)")
-chiptype = 3
+chiptype = 1
 
 if chiptype == 1:
     duttype = "FE"
@@ -428,7 +434,8 @@ while True:
 
 trayid = bno
 #trayid = "B001T0001"
-trayno =2
+trayno =2 # tray with chips to be tested
+bad_trayno =1 # tray with bad chips
 badtrayno = 1 #some issue with tray#1
 bad_dut_order=0
 sinkno =2
@@ -444,8 +451,9 @@ logs["rootdir"] = rootdir
 
 print ("start trayID: {}".format(trayid))
 status = 0
-duts = list(range(0,2,1))
-#duts = list(range(0,90,1))
+#duts = [47,48,49,66,67,68,69,82,83,84,85,86,87] # list(range(47,484950,88,1))
+#duts = [47,48,49,66,67,68,69,82,83,84,85,86,87] # list(range(47,484950,88,1))
+duts = list(range(0,24,1))
 #duts = [82,83,84,2,86,87,88,89]
 duts = sorted(duts)
 logs["duts"] = duts 
@@ -473,8 +481,73 @@ if BypassRTS:
     pass
 else:
     rts.rts_init(port=2001, host_ip='192.168.0.2')
+    rts.RootDirSet(rootdir=rootdir)
     rts.MotorOn()
     rts.JumpToCamera()
+
+    ocrbin_fp = rootdir + "ocr_results.bin"
+    if os.path.isfile(ocrbin_fp) :
+        with open(ocrbin_fp, 'rb') as fn:
+            goodchips, badchips = pickle.load(fn)
+    else:
+        rts.ScanTray_Lar(rootdir=rootdir)
+        sn=SN_CLASS()
+        goodchips, badchips = sn.chip_ocr(rootdir)
+
+    
+    if len(badchips) > 0:
+        bad_tray_id = 1
+        while len(badchips) :
+            tray_id = badchips.keys()[0]
+            while True:
+                if bad_tray_id >= 90:
+                    print ("\033[91m !WARNING! Tray#1 (bac chips) is full: \033[0m")
+                    yorn = input ("\033[91m Replace with a new tray? (y/Y): \033[0m")
+                    if "Y" in yorn or "y" in yorn:
+                        bad_tray_id = 1
+                #bad_trayc = bad_tray_id - ((bad_tray_id-1)//15)*15
+                bad_trayc = (bad_tray_id-1)%15 + 1
+                bad_trayr = (bad_tray_id-1)//15 + 1
+                flg = rts.isChipInTray(bad_trayno,bad_trayc, bad_trayr)
+                if not flg:#no chip in it
+                    trayc = (tray_id-1)%15 + 1
+                    trayr = (tray_id-1)//15 + 1
+                    status = rts.MoveChipFromTrayToTray(trayno, trayc, trayr, bad_trayno, bad_trayc,bad_trayr)    
+                    if status > 0 :
+                        badchips.pop(tray_id) #remove it from bad chip
+                        with open(ocrbin_fp, 'wb') as fn:
+                            pickle.load([goodchips, badchips], fn)
+                        bad_tray_id += 1
+                        break
+                    else:
+                        RTS_debug ("T2T", status )
+                else:
+                    bad_tray_id += 1
+
+
+
+
+
+#    ischip = rts.isChipInTray(2,1,1)
+#    print (ischip)
+
+
+    #rts.MoveChipFromTrayToSocket(2, 1, 1, 2, 1, "FE")    
+    #rts.MoveChipFromSocketToTray(2, 1, 2, 1, 1, "FE")
+#    rmsg = rts.ScanTray_Lar(rootdir=rootdir)
+#    with open(rootdir  + "/chips_on_tray.txt", "w") as fp:
+#        fp.write(rmsg)
+rts.rts_shutdown()
+exit()
+
+#rts.MoveChipFromSocketToTray(2, 1, 2, 8, 6, "FE")
+#rts.MoveChipFromSocketToTray(2, 1, 2, 9, 6, "FE")
+#rts.MoveChipFromSocketToTray(2, 1, 2, , 5, "FE")
+#rts.MoveChipFromSocketToTray(2, 1, 2, , 5, "FE")
+#rts.MoveChipFromSocketToTray(2, 1, 2, , 5, "FE")
+#rts.MoveChipFromTrayToSocket(2, 7, 1, 2, 7, "FE")    
+#rts.MoveChipFromSocketToTray(2, 7, 2, 7, 1, "FE")
+#rts.MoveChipFromSocketToTray(2, 1, 2, 4, 3)
 #rts.MoveChipFromTrayToSocket(2, 1, 2, 2, 1, "FE")    
 #rts.MoveChipFromTrayToSocket(2, 2, 2, 2, 2, "FE")    
 #rts.MoveChipFromTrayToSocket(2, 3, 2, 2, 3, "FE")    

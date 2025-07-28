@@ -73,17 +73,18 @@ class RMS(BaseClass):
             for ichip in range(8):
                 FE_ID = self.logs_dict['FE{}'.format(ichip)]
                 out_dict[FE_ID][config] = tmp[FE_ID][config]
-        logs = {
-            "date": self.logs_dict['date'],
-            "testsite": self.logs_dict['testsite'],
-            "env": self.logs_dict['env'],
-            "note": self.logs_dict['note'],
-            "DAT_SN": self.logs_dict['DAT_SN'],
-            "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
-        }
+        #logs = {
+        #    "date": self.logs_dict['date'],
+        #    "testsite": self.logs_dict['testsite'],
+        #    "env": self.logs_dict['env'],
+        #    "note": self.logs_dict['note'],
+        #    "DAT_SN": self.logs_dict['DAT_SN'],
+        #    "WIB_slot": self.logs_dict['DAT_on_WIB_slot']
+        #}
         FE_IDs = []
         for ichip in range(8):
-            pedrms_dict = {"logs": logs}
+        #    pedrms_dict = {"logs": logs}
+            pedrms_dict = {}
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             FE_IDs.append(FE_ID)
             for config in self.params:
@@ -97,6 +98,7 @@ class RMS(BaseClass):
 class RMS_Ana(BaseClass_Ana):
     def __init__(self, root_path: str, output_path: str, chipID: str):
         self.item = 'QC_RMS'
+        print (self.item)
         self.tms = 5
         super().__init__(root_path=root_path, chipID=chipID, output_path=output_path, item=self.item)
         self.root_path = root_path
@@ -226,10 +228,11 @@ class RMS_Ana(BaseClass_Ana):
         # Save results
         #if not data_df.empty:
         #    data_df.to_csv(f'{self.output_path}/{self.chipID}/{self.item}.csv', index=False)
-        with open('/'.join([self.output_path, self.chipID, '{}.csv'.format(self.item)]), 'w') as csvfile:
-            csv.writer(csvfile, delimiter=',').writerows(result_table)    
+        #with open('/'.join([self.output_path, self.chipID, '{}.csv'.format(self.item)]), 'w') as csvfile:
+        #    csv.writer(csvfile, delimiter=',').writerows(result_table)    
 
-        #return result_table
+        return result_table
+
     # def run_Ana(self, path_to_statAna='', generatePlots=False):
     #     if self._FileExist():
     #         stat_csv = pd.read_csv(path_to_statAna)
