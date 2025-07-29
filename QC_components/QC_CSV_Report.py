@@ -191,7 +191,7 @@ def CSV_section_report(datareport, fembs, fembNo):
         info = log.report_log00
         # initial part
         file_path = fpmd
-        line_number = 1;        data = ['CTS_Time', info['date']]
+        line_number = 1;        data = ['CTS_Time', info['UTC_Date']]
         csv_style.write_to_csv_line(file_path, line_number, data)
         line_number = 2;        data = ['Test_Site', 'BNL']
         csv_style.write_to_csv_line(file_path, line_number, data)

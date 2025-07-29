@@ -397,8 +397,8 @@ def section_report(datareport, fembs, fembNo, fembsName):
             if 6 in log.test_label:
                 file.write('<img src="./{}/SE_Gain.png" alt="picture" height="250">'.format(log.item062) + "\n\n")  # width="200"
                 file.write('<img src="./{}/SE_ENC.png" alt="picture" height="250">'.format(log.item062) + "\n\n")  # width="200"
-            if 11 in log.test_label:
-                file.write('<img src="./{}/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">'.format(log.item11) + "\n\n")  # width="200"
+            # if 11 in log.test_label:
+            #     file.write('<img src="./{}/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">'.format(log.item11) + "\n\n")  # width="200"
 
             file.write("------\n")
 ##  Detail Pages ================================================
@@ -412,32 +412,32 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 file.write(Head01 + '\n')
                 file.write("------\n")
                 file.write('### 1_1 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement'  + '\n')
-                info = dict_to_markdown_table(log.report_log01_11[femb_id], KEY = "Single-End Interface OFF", VALUE="PWRVALUE")
+                info = dict_to_markdown_table(log.report_log01_11[femb_id], KEY = "SE OFF [SDF = 0; SDD = 0]", VALUE="PWRVALUE")
                 file.write(info + '\n')
 
-                info = dict_to_markdown_table(log.report_log01_21[femb_id], KEY = "Single-End Interface ON", VALUE="PWRVALUE")
+                info = dict_to_markdown_table(log.report_log01_21[femb_id], KEY = "SE ON [SDF = 1; SDD = 0]", VALUE="PWRVALUE")
                 file.write(info + '\n')
 
-                info = dict_to_markdown_table(log.report_log01_31[femb_id], KEY = "Differential Interface ON", VALUE="PWRVALUE")
+                info = dict_to_markdown_table(log.report_log01_31[femb_id], KEY = "DIFF [SDF = 0; SDD = 1]", VALUE="PWRVALUE")
                 file.write(info + '\n')
 
-                file.write('### 1_2 &nbsp;&nbsp;&nbsp;&nbsp; Power Rail' + '\n')
+                file.write('### 1_2 &nbsp;&nbsp;&nbsp;&nbsp; LDO Measurement / mV' + '\n')
                 file.write('<div style = "display: flex; justify-content: space-between;">'+'\n\n')
-                info = dict_to_markdown_table(log.report_log01_13[femb_id], KEY="SE OFF Voltage", VALUE = "Rail")
+                info = dict_to_markdown_table(log.report_log01_13[femb_id], KEY="SE OFF [SDF = 0; SDD = 0]", VALUE = "Rail")
                 file.write(info + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_23[femb_id], KEY="SE ON Voltage", VALUE = "Rail")
+                info = dict_to_markdown_table(log.report_log01_23[femb_id], KEY="SE ON [SDF = 1; SDD = 0]", VALUE = "Rail")
                 file.write(info + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_33[femb_id], KEY="DIFF Voltage", VALUE="Rail")
+                info = dict_to_markdown_table(log.report_log01_33[femb_id], KEY="DIFF [SDF = 0; SDD = 1]", VALUE="Rail")
                 file.write(info + '\n\n')
                 file.write('</div>' + '\n\n')
 
-                file.write('### 1_3 &nbsp;&nbsp;&nbsp;&nbsp; Initial Pulse Check' + '\n')
+                file.write('### 1_3 &nbsp;&nbsp;&nbsp;&nbsp; Initial Pulse Response' + '\n')
                 file.write('<div style = "display: flex; justify-content: space-between;">' + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_12[femb_id], KEY="SE OFF pulse", VALUE = "Pulse")
+                info = dict_to_markdown_table(log.report_log01_12[femb_id], KEY="SE OFF [SDF = 0; SDD = 0]", VALUE = "Pulse")
                 file.write(info + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_22[femb_id], KEY="SE ON pulse", VALUE = "Pulse")
+                info = dict_to_markdown_table(log.report_log01_22[femb_id], KEY="SE ON [SDF = 1; SDD = 0]", VALUE = "Pulse")
                 file.write(info + '\n\n')
-                info = dict_to_markdown_table(log.report_log01_32[femb_id], KEY="DIFF pulse", VALUE = "Pulse")
+                info = dict_to_markdown_table(log.report_log01_32[femb_id], KEY="DIFF [SDF = 0; SDD = 1]", VALUE = "Pulse")
                 file.write(info + '\n\n')
                 file.write('</div>' + '\n\n')
                 file.write('<details>'+ '\n\n')
@@ -454,14 +454,29 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 file.write(Head02 + '\n')
                 file.write("------\n")
                 file.write('### 2_01 cycle0_SE DAC = 0' + '\n')
-                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle0_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 1_1 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement' + '\n')
+                info = dict_to_markdown_table(log.tmp_log02_01[femb_id], KEY="SE OFF [SDF = 0; SDD = 0]", VALUE="PWRVALUE")
+                file.write(info + '\n')
+                file.write("![ped](./PWR_Cycle/Pulse_PWR_cycle0_SE_200mVBL_14_0mVfC_2_0us_0x20_pulse.png)" + "\n\n")
                 file.write('### 2_02 cycle1_SE DAC = 0' + '\n')
-                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle1_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 1_2 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement' + '\n')
+                info = dict_to_markdown_table(log.tmp_log02_02[femb_id], KEY="SE OFF [SDF = 0; SDD = 0]", VALUE="PWRVALUE")
+                file.write(info + '\n')
+                file.write("![ped](./PWR_Cycle/Pulse_PWR_cycle1_SE_200mVBL_14_0mVfC_2_0us_0x20_pulse.png)" + "\n\n")
                 file.write('### 2_03 cycle2_SE DAC = 0' + '\n')
-                file.write("![ped](./PWR_Cycle/pulse_PWR_cycle2_SE_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
+                file.write('### 1_3 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement' + '\n')
+                info = dict_to_markdown_table(log.tmp_log02_03[femb_id], KEY="SE OFF [SDF = 0; SDD = 0]", VALUE="PWRVALUE")
+                file.write(info + '\n')
+                file.write("![ped](./PWR_Cycle/Pulse_PWR_cycle2_SE_200mVBL_14_0mVfC_2_0us_0x20_pulse.png)" + "\n\n")
                 file.write('### 2_04 SE_SDF' + '\n')
+                file.write('### 1_3 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement' + '\n')
+                info = dict_to_markdown_table(log.tmp_log02_04[femb_id], KEY="SE ON [SDF = 1; SDD = 0]", VALUE="PWRVALUE")
+                file.write(info + '\n')
                 file.write("![ped](./PWR_Cycle/pulse_PWR_SE_SDF_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
                 file.write('### 2_05 DIFF' + '\n')
+                file.write('### 1_3 &nbsp;&nbsp;&nbsp;&nbsp; Power Measurement' + '\n')
+                info = dict_to_markdown_table(log.tmp_log02_05[femb_id], KEY="DIFF [SDF = 0; SDD = 1]", VALUE="PWRVALUE")
+                file.write(info + '\n')
                 file.write("![ped](./PWR_Cycle/pulse_PWR_DIFF_200mVBL_14_0mVfC_2_0us.png)" + "\n\n")
 # 03
             if 3 in log.test_label:

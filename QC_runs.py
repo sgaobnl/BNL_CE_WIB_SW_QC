@@ -40,15 +40,17 @@ class QC_Runs:
         env_cs = input("Test is performed at cold(LN2) (Y/N)? : ")
         if ("Y" in env_cs) or ("y" in env_cs):
             env = "LN"
+            self.logs['env'] = 'Cold'
         else:
             env = "RT"
-        self.logs['env']=env
+            self.logs['env'] = 'Warm'
+
 
         ToyTPC_en = input("ToyTPC at FE inputs (Y/N) : ")
         if ("Y" in ToyTPC_en) or ("y" in ToyTPC_en):
-            toytpc = "150pF"
+            toytpc = "PCB_Based"
         else:
-            toytpc = "0pF"
+            toytpc = "No Toy_TPC"
         self.logs['toytpc']=toytpc
 
         note = input("A short note (<200 letters):")
@@ -58,7 +60,7 @@ class QC_Runs:
             self.fembNo['femb{}'.format(i)]=input("FEMB{} ID: ".format(i)).strip()
 
         self.logs['femb id']=self.fembNo
-        self.logs['date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+        self.logs['UTC_Date']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
         log.report_log00 = self.logs    ### report
         ####### Create data saving directory #######
 
@@ -386,14 +388,16 @@ class QC_Runs:
         self.sample_N = 1
         for i in range(3):
             dac = 0
-            sts = 1
+            sts = 0
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
             datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=True)
             dac = 0x20
             sts = 1
             fp = datadir + "PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)
-            datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
-
+            datad["PWR_cycle{}_SE_{}_{}_{}_0x{:02x}_pulse.bin".format(i,"200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, pwr_flg=False)
+            # datad["MON_Regular{}__SE_OFF_{}_{}_{}_0x{:02x}.bin"] = a_func.monitor_power_rail(i,"SE_OFF",
+            #                                                                                         self.fembs, datadir,
+            #                                                                                         1)
             self.pwr_fembs('off')
             pwr_info = self.chk.get_sensors()
             pwr_status = self.check_pwr_off(pwr_info)
@@ -411,13 +415,13 @@ class QC_Runs:
         ####### SE with LArASIC buffer on (1 cycle)#######
         self.chk.femb_cd_rst()
         dac = 0
-        sts = 1
+        sts = 0
         fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
         datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=True)
         dac = 0x20
         sts = 1
-        fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
+        fp = datadir + "PWR_SE_SDF_{}_{}_{}_0x{:02x}_pulse.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        datad["PWR_SE_SDF_{}_{}_{}_0x{:02x}_pulse.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts,snc, sg0, sg1, st0, st1, dac, fp, sdf=1, pwr_flg=False)
         self.pwr_fembs('off')
         pwr_info = self.chk.get_sensors()
         pwr_status = self.check_pwr_off(pwr_info)
@@ -440,8 +444,8 @@ class QC_Runs:
         datad["PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=True)
         dac = 0x20
         sts = 1
-        fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)
-        datad["PWR_DIFF_{}_{}_{}_0x{:02x}.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
+        fp = datadir + "PWR_DIFF_{}_{}_{}_0x{:02x}_pulse.bin".format("200mVBL","14_0mVfC","2_0us",dac)
+        datad["PWR_DIFF_{}_{}_{}_0x{:02x}_pulse.bin".format("200mVBL","14_0mVfC","2_0us",dac)] = self.take_data(sts, snc, sg0, sg1, st0, st1, dac, fp, sdd=1, pwr_flg=False)
 
         fp = datadir + "QC_PWR_Cycle_t2" + ".bin"
         with open(fp, 'wb') as fn:

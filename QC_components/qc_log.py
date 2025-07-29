@@ -35,6 +35,12 @@ check_log02_02 = defaultdict(dict)
 check_log02_03 = defaultdict(dict)
 check_log02_04 = defaultdict(dict)
 check_log02_05 = defaultdict(dict)
+
+tmp_log02_01 = defaultdict(dict)
+tmp_log02_02 = defaultdict(dict)
+tmp_log02_03 = defaultdict(dict)
+tmp_log02_04 = defaultdict(dict)
+tmp_log02_05 = defaultdict(dict)
 # 03
 item3 = "Leakage_Current"
 report_log03_01 = defaultdict(dict)    # input information

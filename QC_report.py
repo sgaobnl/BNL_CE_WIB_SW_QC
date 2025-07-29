@@ -124,15 +124,10 @@ class QC_reports:
         f_pwr = datadir + "QC_PWR_t1.bin"
         with open(f_pwr, 'rb') as fn:
             pwr_meas_dict = pickle.load(fn)
-        print(len(pwr_meas_dict))
-        print(type(pwr_meas_dict))
         keys_list = list(pwr_meas_dict.keys())
-        print(keys_list)
-
         #     01    01_11 SE Power   01_12 SE Pulse Measure   01_13 SE Power Rail Regular
         #     01_11 SE Power Measurement      Power
         pwr_meas = pwr_meas_dict["PWR_SE_OFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        print(pwr_meas)
         for ifemb in range(len(self.fembs)):
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             initial_power = a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'],
@@ -285,11 +280,16 @@ class QC_reports:
         with open(f_pwr, 'rb') as fn:
             pwr_cycle_dict = pickle.load(fn)
         keys_list = list(pwr_cycle_dict.keys())
+        print(keys_list)
         dict_list01 = [log.check_log02_01, log.check_log02_02, log.check_log02_03]
+        dict_list02 = [log.tmp_log02_01, log.tmp_log02_02, log.tmp_log02_03]
         qc = ana_tools()
         for i in range(3):
             pwr_meas = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][1]
-            rawdata = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x00.bin".format(i)][0]
+            rawdata = pwr_cycle_dict["PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x20_pulse.bin".format(i)][0]
+            # monvols = pwr_cycle_dict["MON_Regular{}_SE_OFF_200mVBL_14_0mVfC_2_0us_0x20.bin".format(i)]
+            # a_func.monitor_power_rail_analysis("SE_OFF", self.fembs, monvols, self.fembsID, '02_{} SE ON Power Rail'.format(i),
+            #                                    NewWIB=self.NewWIB)
             pldata = qc.data_decode(rawdata, self.fembs)
             for ifemb in self.fembs:
                 femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
@@ -298,37 +298,40 @@ class QC_reports:
                 a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'],
                                  '02 SE OFF Power Consumption Cycle{}'.format(i))
                 check1 = dict(log.check_log)
+                tmp1 = dict(log.tmp_log)
                 dict_list01[i].update(check1)
+                dict_list02[i].update(tmp1)
                 fp = self.savedir[ifemb] + "PWR_Cycle/"
-                qc.GetPeaks(pldata, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us".format(i))
-        print(log.check_log02_01)
-        print(log.check_log02_02)
-        print(log.check_log02_03)
+                qc.GetPeaks(pldata, ifemb, fp, "PWR_cycle{}_SE_200mVBL_14_0mVfC_2_0us_0x20_pulse".format(i))
         pwr_meas = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        rawdata = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
+        rawdata = pwr_cycle_dict["PWR_DIFF_200mVBL_14_0mVfC_2_0us_0x20_pulse.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_DIFF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
             a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'],
-                             '02 SE OFF Power Consumption Cycle{}'.format(i))
+                             '02 DIFF Power Consumption Cycle{}'.format(i))
             check1 = dict(log.check_log)
-            log.check_log02_04.update(check1)
+            tmp1 = dict(log.tmp_log)
+            log.tmp_log02_05.update(tmp1)
+            log.check_log02_05.update(check1)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_DIFF_200mVBL_14_0mVfC_2_0us")
 
         pwr_meas = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x00.bin"][1]
-        rawdata = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20.bin"][0]
+        rawdata = pwr_cycle_dict["PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_0x20_pulse.bin"][0]
         pldata = qc.data_decode(rawdata, self.fembs)
         for ifemb in self.fembs:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % self.fembs[ifemb]])
             fp_pwr = self.savedir[ifemb] + "PWR_Cycle/PWR_SE_SDF_200mVBL_14_0mVfC_2_0us_pwr_meas"
             qc.PrintPWR(pwr_meas, ifemb, fp_pwr)
             a_func.power_ana(self.fembs, ifemb, femb_id, pwr_meas, self.logs['env'],
-                             '02 SE OFF Power Consumption Cycle{}'.format(i))
+                             '02 SE ON Power Consumption Cycle{}'.format(i))
             check1 = dict(log.check_log)
-            log.check_log02_05.update(check1)
+            tmp1 = dict(log.tmp_log)
+            log.tmp_log02_04.update(tmp1)
+            log.check_log02_04.update(check1)
             fp = self.savedir[ifemb] + "PWR_Cycle/"
             qc.GetPeaks(pldata, ifemb, fp, "PWR_SE_SDF_200mVBL_14_0mVfC_2_0us")
 
