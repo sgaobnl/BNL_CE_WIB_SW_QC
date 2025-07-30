@@ -599,7 +599,7 @@ class QC_reports:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             # plot 1
             plt.figure(figsize=(6, 4))
-            x = [1, 2, 3, 4]
+            x = [0.5, 1, 2, 3]
             x_sticks = ()
             SE_200_4_7mV_ppk = [
                 log.check_log04_01_4705[femb_id]["ppk_mean"] - log.check_log04_01_4705[femb_id]["bbl_mean"],
@@ -656,7 +656,7 @@ class QC_reports:
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(0, 6000)
-            plt.title("SE 200 Pulse Response ErrorBar", fontsize=12)
+            plt.title("SE 200 mVBL Amplitude ErrorBar", fontsize=12)
             plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -664,7 +664,7 @@ class QC_reports:
             plt.close()
             # plot 2
             plt.figure(figsize=(6, 4))
-            x = [1, 2, 3, 4]
+            x = [0.5, 1, 2, 3]
             x_sticks = ()
             SE_900_4_7mV_ppk = [
                 log.check_log04_02_4705[femb_id]["ppk_mean"] - log.check_log04_02_4705[femb_id]["bbl_mean"],
@@ -761,7 +761,7 @@ class QC_reports:
             plt.xticks(x, ['0.5 us', '1 us', '2 us', '3 us'])
             plt.grid(True, axis='y', linestyle='--')
             plt.ylim(-9000, 9000)
-            plt.title("SE 900 Pulse Response ErrorBar", fontsize=12)
+            plt.title("SE 900 mVBL Amplitude ErrorBar", fontsize=12)
             plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -769,7 +769,7 @@ class QC_reports:
             plt.close()
             # plot 3
             plt.figure(figsize=(6, 4))
-            x = [1, 2, 3, 4]
+            x = [4.7, 7.8, 14, 25]
             x_sticks = ()
             SGP1_200_ppk = [log.check_log04_03_4720[femb_id]["ppk_mean"] - log.check_log04_03_4720[femb_id]["bbl_mean"],
                             log.check_log04_03_7820[femb_id]["ppk_mean"] - log.check_log04_03_7820[femb_id]["bbl_mean"],
@@ -790,7 +790,7 @@ class QC_reports:
             for i in range(len(x)):
                 plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}',
                          fontsize=10, ha='center', va='bottom', color='darkorange')
-            plt.title("SGP1 200 Pulse Response ErrorBar", fontsize=12)
+            plt.title("SGP1 200 mVBL Amplitude ErrorBar", fontsize=12)
             plt.tight_layout()
             plt.ylim(0, 17000)
             plt.margins(x=0.15)
@@ -817,7 +817,7 @@ class QC_reports:
             plt.grid(True, axis='y', linestyle='--')
             # for i in range(len(x)):
             #     plt.text(x[i], SGP1_200_ppk[i] + 100, f'{round(SGP1_200_ppk[i], 1)}±{round(SGP1_200_ppkerr[i], 1)}', fontsize=10, ha='center', va='bottom', color='darkorange')
-            plt.title("DIFF 200/900 Pulse Response ErrorBar", fontsize=12)
+            plt.title("DIFF 200/900 mVBL Amplitude ErrorBar", fontsize=12)
             plt.tight_layout()
             plt.ylim(0, 17000)
             plt.margins(x=0.15)
@@ -1132,7 +1132,7 @@ class QC_reports:
             plt.xticks(x, ['0.5', '1', '2', '3'])
             plt.ylim(0, 70)
             plt.grid(axis='x')
-            plt.title("SE 200 & 900 mV RMS ErrorBar", fontsize=12)
+            plt.title("SE OFF 200 & 900 mV Noise Distribution", fontsize=12)
             plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -1176,13 +1176,13 @@ class QC_reports:
             plt.errorbar(x, DIFF_900_2_0us, yerr=DIFF_900_2_0us_err, capsize=5, linestyle='--', alpha=1,
                          color='darkorange', label='DIFF_900_2_0us')
             plt.legend()
-            plt.xlabel("Gain / mV/fC", fontsize=12)
+            plt.xlabel("Gain / (mV/fC)", fontsize=12)
             plt.ylabel("RMS", fontsize=12)
             # plt.yticks([log.report_log056_fembrms[ifemb]["SE_200mVBL_4_7mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_7_8mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_14_0mVfC_0_5us"], log.report_log056_fembrms[ifemb]["SE_200mVBL_25_0mVfC_0_5us"]], ['4.7 mV', '7.8 mV', '14 mV', '25 mV'])
             plt.xticks(x, ['4.7', '7.8', '14', '25'])
             plt.grid(axis='x')
             plt.ylim(0, 60)
-            plt.title("SEON DIFF 200 & 900 mV RMS ErrorBar", fontsize=12)
+            plt.title("SEON DIFF 200 & 900 mV Noise Distribution", fontsize=12)
             plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -1209,7 +1209,7 @@ class QC_reports:
             plt.xticks(x, ['100', '500', '1 000', '5 000'])
             plt.grid(axis='x')
             plt.ylim(0, 40)
-            plt.title("Single-Ended RMS at different Leakage Current", fontsize=12)
+            plt.title("SE Noise at different Leakage Current", fontsize=12)
             plt.tight_layout()
             plt.margins(x=0.15)
             plt.gca().set_facecolor('none')  # set background as transparent

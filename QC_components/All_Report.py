@@ -481,14 +481,14 @@ def section_report(datareport, fembs, fembNo, fembsName):
 # 03
             if 3 in log.test_label:
                 if check_status03:
-                    Head03 = '### ' + '</span>' + '<span id="item3"> Chapter_3 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM 03 Leakage Current Pulse Response' + '    < Pass >' + '</span>'  + '\n'
+                    Head03 = '### ' + '</span>' + '<span id="item3"> Chapter_3 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM 03 FE Pulse Response at Different Leakage Current Setting' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head03 = '### ' + '</span>' + '<span id="item3"> Chapter_3 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM 03 Leakage Current Pulse Response' + '    < Fail >' + '</span>'  + '\n'
+                    Head03 = '### ' + '</span>' + '<span id="item3"> Chapter_3 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM 03 FE Pulse Response at Different Leakage Current Setting' + '    < Fail >' + '</span>'  + '\n'
                 file.write(Head03 + '\n')
                 file.write("------\n")
                 file.write("![ped](./Leakage_Current/LC_pulse.png)" + "\n\n")
 
-                log.check_log03_table_01[femb_id]['title'] = " | Leakage <bar> Current | 100 pA | 500 pA | 1 nA | 5 nA | \n"
+                log.check_log03_table_01[femb_id]['title'] = " | FE Leakage <bar> Current | 100 pA | 500 pA | 1 nA | 5 nA | \n"
                 log.check_log03_table_01[femb_id]['table line'] = " | --- | --- | --- | --- | --- | \n"
                 log.check_log03_table_01[femb_id]['ppk_mean'] = " | Amplitude Mean | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["ppk_mean"], log.report_log03_01[femb_id]["ppk_mean"], log.report_log03_04[femb_id]["ppk_mean"], log.report_log03_03[femb_id]["ppk_mean"])
                 # log.check_log03_table_01[femb_id]['ppk_err'] = " | PPK Std | {} | {} | {} | {} | \n".format(log.report_log03_02[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA_ppk_err0"], log.report_log03_01[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA_ppk_err0"], log.report_log03_04[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA_ppk_err0"], log.report_log03_03[femb_id]["LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA_ppk_err0"])
@@ -503,25 +503,25 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 # file.write(log.check_log03_table_01[femb_id]['npk_err'] + '\n')
                 file.write('<details>' + '\n\n')
                 file.write("------\n")
-                file.write('### 3_01 LeakageCurrent = 100 pA' + '\n')
+                file.write('### 3_01 FE Leakage Current = 100 pA' + '\n')
                 info = dict_to_markdown_table(log.report_log03_02[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_100pA.png)" + "\n")
 
                 file.write("------\n")
-                file.write('### 3_02 LeakageCurrent = 500 pA' + '\n')
+                file.write('### 3_02 FE Leakage Current = 500 pA' + '\n')
                 info = dict_to_markdown_table(log.report_log03_01[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_500pA.png)" + "\n")
 
                 file.write("------\n")
-                file.write('### 3_03 LeakageCurrent = 1 nA' + '\n')
+                file.write('### 3_03 FE Leakage Current = 1 nA' + '\n')
                 info = dict_to_markdown_table(log.report_log03_04[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_1nA.png)" + "\n")
 
                 file.write("------\n")
-                file.write('### 3_04 LeakageCurrent = 5 nA' + '\n')
+                file.write('### 3_04 FE Leakage Current = 5 nA' + '\n')
                 info = dict_to_markdown_table(log.report_log03_03[femb_id], VALUE="Horizontal")
                 file.write(info + '\n')
                 file.write("![ped](./Leakage_Current/pulse_LC_SE_200mVBL_14_0mVfC_2_0us_0x20_5nA.png)" + "\n")
@@ -538,15 +538,15 @@ def section_report(datareport, fembs, fembNo, fembsName):
 # 04        print <Check Pulse>
             if 4 in log.test_label:
                 if check_status04:
-                    Head04 = '### ' + '</span>' + '<span id="item4"> Chapter_4 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM 04 Whole Pulse Response' + '    < Pass >' + '</span>'  + '\n'
+                    Head04 = '### ' + '</span>' + '<span id="item4"> Chapter_4 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: green;">' + 'ITEM 04 Pulse Response' + '    < Pass >' + '</span>'  + '\n'
                 else:
-                    Head04 = '### ' + '</span>' + '<span id="item4"> Chapter_4 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM 04 Whole Pulse Response' + '    < Fail >' + '</span>'  + '\n'
+                    Head04 = '### ' + '</span>' + '<span id="item4"> Chapter_4 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: red;">' + 'ITEM 04 Pulse Response' + '    < Fail >' + '</span>'  + '\n'
                 file.write(Head04 + '\n')
                 file.write("------\n")
                 # SE 200 mV
                 file.write('<img src="./CHK/SE_200_Gain_Pulse_ErrorBar.png" alt="picture" height="350">' + "\n")  # width="200"
                 file.write('<details>' + '\n\n')
-                file.write('### SE OFF    Baseline 200 mV' + '\n')
+                file.write('### SE OFF    Baseline 200 mV [SDF = 0; SDD = 0; SNC = 1] DAC = 0x10' + '\n')
                 log.check_log04_table_01[femb_id]['title'] = " | Gain | PeakTime | PPK Mean | PPK std | Baseline Mean | Baseline std |\n"
                 log.check_log04_table_01[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | \n"
 
@@ -594,7 +594,7 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 #   SE 900 mV
                 file.write('<img src="./CHK/SE_900_Gain_Pulse_ErrorBar.png" alt="picture" height="350">' + "\n")  # width="200"
                 file.write('<details>' + '\n\n')
-                file.write('### SE OFF    Baseline 900 mV' + '\n')
+                file.write('### SE OFF    Baseline 900 mV [SDF = 0; SDD = 0; SNC = 0] DAC = 0x10' + '\n')
                 log.check_log04_table_02[femb_id][
                     'title'] = " | Gain | PeakTime | PPK Mean | PPK std | NPK Mean | NPK td |\n"
                 log.check_log04_table_02[femb_id]['table line'] = " | --- | --- | --- | --- | --- | --- | \n"
@@ -614,16 +614,16 @@ def section_report(datareport, fembs, fembNo, fembsName):
 
                 log.check_log04_table_02[femb_id]['line5'] = " 7.8 mV/fC | 0.5 us | {} | {} | {} | {} |\n".format(
                     log.report_log04_02_7805[femb_id]['ppk_mean'], log.report_log04_02_7805[femb_id]["ppk_std"],
-                    log.report_log04_01_7805[femb_id]['npk_mean'], log.report_log04_02_7805[femb_id]["npk_std"])
+                    log.report_log04_02_7805[femb_id]['npk_mean'], log.report_log04_02_7805[femb_id]["npk_std"])
                 log.check_log04_table_02[femb_id]['line6'] = " 7.8 mV/fC | 1 us | {} | {} | {} | {} | \n".format(
                     log.report_log04_02_7810[femb_id]['ppk_mean'], log.report_log04_02_7810[femb_id]["ppk_std"],
-                    log.report_log04_01_7810[femb_id]['npk_mean'], log.report_log04_02_7810[femb_id]["npk_std"])
+                    log.report_log04_02_7810[femb_id]['npk_mean'], log.report_log04_02_7810[femb_id]["npk_std"])
                 log.check_log04_table_02[femb_id]['line7'] = " 7.8 mV/fC | 2 us | {} | {} | {} | {} | \n".format(
                     log.report_log04_02_7820[femb_id]['ppk_mean'], log.report_log04_02_7820[femb_id]["ppk_std"],
-                    log.report_log04_01_7820[femb_id]['npk_mean'], log.report_log04_02_7820[femb_id]["npk_std"])
+                    log.report_log04_02_7820[femb_id]['npk_mean'], log.report_log04_02_7820[femb_id]["npk_std"])
                 log.check_log04_table_02[femb_id]['line8'] = " 7.8 mV/fC | 3 us | {} | {} | {} | {} | \n".format(
                     log.report_log04_02_7830[femb_id]['ppk_mean'], log.report_log04_02_7830[femb_id]["ppk_std"],
-                    log.report_log04_01_7830[femb_id]['npk_mean'], log.report_log04_02_7830[femb_id]["npk_std"])
+                    log.report_log04_02_7830[femb_id]['npk_mean'], log.report_log04_02_7830[femb_id]["npk_std"])
 
                 log.check_log04_table_02[femb_id]['line9'] = " 14 mV/fC | 0.5 us | {} | {} | {} | {} | \n".format(
                     log.report_log04_02_1405[femb_id]['ppk_mean'], log.report_log04_02_1405[femb_id]["ppk_std"],
@@ -676,7 +676,7 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 #   SGP 200 mV
                 file.write('<img src="./CHK/SGP1_200_fC_Pulse.png" alt="picture" height="350">' + "\n")  # width="200"
                 file.write('<details>' + '\n\n')
-                file.write('### SGP1    Baseline 200 mV ' + '\n')
+                file.write('### SGP1    Baseline 200 mV [SDF = 0; SDD = 0; SNC = 0] DAC = 0x0C' + '\n')
                 file.write('\n')
                 log.check_log04_table_06[femb_id][
                     'title'] = " | Gain | PeakTime | PPK Mean | PPK std | Baseline Mean | Baseline std |\n"
@@ -727,27 +727,28 @@ def section_report(datareport, fembs, fembNo, fembsName):
 # 05        RMS configuration
             if 5 in log.test_label:
                 if check_status05 == True:
-                    file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "RMS Evaluation"  + '    < Pass >' + '</span>' + '\n')
+                    file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : green;">' + "Noise Evaluation"  + '    < Pass >' + '</span>' + '\n')
                 else:
-                    file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "RMS Evaluation" + '    < Fail >' + '</span>'  + '\n')
+                    file.write('### ' + '</span>' + '<span id="item5"> Chapter_5 </span>'  + '&nbsp;&nbsp;&nbsp;&nbsp; <span style = "color : red;">' + "Noise Evaluation" + '    < Fail >' + '</span>'  + '\n')
                     file.write(str(log.report_log0500[ifemb]['Issue List']))
-                file.write('#### ' + "1. Single-Ended Interface &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
+                file.write('#### ' + "1. Noise at SE OFF &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
                 file.write('<img src="./{}/SE_200_900_mV_RMS_ErrorBar.png" alt="picture" height="350">'.format(log.item05) + "\n\n")  # width="200"
-                file.write('#### ' + "2. Single-Ended-to-Differential Conversion Interface &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
+                file.write('#### ' + "2. Noise at SE ON and DIFF &nbsp;&nbsp;&nbsp;&nbsp; 200 mV & 900 mV" + '\n')
                 file.write('<img src="./{}/SEON_DIFF_200_900_mV_RMS_ErrorBar.png" alt="picture" height="350">'.format(log.item05) + "\n\n")  # width="200"
-                file.write('#### ' + "3. Leakage Current with Single-Ended OFF Interface &nbsp;&nbsp;&nbsp;&nbsp; 200 mV" + '\n')
+                file.write('#### ' + "3. Noise at Leakage Current with SE OFF &nbsp;&nbsp;&nbsp;&nbsp; 200 mV" + '\n')
                 file.write('<img src="./{}/SELC_200_2us_ErrorBar.png" alt="picture" height="350">'.format(log.item05) + "\n\n")  # width="200"
                 # file.write("![ped](./{}/SEON_DIFF_200_900_mV_RMS_ErrorBar.png)".format(log.item05) + "\n")
                 file.write('<details>' + '\n\n')
                 file.write('\n' + '#### ' + 'All_200mVBL_Configuration' + '\n')
                 info = dict_to_markdown_table(log.report_log05_table[femb_id], VALUE="RMS")
                 file.write(info + '\n')
+                file.write('\n' + '#### ' + 'All_900mVBL_Configuration' + '\n')
                 info = dict_to_markdown_table(log.report_log05_table2[femb_id], VALUE="RMS")
                 file.write(info + '\n')
                 file.write("![ped](./{}/200mV_All_Configuration.png)".format(log.item05) + "\n")
                 file.write('#### All_900mVBL_Configuration' + '\n')
                 file.write("![ped](./{}/900mV_All_Configuration.png)".format(log.item05) + "\n")
-                file.write('#### RMS whole Report' + '\n')
+                file.write('#### Noise Report' + '\n')
                 file.write("[PDF](./{}/report.pdf)".format(log.item05) + "\n")
                 file.write('</details>' + '\n\n')
 

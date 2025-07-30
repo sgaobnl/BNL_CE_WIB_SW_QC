@@ -127,13 +127,19 @@ class QC_Runs:
             if swdac==1: #internal ASIC-DAC is enabled
                 self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=1, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
                 adac_pls_en = 1
+                for femb_id in self.fembs:
+                    self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x02, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
             elif swdac==2: #external DAC is enabled
                 self.chk.set_fe_board(sts=sts,snc=snc,sg0=sg0,sg1=sg1, st0=st0, st1=st1, swdac=2, dac=dac, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
                 adac_pls_en = 0
                 ext_cali_flg = True
+                for femb_id in self.fembs:
+                    self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
         else:
             self.chk.set_fe_board(sts=sts, snc=snc, sg0=sg0, sg1=sg1, st0=st0, st1=st1, swdac=0, dac=0x0, sdd=sdd,sdf=sdf,slk0=slk0,slk1=slk1,sgp=sgp)
             adac_pls_en = 0
+            for femb_id in self.fembs:
+                self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x02, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
 
         if adc_sync_pat:
             for i in range(8):
@@ -171,10 +177,10 @@ class QC_Runs:
             self.chk.align_flg = False
             time.sleep(0.001)
 
-        self.chk.wib_pls_gen(fembs=self.fembs, cp_period=500, cp_phase=0, cp_high_time=0)
-        self.chk.wib_mon_switches(dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=0, inj_cal_pulse=0)
-        for femb_id in self.fembs:
-            self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x03, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+        # self.chk.wib_pls_gen(fembs=self.fembs, cp_period=500, cp_phase=0, cp_high_time=0)
+        # self.chk.wib_mon_switches(dac0_sel=0, dac1_sel=0, dac2_sel=0, dac3_sel=0, mon_vs_pulse_sel=1, inj_cal_pulse=1)
+        # for femb_id in self.fembs:
+        #     self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x03, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
 
         if pwr_flg==True:
             time.sleep(0.5)
@@ -214,9 +220,7 @@ class QC_Runs:
                             dac3_sel=1
                     self.chk.wib_mon_switches(dac0_sel, dac1_sel, dac2_sel, dac3_sel, mon_vs_pulse_sel=1, inj_cal_pulse=1)
                     cp_high_time = int(cp_period*32*7/8)
-                    self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=0, cp_high_time=cp_high_time)
-                    for femb_id in self.fembs:
-                        self.chk.femb_cd_gpio(femb_id=femb_id, cd1_0x26=0x00, cd1_0x27=0x1f, cd2_0x26=0x00, cd2_0x27=0x1f)
+                    self.chk.wib_pls_gen(fembs=self.fembs, cp_period=cp_period, cp_phase=1, cp_high_time=cp_high_time)
                     time.sleep(0.01)
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N,trig_cmd=0)
                     fplocal = fp[0:-4] + "_vdac%06dmV"%(int((vdac+0.0001)*1000))+fp[-4:]
@@ -558,6 +562,7 @@ class QC_Runs:
         st0 = 1  # 2 us
         sts = 1
         self.chk.femb_cd_rst()
+        dac = 0x0C
         cfg_paras_rec = []
         for i in range(8):
             self.chk.adcs_paras[i][2] = 1  # enable differential interface
@@ -712,13 +717,14 @@ class QC_Runs:
 
         self.sample_N = 10
 #
-        for snci in range(2):
-            for sgi in  range(4):
-                sg0 = sgi%2
-                sg1 = sgi//2
-                for sti in range(4):
-                    st0 = sti%2
-                    st1 = sti//2
+
+        for sgi in  range(4):
+            sg0 = sgi%2
+            sg1 = sgi//2
+            for sti in range(4):
+                st0 = sti%2
+                st1 = sti//2
+                for snci in range(2):
 #   SE OFF  2*4*4 = 32  {[snc 200/900 mV] * [sg 4.7/7.8/14/25 mV/fC] * [st 0.5/1/2/3 us]}
                     fp = datadir + "RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)
                     datad["RMS_SE_{}_{}_{}_0x{:02x}.bin".format(sncs[snci],sgs[sgi],pts[sti],dac)] = self.take_data(sts, snci, sg0, sg1, st0, st1, dac, fp, swdac=0, pwr_flg=False)
