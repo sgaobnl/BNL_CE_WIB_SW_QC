@@ -1361,6 +1361,8 @@ class QC_reports:
             femb_id = "FEMB ID {}".format(self.fembsID['femb%d' % ifemb])
             inl_set = [log.report_log0601[femb_id]["INL"], log.report_log0602[femb_id]["INL"],
                        log.report_log0603[femb_id]["INL"], log.report_log0604[femb_id]["INL"]]
+            inl_std = [log.report_log0601csvinl[ifemb]["std"], log.report_log0602csvinl[ifemb]["std"], log.report_log0603csvinl[ifemb]["std"], log.report_log0604csvinl[ifemb]["std"]]
+            inl_set = [x for x in inl_set]
             gain_set = [log.report_log0601[femb_id]["Gain"], log.report_log0602[femb_id]["Gain"],
                         log.report_log0603[femb_id]["Gain"], log.report_log0604[femb_id]["Gain"]]
             gain_std = [log.report_log0601[femb_id]["Gainstd"], log.report_log0602[femb_id]["Gainstd"],
@@ -1369,26 +1371,47 @@ class QC_reports:
                        log.report_log0603[femb_id]["ENC"], log.report_log0604[femb_id]["ENC"]]
             ENC_std = [log.report_log0601[femb_id]["ENC_std"], log.report_log0602[femb_id]["ENC_std"],
                        log.report_log0603[femb_id]["ENC_std"], log.report_log0604[femb_id]["ENC_std"]]
+            RMS_set = [log.report_log0601[femb_id]["RMS"], log.report_log0602[femb_id]["RMS"],
+                       log.report_log0603[femb_id]["RMS"], log.report_log0604[femb_id]["RMS"]]
+            RMS_std = [log.report_log0601[femb_id]["RMS_std"], log.report_log0602[femb_id]["RMS_std"],
+                       log.report_log0603[femb_id]["RMS_std"], log.report_log0604[femb_id]["RMS_std"]]
             plt.figure(figsize=(10, 4))
             plt.subplot(1, 2, 1)
-            plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label='INL_SE_OFF')
+            x = [4.7, 7.8, 14, 25]
+            # plt.plot(range(4), inl_set, marker='o', linestyle='-', alpha=0.7, label='INL_SE_OFF')
             # plt.plot(2, log.report_log0601[femb_id]["INL"], marker='o', linestyle='-', alpha=0.7, label = 'INL_DIFF')
-            plt.xlabel("Voltage Gain", fontsize=12)
-            plt.ylabel("INL value", fontsize=12)
+            plt.errorbar(x, inl_set, yerr=inl_std, marker='o', linestyle='-', capsize=5,
+                         alpha=0.7, label='Gain_SE_OFF')
+            plt.xlabel("FE Gain (mV/fC)", fontsize=12)
+            plt.ylabel("INL (%)", fontsize=12)
+            plt.ylim(0.01, 10)
+            plt.xticks(x, ["4.7", "7.8", "14", "25"])
+            plt.grid(True, axis='y', linestyle='--', alpha=0.7)
+            plt.yscale("log")
             plt.grid(axis='x')
             plt.legend()
-            plt.title("INL in 4.7 7.8 14 25 mV/fC", fontsize=12)
+            plt.title("INL in 4.7 7.8 14 25 FE Gain", fontsize=12)
 
             plt.subplot(1, 2, 2)
-            plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label='Gain_SE_OFF')
+            # plt.plot(range(4), gain_set, marker='o', linestyle='-', alpha=0.7, label='Gain_SE_OFF')
             # plt.plot(2, log.report_log0605[femb_id]["Gain"], marker='o', linestyle='-', alpha=0.7, label = 'Gain_DIFF')
-            plt.xlabel("Voltage Gain", fontsize=12)
-            plt.ylabel("Gain", fontsize=12)
+            x = [4.7, 7.8, 14, 25]
+            plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
+                         alpha=0.7, label='Amplitude Gain')
+            plt.ylim(0, 130)
+            plt.xlabel("FE Gain (mV/fC)", fontsize=14)
+            plt.ylabel("In Voltage Gain / (e-/bit)", fontsize=14)
+            plt.xticks(x, ["4.7", "7.8", "14", "25"])
             plt.grid(axis='x')
-            plt.legend()
-            plt.title("Gain in 4.7 7.8 14 25 mV/fC", fontsize=12)
+            plt.grid(True, axis='y', linestyle='--')
+            plt.margins(x=0.15)
+            for i in range(len(x)):
+                plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10,
+                         ha='center', va='bottom', color='darkblue')
+            plt.title("In Voltage Gain at 4.7 7.8 14 25 FE Gain", fontsize=14)
+            plt.gca().set_facecolor('none')
             plt.tight_layout()
-            plt.savefig(report_dir + 'Cali1.png')
+            plt.savefig(report_dir + 'Cali1.png', transparent=True)
             plt.close()
 
             plt.figure(figsize=(6, 4))
@@ -1396,15 +1419,15 @@ class QC_reports:
             plt.errorbar(x, gain_set, yerr=gain_std, color='darkblue', linestyle='-', capsize=5,
                          alpha=0.7, label='Amplitude Gain')
             plt.ylim(0, 130)
-            plt.xlabel("Gain Setting", fontsize=14)
-            plt.ylabel("Amplitude Gain / e-/bit", fontsize=14)
+            plt.xlabel("FE Gain (mV/fC)", fontsize=14)
+            plt.ylabel("In Voltage Gain / (e-/bit)", fontsize=14)
             plt.xticks(x, ["4.7", "7.8", "14", "25"])
             plt.grid(True, axis='y', linestyle='--')
             plt.margins(x=0.15)
             for i in range(len(x)):
                 plt.text(x[i], gain_set[i] + 5, f'{round(gain_set[i], 1)}±{round(gain_std[i], 1)}', fontsize=10,
                          ha='center', va='bottom', color='darkblue')
-            plt.title("Amplitude Gain in 4.7 7.8 14 25 mV/fC", fontsize=14)
+            plt.title("In Voltage Gain at 4.7 7.8 14 25 FE Gain", fontsize=14)
             plt.gca().set_facecolor('none')
             plt.tight_layout()
             plt.savefig(report_dir + 'SE_Gain.png', transparent=True)
@@ -1412,18 +1435,18 @@ class QC_reports:
 
             plt.figure(figsize=(6, 4))
             x = ["4.7", "7.8", "14", "25"]
-            plt.errorbar(x, ENC_set, yerr=ENC_std, color='darkblue', linestyle='-', capsize=5,
-                         alpha=0.7, label='ENC')
-            plt.ylim(0, 1200)
-            plt.xlabel("Gain Setting", fontsize=14)
-            plt.ylabel("ENC / e-", fontsize=14)
-            plt.xticks(x, ["4.7", "7.8", "14", "25"])
-            plt.grid(True, axis='y', linestyle='--')
+            plt.errorbar(x, RMS_set, yerr=RMS_std, color='darkblue', linestyle='-', capsize=5,
+                         alpha=0.7, label='RMS Noise')
             plt.margins(x=0.15)
             for i in range(len(x)):
-                plt.text(x[i], ENC_set[i] + 50, f'{round(ENC_set[i], 1)}±{round(ENC_std[i], 1)}', fontsize=10,
+                plt.text(x[i], RMS_set[i] + 20, f'{round(RMS_set[i], 1)}±{round(RMS_std[i], 1)}', fontsize=10,
                          ha='center', va='bottom', color='darkblue')
-            plt.title("ENC in 4.7 7.8 14 25 mV/fC", fontsize=14)
+            plt.title("RMS Noise at 4.7 7.8 14 25 FE Gain", fontsize=14)
+            plt.ylim(0, 130)
+            plt.xlabel("FE Gain (mV/fC)", fontsize=14)
+            plt.ylabel("RMS Noise / bit", fontsize=14)
+            plt.xticks(x, ["4.7", "7.8", "14", "25"])
+            plt.grid(True, axis='y', linestyle='--')
             plt.gca().set_facecolor('none')
             plt.tight_layout()
             plt.savefig(report_dir + 'SE_ENC.png', transparent=True)

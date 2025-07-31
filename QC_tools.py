@@ -198,6 +198,7 @@ class ana_tools:
             plt.grid(axis='y')
 
         plt.gca().set_facecolor('none')
+        plt.grid(True, axis='y', linestyle='--', alpha=0.3)
         plt.legend()
         plt.tight_layout()
         plt.savefig(f"{fp}{fprefix}_{fname}.png", transparent=True)
@@ -301,7 +302,7 @@ class ana_tools:
             ppos = np.where(tmpwf == np.max(tmpwf))[0][0]
             wfs.append(tmpwf[ppos - 50:ppos + 150])
             plt.plot(range(len(tmpwf[ppos - 50:ppos + 150])), tmpwf[ppos - 50:ppos + 150])
-            if achn == 64:
+            if achn == 0:
                 log.channel0_pulse[nfemb][dac] = tmpwf[ppos - 50:ppos + 150]  # - np.mean(peddata)
 
         bottom = -1000
@@ -650,7 +651,7 @@ class ana_tools:
         if 'vdac' in fp:
             inl_th = 0.01
         else:
-            inl_th = 0.010
+            inl_th = 0.015
         index = len(dac_list) - 1
 
         for i in range(len(dac_list)):
@@ -806,7 +807,7 @@ class ana_tools:
             #   peak - dac linear
             plt.subplot(2, 2, 2)
             for ch in range(128):
-                uplim = np.max(pk_np[ch]) * 4 / 5
+                uplim = np.max(pk_np[ch]) * 6 / 7
                 lodac = np.max(pk_np[ch]) * 1 / 7
                 gain, inl, line_range = self.CheckLinearty(dac_np, pk_np[ch], uplim, lodac, ch, fp)
                 if gain == 0:
@@ -817,7 +818,7 @@ class ana_tools:
                     else:
                         gain = 1 / gain * dac_du / 1000 * CC / e
                 gain_list.append(round(gain, 3))
-                inl_list.append(inl)
+                inl_list.append(round(inl * 100, 2))
                 inl_listcsv.append(round(inl * 100, 2))
                 line_range_list.append(round(line_range * dac_du / 1000 * 185))
                 if ('vdac' in fname_1):
@@ -900,23 +901,32 @@ class ana_tools:
             plt.ylabel("Amplitude / ADC_bit", fontsize=14)
             plt.xlabel("Input Setting / mV", fontsize=14)
             plt.title("Amplitude vs Input", fontsize=14)
+            plt.ylim(0, 16500)
+            plt.grid(True, axis='y', linestyle='--')
             line_min = np.min(line_range_list)
 
             plt.subplot(2, 2, 1)
-            for dac in dac_list[1: -2]:
-                plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+            for dac in dac_list[1: ]:
+                if len(dac_list) > 32:
+                    if dac in [2, 10, 18, 26, 34, 42, 50, 58]:
+                        plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+                else:
+                    plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
             plt.ylabel("Pulse / ADC_bit", fontsize=14)
             plt.xlabel("Time / 512 ns", fontsize=14)
+            plt.ylim(0, 16500)
+            plt.grid(True, axis='y', linestyle='--')
             # plt.legend()
             plt.title("Waveform from channel_0", fontsize=14)
             #   Gain
             plt.subplot(2, 2, 3)
             plt.plot(range(128), gain_list, marker='.')
             plt.xlabel("Channel", fontsize=14)
-            plt.ylabel("Gain", fontsize=14)
+            plt.ylabel("Gain / (e- / bit)", fontsize=14)
             x_sticks = range(0, 129, 16)
             plt.ylim(0, 120)
             plt.xticks(x_sticks)
+            plt.grid(True, axis='y', linestyle='--')
             plt.grid(axis='x')
             plt.title("128-ch Gain Distribution", fontsize=14)
 
@@ -924,12 +934,15 @@ class ana_tools:
             plt.subplot(2, 2, 4)
             plt.plot(range(128), inl_list, marker='.')
             plt.xlabel("Channel", fontsize=14)
-            plt.ylabel("INL", fontsize=14)
+            plt.ylabel("INL (%)", fontsize=14)
             plt.ylim(0, 0.02)
             x_sticks = range(0, 129, 16)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
+            plt.grid(True, axis='y', linestyle='--')
             plt.title("128-Ch INL Distribution", fontsize=14)
+            plt.ylim(0.01, 10)
+            plt.yscale("log")
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.tight_layout()
             plt.savefig(fp + 'gain_{}.png'.format(fname), transparent=True)
@@ -950,6 +963,7 @@ class ana_tools:
             plt.ylabel("Input Range / mV", fontsize=14)
             x_sticks = range(0, 129, 16)
             plt.title(fname, fontsize=14)
+            plt.grid(True, axis='y', linestyle='--')
             fp = savedir[ifemb] + fdir + "Line_range_{}.png".format(fname)
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.tight_layout()
@@ -976,6 +990,8 @@ class ana_tools:
             gain_list = np.array(gain_list)
 
             enc_list = rms_list * gain_list
+            rms_mean = np.mean(rms_list)
+            rms_std = np.std(rms_list)
             enc_mean = np.mean(enc_list)
             enc_std = np.std(enc_list)
 
@@ -988,6 +1004,7 @@ class ana_tools:
             x_sticks = range(0, 129, 16)
             plt.xticks(x_sticks)
             plt.grid(axis='x')
+            plt.grid(True, axis='y', linestyle='--')
             plt.title(fname, fontsize=14)
             fp = savedir[ifemb] + fdir + "enc_{}.png".format(fname)
             plt.gca().set_facecolor('none')  # set background as transparent
@@ -997,6 +1014,8 @@ class ana_tools:
 
             log.tmp_log[femb_id]["ENC"] = round(enc_mean)
             log.tmp_log[femb_id]["ENC_std"] = enc_std
+            log.tmp_log[femb_id]["RMS"] = round(rms_mean)
+            log.tmp_log[femb_id]["RMS_std"] = rms_std
 
             fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
             with open(fp_bin, 'wb') as fn:
