@@ -94,6 +94,11 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
     
     logs = {}
     logs['RTS_IDs'] = dut_skt
+
+    ocrfp = root + "ocr_results.bin"
+    with open(ocrfp, 'rb') as fn:
+        chip_ocr = pickle.load(fn)
+
     x = list(dut_skt.keys())
     if "FE"in duttype or "ADC"in duttype:
         logs['PC_rawdata_root'] = root + "Time_{}_DUT_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}/".format(x[0],
@@ -120,8 +125,16 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
             tmp = cl.split(",")
             if "env" in tmp[0]:
                 tmp[1] = env
+            if "FE" in duttype:
+                if "FE" in tmp[0][0:2]:
+                    sktno = int(tmp[0][2])
+                    key = dut_skt[x[0]][sktno]
+                    tmp[1] = chip_ocr[key][1]
+            if "DUT" in tmp[0][0:3]:
+                tmp[1] = duttype
             cln=','.join(tmp)
             tmps.append(cln)
+
     
     with open(csvfp, 'w') as fp:
         for cl in tmps:

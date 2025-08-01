@@ -41,7 +41,6 @@ from SN_CLASS import SN_CLASS
 def send_rts_email(message):
     sender_email = "rtshibay@gmail.com"
     receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;lke@bnl.gov"
-    #receiver_email = ningxuyang0202@gmail.com
     password = "mbqx qfca voue zwfr"
     subject = "Message from RTS"
     body = message
@@ -192,7 +191,9 @@ def DAT_QC(dut_skt, duttype="FE") :
         return QCstatus, badchips #badchips range from 0 to7
 
     send_rts_email(message="Do you want to perform cold test? ")
-    yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
+    #yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
+    print ("Bypass cold test")
+    yorn = 'no'
     if "Y" in yorn or "y" in yorn:
         while True:
             cover_sts = rts.CoverStatus()
@@ -451,12 +452,6 @@ logs["rootdir"] = rootdir
 
 print ("start trayID: {}".format(trayid))
 status = 0
-#duts = [47,48,49,66,67,68,69,82,83,84,85,86,87] # list(range(47,484950,88,1))
-#duts = [47,48,49,66,67,68,69,82,83,84,85,86,87] # list(range(47,484950,88,1))
-duts = list(range(0,24,1))
-#duts = [82,83,84,2,86,87,88,89]
-duts = sorted(duts)
-logs["duts"] = duts 
 ids_dict = {} #good chips ID with time that chips are moved from tray to socket
 ids_dict_good = {} #good chips ID with time that chips are moved from socket to tray
 ids_dict_bad = {} #good chips ID with time that chips are moved from socket to tray
@@ -488,24 +483,51 @@ else:
     ocrbin_fp = rootdir + "ocr_results.bin"
     if os.path.isfile(ocrbin_fp) :
         with open(ocrbin_fp, 'rb') as fn:
-            goodchips, badchips = pickle.load(fn)
+            chip_ocr  = pickle.load(fn)
     else:
+        print ("Wait a few minutes until the scanning is done")
         rts.ScanTray_Lar(rootdir=rootdir)
+        rts.JumpToCamera()
         sn=SN_CLASS()
-        goodchips, badchips = sn.chip_ocr(rootdir)
+        chip_ocr = sn.chip_ocr(rootdir)
 
-    
-    if len(badchips) > 0:
-        bad_tray_id = 1
-        while len(badchips) :
-            tray_id = badchips.keys()[0]
+    bad_chip_ds = {} 
+    for key in list(chip_ocr.keys()):
+        if not chip_ocr[key][0] :
+            bad_chip_ds[key]= chip_ocr[key]    
+
+    if len(bad_chip_ds) > 0:
+        from PyQt5.QtCore import Qt
+        from PyQt5.QtGui import QFont, QPixmap, QColor
+        from PyQt5.QtWidgets import (
+            QApplication, QWidget, QLabel, QPushButton, QLineEdit,
+            QVBoxLayout, QGridLayout, QDesktopWidget, QMessageBox
+        )        
+        sys.path.append('./SN_recognition/')  
+        from pyqt import ImageWall
+        app = QApplication(sys.argv)
+        wall = ImageWall(chip_ds=bad_chip_ds)
+        wall.show()
+        app.exec_()
+        chip_ocr.update(wall.chip_ds)
+        for key in wall.chip_ds.keys():
+            print (key, chip_ocr[key])
+
+    badchips = {} 
+    for key in list(chip_ocr.keys()):
+        if not chip_ocr[key][0] :
+            badchips[key]= chip_ocr[key]    
+   
+    bad_tray_id = 1
+    for key in list(chip_ocr.keys()):
+        if not chip_ocr[key][0] :
+            tray_id = key
             while True:
                 if bad_tray_id >= 90:
                     print ("\033[91m !WARNING! Tray#1 (bac chips) is full: \033[0m")
                     yorn = input ("\033[91m Replace with a new tray? (y/Y): \033[0m")
                     if "Y" in yorn or "y" in yorn:
                         bad_tray_id = 1
-                #bad_trayc = bad_tray_id - ((bad_tray_id-1)//15)*15
                 bad_trayc = (bad_tray_id-1)%15 + 1
                 bad_trayr = (bad_tray_id-1)//15 + 1
                 flg = rts.isChipInTray(bad_trayno,bad_trayc, bad_trayr)
@@ -514,9 +536,10 @@ else:
                     trayr = (tray_id-1)//15 + 1
                     status = rts.MoveChipFromTrayToTray(trayno, trayc, trayr, bad_trayno, bad_trayc,bad_trayr)    
                     if status > 0 :
-                        badchips.pop(tray_id) #remove it from bad chip
+                        print (f'remove {key}, {chip_ocr[key]}')
+                        chip_ocr.pop(key) #remove it from bad chip
                         with open(ocrbin_fp, 'wb') as fn:
-                            pickle.load([goodchips, badchips], fn)
+                            pickle.dump(chip_ocr, fn)
                         bad_tray_id += 1
                         break
                     else:
@@ -524,12 +547,8 @@ else:
                 else:
                     bad_tray_id += 1
 
+    rts.rts_idle()
 
-
-
-
-#    ischip = rts.isChipInTray(2,1,1)
-#    print (ischip)
 
 
     #rts.MoveChipFromTrayToSocket(2, 1, 1, 2, 1, "FE")    
@@ -537,8 +556,6 @@ else:
 #    rmsg = rts.ScanTray_Lar(rootdir=rootdir)
 #    with open(rootdir  + "/chips_on_tray.txt", "w") as fp:
 #        fp.write(rmsg)
-rts.rts_shutdown()
-exit()
 
 #rts.MoveChipFromSocketToTray(2, 1, 2, 8, 6, "FE")
 #rts.MoveChipFromSocketToTray(2, 1, 2, 9, 6, "FE")
@@ -654,6 +671,11 @@ exit()
 #print ("XXXXXX")
 #exit()
 
+duts = list(chip_ocr.keys())
+logs["duts"] = duts 
+
+#rts.rts_shutdown()
+#exit()
 
 #first run
 ################STEP1#################################

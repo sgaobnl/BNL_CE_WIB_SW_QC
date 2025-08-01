@@ -81,7 +81,7 @@ class SN_CLASS():
         #print ( self.chip_ds)
 
 if __name__ == '__main__':
-    rootdir = "E:/tmp/ocr/run3/"
+    rootdir = "C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/Tested/B009T1099/"
     sn = SN_CLASS()
     #chips = sn.Chips_on_Tray(rootdir)
     sn.chip_ocr(rootdir)

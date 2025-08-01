@@ -69,7 +69,8 @@ class ImageWall(QWidget):
                     resized_pixmap = placeholder
                 else:
                     key   = keys[idx]            # dictionary key for this cell
-                    raw   = ''.join([chip_ds[key][3],chip_ds[key][4], chip_ds[key][5], chip_ds[key][6],chip_ds[key][2],chip_ds[key][1]])
+                    #raw   = ''.join([chip_ds[key][3],chip_ds[key][4], chip_ds[key][5], chip_ds[key][6],chip_ds[key][2],chip_ds[key][1]])
+                    raw   = chip_ds[key][1]
                     pixmap = QPixmap(chip_ds[key][7])  # Replace with your image path
                     resized_pixmap = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
