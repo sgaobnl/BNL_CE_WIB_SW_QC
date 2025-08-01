@@ -122,7 +122,7 @@ def validate_ocr_result(ocr_result, process_id, ocr_image_dir):
     space_count = ocr_result.count(' ')
     ocr_text = ocr_result.replace(' ', '')
     ocr_text = ocr_text.replace('.', '')
-    ocr_text = ocr_text.replace('7', 'A')
+#    ocr_text = ocr_text.replace('7', 'A')
     #warnings.append(f"(!) Warning: incorrect number of spaces.")
     #BNLLAASICVersionP5B24/19009-05518
     #words = [ocr_text[0:3],ocr_text[3:3+7],ocr_text[3+7:3+7+7],ocr_text[3+7+7:3+7+7+3],ocr_text[3+7+7+3:3+7+7+3+5],ocr_text[3+7+7+3+5:]]
@@ -421,6 +421,7 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir, degree):
 if __name__ == '__main__':
 
     fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/Tested/B099T0097/images/20250612163810_OCR/"""
-    fn = """tray_56_270.bmp"""
-    x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = fp + "/1_ocr.png", degree=270)
+    fp = """E:/tmp\ocr/run3\images/20250714164318_OCR/"""
+    fn = """tray_18_180.bmp"""
+    x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = fp + "../1_ocr.png", degree=180)
     print (x)

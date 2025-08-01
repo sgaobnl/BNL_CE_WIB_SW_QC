@@ -60,22 +60,24 @@ class SN_CLASS():
                     self.chip_ds[int(tmps[1])] = {"Degree":int(tmps[2]), "fn":ifn}
         chips = list(self.chip_ds.keys())
         chips.sort()
-        goodchips = {}
-        badchips = {}
+        #goodchips = {}
+        #badchips = {}
+        chips_ocr = {}
         for key in chips:
             fn = "/".join([ocr_imgdir , self.chip_ds[key]["fn"]])
             ocr_result = ocr_chip(image_fp = ocr_imgdir, image_fn = self.chip_ds[key]["fn"], ocr_image_dir = "/".join([post_ocr_imgdir, self.chip_ds[key]["fn"]]), degree=self.chip_ds[key]["Degree"])
+            chips_ocr[key] =  ocr_result
             #print (ocr_result)
             if ocr_result[0]: #good chip
-                goodchips[key] = ocr_result
-                print ("\033[92m OCR_PASS:",  key, ocr_result[1:7], "\033[0m")
+                #goodchips[key] = ocr_result
+                print ("\033[92m OCR_PASS:",  key, ocr_result, "\033[0m")
             else:
-                badchips[key] = ocr_result
-                print ("\033[91m OCR_FAIL: ",key, ocr_result[1:7], "\033[0m")
+                #badchips[key] = ocr_result
+                print ("\033[91m OCR_FAIL: ",key, ocr_result, "\033[0m")
 
         with open(rootdir + "ocr_results.bin", 'wb') as fn:
-            pickle.dump([goodchips, badchips], fn)
-        return goodchips, badchips
+            pickle.dump(chips_ocr, fn)
+        return chips_ocr
         #print ( self.chip_ds)
 
 if __name__ == '__main__':

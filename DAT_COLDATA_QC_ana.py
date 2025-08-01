@@ -338,7 +338,7 @@ class CD_QC_ANA():
                         self.plt_subplot(plt, fembs, rawdata)
                         plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
                         plt.plot()
-                        #plt.show()
+                        plt.show()
                         plt.savefig( fp[0:-4] + "_" + onekey + ".png")
                         plt.close()
     
@@ -882,7 +882,7 @@ if __name__=="__main__":
     fdir = '''D:\DAT_SN_data\SN1\Time_20250103160419_DUT_1000_2000\RT_CD_060602417_060562417/'''
     fdir = '''D:\DAT_CD_QC\Tested\Time_20250109200316_DUT_1000_2000\RT_CD_031702417_031722417/'''
     fdir = '''C:\SGAO\ColdTest\Tested\DAT_CD_QC\Tested\Time_20250508183918_DUT_1000_2000\RT_CD_000000001_000000002/'''
-    fdir = '''E:/tmp/'''
+    fdir = '''C:/Users/sgao.BNL/Downloads/RT_CD_039972506_039982506/RT_CD_039972506_039982506/'''
 
 
     evl = input ("Analyze all test items? (Y/N) : " )
