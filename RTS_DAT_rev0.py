@@ -4,6 +4,7 @@ import subprocess
 import time 
 import random
 import pickle
+import numpy as np
 
 
 # To send notification email
@@ -383,6 +384,20 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_dut_order, duttype
 
             return duts, dut_skt, bad_dut_order, ids_goods, ids_bads
 
+def FindSpotOnBadTray(bad_tray_id = 1):
+    while True:
+        if bad_tray_id >= 90:
+            print ("\033[91m !WARNING! Tray#1 (bac chips) is full: \033[0m")
+            yorn = input ("\033[91m Replace with a new tray? (y/Y): \033[0m")
+            if "Y" in yorn or "y" in yorn:
+                bad_tray_id = 1
+        bad_trayc = (bad_tray_id-1)%15 + 1
+        bad_trayr = (bad_tray_id-1)//15 + 1
+        flg = rts.isChipInTray(bad_trayno,bad_trayc, bad_trayr)
+        if not flg:#no chip in it
+            return bad_tray_id
+        else:
+            bad_tray_id += 1
 
 ############################################################
 
@@ -438,7 +453,7 @@ trayid = bno
 trayno =2 # tray with chips to be tested
 bad_trayno =1 # tray with bad chips
 badtrayno = 1 #some issue with tray#1
-bad_dut_order=0
+#bad_dut_order=0
 sinkno =2
 rootdir = rootdir + trayid + "/"
 #rootdir = "C:/DAT_LArASIC_QC/Tested/" + trayid + "/"
@@ -446,7 +461,7 @@ rootdir = rootdir + trayid + "/"
 logs["TrayID"] = trayid
 logs["TrayNo"] = 2
 logs["BadTrayNo"] = 1
-logs["Bad_dut_order"] = bad_dut_order
+#logs["Bad_dut_order"] = bad_dut_order
 logs["SinkNo"] = 2
 logs["rootdir"] = rootdir
 
@@ -547,8 +562,9 @@ else:
                 else:
                     bad_tray_id += 1
 
-    rts.rts_idle()
 
+    bad_dut_order = FindSpotOnBadTray(bad_tray_id = bad_tray_id)
+    rts.rts_idle()
 
 
     #rts.MoveChipFromTrayToSocket(2, 1, 1, 2, 1, "FE")    
@@ -671,7 +687,7 @@ else:
 #print ("XXXXXX")
 #exit()
 
-duts = list(chip_ocr.keys())
+duts = list(np.array(list(chip_ocr.keys())) - 1)
 logs["duts"] = duts 
 
 #rts.rts_shutdown()
@@ -701,6 +717,7 @@ while (len(duts) > 0) :
     print (QCstatus, "Badchips:", badchips)
 
     if "PASS" not in QCstatus :
+        bad_dut_order = FindSpotOnBadTray(bad_tray_id = (bad_dut_order+1))
         duts, dut_skt, bad_dut_order, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_dut_order,duttype=duttype) 
         if len(badchips) > 0:
             skts=badchips
