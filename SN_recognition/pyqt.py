@@ -206,31 +206,28 @@ class ImageWall(QWidget):
         else:
             event.ignore()
 
+def ocr_correct_gui(bad_chip_ds):
+    app = QApplication(sys.argv)
+    wall = ImageWall(chip_ds=bad_chip_ds)
+    wall.show()
+    app.exec_()
+    return wall.chip_ds
+
 
 # ── launch ─────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
     # dummy data (15 identical items)
     rootdir = "E:/tmp/ocr/run3/"
     import pickle
     with open(rootdir + "ocr_results.bin", 'rb') as fn:
         chip_ds = pickle.load( fn)
     bad_chip_ds = {}
-#    for key in list(chip_ds.keys()):
-#        if not chip_ds[key][0] :
-#            bad_chip_ds[key]= chip_ds[key]
-
     for key in range(6):
         if key in list(chip_ds.keys()):
             bad_chip_ds[key]= chip_ds[key]
 
-    #chip_ds = {i: "placeholder caption" for i in range(ROWS * COLS)}
-
-    wall = ImageWall(chip_ds=bad_chip_ds)
-    wall.show()
-    app.exec_()
-    chip_ds.update(wall.chip_ds)
+    chip_ds_ocr = ocr_correct_gui(bad_chip_ds)
+    chip_ds.update(chip_ds_ocr)
     print (chip_ds)
 
     sys.exit()
