@@ -3,11 +3,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-def sendemail(message):
+def sendemail(message, user_email="", subject = "Message from RTS"):
     sender_email = "rtshibay@gmail.com"
-    receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;lke@bnl.gov"
+    receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;" + ";" + user_email
     password = "mbqx qfca voue zwfr"
-    subject = "Message from RTS"
+    
     body = message
     msg = MIMEMultipart()
 

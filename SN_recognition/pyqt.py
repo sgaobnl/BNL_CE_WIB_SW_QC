@@ -199,7 +199,7 @@ class ImageWall(QWidget):
     # confirm on window close
     def closeEvent(self, event) -> None:  # type: ignore[override]
         if QMessageBox.question(
-            self, "Confirm Exit", "No red text or button! \n Check and correct all?",
+            self, "Confirm Exit", "Checkall? Chips with red text \n to be moved to the bad tray",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         ) == QMessageBox.Yes:
             event.accept()

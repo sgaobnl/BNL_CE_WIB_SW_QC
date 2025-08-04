@@ -21,17 +21,25 @@ class InitChecklist(QWidget):
 
         # Checkboxes
         self.chk_tray      = QCheckBox("Tray in position with label")
-        self.chk_enclosure = QCheckBox("Enclosure closed")
-        self.chk_pressure  = QCheckBox("Pressure ~50PSI")
-        self.chk_coldtest  = QCheckBox("Cold test")
+        self.chk_tray.setFont(QFont("Arial", 14))
+        self.chk_tray.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
 
+        self.chk_enclosure = QCheckBox("Enclosure closed")
+        self.chk_enclosure.setFont(QFont("Arial", 14))
+        self.chk_enclosure.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
+
+        self.chk_robot  = QCheckBox("Robot Server Start?")
+        self.chk_robot.setFont(QFont("Arial", 14))
+        self.chk_robot.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
+
+        self.chk_coldtest  = QCheckBox("Cold test")
         self.chk_coldtest.setFont(QFont("Arial", 14))
         self.chk_coldtest.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
 
         layout.addWidget(QLabel("Checklist:"))
         layout.addWidget(self.chk_tray)
         layout.addWidget(self.chk_enclosure)
-        layout.addWidget(self.chk_pressure)
+        layout.addWidget(self.chk_robot)
         layout.addWidget(self.chk_coldtest)
 
         # Buttons
@@ -58,7 +66,7 @@ class InitChecklist(QWidget):
         checks = {
             "Tray in position with label": self.chk_tray.isChecked(),
             "Enclosure closed": self.chk_enclosure.isChecked(),
-            "Pressure ~50PSI": self.chk_pressure.isChecked(),
+            "Robot Server Start?": self.chk_robot.isChecked(),
             "Cold test": self.chk_coldtest.isChecked()
         }
         if self.chk_coldtest.isChecked():
@@ -92,7 +100,7 @@ class InitChecklist(QWidget):
 
     def closeEvent(self, event):
         # Override top-right X button
-        if self.chk_tray.isChecked() and self.chk_pressure.isChecked() and self.chk_pressure.isChecked():
+        if self.chk_tray.isChecked() and self.chk_robot.isChecked() and self.chk_robot.isChecked():
             if self.chk_coldtest.isChecked():
                 text = "Cold test? "
             else:

@@ -13,6 +13,7 @@
 #Confirm button: validates all inputs and prints values if valid
 
 import sys
+import os
 import re
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
@@ -24,6 +25,7 @@ from PyQt5.QtCore import Qt
 class FourRowForm(QWidget):
     def __init__(self):
         super().__init__()
+#        self.ask_user()
         self.setWindowTitle("User input")
         self.setFixedSize(550, 500)
         self.summary_dict = {}
@@ -162,16 +164,59 @@ class FourRowForm(QWidget):
             "DUTtype": selected_chip
         })
 
+        csvfp = "./asic_info.csv"
+        if os.path.isfile(csvfp):
+            tmps = []
+            with open(csvfp, 'r') as fp:
+                for cl in fp:
+                    tmp = cl.split(",")
+                    if "tester" in tmp[0]:
+                        tmp[1] = self.summary_dict['Name']
+                    if "DUT" in tmp[0][0:3]:
+                        tmp[1] = self.summary_dict['DUTtype']
+                    if "Email" in tmp[0][0:5]:
+                        tmp[1] = self.summary_dict['Email']
+                    if "Tray_ID" in tmp[0][0:7]:
+                        tmp[1] = self.summary_dict['Tray_ID']
+                    cln=','.join(tmp)
+                    tmps.append(cln)
+    
+            with open(csvfp, 'w') as fp:
+                for cl in tmps:
+                    fp.write(cl)
+
+            csvtext = "asic_info.csv is updated. \n"
+        else:
+            csvtext = "asic_info.csv not exist. \n"
+
         reply = QMessageBox.question(
             self,
             "Success",
-            f"{summary}\n\nConfirm and close?",
+            f"{summary}\n\n" + csvtext + "Confirm and close?",
             QMessageBox.Ok | QMessageBox.No,
             QMessageBox.Ok
         )
 
         if reply == QMessageBox.Ok:
-            self.close()
+            if "updated" in csvtext:
+                self.close()
+
+#    def ask_user(self):
+#        reply = QMessageBox.question(
+#            None,
+#            "Robot Start",
+#            "Robot Start?",
+#            QMessageBox.Yes | QMessageBox.No,
+#            QMessageBox.No
+#        )
+#    
+#        if reply == QMessageBox.Yes:
+#            pass
+#            #print("Starting robot...")
+#            # You can call your robot start logic here
+#        else:
+#            print("Please start the robot and run the script again.")
+#            sys.exit()
 
     def force_exit(self):
         reply = QMessageBox.question(

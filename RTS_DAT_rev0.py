@@ -36,11 +36,12 @@ sys.path.append('./SN_recognition/')
 from SN_CLASS import SN_CLASS
 from sendemail import sendemail
 from User_Input import get_user_input
+from init_check import init_chk 
 TRAY_N = 90
 
 def DAT_debug (QCstatus):
     print (QCstatus)
-    sendemail(message="Please contact tech coordinator (DAT issue)")
+    sendemail(message="Please contact tech coordinator (DAT issue)", user_email=user_email)
     while True:#
         print ("444-> Move chips back to original positions")
         print ("2->fixed,")
@@ -54,7 +55,7 @@ def DAT_debug (QCstatus):
                     return "2"
 
 def RTS_debug (info, status=None, trayno=None, trayc=None, trayr=None, sinkno=None, sktn=None):
-    sendemail(message="Please contact tech coordinator (RTS issue)")
+    sendemail(message="Please contact tech coordinator (RTS issue)", user_email=user_email)
     print ("Please check the error information on EPSON RC")
     if "T2S" in info:
         print ("Chip is moved from Tray") 
@@ -142,7 +143,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
             break
         else:
             print ("139-> terminate, 2->debugging")
-            sendemail(message="Please contact tech coordinator (QC error)")
+            sendemail(message="Please contact tech coordinator (QC error)", user_email=user_email)
             userinput = input ("Please contact tech coordinator")
             if len(userinput) > 0:
                 if "139" in userinput :
@@ -156,7 +157,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
         return QCstatus, badchips #badchips range from 0 to7
 
     if LN2_flg:
-        sendemail(message="Do you want to perform cold test? ")
+        sendemail(message="Do you want to perform cold test? ", user_email=user_email)
         yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
     else:
         print ("Bypass cold test")
@@ -183,7 +184,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
 
         cryo.cryo_warmup(waitminutes=30)
 
-        sendemail(message="Cold test is done, please open the sink cover ...")
+        sendemail(message="Cold test is done, please open the sink cover ...", user_email=user_email)
 
         while True:
             cover_sts = rts.CoverStatus()
@@ -197,7 +198,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
     return QCstatus, badchips #badchips range from 0 to7
 
 ################STEP3#################################
-def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot, duttype="FE") :
+def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot, duttype="FE", LN2_flg=True) :
     ids_goods = {}
     ids_bads = {}
 
@@ -215,7 +216,7 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot, duttype
         rts.rts_idle()
         admincode = DAT_debug (QCstatus)
         if "2" in admincode:
-            QCstatus, badchips = DAT_QC(dut_skt,duttype)  
+            QCstatus, badchips = DAT_QC(dut_skt,duttype, LN2_flg=LN2_flg)  
         elif "444" in admincode:
             RTS_debug ("DAT")
         rts.MotorOn()
@@ -335,7 +336,7 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot, duttype
 def FindSpotOnBadTray(bad_tray_spot = 1):
     while True:
         if bad_tray_spot >= TRAY_N:
-            sendemail(message="!WARNING! Tray#1 (bac chips) is full, please replace with a new empty tray. ")
+            sendemail(message="!WARNING! Tray#1 (bac chips) is full, please replace with a new empty tray. ", user_email=user_email)
             print ("\033[91m !WARNING! Tray#1 (bac chips) is full: \033[0m")
             yorn = input ("\033[91m Replace with a new tray? (y/Y): \033[0m")
             if "Y" in yorn or "y" in yorn:
@@ -348,7 +349,7 @@ def FindSpotOnBadTray(bad_tray_spot = 1):
         else:
             bad_tray_spot += 1
 
-def Tray_SCAN_OCR(rootdir)
+def Tray_SCAN_OCR(rootdir):
     ocrbin_fp = rootdir + "ocr_results.bin"
     if os.path.isfile(ocrbin_fp) :
         with open(ocrbin_fp, 'rb') as fn:
@@ -368,11 +369,9 @@ def Tray_SCAN_OCR(rootdir)
     if len(bad_chip_ds) > 0:
         sys.path.append('./SN_recognition/')  
         from pyqt import ocr_correct_gui
-        wall = ocr_correct_gui
-        wall.show()
-        app.exec_()
-        chip_ocr.update(wall.chip_ds)
-        for key in wall.chip_ds.keys():
+        chip_ds = ocr_correct_gui(bad_chip_ds)
+        chip_ocr.update(chip_ds)
+        for key in chip_ds.keys():
             print (key, chip_ocr[key])
 
     badchips = {} 
@@ -381,12 +380,14 @@ def Tray_SCAN_OCR(rootdir)
             badchips[key]= chip_ocr[key]    
    
     bad_tray_spot = 1
-    bad_tray_spot = FindSpotOnBadTray(bad_tray_spot = 1):
+    bad_tray_spot = FindSpotOnBadTray(bad_tray_spot = 1)
     for key in list(chip_ocr.keys()):
         if not chip_ocr[key][0] :
             tray_id = key
             trayc = (tray_id-1)%15 + 1
             trayr = (tray_id-1)//15 + 1
+            bad_trayc = (bad_tray_spot-1)%15 + 1
+            bad_trayr = (bad_tray_spot-1)//15 + 1
             status = rts.MoveChipFromTrayToTray(trayno, trayc, trayr, bad_trayno, bad_trayc,bad_trayr)    
             if status > 0 :
                 print (f'remove {key}, {chip_ocr[key]}')
@@ -394,16 +395,16 @@ def Tray_SCAN_OCR(rootdir)
                 with open(ocrbin_fp, 'wb') as fn:
                     pickle.dump(chip_ocr, fn)
                 bad_tray_spot += 1
-                break
             else:
                 RTS_debug ("T2T", status )
     
-    return bad_tray_spot 
+    return bad_tray_spot, chip_ocr 
 
 ############################################################
 
-logs = {}
+LN2_flg = init_chk()
 gui_info = get_user_input()
+logs = {}
 logs.update(gui_info)
 
 if 'LArASIC' in gui_info['DUTtype'] :
@@ -423,6 +424,7 @@ else:
     sys.exit()
 
 trayid = gui_info["Tray_ID"]
+user_email= gui_info["Email"]
 
 trayno =2 # tray with chips to be tested
 bad_trayno =1 # tray with bad chips
@@ -460,8 +462,11 @@ rts.msg = "10000000000"
 rts.rts_init(port=2001, host_ip='192.168.0.2')
 rts.RootDirSet(rootdir=rootdir)
 rts.MotorOn()
+rts.PumpOn()
+time.sleep(5)
+rts.PumpOff()
 rts.JumpToCamera()
-bad_tray_spot = Tray_SCAN_OCR(rootdir)
+bad_tray_spot, chip_ocr = Tray_SCAN_OCR(rootdir)
 rts.rts_idle()
 
 #rts.MoveChipFromTrayToSocket(2, 8, 2, 2, 8, "FE")    
@@ -491,22 +496,22 @@ while (len(duts) > 0) :
 
     dut_skt.update(dut_skt_n)
     print ("Chips to be tested: ", dut_skt)
-    sendemail(message="Chips to be tested: " + ','.join(map(str, dut_skt.values())))
+    sendemail(message="Chips to be tested: " + ','.join(map(str, dut_skt.values())), user_email=user_email)
 
     if True:
-        QCstatus, badchips = DAT_QC(dut_skt,duttype) 
+        QCstatus, badchips = DAT_QC(dut_skt,duttype, LN2_flg) 
     else:
         QCstatus = "PASS"
         badchips = []
     print (QCstatus, "Badchips:", badchips)
 
     if "PASS" not in QCstatus :
-        duts, dut_skt, bad_tray_spot, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot,duttype=duttype) 
+        duts, dut_skt, bad_tray_spot, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot,duttype=duttype, LN2_flg=LN2_flg) 
         if len(badchips) > 0:
             skts=badchips
         ids_dict_bad.update(ids_bads)
     else: #PASS
-        duts, dut_skt, bad_tray_spot, ids_goods, ids_bads = MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips,bad_tray_spot,duttype=duttype) 
+        duts, dut_skt, bad_tray_spot, ids_goods, ids_bads = MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips,bad_tray_spot,duttype=duttype, LN2_flg=LN2_flg) 
         ids_dict.update(dut_skt)
         ids_dict_good.update(ids_goods)
         ids_dict_bad.update(ids_bads)
