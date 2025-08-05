@@ -15,6 +15,7 @@
 import sys
 import os
 import re
+from set_rootpath import rootdir_cs
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QCheckBox, QMessageBox, QButtonGroup
@@ -155,6 +156,28 @@ class FourRowForm(QWidget):
             (cb.text() for cb in [self.check_larasic, self.check_coldadc, self.check_coldata] if cb.isChecked()),
             "None"
         )
+
+        if 'LArASIC' in selected_chip:
+
+            rootdir = rootdir_cs('FE') +"/" + tray_id + "/"
+        elif 'ColdADC' in selected_chip:
+            rootdir = rootdir_cs('ADC') +"/" + tray_id + "/"
+        elif 'COLDATA' in selected_chip :
+            rootdir = rootdir_cs('CD') +"/" + tray_id + "/"
+        else:
+            rootdir = ""
+
+        if os.path.exists(rootdir):
+            reply = QMessageBox.question(
+                self,
+                "Folder exists",
+                f"'{rootdir}' exists, \n Continue?",
+                QMessageBox.Ok | QMessageBox.No,
+                QMessageBox.Ok
+            )
+    
+            if reply == QMessageBox.No:
+                return
 
         summary = f"Name: {name}\nEmail: {email1}\nTray ID: {tray_id}\nDUT type: {selected_chip}"
         self.summary_dict.update({

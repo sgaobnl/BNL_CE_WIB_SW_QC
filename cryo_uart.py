@@ -33,10 +33,43 @@ class cryobox:
         self.cmd_dict[b'2'] = b'Setting STATE to 2 (TC Warming)'
         self.cmd_dict[b'3'] = b'Setting STATE to 3 (TC LN2 Puddle)'
         self.cmd_dict[b'4'] = b'Setting STATE to 4 (TC LN2 Immersion)'
+        self.portno = 4
 
+#    def cryo_create(self):
+#        try:
+#            self.ser = serial.Serial('COM4', 9600, timeout=0, parity=serial.PARITY_NONE)
+#            print ("cryogenic box is connected")
+#        except:
+#            print ("could not open COM port, please call tech coordinator to fix it")
+#            while True:
+#                time.sleep(1)
+#                yorn = input ("Fixed? (Y/N)")
+#                if "Y" in yorn or "y" in yorn:
+#                    break
+#                else:
+#                    pass
     def cryo_create(self):
-        self.ser = serial.Serial('COM4', 9600, timeout=0, parity=serial.PARITY_NONE)
-        print ("cryogenic box is connected")
+        while True:
+            try:
+                self.ser = serial.Serial('COM%d'%self.portno, 9600, timeout=5, parity=serial.PARITY_NONE)
+                print("Cryogenic box is connected.")
+                time.sleep(0.5)  # Optional: allow hardware to stabilize
+                break
+            except serial.SerialException:
+                print("Could not open COM port. Please call the tech coordinator to fix it.")
+                while True:
+                    try: 
+                        self.portno = int(input("Input COM Port num?: "))
+                    except:
+                        self.portno = 4
+                    yorn = input("Fixed the issue? (Y/N): ").strip().lower()
+                    if yorn == 'y':
+                        break
+                    elif yorn == 'n':
+                        print("Waiting... Please fix the issue and try again.")
+                        time.sleep(1)
+                    else:
+                        print("Invalid input. Please enter 'Y' or 'N'.")
 
     def cryo_close(self):
         self.ser.close()
@@ -150,5 +183,5 @@ if __name__=="__main__":
     #cryo.cryo_highlevel(waitminutes=60)
 #    input ("Wait...")
     cryo.cryo_warmup(waitminutes=0.1)
-    #cryo.cryo_close()
+    cryo.cryo_close()
 

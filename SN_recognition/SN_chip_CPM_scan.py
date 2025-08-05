@@ -366,7 +366,7 @@ def validate_ocr_result(ocr_result, process_id, ocr_image_dir):
 
 ###################################################################################
 
-def ocr_chip(image_fp, image_fn, ocr_image_dir, degree):
+def ocr_chip(image_fp, image_fn, ocr_image_dir, degree, x=350, y=220, w=330, h=330, valid_flg=True):
     image_path ="/".join([ image_fp , image_fn])
 #    if "_SN" not in image_fn:
 #        print (f"{image_fn} is wrong")
@@ -377,10 +377,6 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir, degree):
         return None
 
     # Constants
-    x=350
-    y=220
-    w=330
-    h=330
     crop_box = (x, y, x+w, y+h)  # (x, y, x+w, y+h)
     
     # Extract image_number from the filename (assuming it's before the first '_')
@@ -414,8 +410,11 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir, degree):
     ocr_result = perform_ocr_minicpm(image_path = ocr_image_dir)
     #print (ocr_result)
 
-    ocr_info =  validate_ocr_result(ocr_result, image_number, ocr_image_dir)
-    return ocr_info
+    if valid_flg:
+        ocr_info =  validate_ocr_result(ocr_result, image_number, ocr_image_dir)
+        return ocr_info
+    else:
+        return ocr_result
 
 
 if __name__ == '__main__':
