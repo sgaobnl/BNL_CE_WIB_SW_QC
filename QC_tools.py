@@ -175,7 +175,7 @@ class ana_tools:
     def _plot_data(self, x, y, fname, ylabel, fprefix, fp, mean, threshold, max_val, min_val):
         """Helper function to plot and save figures."""
         plt.figure(figsize=(6, 4))
-        plt.plot(x, y, marker='o', linestyle='-', alpha=0.7, label='mean of {}: {}'.format(fprefix,  f"{mean:.2f}"))
+        plt.plot(x, y, marker='.', linestyle='-', alpha=0.7, label='mean of {}: {}'.format(fprefix,  f"{mean:.2f}"))
         plt.title('{} Distribution'.format(ylabel), fontsize=14)
         plt.xlabel("Channel", fontsize=14)
         plt.ylabel(ylabel, fontsize=14)
@@ -183,8 +183,15 @@ class ana_tools:
         plt.grid(axis='x')
 
         if 'Root' in ylabel:
+            if 'ADC' in fname:
+                y_limlow = 0
+                y_limhig = 10
+            else:
+                y_limlow = 0
+                y_limhig = 50
+        elif 'ADC' in fname:
             y_limlow = 0
-            y_limhig = 50
+            y_limhig = 16500
         elif '200' in fname:
             y_limlow = 500
             y_limhig = 1500
@@ -192,7 +199,7 @@ class ana_tools:
             y_limlow = 7900
             y_limhig = 9400
 
-        if y_limlow < min_val < max_val < y_limhig:
+        if y_limlow <= min_val < max_val <= y_limhig:
             plt.ylim(y_limlow, y_limhig)
         else:
             plt.grid(axis='y')
@@ -323,6 +330,7 @@ class ana_tools:
         plt.ylim(bottom, 16384 + 1000)
         plt.xlabel("Channel", fontsize=14)
         plt.xticks(np.arange(0, 129, 16))
+        plt.grid(axis='y', color='gray', linestyle='--', alpha=0.1)
         plt.ylabel("ADC count", fontsize=14)
         plt.legend()
 
@@ -907,7 +915,7 @@ class ana_tools:
 
             plt.subplot(2, 2, 1)
             for dac in dac_list[1: ]:
-                if len(dac_list) > 32:
+                if len(dac_list) > 12:
                     if dac in [2, 10, 18, 26, 34, 42, 50, 58]:
                         plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
                 else:
@@ -941,8 +949,8 @@ class ana_tools:
             plt.grid(axis='x')
             plt.grid(True, axis='y', linestyle='--')
             plt.title("128-Ch INL Distribution", fontsize=14)
-            plt.ylim(0.01, 10)
-            plt.yscale("log")
+            plt.ylim(0, 2)
+            # plt.yscale("log")
             plt.gca().set_facecolor('none')  # set background as transparent
             plt.tight_layout()
             plt.savefig(fp + 'gain_{}.png'.format(fname), transparent=True)
@@ -1020,3 +1028,205 @@ class ana_tools:
             fp_bin = savedir[ifemb] + fdir + "ENC_{}.bin".format(fname)
             with open(fp_bin, 'wb') as fn:
                 pickle.dump(enc_list, fn)
+
+    # for SGP_Calibration
+    def GetGain_SGP1(self, fembs, fembNo, Cali_dict, savedir, fdir, namepat, snc, sgs, sts, dac_list, updac=25, lodac=10):
+        global fname_1, ppk, bl, line_range_list, inl_list, gain_list
+        log.tmp_log.clear()
+        log.check_log.clear()
+        log.chkflag.clear()
+        log.badlist.clear()
+        dac_v = {}  # mV/bit
+        dac_v['4_7mVfC'] = 18.66
+        dac_v['7_8mVfC'] = 14.33
+        dac_v['14_0mVfC'] = 8.08
+        dac_v['25_0mVfC'] = 4.61
+        check = True
+        CC = 1.85 * pow(10, -13)
+        e = 1.602 * pow(10, -19)
+        # print(namepat)
+        if "sgp1" in namepat:
+            dac_du = dac_v['4_7mVfC']
+            fname = '{}_{}_{}_sgp1'.format(snc, sgs, sts)
+        else:
+            dac_du = dac_v[sgs]
+            fname = '{}_{}_{}'.format(snc, sgs, sts)
+
+        pk_list = [[], [], [], []]
+        if 'CALI5' in namepat or 'CALI6' in namepat:
+            dac_list = dac_list[::-1]
+            dac_list = [(1650 - x) for x in dac_list]
+        check = True
+        check_issue = []
+        for dac in dac_list:
+            if 'CALI5' in namepat or 'CALI6' in namepat:
+                dacname = 1650 - dac
+            else:
+                dacname = dac
+            key_dict = namepat.format(snc, sgs, sts, dacname) + '.bin'
+            raw = Cali_dict[key_dict]
+            rawdata = raw[0]
+            pwr_meas = raw[1]
+            wibdata = self.data_decode(rawdata, fembs)
+            pldata = wibdata
+
+            for ifemb in fembs:
+                fp = savedir[ifemb] + fdir
+                if dac == 0:
+                    fname_1 = namepat.format(snc, sgs, sts, dacname)
+                    ped, rms, _, _ = self.GetRMS(pldata, ifemb, fp, fname)
+                    ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac=dac)
+                    ppk_np = np.array(ppk) - np.array(bl)
+                    if not ('vdac' in fname_1):
+                        pk_list[ifemb].append(ppk_np)
+                else:
+                    fname_1 = namepat.format(snc, sgs, sts, dacname)
+                    ppk, bpk, bl = self.GetPeaks(pldata, ifemb, fp, fname_1, dac=dac)
+                    ppk_np = np.array(ppk) - np.array(bl)
+                    pk_list[ifemb].append(ppk_np)
+
+                    if 'CALI3' in namepat:
+                        if dac > 42:
+                            if ppk_np[dac] < 12500:
+                                check = False
+                                check_issue.append('issue dac: {}'.format(dac))
+                    elif 'CALI4' in namepat:
+                        if dac > 22:
+                            if ppk_np[dac] < 7000:
+                                check = False
+                                check_issue.append('issue dac: {}'.format(dac))
+                    print(ppk_np[dac])
+                    print(check)
+
+        for ifemb in fembs:
+            femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+            tmp_list = pk_list[ifemb]
+            new_pk_list = list(zip(*tmp_list))
+            dac_np = np.array(dac_list)
+            pk_np = np.array(new_pk_list)
+            fp = savedir[ifemb] + fdir
+
+            gain_list = []
+            inl_list = []
+            inl_listcsv = []
+            line_range_list = []
+            max_dac_list = []
+            plt.figure(figsize=(9, 6))
+            #   overlap channel 0 pulse from [1 - 63]
+
+            #   peak - dac linear
+            plt.figure(figsize=(12, 6))
+            plt.subplot(1, 2, 2)
+            for ch in range(128):
+                uplim = np.max(pk_np[ch]) * 6 / 7
+                lodac = np.max(pk_np[ch]) * 1 / 7
+                gain, inl, line_range = self.CheckLinearty(dac_np, pk_np[ch], uplim, lodac, ch, fp)
+                if gain == 0:
+                    print("femb%d ch%d gain is zero" % (ifemb, ch))
+                else:
+                    if ('vdac' in namepat):
+                        gain = 1 / gain / 1000 * CC / e
+                    else:
+                        gain = 1 / gain * dac_du / 1000 * CC / e
+                gain_list.append(round(gain, 3))
+                line_range_list.append(round(line_range * dac_du / 1000 * 185))
+                plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #         if ('vdac' in fname_1):
+        #             if inl > 0.2:
+        #                 check = False
+        #                 check_issue.append("ch {} INL issue: {}".format(ch, inl))
+        #             if line_range < 100:
+        #                 check = False
+        #                 check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+        #             if gain > 50:
+        #                 check = False
+        #                 check_issue.append("ch {} gain issue: {}".format(ch, gain))
+        #             plt.plot(dac_np, pk_np[ch])
+        #         else:
+        #             if inl > 0.01:
+        #                 check = False
+        #                 check_issue.append("ch {} INL issue: {}".format(ch, inl))
+        #             if "900mV" in fname_1:
+        #                 if 'sgp1' in fname_1:
+        #                     plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if line_range < 4:
+        #                         check = False
+        #                         check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+        #                 else:
+        #                     plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if line_range < 25:
+        #                         check = False
+        #                         check_issue.append("ch {} line range issue: {}".format(ch, line_range))
+        #                 if gain > 43:
+        #                     check = False
+        #                     check_issue.append("ch {} Gain issue at 14_0 mVfC: {}".format(ch, line_range))
+        #
+        #
+        #             elif '200mV' in fname_1:
+        #                 if 'sgp1' in fname_1:
+        #                     if line_range < 20:
+        #                         check = False
+        #                         check_issue.append("ch {} Line range issue lower than 20: {}".format(ch, line_range))
+        #                 else:
+        #                     if line_range < 48:
+        #                         check = False
+        #                         check_issue.append("ch {} Line range issue lower than 50: {}".format(ch, line_range))
+        #                 if '4_7' in fname_1:
+        #                     plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if gain > 135:
+        #                         check = False
+        #                         check_issue.append("ch {} Gain issue at 4_7 mVfC: {}".format(ch, line_range))
+        #                 if '7_8' in fname_1:
+        #                     plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if gain > 78:
+        #                         check = False
+        #                         check_issue.append("ch {} Gain issue at 7_8 mVfC: {}".format(ch, line_range))
+        #                 if '14_0' in fname_1:
+        #                     if 'sgp1' in fname_1:
+        #                         plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     else:
+        #                         plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if gain > 45:
+        #                         check = False
+        #                         check_issue.append("ch {} Gain issue at 14_0 mVfC: {}".format(ch, line_range))
+        #                 if '25_0' in fname_1:
+        #                     plt.plot(dac_np * dac_du / 1000 * 185, pk_np[ch])
+        #                     if gain > 26:
+        #                         check = False
+        #                         check_issue.append("ch {} Gain issue at 25_0 mVfC: {}".format(ch, line_range))
+
+                # max_dac_list.append(max_dac)
+        # for ifemb in fembs:
+        #     femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+            # log.tmp_log[femb_id]["INL"] = np.max(inl_list)
+            # log.tmp_log[femb_id]["Gain"] = np.mean(gain_list)
+            # log.tmp_log[femb_id]["Gainstd"] = np.std(gain_list)
+            log.tmp_log[femb_id]["Linearangemin"] = np.min(line_range_list)
+            log.tmp_log[ifemb]["line_range_list"] = line_range_list
+            log.check_log[femb_id]["Result"] = check
+            log.check_log[femb_id]["Issue List"] = check_issue
+            plt.ylabel("Amplitude / ADC_bit", fontsize=14)
+            plt.xlabel("Input Setting / mV", fontsize=14)
+            plt.title("Amplitude vs Input", fontsize=14)
+            plt.ylim(0, 16500)
+            plt.grid(True, axis='y', linestyle='--')
+
+            plt.subplot(1, 2, 1)
+            for dac in dac_list[1: ]:
+                if len(dac_list) > 12:
+                    if dac in [2, 10, 18, 26, 34, 42, 50, 58]:
+                        plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+                else:
+                    plt.plot(range(len(log.channel0_pulse[ifemb][dac])), log.channel0_pulse[ifemb][dac])
+            plt.ylabel("Pulse / ADC_bit", fontsize=14)
+            plt.xlabel("Time / 512 ns", fontsize=14)
+            plt.ylim(0, 16500)
+            plt.grid(True, axis='y', linestyle='--')
+            # plt.legend()
+            plt.title("Waveform from channel_0", fontsize=14)
+            # plt.yscale("log")
+            plt.gca().set_facecolor('none')  # set background as transparent
+            plt.tight_layout()
+            plt.savefig(fp + 'gain_{}.png'.format(fname), transparent=True)
+            plt.close()
+

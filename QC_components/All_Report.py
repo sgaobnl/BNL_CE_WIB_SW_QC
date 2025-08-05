@@ -843,8 +843,8 @@ def section_report(datareport, fembs, fembNo, fembsName):
             # SE    200 mVBL    4_7 mVfC       2 us    SGP1
                 file.write(Head08 + '\n')
                 file.write('### Calibration 03 SE SGP1 200 mVBL    14_0 mVfC    2 us' + '\n')
-                file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
-                file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
+                # file.write('<img src="./{}/enc_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n")  # width="200"
+                # file.write('<img src="./{}/Line_range_200mVBL_14_0mVfC_2_0us_sgp1.png" alt="picture" height={}>'.format(log.item081, PH) + "\n\n")  # width="200"
                 # file.write("![ped](./{}/enc_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "![ped](./{}/Line_range_200mVBL_4_7mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
                 file.write("![ped](./{}/gain_200mVBL_14_0mVfC_2_0us_sgp1.png)".format(log.item081) + "\n")
             # # DIFF  900 mVBL    4_7 mVfC     2 us
@@ -958,9 +958,15 @@ def section_report(datareport, fembs, fembNo, fembsName):
                 file.write('### ADC_DC noise measurement' + '\n')
                 # info = dict_to_markdown_table(log.ADCMON_table[femb_id], VALUE="ADC_MON")
                 # file.write(info + '\n')
+                file.write('#### ADC Test mode DC Noise SE' + '\n\n')
                 file.write("![ped](./{}/ped_ADC_Test_mode_DC_Noise_SE.png)".format(log.item15))
+                file.write("![ped](./{}/rms_ADC_Test_mode_DC_Noise_SE.png)".format(log.item15) + '\n\n')
+                file.write('#### ADC SYNC PAT SHA SE' + '\n\n')
                 file.write("![ped](./{}/ped_ADC_SYNC_PAT_SHA_SE.png)".format(log.item15))
+                file.write("![ped](./{}/rms_ADC_SYNC_PAT_SHA_SE.png)".format(log.item15) + '\n\n')
+                file.write('#### ADC SYNC PAT SHA DIFF' + '\n\n')
                 file.write("![ped](./{}/ped_ADC_SYNC_PAT_SHA_DIFF.png)".format(log.item15))
+                file.write("![ped](./{}/rms_ADC_SYNC_PAT_SHA_DIFF.png)".format(log.item15))
                 file.write('\n\n')
 # 16        print <ADC_DC noise measurement>
             # 12_01
@@ -1021,7 +1027,7 @@ def final_report(datareport, fembs, fembNo, fembsName):
             summary = '<span style="color: dark;">' + " FEMB # {}\t       Quality Control in Test ".format(fembsName['femb%d' % ifemb]) + '</span>' + '\n'
         else:
             if all_true:
-                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    ALL Quality Control".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
+                summary = '<span style="color: green;">' + " FEMB # {}\t      PASS\t    Quality Control".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
             else:
                 summary = '<span style="color: red;">' + " FEMB # {}\t      fail\t    the Quality Control tests".format(fembsName['femb%d' % ifemb]) + '</span>'  + '\n'
         print(summary)
@@ -1182,11 +1188,12 @@ def final_report(datareport, fembs, fembNo, fembsName):
             file.write("------\n")
 
             if check_status[1-1] is not None:
-                file.write('<img src="./PWR_Meas/Power_Total.png" alt="picture" height="250">' + "\n\n")  # width="200"
+                file.write('<img src="./PWR_Meas/Power_Total.png" alt="picture" height="500">' + "\n\n")  # width="200"
             if check_status[6-1] is not None:
-                file.write('<img src="./CALI1_DIFF/SE_Gain.png" alt="picture" height="250">' + "\n\n")  # width="200"
-                file.write('<img src="./CALI1_DIFF/SE_ENC.png" alt="picture" height="250">' + "\n\n")  # width="200"
-            if check_status[11-1] is not None:
-                file.write('<img src="./MON_FE/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">' + "\n\n")  # width="200"
+                file.write('<img src="./CALI1_DIFF/SE_ENC.png" alt="picture" height="500">' + "\n\n")  # width="200"
+                file.write('<img src="./CALI1_DIFF/SE_Gain.png" alt="picture" height="500">' + "\n\n")  # width="200"
+
+            # if check_status[11-1] is not None:
+            #     file.write('<img src="./MON_FE/mon_LArASIC_DAC_25mVfC.png" alt="picture" height="250">' + "\n\n")  # width="200"
 
             file.write("------\n")

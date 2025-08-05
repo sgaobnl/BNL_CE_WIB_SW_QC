@@ -441,22 +441,22 @@ def CSV_section_report(datareport, fembs, fembNo):
             data = ['QC_07_01_14_0mVfC_Calibration_Linearity_Range_03', 'SEOFF_900mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0701csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0701csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0701csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0701csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0701csvlinerange[ifemb]['line_range_list']
             csv_style.write_to_csv_line(file_path, line_number, data)
         if 8 in log.test_label:
-            line_number = 202;
-            data = ['QC_08_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_200mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0801csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvgain[ifemb]['gain_list']
-            csv_style.write_to_csv_line(file_path, line_number, data)
-            line_number = 203;
-            data = ['QC_08_01_14_0mVfC_Calibration_INL_02', 'SGP1_200mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0801csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvinl[ifemb]['inl_list / %']
-            csv_style.write_to_csv_line(file_path, line_number, data)
+            # line_number = 202;
+            # data = ['QC_08_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_200mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0801csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvgain[ifemb]['gain_list']
+            # csv_style.write_to_csv_line(file_path, line_number, data)
+            # line_number = 203;
+            # data = ['QC_08_01_14_0mVfC_Calibration_INL_02', 'SGP1_200mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0801csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvinl[ifemb]['inl_list / %']
+            # csv_style.write_to_csv_line(file_path, line_number, data)
             line_number = 204;
             data = ['QC_08_01_14_0mVfC_Calibration_Linearity_Range_03', 'SGP1_200mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0801csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0801csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0801csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0801csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0801csvlinerange[ifemb]['line_range_list']
             csv_style.write_to_csv_line(file_path, line_number, data)
         if 9 in log.test_label:
-            line_number = 205;
-            data = ['QC_09_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_900mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0901csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvgain[ifemb]['gain_list']
-            csv_style.write_to_csv_line(file_path, line_number, data)
-            line_number = 206;
-            data = ['QC_09_01_14_0mVfC_Calibration_INL_02', 'SGP1_900mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0901csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvinl[ifemb]['inl_list / %']
-            csv_style.write_to_csv_line(file_path, line_number, data)
+            # line_number = 205;
+            # data = ['QC_09_01_14_0mVfC_Calibration_GAIN_01', 'SGP1_900mVBL_14_0mVfC_2_0us', 'Gain Mean', '{}'.format(log.report_log0901csvgain[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvgain[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvgain[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvgain[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvgain[ifemb]['gain_list']
+            # csv_style.write_to_csv_line(file_path, line_number, data)
+            # line_number = 206;
+            # data = ['QC_09_01_14_0mVfC_Calibration_INL_02', 'SGP1_900mVBL_14_0mVfC_2_0us', 'INL Mean', '{}'.format(log.report_log0901csvinl[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvinl[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvinl[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvinl[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvinl[ifemb]['inl_list / %']
+            # csv_style.write_to_csv_line(file_path, line_number, data)
             line_number = 207;
             data = ['QC_09_01_14_0mVfC_Calibration_Linearity_Range_03', 'SGP1_900mVBL_14_0mVfC_2_0us', 'Linearity_Range', '{}'.format(log.report_log0901csvlinerange[ifemb]['mean']), '5-sigma-STD', '{}'.format(5*log.report_log0901csvlinerange[ifemb]['std']), 'MAX', '{}'.format(log.report_log0901csvlinerange[ifemb]['max']), 'MIN', '{}'.format(log.report_log0901csvlinerange[ifemb]['min']), '128-Ch Distribution'] + log.report_log0901csvlinerange[ifemb]['line_range_list']
             csv_style.write_to_csv_line(file_path, line_number, data)

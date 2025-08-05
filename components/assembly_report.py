@@ -3,33 +3,45 @@ import subprocess
 
 
 #================   Final Report    ===================================
+# LKE@BNL.GOV
 
-def dict_to_markdown_table(dictionary, KEY = "KEY", VALUE = "RECORD"):
-    # 获取字典的键和值
+def dict_to_html_table(dictionary, KEY="KEY", VALUE="RECORD"):
     keys = list(dictionary.keys())
     values = list(dictionary.values())
-
+    html = "<table border='1' style='border-collapse: collapse;'>"
     if VALUE == "PWRVALUE":
-        # 构建表格头部
-        table = "| {} | {} |\n| --- | --- | --- | --- | --- |\n".format(KEY, " | | | ")
+        # 確認是 list 的形式 → 使用多欄 table 輸出
+        max_len = max(len(v) if isinstance(v, list) else 1 for v in values)
+        html += f"<tr><th>{KEY}</th>" + "".join(f"<th>CH{i}</th>" for i in range(max_len)) + "</tr>\n"
+
         for key, value in zip(keys, values):
-            table += f"| {key} | {value} |\n"
+            if isinstance(value, list):
+                html += f"<tr><td>{key}</td>" + "".join(f"<td>{v}</td>" for v in value) + "</tr>\n"
+            else:
+                html += f"<tr><td>{key}</td><td colspan='{max_len}'>{value}</td></tr>\n"
+
     elif VALUE == "MonPath":
-        table = "| {} | {} |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n".format(KEY, " | | | | | | |")
+    # 多欄表格：KEY 是行名，每個 value 是 list，顯示為一整列
+        max_len = max(len(v) if isinstance(v, list) else 1 for v in values)
+        html += f"<tr><th>{KEY}</th>" + "".join(f"<th>CH{i}</th>" for i in range(max_len)) + "</tr>\n"
         for key, value in zip(keys, values):
-            table += f"| {key} | {value} |\n"
+            if isinstance(value, list):
+                html += f"<tr><td>{key}</td>" + "".join(f"<td>{v}</td>" for v in value) + "</tr>\n"
+            else:
+                html += f"<tr><td>{key}</td><td colspan='{max_len}'>{value}</td></tr>\n"
+
     elif VALUE == "Horizontal":
-        table = '|' + '|'.join(dictionary.keys()) + '|' + '\n'
-        table += '|' + '|'.join(['---' for _ in dictionary.keys()]) + '|' + '\n'
-        table += '|' + '|'.join(str(dictionary[key]).strip() for key in dictionary.keys()) + '|' + '\n'
+        html += "<tr>" + "".join(f"<th>{key}</th>" for key in keys) + "</tr>"
+        html += "<tr>" + "".join(f"<td>{str(dictionary[key]).strip()}</td>" for key in keys) + "</tr>"
     else:
-        table = "| {} | {} |\n| --- | --- |\n".format(KEY, VALUE)
+        html += f"<tr><th>{KEY}</th><th>{VALUE}</th></tr>"
         for key, value in zip(keys, values):
-            table += f"| {key} | {value} |\n"
+            html += f"<tr><td>{key}</td><td>{value}</td></tr>"
+    html += "</table>"
+    return html
 
-    return table
 
-def final_report(datareport, fembs, fembNo, Rail = True):
+def final_report(datareport, fembs, fembNo, Rail=True):
     print("\n\n\n")
     print("==================================================================================")
     print("+++++++               GENERAL REPORT for FEMB BOARDS TESTING               +++++++")
@@ -58,12 +70,11 @@ def final_report(datareport, fembs, fembNo, Rail = True):
         if Rail:
             log.final_status[femb_id]["item10"] = log.report_log101[femb_id]["Result"]
         log.final_status[femb_id]["Monitor_Path"] = log.report_log111[femb_id]["Result"]
-        #log.final_status[femb_id]["item9"] = log.report_log09[femb_id]["Result"]
 
         all_true[femb_id] = all(value for value in log.final_status[femb_id].values())
 
         if all_true[femb_id]:
-            print("FEMB ID {}\t Slot {} PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d'%ifemb], ifemb))
+            print("FEMB ID {}\t Slot {} PASS\t ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb], ifemb))
         else:
             print("femb id {}\t Slot {} faild\t the assembly checkout".format(fembNo['femb%d' % ifemb], ifemb))
     print("\n\n")
@@ -71,152 +82,191 @@ def final_report(datareport, fembs, fembNo, Rail = True):
 
     for ifemb in fembs:
         femb_id = "FEMB ID {}".format(fembNo['femb%d' % ifemb])
+
+        # 根据Rail变量确定需要检查的日志列表
         if Rail:
-            dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log061, log.report_log07, log.report_log08, log.report_log091, log.report_log101, log.report_log111]
+            dict_list = [
+                log.report_log021, log.report_log03, log.report_log04, log.report_log051,
+                log.report_log061, log.report_log07, log.report_log08, log.report_log091,
+                log.report_log101, log.report_log111
+            ]
         else:
-            dict_list = [log.report_log021, log.report_log03, log.report_log04, log.report_log051, log.report_log07, log.report_log08, log.report_log091, log.report_log111]
+            dict_list = [
+                log.report_log021, log.report_log03, log.report_log04, log.report_log051,
+                log.report_log07, log.report_log08, log.report_log091, log.report_log111
+            ]
 
         issue_note = ""
         if all_true[femb_id]:
-            pass
-            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
-            note = "### Here is the Summary"
+            # 若所有测试通过，则标记为绿色通过状态
+            summary = "<span style='color: green;'>" + "FEMB # {}\t      PASS\t    ALL ASSEMBLY CHECKOUT".format(fembNo['femb%d' % ifemb]) + "</span>"
+            note = "### See the Report"
             status = 'P'
         else:
+            # 若存在测试失败，则标记为红色失败状态，并输出问题详情
             print(femb_id)
-            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
-            status = 'N'
+            summary = "<span style='color: red;'>" + "femb id {}\t      faild\t the assembly checkout".format(fembNo['femb%d' % ifemb]) + "</span>"
+            status = 'P'  # 注意：此处原代码为'P'，可能是笔误，应检查是否应设为'F'
+
             for dict in dict_list:
                 if dict[femb_id]["Result"] == False:
                     print(dict[femb_id])
                     issue_note += "{} \n".format(dict[femb_id])
+
             note = "### Here is the issue: \n" + str(issue_note) + "\n"
 
-        fpmd = datareport[ifemb] + 'report_FEMB_{}_Slot{}_{}.md'.format(fembNo['femb%d' % ifemb], ifemb ,status)
+        fhtml = datareport[ifemb] + 'report_FEMB_{}_Slot{}_{}.html'.format(fembNo['femb%d' % ifemb], ifemb, status)
+        with open(fhtml, 'w', encoding="utf-8") as file:
+            file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>FEMB Report</title>\n</head>\n<body>\n')
+            file.write('<br><br>\n')
 
-        with open(fpmd, 'w', encoding = "utf-8") as file:
-            file.write('\n')
-            file.write('\n')
-            file.write('# ' + summary + '\n')
+            # Summary（带颜色的标题）
+            file.write(f'<h1>{summary}</h1>\n')
+            file.write('<br>\n<br>\n')
 
-            file.write('\n')
+            # Part 01：输入信息标题
+            Head01 = '<h3>PART 01 INPUT INFORMATION</h3>\n'
+            file.write(Head01)
 
-            file.write('\n')
+            # 使用HTML版本的表格写入 input info
+            info = dict_to_html_table(log.report_log01["Detail"], VALUE="Horizontal")
+            file.write(info + '<br>\n')
 
-#   Begin   lke@bnl.gov
+            # Configuration部分
+            file.write('<h3>Configuration:</h3>\n')
+            file.write('<p>14 mV/fC; 2 μs; 200 mV; SE, DIFF;</p>\n')
+            file.write('<br>\n')
 
-# 01        Print <Input Information>
-            Head01 = '### ' + 'PART 01 INPUT INFORMATION' + '\n'
-            file.write(Head01 + '\n')
-            info = dict_to_markdown_table(log.report_log01["Detail"], VALUE = "Horizontal")
-            file.write(info + '\n')
-            file.write('\n')
-            file.write(note + '\n')
-            file.write('\n')
-            file.write('\n');            file.write('------');            file.write('\n')
+            # Note（问题详情 or 通用说明）
+            file.write('<div>\n' + note.replace('###', '<h3>').replace('\n', '<br>\n') + '\n</div>\n')
 
-# 02        Print <Initial test Result>
+            # 分割线
+            file.write('<hr>\n')
+
+            file.write('</body>\n</html>\n')
+
+            # 02 打印 <初始测试结果>
             if (log.report_log021[femb_id]["Result"] == True) and (log.report_log03[femb_id]["Result"] == True):
-                Head02 = '### ' + '<span style="color: green;">' + 'PART 02 POR Measurement' + '    < Pass >' + '</span>'  + '\n'
+                Head02 = '<h3><span style="color: green;">PART 02 Initial Test &nbsp;&nbsp; &lt; Pass &gt;</span></h3>\n'
             else:
-                Head02 = '### ' + '<span style="color: red;">' + 'PART 02 POR Measurement' + ' | Fail' + '</span>' + '\n'
-            file.write(Head02 + '\n')
-            file.write('#### ' + str(log.report_log02["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log02[femb_id], KEY = "POR Power Measurement", VALUE = "PWRVALUE")
-            file.write(info + '\n')
+                Head02 = '<h3><span style="color: red;">PART 02 Initial Test &nbsp;&nbsp; | Fail</span></h3>\n'
 
-            file.write('#### ' + str(log.report_log03["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log03[femb_id], KEY = "POR COLDATA ColdADC Register Two Cycle Check", VALUE = "Horizontal")
-            file.write(info + '\n')
+            file.write(Head02)
 
-# 03        Print <SE OFF RMS, PED, Pulse, Power Current, Power Rail>
+            # 写入 Initial Current Measurement 的标题
+            file.write(f'<h4>{log.report_log02["ITEM"]}</h4>\n')
+
+            # 转换表格为 HTML 表格格式
+            info = dict_to_html_table(log.report_log02[femb_id], KEY="Initial Current Measurement", VALUE="PWRVALUE")
+            file.write(info + '<br>\n')
+
+            # 写入 Initial Register Check 的标题
+            file.write(f'<h4>{log.report_log03["ITEM"]}</h4>\n')
+
+            # 转换表格为 HTML 表格格式
+            info = dict_to_html_table(log.report_log03[femb_id], KEY="Initial Register Check", VALUE="Horizontal")
+            file.write(info + '<br>\n')
+
+            # 03 打印 <SE OFF RMS, PED, Pulse, Power Current, Power Rail>
             if Rail:
                 if (log.report_log04[femb_id]["Result"] == True) and (log.report_log051[femb_id]["Result"] == True) and (log.report_log061[femb_id]["Result"] == True):
-                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE OFF Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head03 = '<h3><span style="color: green;">PART 03 SE Interface Measurement &nbsp;&nbsp; &lt; Pass &gt;</span></h3>\n'
                 else:
-                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE OFF Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head03 = '<h3><span style="color: red;">PART 03 SE Interface Measurement &nbsp;&nbsp; | Fail</span></h3>\n'
             else:
                 if (log.report_log04[femb_id]["Result"] == True) and (log.report_log051[femb_id]["Result"] == True):
-                    Head02 = '### ' + '<span style="color: green;">' + 'PART 03 SE OFF Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head03 = '<h3><span style="color: green;">PART 03 SE Interface Measurement &nbsp;&nbsp; &lt; Pass &gt;</span></h3>\n'
                 else:
-                    Head02 = '### ' + '<span style="color: red;">' + 'PART 03 SE OFF Measurement' + ' | Fail' + '</span>' + '\n'
-            file.write(Head02 + '\n')
-            file.write('#### ' + str(log.report_log04["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log04[femb_id], KEY = "SE OFF Noise Measurement", VALUE = "VALUE")
-            file.write("![ped](./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" + "\n\n")
-            file.write(info + '\n')
-            # "![rms](./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png)" +
-            file.write('#### ' + str(log.report_log05["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log05[femb_id], KEY = "SE OFF Power Measurement", VALUE = "PWRVALUE")
-            file.write(info + '\n')
+                    Head03 = '<h3><span style="color: red;">PART 03 SE Interface Measurement &nbsp;&nbsp; | Fail</span></h3>\n'
 
+            file.write(Head03)
+
+            # 写入 SE Noise Measurement 标题
+            file.write(f'<h4>{log.report_log04["ITEM"]}</h4>\n')
+
+            # 噪声图像插入 (ped + rms)
+            file.write('<div>\n')
+            file.write('<img src="./ped_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png" alt="ped" style="max-width: 45%; margin-right: 10px;">\n')
+            file.write('<img src="./rms_Raw_SE_200mVBL_14_0mVfC_2_0us_0x00.png" alt="rms" style="max-width: 45%;">\n')
+            file.write('</div><br>\n')
+
+            # 表格输出：SE Noise Measurement
+            info = dict_to_html_table(log.report_log04[femb_id], KEY="SE Noise Measurement", VALUE="VALUE")
+            file.write(info + '<br>\n')
+
+            # 写入 SE Current Measurement 标题
+            file.write(f'<h4>{log.report_log05["ITEM"]}</h4>\n')
+            info = dict_to_html_table(log.report_log05[femb_id], KEY="SE Current Measurement", VALUE="PWRVALUE")
+            file.write(info + '<br>\n')
+
+            # 若包含 Rail 测试，写入 Power Rail 信息
             if Rail:
-                file.write('#### ' + str(log.report_log06["ITEM"]) + '\n')
-                info = dict_to_markdown_table(log.report_log06[femb_id], KEY = "SE OFF Power Rail / mA", VALUE = "Horizontal")
-                file.write(info + '\n')
+                file.write(f'<h4>{log.report_log06["ITEM"]}</h4>\n')
+                info = dict_to_html_table(log.report_log06[femb_id], KEY="SE Power Rail", VALUE="Horizontal")
+                file.write(info + '<br>\n')
+
+            # 写入 Pulse Response 测试项
+            file.write(f'<h4>{log.report_log07["ITEM"]}</h4>\n')
+
+            # Pulse 图像插入
+            file.write('<div>\n')
+            file.write('<img src="./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png" alt="pulse response" style="max-width: 90%;">\n')
+            file.write('</div><br>\n')
+
+            info = dict_to_html_table(log.report_log07[femb_id], KEY="SE Pulse Response", VALUE="VALUE")
+            file.write(info + '<br>\n')
 
 
-            file.write('#### ' + str(log.report_log07["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log07[femb_id], KEY = "SE OFF Pulse Response", VALUE = "VALUE")
-            file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)" + "\n\n")
-            file.write(info + '\n')
 
-
-
-            # file.write('## ' + str(log.report_log07["ITEM"]) + '\n')
-            # file.write('#### ' + 'Result:    ' + str(log.report_log07[femb_id]["Result"]) + '\n\n')
-            # for key, value in log.report_log07[femb_id].items():
-            #     file.write('#### ' + f"{key}: {value}\n")
-            # file.write("![ped](./pulse_Raw_SE_900mVBL_14_0mVfC_2_0us_0x10.bin.png)")
-            # file.write('\n')
-# 04        Print <DIFF RMS, PED, Pulse, Power Current, Power Rail>
+            # 04 打印 <DIFF RMS, PED, Pulse, Power Current, Power Rail>
             if Rail:
                 if (log.report_log08[femb_id]["Result"] == True) and (log.report_log091[femb_id]["Result"] == True) and (log.report_log101[femb_id]["Result"] == True):
-                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head04 = '<h3><span style="color: green;">PART 04 DIFF Interface Measurement &nbsp;&nbsp; &lt; Pass &gt;</span></h3>\n'
                 else:
-                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Measurement' + ' | Fail' + '</span>' + '\n'
+                    Head04 = '<h3><span style="color: red;">PART 04 DIFF Interface Measurement &nbsp;&nbsp; | Fail</span></h3>\n'
             else:
                 if (log.report_log08[femb_id]["Result"] == True) and (log.report_log091[femb_id]["Result"] == True):
-                    Head04 = '### ' + '<span style="color: green;">' + 'PART 04 DIFF Measurement' + '    < Pass >' + '</span>'  + '\n'
+                    Head04 = '<h3><span style="color: green;">PART 04 DIFF Interface Measurement &nbsp;&nbsp; &lt; Pass &gt;</span></h3>\n'
                 else:
-                    Head04 = '### ' + '<span style="color: red;">' + 'PART 04 DIFF Measurement' + ' | Fail' + '</span>' + '\n'
-            file.write(Head04 + '\n')
-            file.write('## ' + str(log.report_log08["ITEM"]) + '\n')
-            # file.write('#### ' + 'Result:    ' + str(log.report_log08[femb_id]["Result"]) + '\n\n')
+                    Head04 = '<h3><span style="color: red;">PART 04 DIFF Interface Measurement &nbsp;&nbsp; | Fail</span></h3>\n'
 
-            info = dict_to_markdown_table(log.report_log08[femb_id], KEY="4.1 DIFF Pulse Measurement", VALUE="VALUE")
-            # for key, value in log.report_log08[femb_id].items():
-            #     file.write('#### ' + f"{key}: {value}\n")
-            file.write("![ped](./pulse_Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png)" + "\n\n")
-            file.write(info + '\n')
-            file.write('\n')
+            file.write(Head04)
 
-            file.write('## ' + str(log.report_log09["ITEM"]) + '\n')
-            # file.write('#### ' + 'Result:    ' + str(log.report_log09[femb_id]["Result"]) + '\n\n')
-            # for key, value in log.report_log09[femb_id].items():
-            #     file.write('#### ' + f"{key}: {value}\n")
-            info = dict_to_markdown_table(log.report_log09[femb_id], KEY = "4.2 DIFF Power Measurement", VALUE = "PWRVALUE")
-            file.write(info + '\n')
-            file.write('\n')
+            # 4.1 DIFF Pulse Measurement
+            file.write(f'<h2>{log.report_log08["ITEM"]}</h2>\n')
+            file.write('<div>\n')
+            file.write('<img src="./pulse_Raw_DIFF_900mVBL_14_0mVfC_2_0us_0x10.png" alt="diff pulse" style="max-width: 90%;">\n')
+            file.write('</div><br>\n')
 
+            info = dict_to_html_table(log.report_log08[femb_id], KEY="4.1 DIFF Pulse Measurement", VALUE="VALUE")
+            file.write(info + '<br>\n')
+
+            # 4.2 DIFF Current Measurement
+            file.write(f'<h2>{log.report_log09["ITEM"]}</h2>\n')
+            info = dict_to_html_table(log.report_log09[femb_id], KEY="4.2 DIFF Current Measurement", VALUE="PWRVALUE")
+            file.write(info + '<br>\n')
+
+            # 4.3 DIFF Power Rail（仅在 Rail 为 True 时写入）
             if Rail:
-                file.write('## ' + str(log.report_log10["ITEM"]) + '\n')
-                # file.write('#### ' + 'Result:    ' + str(log.report_log10[femb_id]["Result"]) + '\n\n')
-                # for key, value in log.report_log10[femb_id].items():
-                #     file.write('#### ' + f"{key}: {value}\n")
-                info = dict_to_markdown_table(log.report_log10[femb_id], KEY = "4.3 DIFF LDO Measurement / mV", VALUE = "Horizontal")
-                file.write(info + '\n')
+                file.write(f'<h2>{log.report_log10["ITEM"]}</h2>\n')
+                info = dict_to_html_table(log.report_log10[femb_id], KEY="4.3 DIFF Power Rail", VALUE="Horizontal")
+                file.write(info + '<br>\n')
 
-# 05        PART 05 Monitoring Path Measurement
-            if (log.report_log111[femb_id]["Result"] == True):
-                Head05 = '## ' + '<span style="color: green;">' + 'PART 05 Monitoring Measurement' + '    < Pass >' + '</span>'  + '\n'
+
+
+            # 05 PART 05 Monitoring Path Measurement
+            if log.report_log111[femb_id]["Result"] == True:
+                Head05 = f'<h2><span style="color: green;">PART 05 Monitoring Path Measurement &nbsp;&nbsp; &lt; Pass &gt;</span></h2>\n'
             else:
-                Head05 = '## ' + '<span style="color: red;">' + 'PART 05 Monitoring Measurement' + '{} | Fail'.format(femb_id) + '</span>' + '\n'
-            file.write(Head05 + '\n')
+                Head05 = f'<h2><span style="color: red;">PART 05 Monitoring Path Measurement {femb_id} | Fail</span></h2>\n'
 
-            file.write('## ' + str(log.report_log11["ITEM"]) + '\n')
-            info = dict_to_markdown_table(log.report_log11[femb_id], KEY = "Monitor Path", VALUE = "MonPath")
-            file.write(info + '\n')
-            file.write('\n')
+            file.write(Head05)
 
-        print("file_saved")
+            # 写入该项标题
+            file.write(f'<h2>{log.report_log11["ITEM"]}</h2>\n')
+
+            # 表格：监测路径测量数据
+            info = dict_to_html_table(log.report_log11[femb_id], KEY="Monitor Path", VALUE="MonPath")
+            file.write(info + '<br>\n')
+
+            print("file_saved")

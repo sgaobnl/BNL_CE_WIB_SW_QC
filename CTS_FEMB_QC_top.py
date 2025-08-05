@@ -6,8 +6,7 @@ from PIL import Image
 import csv
 from colorama import init, Fore, Style
 
-# Please Open Real_Time_Monitor.py and run first
-# Then, Run this CTS_FEMB_QC_top.py
+# Please Open Real_Time_Monitor.py and run first, then, Run this CTS_FEMB_QC_top.py
 ############################################################
 #       01 Function Part                                   #
 ############################################################

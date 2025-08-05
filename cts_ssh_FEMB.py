@@ -164,8 +164,8 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     # tms_items[2] = "\033[96m Item_02 : POWER CYCLE  \033[0m"
     # tms_items[3] = "\033[96m Item_03 : Leakage Current Pulse Response  \033[0m"
     # tms_items[4] = "\033[96m Item_04 : Whole Pulse Response  \033[0m"
-    # tms_items[5] = "\033[96m Item_05 : RMS Evaluation  \033[0m"
-    tms_items[6] = "\033[96m Item_06 : Cali_1 configuration SE 200 mV (ASIC-DAC)  \033[0m"
+    tms_items[5] = "\033[96m Item_05 : RMS Evaluation  \033[0m"
+    # tms_items[6] = "\033[96m Item_06 : Cali_1 configuration SE 200 mV (ASIC-DAC)  \033[0m"
     # tms_items[7] = "\033[96m Item_07 : Cali_2 configuration SE 900 mV \033[0m"
     # tms_items[8] = "\033[96m Item_08 : Cali_3 SGP1 SE 200 mV \033[0m"
     # tms_items[9] = "\033[96m Item_09 : Cali_4 SGP1 SE 900 mV \033[0m"
@@ -360,7 +360,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(tmp))
         command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
-        result = subrun(command, timeout=200, user_input=user_input_1)  # rewrite with Popen later
+        result = subrun(command, timeout=300, user_input=user_input_1)  # rewrite with Popen later
         time.sleep(0.01)
         if result != None:
             resultstr = result.stdout

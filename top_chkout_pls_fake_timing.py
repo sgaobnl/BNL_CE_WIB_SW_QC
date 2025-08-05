@@ -65,6 +65,7 @@ while True:
         chk.femb_adc_cfg(femb_id)
     #step 3
         chk.femb_cfg(femb_id, adac_pls_en )
+
     i = i+1
     if i > 20:
         break
@@ -77,6 +78,8 @@ time.sleep(0.5)
 rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
 
 pwr_meas = chk.get_sensors()
+
+
 #
 if save:
     fdir = "./tmp_data/"
@@ -84,4 +87,9 @@ if save:
     fp = fdir + "Raw_" + ts  + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
+
+for femb_id in fembs:
+    print(femb_id)
+    coldata_SN_CD0 = chk.dat_coldata_efuse_rd(femb_id=femb_id, cd_id="CD0", efuseid=0)
+    coldata_SN_CD1 = chk.dat_coldata_efuse_rd(femb_id=femb_id, cd_id="CD1", efuseid=0)
 

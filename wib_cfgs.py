@@ -4,6 +4,7 @@ import copy
 from datetime import datetime
 import sys, time, random
 from spymemory_decode import wib_dec
+import numpy as np
 
 
 class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
@@ -31,6 +32,16 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
         self.align_flg = True
         # pll_ref LN 0x25   RT 0x26 rang(20~2A) scan 25-->20 25-->2A
         self.pll = 0x26
+        self.cd_sel = 0
+        self.wib_adc_vref = 2.5
+        self.vcd =  3.0
+        self.vfe =  3.0
+        self.vadc = 3.5
+        self.por=[True, True, True, True]
+        self.por_bias_ilim = 0.1
+        self.por_cd_ilim = 0.3
+        self.por_adc_ilim = 1.7
+        self.por_fe_ilim = 0.5
 
     def wib_rst_tp(self):
         print("Configuring PLL")
@@ -307,14 +318,266 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             #self.femb_powering()
             #exit()
 
+    def vol_cal(self, vms_dict, femb_id):
+        LSB = self.wib_adc_vref / 16384
+        vols = {}
+        for key in vms_dict:
+            xs = []
+            for x in vms_dict[key]:
+                xs.append(x[femb_id])
+            mxs = np.mean(xs)
+            vols[key] = mxs * LSB
+        for key in vols:
+            if 'GND' not in key:
+                if "_HALF" in key:
+                    vols[key] = vols[key] * 2 - vols['GND']
+                else:
+                    vols[key] = vols[key] - vols['GND']
+        return vols
+
+    def femb_power_com_step1(self, fembs=[]):
+        if len(fembs) > 0:
+            self.all_femb_bias_ctrl(enable=1)
+
+            for femb_id in fembs:
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=1.0, vcd=2.5, vadc=1.0)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=0, bias_en=1)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=1.0, vcd=3.0, vadc=1.0)
+                if self.vcd != 3.0:
+                    time.sleep(1)
+                    self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=1.0)
+                time.sleep(0.1)
+
+            # enable WIB data link
+            self.wib_femb_link_en(fembs)
+            time.sleep(0.1)
+            self.wib_timing_wrap()
+            self.femb_cd_rst()
+
+            time.sleep(2)
+            pwr_meas = self.get_sensors()
+            for key in pwr_meas:
+                if "BIAS_I" in key:
+                    if pwr_meas[key] > self.por_bias_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC1_I" in key:  # CD power rail
+                    if pwr_meas[key] > self.por_cd_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+
+            vms_dict = self.wib_vol_mon(femb_ids=fembs)
+            for femb_id in fembs:
+                vols = self.vol_cal(vms_dict, femb_id=femb_id)
+                cdldo1 = (vols['CDVDDA'] >= 1.1) and (vols['CDVDDA'] <= 1.2)
+                cdldo2 = (vols['CDVDDIO_HALF'] >= 2.2) and (vols['CDVDDIO_HALF'] <= 2.3)
+                if not cdldo1 & cdldo2:
+                    self.por[femb_id] = False
+                pwr_meas["FEMB%d_LDO" % femb_id] = vols
+            return pwr_meas
+
+    def femb_power_com_step2(self, fembs=[]):
+        if len(fembs) > 0:
+            for femb_id in fembs:
+                self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=1.0)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=1, bias_en=1)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=2.0)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=3.0)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=3.5)
+                if self.vadc != 3.5:
+                    time.sleep(1)
+                    self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=self.vadc)
+                time.sleep(0.1)
+                self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
+
+            time.sleep(2)
+            pwr_meas = self.get_sensors()
+            for key in pwr_meas:
+                if "BIAS_I" in key:
+                    if pwr_meas[key] > self.por_bias_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC1_I" in key:  # CD power rail
+                    if pwr_meas[key] > self.por_cd_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC2_I" in key:  # ADC power rail
+                    if pwr_meas[key] > self.por_adc_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+
+            vms_dict = self.wib_vol_mon(femb_ids=fembs)
+            for femb_id in fembs:
+                vols = self.vol_cal(vms_dict, femb_id=femb_id)
+                cdldo1 = (vols['CDVDDA'] >= 1.1) and (vols['CDVDDA'] <= 1.2)
+                cdldo2 = (vols['CDVDDIO_HALF'] >= 2.2) and (vols['CDVDDIO_HALF'] <= 2.35)
+                adclldo1 = (vols['ADCLVDDD1P2'] >= 1.05) and (vols['ADCLVDDD1P2'] <= 1.2)
+                adclldo2 = (vols['ADCLP25V_HALF'] >= 2.2) and (vols['ADCLP25V_HALF'] <= 2.35)
+                adcrldo1 = (vols['ADCRVDDD1P2'] >= 1.05) and (vols['ADCRVDDD1P2'] <= 1.2)
+                adcrldo2 = (vols['ADCRP25V_HALF'] >= 2.2) and (vols['ADCRP25V_HALF'] <= 2.35)
+                if not (cdldo1 & cdldo2 & adclldo1 & adclldo2 & adcrldo1 & adcrldo2):
+                    self.por[femb_id] = False
+                pwr_meas["FEMB%d_LDO" % femb_id] = vols
+            return pwr_meas
+
+    def femb_power_com_step3(self, fembs=[]):
+        if len(fembs) > 0:
+            for femb_id in fembs:
+                self.fembs_vol_set(vfe=1.0, vcd=self.vcd, vadc=self.vadc)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=2.0, vcd=self.vcd, vadc=self.vadc)
+                time.sleep(1)
+                self.fembs_vol_set(vfe=3.0, vcd=self.vcd, vadc=self.vadc)
+                if self.vfe != 3.0:
+                    time.sleep(1)
+                    self.fembs_vol_set(vfe=self.vfe, vcd=self.vcd, vadc=self.vadc)
+                time.sleep(0.1)
+                self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
+                print("FEMB%d is on" % femb_id)
+
+            time.sleep(2)
+            pwr_meas = self.get_sensors()
+            for key in pwr_meas:
+                if "BIAS_I" in key:
+                    if pwr_meas[key] > self.por_bias_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC1_I" in key:  # CD power rail
+                    if pwr_meas[key] > self.por_cd_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC2_I" in key:  # ADC power rail
+                    if pwr_meas[key] > self.por_adc_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC0_I" in key:  # FE power rail
+                    if pwr_meas[key] > self.por_fe_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+
+            vms_dict = self.wib_vol_mon(femb_ids=fembs)
+            for femb_id in fembs:
+                vols = self.vol_cal(vms_dict, femb_id=femb_id)
+                cdldo1 = (vols['CDVDDA'] >= 1.1) and (vols['CDVDDA'] <= 1.2)
+                cdldo2 = (vols['CDVDDIO_HALF'] >= 2.2) and (vols['CDVDDIO_HALF'] <= 2.35)
+                adclldo1 = (vols['ADCLVDDD1P2'] >= 1.05) and (vols['ADCLVDDD1P2'] <= 1.2)
+                adclldo2 = (vols['ADCLP25V_HALF'] >= 2.2) and (vols['ADCLP25V_HALF'] <= 2.35)
+                adcrldo1 = (vols['ADCRVDDD1P2'] >= 1.05) and (vols['ADCRVDDD1P2'] <= 1.2)
+                adcrldo2 = (vols['ADCRP25V_HALF'] >= 2.2) and (vols['ADCRP25V_HALF'] <= 2.35)
+                felldo = (vols['FELVDDP'] >= 1.75) and (vols['FELVDDP'] <= 1.95)
+                ferldo = (vols['FERVDDP'] >= 1.75) and (vols['FERVDDP'] <= 1.95)
+                if not (cdldo1 & cdldo2 & adclldo1 & adclldo2 & adcrldo1 & adcrldo2 & felldo & ferldo):
+                    self.por[femb_id] = False
+                pwr_meas["FEMB%d_LDO" % femb_id] = vols
+            return pwr_meas
+
+    def femb_power_com_on(self, fembs=[]):
+        print("Power up COLDATA")
+        pwr_meas = self.femb_power_com_step1(fembs)
+        if False in self.por:
+            self.femb_power_com_off(fembs=[])
+        print("Power up ColdADC")
+        pwr_meas = self.femb_power_com_step2(fembs)
+        if False in self.por:
+            self.femb_power_com_off(fembs=[])
+        print("Power up LArASIC")
+        pwr_meas = self.femb_power_com_step3(fembs)
+        if False in self.por:
+            self.femb_power_com_off(fembs=[])
+        return pwr_meas
+
+    def femb_power_com_off(self, fembs=[]):
+        if len(fembs) > 0:
+            for femb_id in fembs:
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=1, bias_en=1)
+                time.sleep(0.5)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=0, bias_en=1)
+                time.sleep(0.5)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1)
+                time.sleep(0.5)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
+                time.sleep(0.5)
+                print("FEMB%d is off" % femb_id)
+            if len(fembs) == 4:
+                self.all_femb_bias_ctrl(enable=0)
+                print("All 4 FEMBs are off")
+
+    def femb_LN2QC_powering(self, fembs=[]):
+        pwr_meas = {}
+        if len(fembs) > 0:
+            self.fembs_vol_set(vfe=self.vfe, vcd=self.vcd, vadc=self.vadc)
+            self.femb_powering(fembs)
+
+            time.sleep(2)
+            pwr_meas = self.get_sensors()
+            for key in pwr_meas:
+                if "BIAS_I" in key:
+                    if pwr_meas[key] > self.por_bias_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC1_I" in key:  # CD power rail
+                    if pwr_meas[key] > self.por_cd_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC2_I" in key:  # ADC power rail
+                    if pwr_meas[key] > self.por_adc_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+                if "DC2DC0_I" in key:  # FE power rail
+                    if pwr_meas[key] > self.por_fe_ilim:
+                        femb_id = int(key[key.find("FEMB") + 4])
+                        self.por[femb_id] = False
+
+            vms_dict = self.wib_vol_mon(femb_ids=fembs)
+            for femb_id in fembs:
+                vols = self.vol_cal(vms_dict, femb_id=femb_id)
+                cdldo1 = (vols['CDVDDA'] >= 1.1) and (vols['CDVDDA'] <= 1.2)
+                cdldo2 = (vols['CDVDDIO_HALF'] >= 2.2) and (vols['CDVDDIO_HALF'] <= 2.35)
+                adclldo1 = (vols['ADCLVDDD1P2'] >= 1.05) and (vols['ADCLVDDD1P2'] <= 1.2)
+                adclldo2 = (vols['ADCLP25V_HALF'] >= 2.2) and (vols['ADCLP25V_HALF'] <= 2.35)
+                adcrldo1 = (vols['ADCRVDDD1P2'] >= 1.05) and (vols['ADCRVDDD1P2'] <= 1.2)
+                adcrldo2 = (vols['ADCRP25V_HALF'] >= 2.2) and (vols['ADCRP25V_HALF'] <= 2.35)
+                felldo = (vols['FELVDDP'] >= 1.75) and (vols['FELVDDP'] <= 1.95)
+                ferldo = (vols['FERVDDP'] >= 1.75) and (vols['FERVDDP'] <= 1.95)
+                if not (cdldo1 & cdldo2 & adclldo1 & adclldo2 & adcrldo1 & adcrldo2 & felldo & ferldo):
+                    self.por[femb_id] = False
+                pwr_meas["FEMB%d_LDO" % femb_id] = vols
+        for femb_id in range(4):
+            if not self.por[femb_id]:
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1)
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
+
+        if len(fembs) == 0:
+            self.femb_powering([])
+            pwr_meas = self.get_sensors()
+        return pwr_meas
+
     def femb_powering(self, fembs=[]):
         if len(fembs) > 0:
             self.all_femb_bias_ctrl(enable=1)
 
             for femb_id in fembs:
-                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1)
-                print("FEMB%d is on" % femb_id)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
                 time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1)
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=0, bias_en=1)
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=1, bias_en=1)
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=1)
+                time.sleep(0.1)
+                print("FEMB%d is on" % femb_id)
             fembs_off = []
             for i in range(4):
                 if i not in fembs:
@@ -332,19 +595,14 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             self.wib_femb_link_en(fembs)
             time.sleep(0.1)
             self.wib_timing_wrap()
-
             self.femb_cd_rst()
-        #            for femb_id in fembs:
-        #                self.femb_cd_fc_act(femb_id, act_cmd="rst_adcs")
-        #                self.femb_cd_fc_act(femb_id, act_cmd="rst_larasics")
-        #                self.femb_cd_fc_act(femb_id, act_cmd="rst_larasic_spi")
-
         else:
             for femb_off_id in range(4):
                 self.femb_power_en_ctrl(femb_id=femb_off_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0)
                 print("FEMB%d is off" % femb_off_id)
-            time.sleep(3)
+            time.sleep(1)
             self.all_femb_bias_ctrl(enable=0)
+            time.sleep(1)
 
     #    def get_sensors(self):
     # print ("Power configuration measurement is not ready yet...")
@@ -1453,3 +1711,48 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
             else:
                 break
         return data
+
+    def dat_coldata_efuse_rd(self, femb_id=0, cd_id="CD0", efuseid=0):
+        cd_addr = 0x03
+        if (efuseid < 0) :
+            print ("Error, EFUSE ID must be >=0")
+            return False
+        elif (efuseid > 0x80000000) :
+            print ("Error, EFUSE ID must be <0x80000000")
+            return False
+        if cd_id == "CD1":
+            efuse_start_value = 0x1
+            efuse_data07adr =88
+            efuse_data0fadr =89
+            efuse_data17adr =90
+            efuse_data1fadr =91
+            if self.cd_sel == 0:
+                cd_addr = 0x3
+            else:
+                cd_addr = 0x2
+        elif cd_id == "CD2":
+            efuse_start_value = 0x10
+            efuse_data07adr =92
+            efuse_data0fadr =93
+            efuse_data17adr =94
+            efuse_data1fadr =95
+            if self.cd_sel == 0:
+                cd_addr = 0x2
+            else:
+                cd_addr = 0x3
+
+        while True:
+            self.femb_cd_rst()
+            time.sleep(0.1)
+            efusev18 = self.cdpeek(femb_id, cd_addr, 0, 0x18)
+            efusev19 = self.cdpeek(femb_id, cd_addr, 0, 0x19)
+            efusev1A = self.cdpeek(femb_id, cd_addr, 0, 0x1A)
+            efusev1B = self.cdpeek(femb_id, cd_addr, 0, 0x1B)
+            efusev = efusev18 + (efusev19<<8) + (efusev1A<<16) +(efusev1B<<24)
+            if (efuseid&efusev) == efuseid :
+                print ("Efuse readback value is %d"%efusev)
+                break
+            else:
+                print ("Wrong: WriteEfuse=0x%x, ReadEfuse=%d"%(efuseid, efusev))
+                break
+        return efusev

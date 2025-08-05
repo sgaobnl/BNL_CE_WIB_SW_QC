@@ -1384,10 +1384,10 @@ class QC_reports:
                          alpha=0.7, label='Gain_SE_OFF')
             plt.xlabel("FE Gain (mV/fC)", fontsize=12)
             plt.ylabel("INL (%)", fontsize=12)
-            plt.ylim(0.01, 10)
+            plt.ylim(0, 2)
             plt.xticks(x, ["4.7", "7.8", "14", "25"])
             plt.grid(True, axis='y', linestyle='--', alpha=0.7)
-            plt.yscale("log")
+            # plt.yscale("log")
             plt.grid(axis='x')
             plt.legend()
             plt.title("INL in 4.7 7.8 14 25 FE Gain", fontsize=12)
@@ -1458,15 +1458,10 @@ class QC_reports:
         qc = ana_tools()
         dac_list = range(0, 32, 1)
         datadir = self.datadir + "CALI2/"
-
         f_pwr = datadir + "QC_Cali02_t7.bin"
         with open(f_pwr, 'rb') as fn:
             Cali02_dict = pickle.load(fn)
-        print(len(Cali02_dict))
-        print(type(Cali02_dict))
         keys_list = list(Cali02_dict.keys())
-        print(keys_list)
-
         self.CreateDIR("CALI2")
         print("analyze CALI2 900mVBL 14_0mVfC 2_0us")
         qc.GetGain(self.fembs, self.fembsID, Cali02_dict, self.savedir, "CALI2/", "CALI2_SE_{}_{}_{}_0x{:02x}",
@@ -1538,7 +1533,7 @@ class QC_reports:
     def CALI_report_3(self):
         log.test_label.append(8)
         qc = ana_tools()
-        dac_list = range(0, 42, 8)
+        dac_list = range(0, 64, 8)
         self.CreateDIR("CALI3")
         datadir = self.datadir + "CALI3/"
 
@@ -1551,27 +1546,27 @@ class QC_reports:
         print(keys_list)
 
         print("analyze CALI3 200mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, Cali03_dict, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1",
+        qc.GetGain_SGP1(self.fembs, self.fembsID, Cali03_dict, self.savedir, "CALI3/", "CALI3_SE_{}_{}_{}_0x{:02x}_sgp1",
                    "200mVBL", "14_0mVfC", "2_0us", dac_list, 20, 10)
-        qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
+        # qc.GetENC(self.fembs, self.fembsID, "200mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI3/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0801.update(inl_gain)
         log.check_log0801.update(inl_gain_check)
         for ifemb in self.fembs:
-            log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
-            log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
-            log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
-            log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
-            log.report_log0801csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
-            log.report_log0801csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
-            log.report_log0801csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
-            log.report_log0801csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
-            log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
-            log.report_log0801csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
-            log.report_log0801csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
-            log.report_log0801csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
-            log.report_log0801csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
+        #     log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+        #     log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+        #     log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+        #     log.report_log0801csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+        #     log.report_log0801csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+        #     log.report_log0801csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+        #     log.report_log0801csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+        #     log.report_log0801csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
+        #     log.report_log0801csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+        #     log.report_log0801csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+        #     log.report_log0801csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+        #     log.report_log0801csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+        #     log.report_log0801csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0801csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
             log.report_log0801csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
             log.report_log0801csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
@@ -1582,7 +1577,7 @@ class QC_reports:
     def CALI_report_4(self):
         log.test_label.append(9)
         qc = ana_tools()
-        dac_list = range(0, 19, 4)
+        dac_list = range(0, 32, 4)
         self.CreateDIR("CALI4")
         datadir = self.datadir + "CALI4/"
 
@@ -1595,27 +1590,27 @@ class QC_reports:
         print(keys_list)
 
         print("analyze CALI4 900mVBL 14_0mVfC sgp=1")
-        qc.GetGain(self.fembs, self.fembsID, Cali04_dict, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1",
+        qc.GetGain_SGP1(self.fembs, self.fembsID, Cali04_dict, self.savedir, "CALI4/", "CALI4_SE_{}_{}_{}_0x{:02x}_sgp1",
                    "900mVBL", "14_0mVfC", "2_0us", dac_list, 10, 4)
-        qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
+        # qc.GetENC(self.fembs, self.fembsID, "900mVBL", "14_0mVfC", "2_0us", 1, self.savedir, "CALI4/")
         inl_gain = dict(log.tmp_log)
         inl_gain_check = dict(log.check_log)
         log.report_log0901.update(inl_gain)
         log.check_log0901.update(inl_gain_check)
         for ifemb in self.fembs:
-            log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
-            log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
-            log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
-            log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
-            log.report_log0901csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
-            log.report_log0901csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
-            log.report_log0901csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
-            log.report_log0901csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
-            log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
-            log.report_log0901csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
-            log.report_log0901csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
-            log.report_log0901csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
-            log.report_log0901csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
+            # log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            # log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            # log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
+            # log.report_log0901csvgain[ifemb]["gain_list"] = log.tmp_log[ifemb]["gain_list"]
+            # log.report_log0901csvgain[ifemb]["mean"] = round(np.mean(log.tmp_log[ifemb]["gain_list"]))
+            # log.report_log0901csvgain[ifemb]["std"] = round(np.std(log.tmp_log[ifemb]["gain_list"]))
+            # log.report_log0901csvgain[ifemb]["max"] = np.max(log.tmp_log[ifemb]["gain_list"])
+            # log.report_log0901csvgain[ifemb]["min"] = np.min(log.tmp_log[ifemb]["gain_list"])
+            # log.report_log0901csvinl[ifemb]["inl_list / %"] = log.tmp_log[ifemb]["inl_list"]
+            # log.report_log0901csvinl[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["inl_list"]), 3)
+            # log.report_log0901csvinl[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["inl_list"]), 2)
+            # log.report_log0901csvinl[ifemb]["max"] = np.max(log.tmp_log[ifemb]["inl_list"])
+            # log.report_log0901csvinl[ifemb]["min"] = np.min(log.tmp_log[ifemb]["inl_list"])
             log.report_log0901csvlinerange[ifemb]["line_range_list"] = log.tmp_log[ifemb]["line_range_list"]
             log.report_log0901csvlinerange[ifemb]["mean"] = np.round(np.mean(log.tmp_log[ifemb]["line_range_list"]), 2)
             log.report_log0901csvlinerange[ifemb]["std"] = np.round(np.std(log.tmp_log[ifemb]["line_range_list"]), 2)
@@ -1891,6 +1886,7 @@ class QC_reports:
         with open(f_pwr, 'rb') as fn:
             QC_t15_dict = pickle.load(fn)
         keys_list = list(QC_t15_dict.keys())
+        print(keys_list)
 
         qc = ana_tools()
         files = sorted(glob.glob(datadir + "*.bin"), key=os.path.getmtime)  # list of data files in the dir
