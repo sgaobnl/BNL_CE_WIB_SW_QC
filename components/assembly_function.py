@@ -685,13 +685,13 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
         log.report_log111[femb_id]["Result"] = check
         log.report_log111[femb_id]["Part 5 Monitor Path Error List"] = check_issue
         log.report_log11[femb_id]["ASIC #"] = ["0", "1", "2", "3", "4", "5", "6", "7"]
-        log.report_log11[femb_id]["FE T"] = ["{:.3f}".format(v) for v in fe_t]
-        log.report_log11[femb_id]["FE BGP"] = ["{:.3f}".format(v) for v in fe_bgp]
-        log.report_log11[femb_id]["ADC_VCMI"] = ["{:.3f}".format(v) for v in vcmi]
-        log.report_log11[femb_id]["ADC_VCMO"] = ["{:.3f}".format(v) for v in vcmo]
-        log.report_log11[femb_id]["ADC_VREFP"] = ["{:.3f}".format(v) for v in vrefp]
-        log.report_log11[femb_id]["ADC_VREFN"] = ["{:.3f}".format(v) for v in vrefn]
-        log.report_log11[femb_id]["VSSA"] = ["{:.3f}".format(v) for v in vssa]
+        log.report_log11[femb_id]["FE T"] = ["{}".format(v) for v in fe_t]
+        log.report_log11[femb_id]["FE BGP"] = ["{}".format(v) for v in fe_bgp]
+        log.report_log11[femb_id]["ADC_VCMI"] = ["{}".format(v) for v in vcmi]
+        log.report_log11[femb_id]["ADC_VCMO"] = ["{}".format(v) for v in vcmo]
+        log.report_log11[femb_id]["ADC_VREFP"] = ["{}".format(v) for v in vrefp]
+        log.report_log11[femb_id]["ADC_VREFN"] = ["{}".format(v) for v in vrefn]
+        log.report_log11[femb_id]["VSSA"] = ["{}".format(v) for v in vssa]
 
 
 
