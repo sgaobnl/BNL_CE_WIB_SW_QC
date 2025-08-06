@@ -273,7 +273,7 @@ def section_report(datareport, fembs, fembNo, fembsName):
             file.write('\n')
 # Title     FEMB ID
 # 00        Print <Input Information>
-            file.write('## INPUT INFORMATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {}'.format(femb_id) + '\n')
+            file.write('## INPUT INFORMATION &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {}'.format(fembsName['femb%d' % ifemb]) + '\n')
             info = dict_to_markdown_table(log.report_log00, VALUE="Horizontal")
             file.write(info + '\n')
 

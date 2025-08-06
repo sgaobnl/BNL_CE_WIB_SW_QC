@@ -157,22 +157,22 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
     # [0 'is used for checkout', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 '1-16 are used for QC']
     tms_items = {}
-    # tms_items[12] = "\033[96m Item_12 : ColdADC ref_voltage Linearity \033[0m"
-    # tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
-    # tms_items[11] = "\033[96m Item_11 : FE DAC Linearity \033[0m"
-    # tms_items[1] = "\033[96m Item_01 : POWER CONSUMPTION  \033[0m"
-    # tms_items[2] = "\033[96m Item_02 : POWER CYCLE  \033[0m"
-    # tms_items[3] = "\033[96m Item_03 : Leakage Current Pulse Response  \033[0m"
-    # tms_items[4] = "\033[96m Item_04 : Whole Pulse Response  \033[0m"
+    tms_items[12] = "\033[96m Item_12 : ColdADC ref_voltage Linearity \033[0m"
+    tms_items[10] = "\033[96m Item_10 : FE Monitor  \033[0m"
+    tms_items[11] = "\033[96m Item_11 : FE DAC Linearity \033[0m"
+    tms_items[1] = "\033[96m Item_01 : POWER CONSUMPTION  \033[0m"
+    tms_items[2] = "\033[96m Item_02 : POWER CYCLE  \033[0m"
+    tms_items[3] = "\033[96m Item_03 : Leakage Current Pulse Response  \033[0m"
+    tms_items[4] = "\033[96m Item_04 : Whole Pulse Response  \033[0m"
     tms_items[5] = "\033[96m Item_05 : RMS Evaluation  \033[0m"
-    # tms_items[6] = "\033[96m Item_06 : Cali_1 configuration SE 200 mV (ASIC-DAC)  \033[0m"
-    # tms_items[7] = "\033[96m Item_07 : Cali_2 configuration SE 900 mV \033[0m"
-    # tms_items[8] = "\033[96m Item_08 : Cali_3 SGP1 SE 200 mV \033[0m"
-    # tms_items[9] = "\033[96m Item_09 : Cali_4 SGP1 SE 900 mV \033[0m"
-    # tms_items[13] = "\033[96m Item_13 : External Pulse Calibration 900mV baseline \033[0m"
-    # tms_items[14] = "\033[96m Item_14 : External Pulse Calibration 200mV baseline \033[0m"
-    # tms_items[15] = "\033[96m Item_15 : ColdADC_sync_pat_report \033[0m"
-    # tms_items[16] = "\033[96m Item_16 : PLL_scan_report \033[0m"
+    tms_items[6] = "\033[96m Item_06 : Cali_1 configuration SE 200 mV (ASIC-DAC)  \033[0m"
+    tms_items[7] = "\033[96m Item_07 : Cali_2 configuration SE 900 mV \033[0m"
+    tms_items[8] = "\033[96m Item_08 : Cali_3 SGP1 SE 200 mV \033[0m"
+    tms_items[9] = "\033[96m Item_09 : Cali_4 SGP1 SE 900 mV \033[0m"
+    tms_items[13] = "\033[96m Item_13 : External Pulse Calibration 900mV baseline \033[0m"
+    tms_items[14] = "\033[96m Item_14 : External Pulse Calibration 200mV baseline \033[0m"
+    tms_items[15] = "\033[96m Item_15 : ColdADC_sync_pat_report \033[0m"
+    tms_items[16] = "\033[96m Item_16 : PLL_scan_report \033[0m"
     logs['tms_items'] = tms_items
 
 
@@ -355,10 +355,10 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
     # ========== Begin of 02 checkout ==========================
     if QC_TST_EN == 2:
-        print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 120s)")
+        print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 180s)")
         print(datetime.utcnow(), " : New Test Item Starts, please wait...")
         print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(tmp))
-        command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list), " &"]
+        command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
         result = subrun(command, timeout=300, user_input=user_input_1)  # rewrite with Popen later
         time.sleep(0.01)
@@ -392,13 +392,19 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
         logs['checkout_termial'] = result.stdout
         # fs = resultstr[resultstr.find("save_file_start_") + 16:resultstr.find("_end_save_file")]
         fsubdirs = fdir.split("/")
-        print(fsubdirs)
         fddir = logs['PC_rawdata_root'] + '_CHK/' + fsubdirs[-1]
         fddir2 = logs['PC_rawreport_root'] + '_CHK/' + fsubdirs[-1]
-        print(fddir)
         if not os.path.exists(fddir):
             try:
                 os.makedirs(fddir)
+            except OSError:
+                print("Error to create folder")
+                print("Exit anyway")
+                # sys.exit()
+                return None
+        if not os.path.exists(fddir2):
+            try:
+                os.makedirs(fddir2)
             except OSError:
                 print("Error to create folder")
                 print("Exit anyway")
@@ -476,7 +482,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
         for i in range (3):
             print('Begin to remove data at WIB')
             time.sleep(1)
-            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/", " &"]
+            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/", "&"]
             result = subrun(command, timeout=3, check=False)
             time.sleep(0.01)
             if result != None:
@@ -516,7 +522,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             # input('QC debug 01')
             print(datetime.utcnow(), " : New Test Item Starts, please wait...")
             print(tms_items[testid])
-            command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid), " &"]
+            command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid)]
             user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
             result = subrun(command, timeout=1000, user_input=user_input_1)  # rewrite with Popen later
             time.sleep(0.01)

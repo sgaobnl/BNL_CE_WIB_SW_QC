@@ -82,7 +82,7 @@ if save:
     fembNo={}
     for i in fembs:
         fembName['femb{}'.format(i)]=input("FEMB{}ID:".format(i)).strip()
-        fembNo['femb{}'.format(i)]=fembName['femb{}'.format(i)][1:]
+        fembNo['femb{}'.format(i)]=fembName['femb{}'.format(i)]
     logs['FEMB ID'] = fembName
     # logs['femb id']=fembNo
     logs['Date UTC']=datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")

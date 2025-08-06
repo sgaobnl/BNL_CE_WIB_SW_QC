@@ -113,7 +113,7 @@ if 'toy_TPC' not in csv_data:
 if 'comment' not in csv_data:
     csv_data['comment'] = 'QC test'
 if 'top_path' not in csv_data:
-    csv_data['top_path'] = 'D:/'
+    csv_data['top_path'] = 'D:'
 with open(csv_file, mode="w", newline="", encoding='utf-8-sig') as file:
     writer = csv.writer(file)
     for key, value in csv_data.items():
