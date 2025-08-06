@@ -77,8 +77,6 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
 
     for FE_ID in FE_IDs:
         chip_path = '/'.join([root_path + "Ana"+ "_" + env, FE_ID])
-        #for root, dirs, files in os.walk(chip_path):
-        #    break
         jfs = ["QC_INIT_CHK.json", "QC_PWR.json", "QC_PWR_CYCLE.json", "QC_CHKRES.json", "QC_CALI_ASICDAC.json", 
                "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json"  ]
         for fn in jfs:
@@ -172,38 +170,28 @@ def DecodeJson2csv(root_path, FE_ID, env):
 
 
 if __name__ =="__main__":
-    root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
+    root_path = "Y:/RTS_DAT_LArASIC_QC/B009T0009/"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
     for root, dirs, files in os.walk(root_path):
-        for data_dir in dirs:
-#            #if ("Time_2025" in data_dir) :
-            if ("Time_20250529153639" in data_dir) :
-                env = 'RT'
-                #DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
-                exit()
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
-                env = 'LN'
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
-                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
+        break
+    for data_dir in dirs:
+        if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+            for subdir in os.listdir("/".join([root_path, data_dir])):
+                if os.path.isdir("/".join([root_path, data_dir, subdir])):
+                    env=subdir[0:2]
+                    if ("RT" in env) or ("LN" in env):
+                        print ("/".join([root_path, data_dir, subdir]))
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
 
 
 #    import shutil

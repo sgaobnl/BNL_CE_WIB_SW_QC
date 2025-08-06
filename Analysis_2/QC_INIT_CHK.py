@@ -66,6 +66,10 @@ class QC_INIT_CHK(BaseClass):
         if self.ERROR:
             return
         print('----> Power consumption')
+        #for key in self.logs_dict.keys():
+        #    print (key,self.logs_dict[key]) 
+
+        #exit()
         data_by_config = self.getPowerConsumption()
 
         pwr_all_chips = dict()
@@ -108,16 +112,21 @@ class QC_INIT_CHK(BaseClass):
             FE_output_dir = self.FE_outputDIRs[chip_id]
            
             tmpdata_onechip = pwr_all_chips[chip_id]
-  
+            fe_id_list = self.logs_dict['FE{}'.format(ichip)].split("_")
             oneChip_data = {
                 'logs' : {
-                    "item_name" : self.item,
-                    "RTS_timestamp" : self.logs_dict['FE{}'.format(ichip)].split("_")[2],
+                    #"item_name" : self.item,
+                    "RTS_timestamp" : fe_id_list[2],
                     'RTS_Property_ID' : 'BNL001',
 #                    'RTS chamber' : 1,
-                    "date": self.logs_dict['date'],
-                    "FE_ID":FE_IDs[ichip],
+                    "UTC_Time": self.logs_dict['date'],
+                    "FE_ID":self.logs_dict['FE{}'.format(ichip)],
+                    "FE_OCR_SN":"_".join([fe_id_list[0], fe_id_list[1]]),
+                    "FE_Timestamp":fe_id_list[2],
+                    "FE_in_Tray":fe_id_list[3],
+                    "FE_in_Socket":fe_id_list[4],
                     "tester": self.logs_dict['tester'],
+                    "Email": self.logs_dict['Email'],
                     "testsite": self.logs_dict['testsite'],
                     "env": self.logs_dict['env'],
                     "note": self.logs_dict['note'],
