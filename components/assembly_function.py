@@ -80,8 +80,8 @@ def register_check(fembs, fembNo, times = 1, Decision = False):
             continue
         else:
             log.report_log03[femb_id]["COLDATA_REG_{}".format(times)] = ("Pass")
-            if Decision:
-                log.report_log03[femb_id]["Result"] = True
+            # if Decision:
+            #     log.report_log03[femb_id]["Result"] = True
 
         errflag, null = chk.femb_adc_chkreg(ifemb)
         if errflag:
@@ -286,14 +286,14 @@ def rms_ped_ana(rms_rawdata, fembs, fembNo, datareport, fname):
         log.badlist["BL"]=(tmp[1])
         ped_err_flag = tmp[0]
         baseline_err_status = tmp[1]
-        log.report_log04[femb_id]["PED 128-CH std"] = tmp[2]
+        # log.report_log04[femb_id]["PED 128-CH std"] = tmp[2]
 
         tmp = QC_check.CHKPulse(rms)
         log.chkflag["RMS"]=(tmp[0])
         log.badlist["RMS"]=(tmp[1])
         rms_err_flag = tmp[0]
         rms_err_status = tmp[1]
-        log.report_log04[femb_id]["RMS 128-CH std"] = tmp[2]
+        # log.report_log04[femb_id]["RMS 128-CH std"] = tmp[2]
         log.report_log04csv[femb_id]["ped"] = ped
         log.report_log04csv[femb_id]["rms"] = rms
         log.report_log04csv[femb_id]["pedmax"] = pedmax
@@ -404,22 +404,22 @@ def power_ana(fembs, ifemb, femb_id, pwr_meas, env):
     log.tmp_log[femb_id]["name"] = ["BIAS", "LArASIC", "ColdDATA", "ColdADC"]
     log.tmp_log[femb_id]["V_set/V"] = ["5.000", "3.000", "3.000", "3.500"]
     log.tmp_log[femb_id]["V_meas/V"] = [
-        "{}".format(float(bias_v)),
-        "{}".format(float(LArASIC_v)),
-        "{}".format(float(COLDATA_v)),
-        "{}".format(float(ColdADC_v)),
+        "{}".format(bias_v),
+        "{}".format(LArASIC_v),
+        "{}".format(COLDATA_v),
+        "{}".format(ColdADC_v),
     ]
     log.tmp_log[femb_id]["I_meas/A"] = [
-        "{}".format(abs(float(bias_i))),
-        "{}".format(float(LArASIC_i)),
-        "{}".format(float(COLDATA_i)),
-        "{}".format(float(ColdADC_i)),
+        "{}".format(bias_i),
+        "{}".format(LArASIC_i),
+        "{}".format(COLDATA_i),
+        "{}".format(ColdADC_i),
     ]
     log.tmp_log[femb_id]["P_meas/W"] = [
-        "{}".format(float(bias_p)),
-        "{}".format(float(LArASIC_p)),
-        "{}".format(float(COLDATA_p)),
-        "{}".format(float(ColdADC_p)),
+        "{}".format(bias_p),
+        "{}".format(LArASIC_p),
+        "{}".format(COLDATA_p),
+        "{}".format(ColdADC_p),
     ]
     log.tmp_log[femb_id]["Total Power"] = ["{}".format(total_p), "", "", ""]
 
@@ -582,7 +582,7 @@ def single_check(pwr_meas, temp_name, ref, error):
 def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, NewWIB = False, ground = 0):
     nchips = range(8)
     #qc_tools.PrintMON(fembs, nchips, mon_refs, mon_temps, mon_adcs, datareport, makeplot=True)
-    log.report_log11["ITEM"] = "5 Monitoring Path"
+    log.report_log11["ITEM"] = "Detail / mV"
     if NewWIB:
         fadc = 1/(2**14)*2500   # NEW WIB IS 2500
     else:
@@ -596,7 +596,7 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
         for i in nchips:  # 8 chips per board
             # include data process and check
             if env == 'LN': # long cable effect the vssa ref
-                vssa_ref = 150; vssa_err = 150
+                vssa_ref = 70; vssa_err = 150
                 fe_t_ref = 250; fe_t_err = 50
                 fe_bgp_ref = 1150; fe_bgp_err = 50
                 vcmi_ref = 890; vcmi_err = 50
@@ -605,18 +605,18 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
                 vrefn_ref = 440; vrefn_err = 50
             else:
                 vssa_ref = 150; vssa_err = 150
-                fe_t_ref = 900; fe_t_err = 100
-                fe_bgp_ref = 1150; fe_bgp_err = 50
-                vcmi_ref = 865; vcmi_err = 50
-                vcmo_ref = 1160; vcmo_err = 50
-                vrefp_ref = 1900; vrefp_err = 50
-                vrefn_ref = 440; vrefn_err = 50
+                fe_t_ref = 930; fe_t_err = 100
+                fe_bgp_ref = 1180; fe_bgp_err = 50
+                vcmi_ref = 895; vcmi_err = 50
+                vcmo_ref = 1190; vcmo_err = 50
+                vrefp_ref = 1890; vrefp_err = 50
+                vrefn_ref = 470; vrefn_err = 50
 
             #   vssa
-            vssa_tmp = round(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_adcs[f'chip{i}']["VSSA"][1])); vssa_tmp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(vssa_tmp - vssa_ref) > vssa_err:
                 check = False
-                check_issue.append("{} vssa_chip{}={}; out of [0 200 mV]\n".format(env, i, vssa_tmp))
+                check_issue.append("{} vssa_chip{}={}; out of [0 150 mV]\n".format(env, i, vssa_tmp))
                 vssa[i] = "<span style = 'color:red;'> {} </span>".format(vssa_tmp)
                 print(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb])
                 print(mon_adcs[f'chip{i}']["VSSA"][1][0][ifemb] * fadc)
@@ -625,10 +625,10 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
                 vssa[i] = "{}".format(vssa_tmp)
 
             #   fe_t
-            fe_t_tmp = round(mon_temps[f'chip{i}'][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_temps[f'chip{i}'])); fe_t_tmp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(fe_t_tmp - fe_t_ref) > fe_t_err:
                 check = False
-                check_issue.append("{} fe_t_chip{}={}; out of [800 900 mV]\n".format(env, i, fe_t_tmp))
+                check_issue.append("{} fe_t_chip{}={}; out of [{} {} mV]\n".format(env, i, fe_t_tmp, fe_t_ref - fe_t_err, fe_t_ref + fe_t_err))
                 fe_t[i] = "<span style = 'color:red;'> {} </span>".format(fe_t_tmp)
                 print(mon_temps[f'chip{i}'][0][ifemb])
                 print(mon_temps[f'chip{i}'][0][ifemb] * fadc)
@@ -636,10 +636,10 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
             else:
                 fe_t[i] = "{}".format(fe_t_tmp)
             #   fe_bgp
-            fe_bgp_tmp = round(mon_refs[f'chip{i}'][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_refs[f'chip{i}']));  fe_bgp_tmp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(fe_bgp_tmp - fe_bgp_ref) > fe_bgp_err:
                 check = False
-                check_issue.append("{} fe_bgp_chip{}={}; out of [1100 1200 mV]\n".format(env, i, fe_bgp_tmp))
+                check_issue.append("{} fe_bgp_chip{}={}; out of [{} {} mV]\n".format(env, i, fe_bgp_tmp, fe_bgp_ref - fe_bgp_err, fe_bgp_ref + fe_bgp_err))
                 fe_bgp[i] = "<span style = 'color:red;'> {} </span>".format(fe_bgp_tmp)
                 print(mon_refs[f'chip{i}'][0][ifemb])
                 print(mon_refs[f'chip{i}'][0][ifemb] * fadc)
@@ -647,10 +647,10 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
             else:
                 fe_bgp[i] = "{}".format(fe_bgp_tmp)
             #   vcmi
-            vcmi_temp = round(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_adcs[f'chip{i}']["VCMI"][1]));            vcmi_temp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(vcmi_temp - vcmi_ref) > vcmi_err:
                 check = False
-                check_issue.append("{} vcmi_chip{}={}; out of [815 915 mV]\n".format(env, i, vcmi_temp))
+                check_issue.append("{} vcmi_chip{}={}; out of [{} {} mV]\n".format(env, i, vcmi_temp,vcmi_ref - vcmi_err,vcmi_ref + vcmi_err))
                 vcmi[i] = "<span style = 'color:red;'> {} </span>".format(vcmi_temp)
                 print(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb])
                 print(mon_adcs[f'chip{i}']["VCMI"][1][0][ifemb] * fadc)
@@ -658,7 +658,7 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
             else:
                 vcmi[i] = "{}".format(vcmi_temp)
             #   vcmo
-            vcmo_temp = round(mon_adcs[f'chip{i}']["VCMO"][1][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_adcs[f'chip{i}']["VCMO"][1]));            vcmo_temp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(vcmo_temp - vcmo_ref) > vcmo_err:
                 check = False
                 check_issue.append("{} vcmo_chip{}={}; out of [1110 1210 mV]\n".format(env, i, vcmo_temp))
@@ -666,15 +666,15 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
             else:
                 vcmo[i] = "{}".format(vcmo_temp)
             #   vrefp
-            vrefp_temp = round(mon_adcs[f'chip{i}']["VREFP"][1][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_adcs[f'chip{i}']["VREFP"][1]));            vrefp_temp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(vrefp_temp - vrefp_ref) > vrefp_err:
                 check = False
-                check_issue.append("{} vrefp_chip{}={}; out of [1810 1910 mV]\n".format(env, i, vrefp_temp))
+                check_issue.append("{} vrefp_chip{}={}; out of [{} {} mV]\n".format(env, i, vrefp_temp, vrefp_ref - vrefp_err, vrefp_ref + vrefp_err))
                 vrefp[i] = "<span style = 'color:red;'> {} </span>".format(vrefp_temp)
             else:
                 vrefp[i] = "{}".format(vrefp_temp)
             #   vrefn
-            vrefn_temp = round(mon_adcs[f'chip{i}']["VREFN"][1][0][ifemb] * fadc - ground, 1)
+            cols = list(zip(*mon_adcs[f'chip{i}']["VREFN"][1]));      vrefn_temp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)
             if abs(vrefn_temp - vrefn_ref) > vrefn_err:
                 check = False
                 check_issue.append("{} vrefn_chip{}={}; out of [390 490 mV]\n".format(env, i, vrefn_temp))
