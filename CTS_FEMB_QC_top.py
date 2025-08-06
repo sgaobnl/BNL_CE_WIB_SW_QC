@@ -175,10 +175,6 @@ print("Please Turn OFF the Power!")
 print("Please wait for Warm UP (45 Minutes)")
 print("Enter to Final Quick Checkout")
 input()
-print("Power On the WIB")
-input()
-time.sleep(30)
-print("Final Quick Checkout (3 Minutes)")
 # Final Quick Checkout
 Next = input("\nEnter Any Key to continue \nEnter 'e' to exit\nEnter 'n' to skip the Final Checkout")
 if Next == 'n':
@@ -191,9 +187,7 @@ else:
     print("\033[35m" + "B00 : Turn Power Supply on to Power On WIB" + "\033[0m")
     input("Enter to next ...\n")
     print("\033[35m" + "B01 : Please Wait the Fiber Converter Light on (30 second)" + "\033[0m")
-
-    print("If Fiber Converter works, Enter to next ...\n")
-    input()
+    time.sleep(30)
     # first run
     # ###############STEP1#################################
     skts = [0, 1, 2, 3, 4, 5, 6, 7]

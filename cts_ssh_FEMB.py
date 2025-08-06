@@ -358,7 +358,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
         print(datetime.utcnow(), " : Start FEMB Checkout.(takes < 120s)")
         print(datetime.utcnow(), " : New Test Item Starts, please wait...")
         print("\033[96m 0 : Initilization {} Temperature Checkout\033[0m".format(tmp))
-        command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list)]
+        command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 femb_assembly_chk.py {} save 5".format(slot_list), " &"]
         user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
         result = subrun(command, timeout=300, user_input=user_input_1)  # rewrite with Popen later
         time.sleep(0.01)
@@ -516,7 +516,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             # input('QC debug 01')
             print(datetime.utcnow(), " : New Test Item Starts, please wait...")
             print(tms_items[testid])
-            command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid)]
+            command = ["ssh", "root@192.168.121.123", "cd BNL_CE_WIB_SW_QC; python3 QC_top.py {} -t {}".format(slot_list, testid), " &"]
             user_input_1 = "{}\n{}\n{}\n{}\n{}".format(input_info['tester'], input_info['env'], input_info['toy_TPC'], input_info['comment'], FEMB_list)
             result = subrun(command, timeout=1000, user_input=user_input_1)  # rewrite with Popen later
             time.sleep(0.01)
