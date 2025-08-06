@@ -11,7 +11,7 @@ import webbrowser
 from colorama import Fore, Style
 import pprint
 
-def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False):
+def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = False, shell=False):
     result = None
     if check:
         try:
@@ -20,7 +20,7 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None, rm = 
                                     capture_output=check,
                                     text=True,
                                     timeout=timeout,
-                                    shell=True,
+                                    shell=shell,
                                     # stdout=subprocess.PIPE,
                                     # stderr=subprocess.PIPE,
                                     check=check
@@ -187,21 +187,21 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
     if QC_TST_EN == 77:
         print(datetime.utcnow(), " : Check if WIB is pingable (it takes < 60s)")
-        command = ["ping", "192.168.121.123"]
+        command = ["ping", "-q","-w", "10", "-c", "3", "192.168.121.123"]
         print("COMMAND: ", command)
         attempt = 0
         for i in range(5):
-            result = subrun(command, timeout=10)
-            time.sleep(0.01)
-            if result:
-                log = result.stdout
-                chk1 = "Reply from 192.168.121.123: bytes=32"
-                chk2p = log.find("Received =")
-                chk2 = int(log[chk2p + 11])
-                if chk1 in log and chk2 >= 1:  # improve it later
-                    print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-                    logs['WIB_Pingable'] = log
-                    break
+            #result = subrun(command, timeout=10)
+            result = subrun(command, shell=False)
+            if result != None and result.returncode == 0:
+                #log = result.stdout
+                #chk1 = "Reply from 192.168.121.123: bytes=32"
+                #chk2p = log.find("Received =")
+                #chk2 = int(log[chk2p + 11])
+                #if chk1 in log and chk2 >= 1:  # improve it later
+                print(datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                logs['WIB_Pingable'] = 'true'
+                break
             else:
                 print('Connection issue')
                 attempt += 1
@@ -220,7 +220,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
         # Format it to match the output of the `date` command
         formatted_now = now.strftime('%a %b %d %H:%M:%S UTC %Y')
         command = ["ssh", "root@192.168.121.123", "date -s \'{}\'".format(formatted_now)]
-        result = subrun(command, timeout=30)
+        result = subrun(command, timeout=30,shell=False)
         time.sleep(0.01)
         if result != None:
             print("WIB Time: ", result.stdout)
