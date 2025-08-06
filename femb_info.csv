@@ -1,9 +1,9 @@
-﻿tester,fd
-SLOT0,fd
-SLOT1,
+﻿tester,132
+SLOT0,465
+SLOT1,789
 SLOT2,
 SLOT3,
 test_site,BNL
 toy_TPC,y
 comment,QC test
-top_path,C:/
+top_path,C:

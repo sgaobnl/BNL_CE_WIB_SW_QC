@@ -20,8 +20,8 @@ with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
 main_dict.top_path = csv_data['top_path']
 top_path = main_dict.top_path
 print(top_path)
-target_folder = top_path + 'FEMB_QC/Data'
-last_scan_file = top_path + 'FEMB_QC/Data/last_scan_results.txt'
+target_folder = top_path + '/FEMB_QC/Data'
+last_scan_file = top_path + '/FEMB_QC/Data/last_scan_results.txt'
 
 def save_last_scan_results(results):
     with open(last_scan_file, 'w') as f:
@@ -126,7 +126,7 @@ if not os.path.exists(directory__Report_path):
 else:
     print(f"Directory '{directory__Report_path}' already exists. ")
 
-directory_Data_path = top_path + 'FEMB_QC/Data'
+directory_Data_path = top_path + '/FEMB_QC/Data'
 if not os.path.exists(directory_Data_path):
     os.makedirs(directory_Data_path)
     print(f"Directory '{directory_Data_path}' created.")
@@ -137,7 +137,7 @@ else:
 real_time_monitor()
 
 if True:
-    logging.basicConfig(filename='D:\FEMB_QC\Data\QC.log',
+    logging.basicConfig(filename='{}\FEMB_QC\Data\QC.log'.format(top_path),
                         level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info('info: %s', logs)

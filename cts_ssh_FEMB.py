@@ -100,7 +100,7 @@ def read_csv_to_dict(filename, env):
     return data
 
 
-def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
+def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
     # QC_TST_EN = True
     logs = {}  # from collections import defaultdict report_log01 = defaultdict(dict)
     logs['CTS_IDs'] = input_info['test_site']
@@ -181,8 +181,8 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
     # if QC_TST_EN == 0:
     tms = list(tms_items.keys())
     current_time = datetime.utcnow()
-    logs['PC_rawdata_root'] = root + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
-    logs['PC_rawreport_root'] = "D:/FEMB_QC/Report/" + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
+    logs['PC_rawdata_root'] = root + "Data/" + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
+    logs['PC_rawreport_root'] = root + "Report/" + "Time_{}_CTS_{}{}".format(current_time.strftime("%m_%d_%Y_%H_%M_%S"), logs['CTS_IDs'], savename)
     logs['PC_WRCFG_FN'] = "./femb_info.csv"
 
     if QC_TST_EN == 77:
@@ -476,7 +476,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
         for i in range (3):
             print('Begin to remove data at WIB')
             time.sleep(1)
-            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/"]
+            command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/CHK/", " &"]
             result = subrun(command, timeout=3, check=False)
             time.sleep(0.01)
             if result != None:
@@ -577,7 +577,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=0, input_info=None):
             for i in range(4):
                 print("wib data remove at {}".format(fdir))
                 time.sleep(0.01)
-                command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/"]
+                command = ["ssh", "root@192.168.121.123", "rm -rf /home/root/BNL_CE_WIB_SW_QC/QC/", "&"]
                 result = subrun(command, timeout=10, check=False)
                 time.sleep(0.01)
                 if result != None:

@@ -32,8 +32,8 @@ chk.wib_fw()
 chk.fembs_vol_set(vfe=3.0, vcd=3.0, vadc=3.5)
 
 #power on FEMBs
-# chk.femb_safe_powering(fembs, bias_ilim=0.3, dc0_ilim=1.5, dc1_ilim=1.5, dc2_ilim=2.5)
-pwr_meas = chk.femb_LN2QC_powering(fembs)
+chk.femb_safe_powering(fembs, bias_ilim=0.3, dc0_ilim=1.5, dc1_ilim=1.5, dc2_ilim=2.5)
+# pwr_meas = chk.femb_LN2QC_powering(fembs)
 
 if len(fembs) != 0:
     print (f"Turn FEMB {fembs} on")
@@ -43,7 +43,7 @@ else:
 #Measure powers on FEMB
 # exit()
 time.sleep(2)
-# pwr_meas = chk.get_sensors()
+pwr_meas = chk.get_sensors()
 for key in pwr_meas:
     print (key, ":", pwr_meas[key])
 

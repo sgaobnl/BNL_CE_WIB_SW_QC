@@ -11,9 +11,9 @@ from colorama import init, Fore, Style
 #       01 Function Part                                   #
 ############################################################
 init()
-def QC_Process(QC_TST_EN=None, input_info=None):
+def QC_Process(path = "D:", QC_TST_EN=None, input_info=None):
     while True:
-        QCresult = cts.cts_ssh_FEMB(root="D:/FEMB_QC/Data/", QC_TST_EN=QC_TST_EN, input_info=input_info)
+        QCresult = cts.cts_ssh_FEMB(root="{}/FEMB_QC/".format(path), QC_TST_EN=QC_TST_EN, input_info=input_info)
         if QCresult != None:
             QCstatus = QCresult[0]
             badchips = QCresult[1]
@@ -39,7 +39,7 @@ def FEMB_QC(input_info):
     print("\033[35m" + "B01 : wait to Enable Fiber Converter [30 second]" + "\033[0m")
     time.sleep(30)
     print("\033[35m" + "B02 : Begin to Ping Warm Interface Board" + "\033[0m")
-    QC_Process(QC_TST_EN=77, input_info=input_info)  # initial wib
+    QC_Process(path = input_info['top_path'], QC_TST_EN=77, input_info=input_info)  # initial wib
     # first run
     # ###############STEP1#################################
     skts = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -49,12 +49,14 @@ def FEMB_QC(input_info):
 
     # ======== Button 00 WIB initial =====================
     # input("\033[35m" + 'Enter to Begin!' + "\033[0m")
-    QC_Process(QC_TST_EN=0, input_info=input_info)  # initial wib
-    QC_Process(QC_TST_EN=1, input_info=input_info)  # initial FEMB I2C
-    QC_Process(QC_TST_EN=2, input_info=input_info)  # assembly checkout
-    # QC_Process(QC_TST_EN=3, input_info=input_info)  # QC
+    jump = input('y to start the [first power on checkout]')
+    if jump == 'y':
+        QC_Process(path = input_info['top_path'], QC_TST_EN=0, input_info=input_info)  # initial wib
+        QC_Process(path = input_info['top_path'], QC_TST_EN=1, input_info=input_info)  # initial FEMB I2C
+    QC_Process(path = input_info['top_path'], QC_TST_EN=2, input_info=input_info)  # assembly checkout
+    # QC_Process(path = input_info['top_path'], QC_TST_EN=3, input_info=input_info)  # QC
     # storage the log file
-    QC_Process(QC_TST_EN=10, input_info=input_info)  # QC
+    QC_Process(path = input_info['top_path'], QC_TST_EN=10, input_info=input_info)  # QC
 
     return 0
 
@@ -81,6 +83,10 @@ femb_id_0 = input('Scan the QR ID and assemble the CE box in the Bottom slot (Sl
 femb_id_0 = femb_id_0.replace('/', '_')
 femb_id_1 = input('Scan the QR ID and assemble the CE box in the top slot [Slot #1]\t')
 femb_id_1 = femb_id_1.replace('/', '_')
+femb_id_2 = input('Scan the QR ID and assemble the CE box in the top slot [Slot #2]\t')
+femb_id_2 = femb_id_2.replace('/', '_')
+femb_id_3 = input('Scan the QR ID and assemble the CE box in the top slot [Slot #3]\t')
+femb_id_3 = femb_id_3.replace('/', '_')
 print('\n')
 print(Fore.GREEN + 'Please Review the info and put CE box into CTS chamber' + Style.RESET_ALL)
 csv_data = {}
@@ -103,9 +109,13 @@ if 'SLOT1' not in csv_data:
 else:
     csv_data['SLOT1'] = femb_id_1
 if 'SLOT2' not in csv_data:
-    csv_data['SLOT2'] = ' '
+    csv_data['SLOT2'] = 'H03'
+else:
+    csv_data['SLOT2'] = femb_id_2
 if 'SLOT3' not in csv_data:
-    csv_data['SLOT3'] = ' '
+    csv_data['SLOT3'] = 'H04'
+else:
+    csv_data['SLOT3'] = femb_id_3
 if 'test_site' not in csv_data:
     csv_data['test_site'] = 'BNL'
 if 'toy_TPC' not in csv_data:
@@ -114,7 +124,6 @@ if 'comment' not in csv_data:
     csv_data['comment'] = 'QC test'
 if 'top_path' not in csv_data:
     csv_data['top_path'] = 'D:/'
-print(csv_data['top_path'])
 with open(csv_file, mode="w", newline="", encoding='utf-8-sig') as file:
     writer = csv.writer(file)
     for key, value in csv_data.items():
@@ -138,6 +147,9 @@ elif Next == 'e':
         sys.exit()
 else:
     FEMB_QC(input_info=inform)
-    print("Reception Checkout Done!")
+    print("Warm FEMB QC Done!")
+    print("Please Turn OFF the Power!")
 
 print('\n\n')
+
+
