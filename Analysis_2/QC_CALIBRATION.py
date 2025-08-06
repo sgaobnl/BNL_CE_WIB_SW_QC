@@ -498,7 +498,7 @@ class QC_CALI_Ana(BaseClass_Ana):
                         gain = cfg_df.iloc[ich]['gain (fC/ADC bit)']
                         worstINL = cfg_df.iloc[ich]['worstINL (%)']
                         linRange = cfg_df.iloc[ich]['linRange (fC)']
-                        result_Amp_cfg.append("CH{}=(worstINL={};gain={};linRangeCharge={})".format(ch, worstINL, gain, linRange))
+                        result_Amp_cfg.append("CH{}=(worstINL={};gain={};linRangeCharge={})".format(ch, worstINL, round(gain,1), round(linRange)))
                     result_in_list.append(result_Amp_cfg)
 
         return result_in_list

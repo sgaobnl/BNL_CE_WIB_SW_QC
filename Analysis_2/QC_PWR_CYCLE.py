@@ -264,7 +264,7 @@ class PWR_CYCLE_Ana(BaseClass_Ana):
             pwr_params = []
             for i in range(len(tmpdata_pwr)):
                 param = '_'.join([tmpdata_pwr.iloc[i]['vdd_cfgs'], tmpdata_pwr.iloc[i]['testItem']])
-                pwr_params.append('{} = {}'.format(param, tmpdata_pwr.iloc[i]['value']))
+                pwr_params.append('{} = {}'.format(param, round(tmpdata_pwr.iloc[i]['value'],3)))
 
             # Format channel results
             ch_results = []
@@ -274,7 +274,7 @@ class PWR_CYCLE_Ana(BaseClass_Ana):
                 negAmp = tmpdata_chresp[(tmpdata_chresp['CH']==ichn) & (tmpdata_chresp['testItem']=='negpeak')]['value']
                 ped = tmpdata_chresp[(tmpdata_chresp['CH']==ichn) & (tmpdata_chresp['testItem']=='pedestal')]['value']
                 rms = tmpdata_chresp[(tmpdata_chresp['CH']==ichn) & (tmpdata_chresp['testItem']=='rms')]['value']
-                ch_results.append(("{}=(ped={};rms={};posAmp={};negAmp={})".format(CH, ped.iloc[0], rms.iloc[0], posAmp.iloc[0], negAmp.iloc[0])))
+                ch_results.append(("{}=(ped={};rms={};posAmp={};negAmp={})".format(CH, round(ped.iloc[0]), round(rms.iloc[0]), round(posAmp.iloc[0]), round(negAmp.iloc[0]))))
 
             results_cycles.append(['Test_{}_Power_cycle'.format(self.tms), 'Cycle_{}'.format(icycle)] + pwr_params + ch_results)
 

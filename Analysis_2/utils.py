@@ -344,8 +344,8 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
     '''
     ped, rms = 0.0, 0.0
     if pureNoise:
-        ped = np.round(np.mean(oneCHdata), 4)
-        rms = np.round(np.std(oneCHdata), 4)
+        ped = int(np.round(np.mean(oneCHdata)))
+        rms = np.round(np.std(oneCHdata), 2)
     else:
         # posmax, pheights = find_peaks(x=oneCHdata, height=0.85*np.max(oneCHdata)) ### use argmax corresponding to each period instead of find_peaks 
         # N_pulses = len(posmax)
@@ -385,8 +385,8 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
                 istart = pmin + 20
                 iend = -50
             data = np.concatenate((data, chunkdata[istart : iend]))
-        ped = np.round(np.mean(data), 4)
-        rms = np.round(np.std(data), 4)
+        ped = int(np.round(np.mean(data)))
+        rms = np.round(np.std(data), 2)
 
     return [ped, rms]
 
@@ -418,7 +418,6 @@ class BaseClass:
             self.raw_data = pickle.load(fn)
         # self.raw_data = raw_data
         self.logs_dict = self.raw_data['logs']
-        #print (self.logs_dict)
         self.logs_dict['position'] = {'on Tray': dict(),
                                       'on DAT' : dict()
                                       }
@@ -442,12 +441,14 @@ class BaseClass:
             logs = pickle.load(f)
         RTS_IDs = logs['RTS_IDs']
         for tmts, place in RTS_IDs.items():
+            #print (tmts, place)
             FE = 'FE{}'.format(place[1])
-            self.logs_dict[FE] = tmts
-            #self.logs_dict['ADC{}'.format(place[1])] = tmts
-            self.logs_dict['FE{}'.format(place[1])] = tmts
+            fe_id_str =  "_".join([self.logs_dict['FE{}'.format(place[1])] , tmts, f"Tray{place[0]:02d}", f"SKT{place[1]:1d}"])
+            fe_id_str = fe_id_str.replace("-", "_")
+            self.logs_dict['FE{}'.format(place[1])] = fe_id_str
             self.logs_dict['position']['on Tray'][FE] = place[0]
             self.logs_dict['position']['on DAT'][FE] = place[1]
+ #       exit()
 
     # def get_Info_logs(self):
     #     logs = {
@@ -519,10 +520,10 @@ class BaseClass_Ana:
         '''
             This method can be used if the input data has the channel responses like pedestal, rms, pospeak (or posAmp), and negpeak (or negAmp)
         '''
-        meanValue = np.round(np.mean(oneChipData), 4)
-        stdValue = np.round(np.std(oneChipData) / np.sqrt(16), 4) # standard error of the mean      
-        minValue = np.round(np.min(oneChipData), 4) # the positive value was obtained by subtracting the pedestal by the minValue (the actual one)
-        maxValue = np.round(np.max(oneChipData), 4)
+        meanValue = int(np.round(np.mean(oneChipData)))
+        stdValue = np.round(np.std(oneChipData) / np.sqrt(16), 2) # standard error of the mean      
+        minValue = int(np.round(np.min(oneChipData)) )# the positive value was obtained by subtracting the pedestal by the minValue (the actual one)
+        maxValue = int(np.round(np.max(oneChipData)))
         return meanValue, stdValue, minValue, maxValue
     
     def ChResp_ana(self, item_to_plot: str):
@@ -696,8 +697,8 @@ class LArASIC_ana:
         npeaks, result_qc_npeak = [], []
         pulseData = self.getpulse(pwrcycleN=pwrcycleN) # get pulses of all channels
         for ich in range(16):
-            pospeak = np.round(np.max(pulseData[ich]) - pedestals[ich], 4)
-            negpeak = np.round(pedestals[ich] - np.min(pulseData[ich]), 4)
+            pospeak = int(np.round(np.max(pulseData[ich]) - pedestals[ich]))
+            negpeak = int(np.round(pedestals[ich] - np.min(pulseData[ich])))
             if self.generateQCresult:
                 if isPosPeak:
                     bool_ppeak = True

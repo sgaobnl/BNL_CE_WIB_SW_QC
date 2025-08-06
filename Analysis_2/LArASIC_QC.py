@@ -15,7 +15,6 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
         from QC_INIT_CHK import QC_INIT_CHK
         init_chk = QC_INIT_CHK(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
         FE_IDs = init_chk.decode_FE_PWR()
-        #FE_IDs = ['20250527114445', '20250527114539', '20250527114632', '20250527114726', '20250527114820', '20250527114916', '20250527115012', '20250527115109']
 
     if tms == 1:
         # # Power consumption measurement
@@ -75,6 +74,17 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
         ## Calibration capacitor measurement
         cap = QC_Cap_Meas(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
         FE_IDs = cap.decode_CapMeas()
+
+    for FE_ID in FE_IDs:
+        chip_path = '/'.join([root_path + "Ana"+ "_" + env, FE_ID])
+        #for root, dirs, files in os.walk(chip_path):
+        #    break
+        jfs = ["QC_INIT_CHK.json", "QC_PWR.json", "QC_PWR_CYCLE.json", "QC_CHKRES.json", "QC_CALI_ASICDAC.json", 
+               "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json"  ]
+        for fn in jfs:
+            if not os.path.isfile('/'.join([chip_path, fn])):
+                return None
+        DecodeJson2csv(root_path, FE_ID, env)
     
 def DecodeJson2csv(root_path, FE_ID, env):
     output_path = root_path + "Ana"+ "_" + env
@@ -157,79 +167,74 @@ def DecodeJson2csv(root_path, FE_ID, env):
         csv_results += tmp
 
     with open('/'.join([results_path, '{}_{}.csv'.format(FE_ID, env)]), 'w') as f:
-        csvwriter = csv.writer(f, delimiter=',')
+        csvwriter = csv.writer(f, delimiter=',', dialect="unix")
         csvwriter.writerows(csv_results)
 
 
 if __name__ =="__main__":
     root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
-#    for root, dirs, files in os.walk(root_path):
-#        for data_dir in dirs:
+    for root, dirs, files in os.walk(root_path):
+        for data_dir in dirs:
 #            #if ("Time_2025" in data_dir) :
-#            if ("Time_20250529153639" in data_dir) or ( "Time_20250530085736" in data_dir):
-#                env = 'RT'
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
-#                env = 'LN'
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
-#                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
+            if ("Time_20250529153639" in data_dir) :
+                env = 'RT'
+                #DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
+                exit()
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
+                env = 'LN'
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
+                DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
 
-#    FE_ID = "20250527114445"
-#    FE_ID = "20250527133131"
-#    FE_ID = "20250527175017"
-#    FE_ID = "20250527174825" #009-3549
-    import shutil
-    FE_ID = "20250529153639" #009-3495
-    FE_ID = "20250528091746" #3493
-    FE_ID = "20250527175115" #3497
-    FE_ID = "20250527133131" #3525
-    chipid = "009_3525"
-    chipid, FE_ID = ["009_3529", "20250527114445"]
-    chipid, FE_ID = ["009_3555", "20250527133033"]
-    chipid, FE_ID = ["009_3551", "20250527175017"]
-    chipid, FE_ID = ["009_3490", "20250528140127"]
-    chipid, FE_ID = ["009_3518", "20250528112559"]
+
+#    import shutil
+#    FE_ID = "20250529153639" #009-3495
+#    chipid = "009_3525"
+#    chipid, FE_ID = ["009_3518", "20250528112559"]
     
     
     
-    env = "RT"
-    DecodeJson2csv(root_path, FE_ID, env)
-    src = "/".join([root_path, "Ana_RT", FE_ID])
-    des = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env])
-    #os.makedirs(des, exist_ok=True)
-    shutil.copytree(src, des)
-    srcf = "E:/RTS_DAT_LArASIC_QC/B009T0008/results/" + FE_ID + "_" + env + ".csv"
-    dstf = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env + ".csv"])
-    shutil.copy(srcf, dstf)
+#    env = "RT"
+#    DecodeJson2csv(root_path, FE_ID, env)
+#    env = "LN"
+#    DecodeJson2csv(root_path, FE_ID, env)
 
-    env = "LN"
-    DecodeJson2csv(root_path, FE_ID, env)
-    src = "/".join([root_path, "Ana_LN", FE_ID])
-    des = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env])
-    #os.makedirs(des, exist_ok=True)
-    shutil.copytree(src, des)
-    srcf = "E:/RTS_DAT_LArASIC_QC/B009T0008/results/" + FE_ID + "_" + env + ".csv"
-    dstf = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env + ".csv"])
-    shutil.copy(srcf, dstf)
-
-#    AnalyzeDecodedData_func(root_path=root_path, env=env)    
-
+#    src = "/".join([root_path, "Ana_RT", FE_ID])
+#    des = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env])
+#    #os.makedirs(des, exist_ok=True)
+#    shutil.copytree(src, des)
+#    srcf = "E:/RTS_DAT_LArASIC_QC/B009T0008/results/" + FE_ID + "_" + env + ".csv"
+#    dstf = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env + ".csv"])
+#    shutil.copy(srcf, dstf)
+#
+#    exit()
+#
+#    src = "/".join([root_path, "Ana_LN", FE_ID])
+#    des = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env])
+#    #os.makedirs(des, exist_ok=True)
+#    shutil.copytree(src, des)
+#    srcf = "E:/RTS_DAT_LArASIC_QC/B009T0008/results/" + FE_ID + "_" + env + ".csv"
+#    dstf = "/".join(["E:/RTS_DAT_LArASIC_QC/B009T0008/BRD31/",  chipid + "_" + FE_ID + "_" + env + ".csv"])
+#    shutil.copy(srcf, dstf)
+#
+##    AnalyzeDecodedData_func(root_path=root_path, env=env)    
+#

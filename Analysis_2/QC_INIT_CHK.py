@@ -93,9 +93,9 @@ class QC_INIT_CHK(BaseClass):
                 I = {}
                 P = {}
                 for pwr_rail in ['VDDA', 'VDDO', 'VDDP']:
-                    V[pwr_rail] = np.round(data_config[pwr_rail][0], 4)
-                    I[pwr_rail] = np.round(data_config[pwr_rail][1], 4)
-                    P[pwr_rail] = np.round(data_config[pwr_rail][2], 4)
+                    V[pwr_rail] = np.round(data_config[pwr_rail][0], 3)
+                    I[pwr_rail] = np.round(data_config[pwr_rail][1], 3)
+                    P[pwr_rail] = np.round(data_config[pwr_rail][2], 3)
                 oneChip_data[param]["V"] = V
                 oneChip_data[param]["I"] = I
                 oneChip_data[param]["P"] = P
@@ -112,7 +112,7 @@ class QC_INIT_CHK(BaseClass):
             oneChip_data = {
                 'logs' : {
                     "item_name" : self.item,
-                    "RTS_timestamp" : self.logs_dict['FE{}'.format(ichip)],
+                    "RTS_timestamp" : self.logs_dict['FE{}'.format(ichip)].split("_")[2],
                     'RTS_Property_ID' : 'BNL001',
 #                    'RTS chamber' : 1,
                     "date": self.logs_dict['date'],
@@ -343,16 +343,16 @@ class QC_INIT_CHKAna(BaseClass_Ana):
                 pwr_params = []
                 for _, row in cfg_pwr_data.iterrows():
                     param = '_'.join([row['cfg_item'], row['testItem'].split(' ')[0]])
-                    pwr_params.append('{} = {}'.format(param, row['value']))
+                    pwr_params.append('{} = {}'.format(param, round(float(row['value']), 3)))
 
                 # Build channel response strings
                 ch_results = []
                 for ichn in range(16):
                     ch_data = cfg_chresp_data[cfg_chresp_data['chn']==ichn]
-                    posAmp = float(ch_data[ch_data['cfg_item']=='pospeak']['value'].iloc[0])
-                    negAmp = float(ch_data[ch_data['cfg_item']=='negpeak']['value'].iloc[0])
-                    ped = float(ch_data[ch_data['cfg_item']=='pedestal']['value'].iloc[0])
-                    rms = float(ch_data[ch_data['cfg_item']=='rms']['value'].iloc[0])
+                    posAmp = round(float(ch_data[ch_data['cfg_item']=='pospeak']['value'].iloc[0]))
+                    negAmp = round(float(ch_data[ch_data['cfg_item']=='negpeak']['value'].iloc[0]))
+                    ped = round(float(ch_data[ch_data['cfg_item']=='pedestal']['value'].iloc[0]))
+                    rms = round(float(ch_data[ch_data['cfg_item']=='rms']['value'].iloc[0]), 2)
                     ch_results.append(f"CH{ichn}=(ped={ped};rms={rms};posAmp={posAmp};negAmp={negAmp})")
 
                 results_CFGs.append([f'Test_{self.tms}_QC_INIT_CHK', cfg] + pwr_params + ch_results)

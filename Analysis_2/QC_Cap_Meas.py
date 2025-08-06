@@ -155,6 +155,7 @@ class QC_Cap_Meas(BaseClass):
                         chipdata[c][fechn][bl] = {'ppeak': tmp['ppeak'], 'npeak': tmp['npeak'], 'pedestal': tmp['pedestal'], 'rms': tmp['rms']}
             #dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name=self.suffixName, data_to_dump=chipdata, indent=4)
             dumpJson(output_path=self.FE_outputDIRs[FE_ID], output_name="QC_Cap_Meas", data_to_dump=chipdata, indent=4)
+        return FE_IDs
         # sys.exit()
                         # chipdata[c][fechn][bl] = 
         # add option to plot waveform
@@ -163,7 +164,8 @@ class QC_Cap_Meas(BaseClass):
         if self.ERROR:
             return
         decodedData = self.decode()
-        self.saveData(decodedData=decodedData)
+        FE_IDs = self.saveData(decodedData=decodedData)
+        return FE_IDs
 
 class QC_Cap_Meas_Ana(BaseClass_Ana):
     def __init__(self, root_path: str, output_path: str, chipID: str):
@@ -247,9 +249,9 @@ class QC_Cap_Meas_Ana(BaseClass_Ana):
         #combined_df.drop(['meanCap (pF)', 'stdCap (pF)'], axis=1, inplace=True, errors='ignore')
 
         cfg = '_'.join(combined_df.iloc[0][['BL', 'peakTime', 'gain']].dropna())
-        row_data = ['Test_{}_Capacitance'.format(self.tms), cfg]
+        row_data = ['Test_{}_Capacitance_pF'.format(self.tms), cfg]
         for chn in combined_df['CH']:
-            row_data.append('CH{}=(Cap (pF)={})'.format(chn, combined_df.iloc[chn]['Cap (pF)']))
+            row_data.append('CH{}={})'.format(chn, round(combined_df.iloc[chn]['Cap (pF)'],3)))
 
         row_data = [row_data]
         #with open('/'.join([self.output_path, self.chipID, '{}.csv'.format(self.item)]), 'w') as csvfile:

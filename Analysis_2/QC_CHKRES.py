@@ -295,10 +295,10 @@ class QC_CHKRES_Ana(BaseClass_Ana):
             })
             row_table = [f'Test_0{self.tms}_CHKRES', config, cfg_info]
             for chn in range(len(df['CH'])):
-                ped = df.iloc[chn]['pedestal']
-                rms = df.iloc[chn]['rms']
-                pospeak = df.iloc[chn]['pospeak']
-                negpeak = df.iloc[chn]['negpeak']
+                ped = round(df.iloc[chn]['pedestal'])
+                rms = round(df.iloc[chn]['rms'],2)
+                pospeak = round(df.iloc[chn]['pospeak'])
+                negpeak = round(df.iloc[chn]['negpeak'])
                 row_table.append(f"CH{chn}=(pedestal={ped};rms={rms};posAmp={pospeak};negAmp={negpeak})")
             result_table.append(row_table)
         return result_table

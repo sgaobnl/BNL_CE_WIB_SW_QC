@@ -142,10 +142,10 @@ class QC_DLY_RUN(BaseClass):
                 for chn in range(16):
                     wf = tmpchipData[param]['CH{}'.format(chn)]['data']
                     pedestal = tmpchipData[param]['CH{}'.format(chn)]['pedestal']
-                    rms = np.round(tmpchipData[param]['CH{}'.format(chn)]['rms'], 4)
+                    rms = np.round(tmpchipData[param]['CH{}'.format(chn)]['rms'], 2)
                     #
-                    ppeak = np.round(np.max(wf)-pedestal, 4)
-                    npeak = np.round(pedestal - np.min(wf), 4)
+                    ppeak = np.round(np.max(wf)-pedestal, 0)
+                    npeak = np.round(pedestal - np.min(wf), 0)
                     chipdata[key]['CH{}'.format(chn)] = {'pospeak': ppeak, 'negpeak': npeak, 'pedestal': pedestal, 'rms': rms}
             
             # save data

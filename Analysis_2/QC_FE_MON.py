@@ -247,10 +247,10 @@ class QC_FE_MON_Ana():
             gain, yintercept, worstinl, linRange, worstdnl = gain_inl(y=DAC_list, x=data_list*AD_LSB, item='', returnDNL=True)
 
             GAIN_INL_DNL_RANGE['CFG'].append(cfg)
-            GAIN_INL_DNL_RANGE['gain (mV/ADC bit)'].append(1/gain)
-            GAIN_INL_DNL_RANGE['INL (%)'].append(worstinl*100)
+            GAIN_INL_DNL_RANGE['gain (mV/ADC bit)'].append(round(1/gain,3))
+            GAIN_INL_DNL_RANGE['INL (%)'].append(round(worstinl*100,2))
             #GAIN_INL_DNL_RANGE['DNL (%)'].append(worstdnl*100)
-            GAIN_INL_DNL_RANGE['Range (0-X)'].append(np.max(linRange))
+            GAIN_INL_DNL_RANGE['Range (0-X)'].append(round(np.max(linRange)))
             
         GAIN_INL_DNL_RANGE = pd.DataFrame(GAIN_INL_DNL_RANGE)
         
@@ -298,7 +298,7 @@ class QC_FE_MON_Ana():
         cols = ['VBGR', 'MON_Temper', 'MON_VBGR']
         for col in cols:
             combined_vbgr_temp[col] = combined_vbgr_temp[col].apply(lambda x: '{}={}'.format(col, x))
-            tmp_result = ['Test_{}_{}'.format(self.tms, self.item), 'VBGR_Temp', combined_vbgr_temp.iloc[0][col]]
+            tmp_result = ['Test_{}_{}'.format(self.tms, self.item), 'VBGR_Temp(mV)', round(combined_vbgr_temp.iloc[0][col])]
             vbgr_temp_tables.append(tmp_result)
         
         # DAC_meas

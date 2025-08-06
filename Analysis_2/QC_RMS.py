@@ -219,7 +219,7 @@ class RMS_Ana(BaseClass_Ana):
             for chn in range(len(df['CH'])):
                 ped = df.iloc[chn]['pedestal']
                 rms = df.iloc[chn]['rms']
-                row_table.append(f"CH{chn}=(pedestal={ped};rms={rms})")
+                row_table.append(f"CH{chn}=(pedestal={round(ped)};rms={round(rms,2)})")
             result_table.append(row_table)
 
             # Concatenate to main dataframe
