@@ -158,7 +158,6 @@ class FourRowForm(QWidget):
         )
 
         if 'LArASIC' in selected_chip:
-
             rootdir = rootdir_cs('FE') +"/" + tray_id + "/"
         elif 'ColdADC' in selected_chip:
             rootdir = rootdir_cs('ADC') +"/" + tray_id + "/"
@@ -179,7 +178,6 @@ class FourRowForm(QWidget):
             if reply == QMessageBox.No:
                 return
 
-        summary = f"Name: {name}\nEmail: {email1}\nTray ID: {tray_id}\nDUT type: {selected_chip}"
         self.summary_dict.update({
             "Name": name,
             "Email": email1,
@@ -196,7 +194,12 @@ class FourRowForm(QWidget):
                     if "tester" in tmp[0]:
                         tmp[1] = self.summary_dict['Name']
                     if "DUT" in tmp[0][0:3]:
-                        tmp[1] = self.summary_dict['DUTtype']
+                        if 'LArASIC' in selected_chip:
+                            tmp[1] = "FE" 
+                        elif 'ColdADC' in selected_chip:
+                            tmp[1] = "ADC" 
+                        elif 'COLDATA' in selected_chip :
+                            tmp[1] = "CD" 
                     if "Email" in tmp[0][0:5]:
                         tmp[1] = self.summary_dict['Email']
                     if "Tray_ID" in tmp[0][0:7]:
@@ -212,6 +215,7 @@ class FourRowForm(QWidget):
         else:
             csvtext = "asic_info.csv not exist. \n"
 
+        summary = f"Name: {name}\nEmail: {email1}\nTray ID: {tray_id}\nDUT type: {selected_chip}"
         reply = QMessageBox.question(
             self,
             "Success",

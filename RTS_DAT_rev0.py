@@ -1,7 +1,7 @@
 import sys 
 import os
 import subprocess
-import time 
+#import time 
 import random
 import pickle
 import numpy as np
@@ -38,7 +38,20 @@ from SN_chip_CPM_scan import ocr_chip
 from sendemail import sendemail
 from User_Input import get_user_input
 from init_check import init_chk 
+
 TRAY_N = 90
+
+import datetime
+def is_weekday_work_hours():
+    now = datetime.datetime.now()  # FIXED
+    current_time = now.time()
+
+    is_weekday = 0 <= now.weekday() <= 4
+    start_time = datetime.time(8, 30)
+    end_time = datetime.time(17, 30)  # FIXED typo
+
+    in_time_range = start_time <= current_time <= end_time
+    return is_weekday and in_time_rangee
 
 def DAT_debug (QCstatus):
     print (QCstatus)
@@ -164,6 +177,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
     if LN2_flg:
         sendemail(subject = "Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email)
         #yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
+        t0 = int(time.time())
         while True:
             cover_sts = rts.CoverStatus()
             if "-198" in cover_sts:
@@ -172,6 +186,9 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
                 break
             else:
                 time.sleep(5)
+                t1 = int(time.time()) - t0
+                if (t1 > 200) and ((t1%600)==0) and is_weekday_work_hours():
+                    sendemail(subject = "Reminder: Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email)
 
         try:
             cryo.cryo_fill()
@@ -187,6 +204,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
 
         sendemail(subject = "Please open RTS chamber cover", message="Cold test is done, please open the sink cover", user_email=user_email)
 
+        t0 = int(time.time())
         while True:
             cover_sts = rts.CoverStatus()
             if "197" in cover_sts:
@@ -195,6 +213,10 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
                 break
             else:
                 time.sleep(5)
+                t1 = int(time.time()) - t0
+                if (t1 > 200) and ((t1%600)==0) and is_weekday_work_hours():
+                    sendemail(subject = "Reminder: Please open RTS chamber cover", message="Please open the chamber cover. ", user_email=user_email)
+
 
     return QCstatus, badchips #badchips range from 0 to7
 
@@ -397,9 +419,9 @@ def Tray_SCAN_OCR(rootdir):
         if not chip_ocr[key][0] :
             if ("Failed" in chip_ocr[key][-2]) and ("Moved" in chip_ocr[key][-1]): #already removed
                 continue
-            tray_id = key
-            trayc = (tray_id-1)%15 + 1
-            trayr = (tray_id-1)//15 + 1
+            tray_slot = key
+            trayc = (tray_slot-1)%15 + 1
+            trayr = (tray_slot-1)//15 + 1
             bad_tray_spot = FindSpotOnBadTray(bad_tray_spot)
             bad_trayc = (bad_tray_spot-1)%15 + 1
             bad_trayr = (bad_tray_spot-1)//15 + 1
@@ -579,20 +601,15 @@ while (len(duts) > 0) :
             skts=[0,1,2,3,4,5,6,7]
 
     print ("**********save ID info*************")
-    ids_k = list(ids_dict.keys())
+    ids_k = list(dut_skt.keys())
     if len(ids_k) > 0:
-        tmpi = 0
-        while True:
-            fp = rootdir + ids_k[0] + "_log_%03d.bin"%tmpi
-            if not os.path.isfile(fp):
-                break
-            else:
-                tmpi + 1
-        logs["RTS_MSG_R2S_P"] = ids_dict
-        logs["RTS_MSG_S2R_P"] = ids_dict_good
-        logs["RTS_MSG_S2R_F"] = ids_dict_bad
-        with open(fp, 'wb') as fn:
-            pickle.dump(logs, fn)
+        fp = rootdir + ids_k[0] + "_log.bin"
+        if not os.path.isfile(fp) :
+            logs["RTS_MSG_R2S_P"] = dut_skt 
+            logs["RTS_MSG_S2R_P"] = ids_goods
+            logs["RTS_MSG_S2R_F"] = ids_bads
+            with open(fp, 'wb') as fn:
+                pickle.dump(logs, fn)
 
 rts.rts_shutdown()
 
@@ -605,6 +622,13 @@ rts_r = manip.read_manipfp()
 rts_msgs = manip.read_rtsmsgfp()
 for rts_msg_wfp in rts_msgs:
     manip.manip_extract(rts_r, rts_msg_wfp)
+
+from move_data import copy_and_delete_folder
+src_root=rootdir +"/../"
+src_folder= tray_id
+dst_root=r"S:/RTS_DAT_LArASIC_QC/"
+copy_and_delete_folder(src_root, src_folder, dst_root)
+
 print ("Done")
 
 

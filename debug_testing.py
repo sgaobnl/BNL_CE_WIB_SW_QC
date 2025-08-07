@@ -9,10 +9,14 @@ from SN_chip_CPM_scan import ocr_chip
 
 rootdir = '''C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B009T0009/'''
 
-ocrbin_fp = rootdir + "ocr_results_bak.bin"
+#ocrbin_fp = rootdir + "ocr_results_bak.bin"
+ocrbin_fp = rootdir + "ocr_results.bin"
 with open(ocrbin_fp, 'rb') as fn:
     chip_ocr  = pickle.load( fn)
+for key in chip_ocr.keys():
+    print (chip_ocr[key])
 
+exit()
 
 dut_skt_n =  {'20250805145832': (25, 0), '20250805145933': (26, 1), '20250805150025': (27, 2), '20250805150122': (28, 3), '20250805150219': (29, 4), '20250805150318': (30, 5), '20250805150418': (31, 6), '20250805150518': (32, 7)}
 
@@ -29,7 +33,6 @@ for key in list(dut_skt_n.keys()):
         ocr_chip_fn =  f'SN_{ocr_sn}_Tray_{tray_slot}_{key}.bmp'.replace("-","_")
         ocr_image_dir = sn_ocr_imgdir + "/" + ocr_chip_fn
         ocr_info = ocr_chip(image_fp = dut_chip_dir, image_fn = dut_chip_fn, ocr_image_dir = ocr_image_dir, degree=180, x=1115, y=785, w=330, h=330, valid_flg=False)
-        print (f"file path: {ocr_image_dir}")
         if ocr_sn not in ocr_info:
             print ("Chip to be tested have different SN from the tray scanning!")
             print (f"file path: {ocr_image_dir}")
