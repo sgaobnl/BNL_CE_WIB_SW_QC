@@ -15,7 +15,7 @@ def sendemail(message, user_email="", subject = "Message from RTS", inform_tech 
                 for cl in fp:
                     tmp = cl.split(",")
                     tech_emails = tech_emails + ";" + tmp
-        receiver_email = "sgao@bnl.gov;" + tech_emails + ";" + user_email
+        receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;" + tech_emails + ";" + user_email
     else:
         receiver_email = "sgao@bnl.gov;" + user_email
     password = "mbqx qfca voue zwfr"

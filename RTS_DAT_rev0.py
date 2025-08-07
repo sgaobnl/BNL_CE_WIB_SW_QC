@@ -581,18 +581,13 @@ while (len(duts) > 0) :
     print ("**********save ID info*************")
     ids_k = list(ids_dict.keys())
     if len(ids_k) > 0:
-        tmpi = 0
-        while True:
-            fp = rootdir + ids_k[0] + "_log_%03d.bin"%tmpi
-            if not os.path.isfile(fp):
-                break
-            else:
-                tmpi + 1
-        logs["RTS_MSG_R2S_P"] = ids_dict
-        logs["RTS_MSG_S2R_P"] = ids_dict_good
-        logs["RTS_MSG_S2R_F"] = ids_dict_bad
-        with open(fp, 'wb') as fn:
-            pickle.dump(logs, fn)
+        fp = rootdir + ids_k[0] + "_log.bin"
+        if not os.path.isfile(fp) :
+            logs["RTS_MSG_R2S_P"] = ids_dict
+            logs["RTS_MSG_S2R_P"] = ids_dict_good
+            logs["RTS_MSG_S2R_F"] = ids_dict_bad
+            with open(fp, 'wb') as fn:
+                pickle.dump(logs, fn)
 
 rts.rts_shutdown()
 
