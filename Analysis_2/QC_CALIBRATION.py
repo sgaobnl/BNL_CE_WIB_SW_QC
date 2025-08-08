@@ -103,6 +103,8 @@ class QC_CALI(BaseClass):
             DAC_param = cfg[BL] # [(DAC, param), (DAC, param), ...., (DAC, param)]
             print('-- Start decoding BL {} --'.format(BL))
             for DAC, param in DAC_param:
+                #if DAC == 0:
+                #    continue
                 print('Decoding DAC {}...'.format(DAC))
                 # print(param)
                 fembs = self.raw_data[param][0]

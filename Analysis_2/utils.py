@@ -188,7 +188,7 @@ def createDirs(logs_dict: dict, output_dir: str):
     
 
 def decodeRawData_(fembs, rawdata, needTimeStamps=False):
-    wibdata = wib_dec(rawdata, fembs, spy_num=1, cd0cd1sync=False)[0]
+    wibdata = wib_dec(rawdata, fembs, spy_num=20, cd0cd1sync=False)[0]
     tmpdata = [wibdata[fembs[0]]][0] # data of the 128 channels for the 8 chips
     # print(len(wibdata))
     # tmpdata = wibdata[1][0]
@@ -222,7 +222,7 @@ def organizeWibdata(wibdata: list):
     return data
 
 def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500):
-    tmpwibdata = wib_dec(rawdata, fembs, spy_num=5, cd0cd1sync=False)
+    tmpwibdata = wib_dec(rawdata, fembs, spy_num=20, cd0cd1sync=False)
     #-----------------------------------------------------------------------------
     dat_tmts_l = []
     dat_tmts_h = []
@@ -368,23 +368,26 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
             chunkdata = oneCHdata[i*period : (i+1)*period]
             pmax = np.argmax(chunkdata)
             pmin = np.argmin(chunkdata)
-            istart = 0
-            iend = 0
-            if (pmax < pmin) and (pmax-50 < 0):
-                istart = pmin+20
-                iend = -50
-            elif (pmax < pmin) and (period-pmin < pmax):
-                istart = 20
-                iend = pmax - 20
-            else:
-                front = chunkdata[pmax - 20 : ]
-                back = chunkdata[ : pmax - 20]
-                chunkdata = np.concatenate((front, back))
-                pmax = np.argmax(chunkdata)
-                pmin = np.argmin(chunkdata)
-                istart = pmin + 20
-                iend = -50
-            data = np.concatenate((data, chunkdata[istart : iend]))
+            newdata = list(chunkdata) + list(chunkdata)
+            
+            #istart = 0
+            #iend = 0
+            #if (pmax < pmin) and (pmax-50 < 0):
+            #    istart = pmin+20
+            #    iend = -50
+            #elif (pmax < pmin) and (period-pmin < pmax):
+            #    istart = 20
+            #    iend = pmax - 20
+            #else:
+            #    front = chunkdata[pmax - 20 : ]
+            #    back = chunkdata[ : pmax - 20]
+            #    chunkdata = np.concatenate((front, back))
+            #    pmax = np.argmax(chunkdata)
+            #    pmin = np.argmin(chunkdata)
+            #    istart = pmin + 20
+            #    iend = -50
+            #data = np.concatenate((data, chunkdata[istart : iend]))
+            data = np.concatenate((data, newdata[pmax+period-250 : pmax+period-50]))
         ped = int(np.round(np.mean(data)))
         rms = np.round(np.std(data), 2)
 
