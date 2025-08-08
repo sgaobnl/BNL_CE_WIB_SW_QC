@@ -1,7 +1,7 @@
 import sys 
 import os
 import subprocess
-#import time 
+import time 
 import random
 import pickle
 import numpy as np
@@ -51,7 +51,7 @@ def is_weekday_work_hours():
     end_time = datetime.time(17, 30)  # FIXED typo
 
     in_time_range = start_time <= current_time <= end_time
-    return is_weekday and in_time_rangee
+    return is_weekday and in_time_range
 
 def DAT_debug (QCstatus):
     print (QCstatus)
@@ -381,15 +381,14 @@ def FindSpotOnBadTray(bad_tray_spot = 1):
             bad_tray_spot += 1
 
 def Tray_SCAN_OCR(rootdir):
-    rts.PumpOn()
-    time.sleep(5)
-    rts.PumpOff()
-
     ocrbin_fp = rootdir + "ocr_results.bin"
     if os.path.isfile(ocrbin_fp) :
         with open(ocrbin_fp, 'rb') as fn:
             chip_ocr  = pickle.load(fn)
     else:
+        rts.PumpOn()
+        time.sleep(5)
+        rts.PumpOff()
         print ("Wait a few minutes until the scanning is done")
         rts.ScanTray_Lar(rootdir=rootdir)
         rts.JumpToCamera()
@@ -535,9 +534,9 @@ else:
 dut_skt = {}
 
 while (len(duts) > 0) :
-    rts.PumpOn()
-    time.sleep(5)
-    rts.PumpOff()
+#    rts.PumpOn()
+#    time.sleep(5)
+#    rts.PumpOff()
 
     duts, dut_skt_n = MovetoSoket(sinkno, duts,ids_dict, skts=skts,duttype=duttype) 
     print ("Remain chips on tray: ", duts)
@@ -571,9 +570,9 @@ while (len(duts) > 0) :
         badchips = []
     print (QCstatus, "Badchips:", badchips)
 
-    rts.PumpOn()
-    time.sleep(5)
-    rts.PumpOff()
+#    rts.PumpOn()
+#    time.sleep(5)
+#    rts.PumpOff()
 
     duts, dut_skt, bad_tray_spot, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot,duttype=duttype, LN2_flg=LN2_flg) 
     ids_dict_good.update(ids_goods)
