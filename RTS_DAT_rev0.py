@@ -175,20 +175,29 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
         return QCstatus, badchips #badchips range from 0 to7
 
     if LN2_flg:
-        sendemail(subject = "Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email)
+        p_shifter=True
+        s_shifter=False
+        sendemail(subject = "Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
         #yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
         t0 = int(time.time())
         while True:
             cover_sts = rts.CoverStatus()
             if "-198" in cover_sts:
                 print ("Cover is close! Start the cold test in 10 seconds")
+                sendemail(subject = "A genuis just closed cover", message="Next call is ~ 1 hour later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                s_shifter=False
                 time.sleep(10)
                 break
             else:
-                time.sleep(5)
+                time.sleep(60)
                 t1 = int(time.time()) - t0
-                if (t1 > 200) and ((t1%600)==0) and is_weekday_work_hours():
-                    sendemail(subject = "Reminder: Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email)
+                if (t1 > 600) :
+                    if not is_weekday_work_hours()  :
+                        pass
+                    else:
+                        t0 =time.time() 
+                        s_shifter=True
+                        sendemail(subject = "Reminder: Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email,  p_shifter=p_shifter, s_shifter=s_shifter)
 
         try:
             cryo.cryo_fill()
@@ -202,20 +211,28 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
 
         cryo.cryo_warmup(waitminutes=30)
 
-        sendemail(subject = "Please open RTS chamber cover", message="Cold test is done, please open the sink cover", user_email=user_email)
+        s_shifter=False
+        sendemail(subject = "Please open RTS chamber cover", message="Cold test is done, please open the sink cover", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
 
         t0 = int(time.time())
         while True:
             cover_sts = rts.CoverStatus()
             if "197" in cover_sts:
                 print ("Cover is open! Activate robot in 10 seconds")
+                sendemail(subject = "A genuis just opened cover", message="Next call is ~40 minutes later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                s_shifter=False
                 time.sleep(10)
                 break
             else:
-                time.sleep(5)
+                time.sleep(60)
                 t1 = int(time.time()) - t0
-                if (t1 > 200) and ((t1%600)==0) and is_weekday_work_hours():
-                    sendemail(subject = "Reminder: Please open RTS chamber cover", message="Please open the chamber cover. ", user_email=user_email)
+                if (t1 > 600) :
+                    if not is_weekday_work_hours()  :
+                        pass
+                    else:
+                        t0 =time.time() 
+                        s_shifter=True
+                        sendemail(subject = "Reminder: Please open RTS chamber cover", message="Please open the chamber cover. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
 
 
     return QCstatus, badchips #badchips range from 0 to7
@@ -504,6 +521,7 @@ rts.RootDirSet(rootdir=rootdir)
 rts.MotorOn()
 rts.JumpToCamera()
 
+sendemail(subject ="Attention: ASIC QC start...", message="Stay tuned! You may be informed later.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
 bad_tray_spot, chip_ocr, ocrbin_fp = Tray_SCAN_OCR(rootdir)
 
 rts.rts_idle()
@@ -570,9 +588,6 @@ while (len(duts) > 0) :
         badchips = []
     print (QCstatus, "Badchips:", badchips)
 
-#    rts.PumpOn()
-#    time.sleep(5)
-#    rts.PumpOff()
 
     duts, dut_skt, bad_tray_spot, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot,duttype=duttype, LN2_flg=LN2_flg) 
     ids_dict_good.update(ids_goods)
@@ -602,7 +617,7 @@ while (len(duts) > 0) :
     print ("**********save ID info*************")
     ids_k = list(dut_skt.keys())
     if len(ids_k) > 0:
-        fp = rootdir + ids_k[0] + "_log.bin"
+        fp = rootdir + datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S") + "_log.bin"
         if not os.path.isfile(fp) :
             logs["RTS_MSG_R2S_P"] = dut_skt 
             logs["RTS_MSG_S2R_P"] = ids_goods
@@ -624,7 +639,7 @@ for rts_msg_wfp in rts_msgs:
 
 from move_data import copy_and_delete_folder
 src_root=rootdir +"/../"
-src_folder= tray_id
+src_folder= trayid
 dst_root=r"S:/RTS_DAT_LArASIC_QC/"
 copy_and_delete_folder(src_root, src_folder, dst_root)
 
