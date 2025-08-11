@@ -10,14 +10,14 @@ from SN_chip_CPM_scan import ocr_chip
 rootdir = '''C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B009T0010/'''
 
 log_fp = rootdir + "08_08_2025_16_45_04_log.bin"# "08_08_2025_16_51_03_log.bin"
-with open(log_fp, 'rb') as fn:
-    log  = pickle.load( fn)
-    print (log["RTS_MSG_S2R_F"])
-exit()
-for key in log.keys():
-    print (log[key])
-
-exit()
+#with open(log_fp, 'rb') as fn:
+#    log  = pickle.load( fn)
+#    print (log["RTS_MSG_S2R_F"])
+#exit()
+#for key in log.keys():
+#    print (log[key])
+#
+#exit()
 #ocrbin_fp = rootdir + "ocr_results_bak.bin"
 ocrbin_fp = rootdir + "ocr_results.bin"
 with open(ocrbin_fp, 'rb') as fn:

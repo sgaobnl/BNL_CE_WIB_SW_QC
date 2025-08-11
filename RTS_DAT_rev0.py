@@ -482,6 +482,7 @@ else:
 
 trayid = gui_info["Tray_ID"]
 user_email= gui_info["Email"]
+sendemail(subject ="Attention: ASIC QC start...", message="Stay tuned! You may be informed later.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
 
 trayno =2 # tray with chips to be tested
 bad_trayno =1 # tray with bad chips
@@ -509,7 +510,7 @@ if not os.path.exists(rootdir):
         sys.exit()
 else:
     print ("File exist, please make sure the tray ID is unique")
-    print ("Exit anyway")
+#    print ("Exit anyway")
 
 ############################################################
 rts = RTS_CFG()
@@ -520,10 +521,7 @@ rts.rts_init(port=2001, host_ip='192.168.0.2')
 rts.RootDirSet(rootdir=rootdir)
 rts.MotorOn()
 rts.JumpToCamera()
-
-sendemail(subject ="Attention: ASIC QC start...", message="Stay tuned! You may be informed later.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
 bad_tray_spot, chip_ocr, ocrbin_fp = Tray_SCAN_OCR(rootdir)
-
 rts.rts_idle()
 
 #rts.MoveChipFromTrayToSocket(2, 8, 2, 2, 8, "FE")    

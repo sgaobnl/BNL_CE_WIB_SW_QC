@@ -7,7 +7,7 @@ def google_sheets_shifter():
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     
     # Path to your service account key file
-    SERVICE_ACCOUNT_FILE = './shifters-468417-2f22a0ab5cc6.json'
+    SERVICE_ACCOUNT_FILE = './shifters-468417-7117f0112d41.json'
     
     # Authenticate and create the client
     creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)

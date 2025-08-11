@@ -7,7 +7,20 @@ from google_sheets_shifter import google_sheets_shifter
 from datetime import date
 
 def sendemail(message, user_email="", subject = "Message from RTS", inform_tech = False, p_shifter=True, s_shifter=False):
+    rts_email_pw_fp = "./rts_email_passcode.txt"
+    if not os.path.isfile(rts_email_pw_fp):
+        print (f"{rts_email_pw_fp} does not exist")
+        print ("PASSCODE only saves at RTS PC locately")
+        print ("Please check, exit anyway")
+        exit()
+    with open(rts_email_pw_fp , 'r', encoding="utf-8") as fp:
+        for line in fp:
+            password = line.strip()
+            break
+
     shifters = google_sheets_shifter()
+    today = date.today()
+    weekday_iso = today.isoweekday()
 
     sender_email = "rtshibay@gmail.com"
     if inform_tech:
@@ -21,13 +34,10 @@ def sendemail(message, user_email="", subject = "Message from RTS", inform_tech 
         receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;" + tech_emails + ";" + user_email
     else:
         receiver_email = "sgao@bnl.gov;gao33.bnl@gmail.com;" + user_email
-        today = date.today()
-        weekday_iso = today.isoweekday()
     if p_shifter:
         receiver_email = ";".join([receiver_email, shifters[weekday_iso][0]])
     if s_shifter:
         receiver_email = ";".join([receiver_email, shifters[weekday_iso][1]])
-    password = "mbqx qfca voue zwfr"
     
     body = message
     msg = MIMEMultipart()
@@ -49,4 +59,5 @@ def sendemail(message, user_email="", subject = "Message from RTS", inform_tech 
     except Exception as e:
         print(f"Failed to send email: {e}")
 
-#sendemail(message="ehllo", user_email="", subject = "Message from RTS", inform_tech = False, p_shifter=True, s_shifter=True)
+if __name__ == "__main__":
+    sendemail(message="testing only", user_email="", subject = "Message from RTS", inform_tech = False, p_shifter=True, s_shifter=True)
