@@ -115,7 +115,7 @@ class QC_INIT_CHK(BaseClass):
             fe_id_list = self.logs_dict['FE{}'.format(ichip)].split("_")
             oneChip_data = {
                 'logs' : {
-                    #"item_name" : self.item,
+                    "item_name" : self.item,
                     "RTS_timestamp" : fe_id_list[2],
                     'RTS_Property_ID' : 'BNL001',
 #                    'RTS chamber' : 1,

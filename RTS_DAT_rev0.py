@@ -47,8 +47,8 @@ def is_weekday_work_hours():
     current_time = now.time()
 
     is_weekday = 0 <= now.weekday() <= 4
-    start_time = datetime.time(8, 30)
-    end_time = datetime.time(17, 30)  # FIXED typo
+    start_time = datetime.time(8, 00)
+    end_time = datetime.time(20, 00)  # FIXED typo
 
     in_time_range = start_time <= current_time <= end_time
     return is_weekday and in_time_range
@@ -187,7 +187,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
                 time.sleep(10)
                 break
             else:
-                time.sleep(60)
+                time.sleep(10)
                 t1 = int(time.time()) - t0
                 if (t1 > 600) :
                     if not is_weekday_work_hours()  :
@@ -222,7 +222,7 @@ def DAT_QC(dut_skt, duttype="FE", LN2_flg = True) :
                 time.sleep(10)
                 break
             else:
-                time.sleep(60)
+                time.sleep(10)
                 t1 = int(time.time()) - t0
                 if (t1 > 600) :
                     if not is_weekday_work_hours()  :
@@ -612,8 +612,9 @@ while (len(duts) > 0) :
             skts=[0,1,2,3,4,5,6,7]
 
     print ("**********save ID info*************")
-    ids_k = list(dut_skt.keys())
-    if len(ids_k) > 0:
+    #ids_k = list(dut_skt.keys())
+    #if len(ids_k) > 0:
+    if True:
         fp = rootdir + datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S") + "_log.bin"
         if not os.path.isfile(fp) :
             logs["RTS_MSG_R2S_P"] = dut_skt 

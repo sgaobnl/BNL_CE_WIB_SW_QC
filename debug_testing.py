@@ -6,8 +6,27 @@ from SN_CLASS import SN_CLASS
 from SN_chip_CPM_scan import ocr_chip
 
 
+rootdir ='S:\RTS_DAT_LArASIC_QC\B009T0010\Time_20250808163429_DUT_0000_1001_2002_3003_4004_5010_6011_7012\RT_FE_009006120_009004885_009006583_009006354_009006413_009002743_009002744_009002704/'
+rootdir = r'S:\RTS_DAT_LArASIC_QC\B009T0010\Time_20250811104620_DUT_0003_1004_2010_3011_4012_5013_6014_7015\LN_FE_009006354_009006413_009002743_009002744_009002704_009002916_009002596_009003634/'
 
-rootdir = '''C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B009T0010/'''
+
+for root, dirs, files in os.walk(rootdir):
+    break
+print (files)
+exit()
+log_fp = rootdir + "QC.log"# "08_08_2025_16_51_03_log.bin"
+with open(log_fp, 'rb') as fn:
+    logd  = pickle.load( fn)
+for key in logd.keys():
+#    print (key, logd[key])
+    print (key)
+    if 'QC_TestItemID_008_Save' in key:
+        print (key, logd[key])
+    #if 'QC_TestItemID_008_SCP' in key:
+        #print (key, logd[key])
+exit()
+
+#rootdir = '''C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B009T0010/'''
 
 log_fp = rootdir + "08_08_2025_16_45_04_log.bin"# "08_08_2025_16_51_03_log.bin"
 #with open(log_fp, 'rb') as fn:

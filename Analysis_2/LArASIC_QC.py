@@ -2,6 +2,7 @@
 import os, sys, csv
 from datetime import datetime
 import pandas as pd
+from qc_files_status import qc_files_status 
 #
 #from QC_Report import QC_Report
 #
@@ -170,7 +171,7 @@ def DecodeJson2csv(root_path, FE_ID, env):
 
 
 if __name__ =="__main__":
-    root_path = "Y:/RTS_DAT_LArASIC_QC/B009T0009/"""
+    root_path = "S:/RTS_DAT_LArASIC_QC/B009T0010/"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
     for root, dirs, files in os.walk(root_path):
         break
@@ -179,6 +180,12 @@ if __name__ =="__main__":
             for subdir in os.listdir("/".join([root_path, data_dir])):
                 if os.path.isdir("/".join([root_path, data_dir, subdir])):
                     env=subdir[0:2]
+                    fdp = "/".join([root_path, data_dir, subdir])
+                    if "_FE_" in subdir:
+                        qcdone_flg = qc_files_status(rootdir=fdp, duttype = 'FE')
+                        if not qcdone_flg:
+                            print ("Warning: Folder with incompleted QC data, ignore!", "/".join([root_path, data_dir, subdir]), )
+                            continue
                     if ("RT" in env) or ("LN" in env):
                         print ("/".join([root_path, data_dir, subdir]))
                         DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
