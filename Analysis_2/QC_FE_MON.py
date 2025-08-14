@@ -298,7 +298,7 @@ class QC_FE_MON_Ana():
         cols = ['VBGR', 'MON_Temper', 'MON_VBGR']
         for col in cols:
             combined_vbgr_temp[col] = combined_vbgr_temp[col].apply(lambda x: '{}={}'.format(col, x))
-            tmp_result = ['Test_{}_{}'.format(self.tms, self.item), 'VBGR_Temp(mV)', round(combined_vbgr_temp.iloc[0][col])]
+            tmp_result = ['Test_{}_{}'.format(self.tms, self.item), col + "(mV)", str(int(float(combined_vbgr_temp.iloc[0][col].split('=')[1])))]
             vbgr_temp_tables.append(tmp_result)
         
         # DAC_meas

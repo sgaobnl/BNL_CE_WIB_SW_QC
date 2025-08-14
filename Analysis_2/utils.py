@@ -86,78 +86,24 @@ def gain_inl(x: list, y: list, item='', returnDNL=False):
     x = np.array(x)
     y = np.array(y)
     
-    # # Initial fit on all points
-    # slope, yintercept = np.polyfit(x, y, 1)
-    # ypred = slope * x + yintercept
-    
-    # # Calculate INL for all points
-    # inl_points = []
-    # for i in range(1, len(x)):
-    #     dy = np.abs(y[i] - ypred[i])
-    #     inl = (dy / np.abs(y[i] - y[0])) * 100
-    #     if inl <= 1:
-    #         inl_points.append(i)
-    
-    # # Find longest continuous sequence
-    # sequences = []
-    # current_seq = [inl_points[0]]
-    
-    # for i in range(1, len(inl_points)):
-    #     if inl_points[i] == inl_points[i-1] + 1:
-    #         current_seq.append(inl_points[i])
-    #     else:
-    #         sequences.append(current_seq)
-    #         current_seq = [inl_points[i]]
-    # sequences.append(current_seq)
-    
-    # # Get longest sequence
-    # best_seq = max(sequences, key=len)
-    # print('sequences : ', best_seq)
-    # i0 = best_seq[0]
-    # i1 = best_seq[-1] + 1
-    
-    # # Final calculations for best range
-    # slope, yintercept = np.polyfit(x[i0:i1], y[i0:i1], 1)
-    # ypred = slope * x + yintercept
-
     slope, yintercept = np.polyfit(x, y, 1)
     y_fit = np.array(x) * slope + yintercept
     delta_y = np.abs(np.array(y) - y_fit)
-    inl = delta_y / (np.max(y) - np.min(y))
+    inl = abs(delta_y / (np.max(y) - np.min(y)))
 
     i0 = 0
     i1 = -1
 
-    # for i1, ii in enumerate(inl):
-    #     if ii > 0.01:
-    #         break
     posINL = np.where(inl > 0.01)[0]
     if len(posINL)==0:
-        # if 'ASICDAC' in item:
-        #     i1 = -1
-        # else:
-        #     i1 = 0
-        #     i0 = -1
         i1 = -1
     else:
         i1 = posINL[0]
         if i1==0:
             i0 = -1
     
-    # delta_y = np.abs(y[i0:i1] - ypred[i0:i1])
-    # inl = delta_y / (np.max(y[i0:i1]) - np.min(y[i0:i1]))
-    # peakinl = np.max(inl)
     peakinl = np.max(inl)
-    # linRange = [y[i0], y[i1-1]] if 'ASICDAC' in item else [y[i1-1], y[i0]]
     linRange = [y[i0], y[i1]]
-    # print('-----------', item, len(linRange))
-    # if np.abs(linRange[1]-linRange[0]) < 37:
-    #     print(np.abs(linRange[1]-linRange[0]))
-    #     plt.figure()
-    #     plt.scatter(y, x)
-    #     plt.plot(y_fit, x)
-    #     plt.show()
-    #     sys.exit()
     
     if returnDNL:
         dnl_list = []
@@ -176,7 +122,10 @@ def gain_inl(x: list, y: list, item='', returnDNL=False):
         
         return slope, yintercept, peakinl, linRange, np.max(dnl_normalized_to_y_FSR)
     
-    return slope, yintercept, peakinl, linRange
+    inv_gain_epb= slope*6250
+    inl_pcg = peakinl * 100
+    #return slope, yintercept, peakinl, linRange
+    return inv_gain_epb, yintercept, inl_pcg, linRange
 
 def createDirs(logs_dict: dict, output_dir: str):
     for ife in range(8):

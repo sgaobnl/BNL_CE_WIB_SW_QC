@@ -10,6 +10,7 @@ from utils import printItem, createDirs, dumpJson, linear_fit, LArASIC_ana, deco
 from scipy.signal import find_peaks
 from utils import BaseClass_Ana, gain_inl
 from scipy.stats import norm
+import json
 
 class QC_CALI(BaseClass):
 #    '''
@@ -238,12 +239,24 @@ class QC_CALI_Ana(BaseClass_Ana):
             'output' : 'SE_SEDC'
         }
         # We got the following gains from the Monitoring with the commercial ADC
-        self.Mon_Gain = {
-            '4.7mV/fC': 19.111,
-            '7.8mV/fC': 14.7436,
-            '14mV/fC': 8.2996,
-            '25mV/fC': 4.7272
-        }
+        
+        mon_path =  '/'.join([output_path, chipID,  "QC_FE_MON.json"])
+        if os.path.isfile(mon_path):
+            mondata = json.load(open(mon_path))
+            #params = [param for param in data.keys() if param != 'logs']
+            self.Mon_Gain = {
+                '4.7mV/fC': abs(mondata['DAC_meas']['DAC_SG0_1_SG1_1']['GAIN']),
+                '7.8mV/fC': abs(mondata['DAC_meas']['DAC_SG0_0_SG1_1']['GAIN']),
+                '14mV/fC':  abs(mondata['DAC_meas']['DAC_SG0_0_SG1_0']['GAIN']),
+                '25mV/fC':  abs(mondata['DAC_meas']['DAC_SG0_1_SG1_0']['GAIN'])
+            }
+        else:
+            self.Mon_Gain = {
+                '4.7mV/fC': 18.4,
+                '7.8mV/fC': 14.2,
+                '14mV/fC': 8.03,
+                '25mV/fC': 4.52
+            }
         self.unit_MonGain = 'mV/DAC bit'
         self.CalibCap = 185*1E-15 # the calibration capacitance with ASICDAC is 185 fF = 0.185 pF
         self.CalibCap_DATDAC = 1000*1E-15 # Need to confirm with Shanshan. Calibration capacitance for DATDAC and DIRECT is equal to 1E-12 F = 1pF
@@ -318,10 +331,11 @@ class QC_CALI_Ana(BaseClass_Ana):
                 ## DAC in fC
                 chdf['DAC'] = chdf['DAC'] * calibCap * 1E15
                 #print(self.item, '------------', item, BL)
-                slope, yintercept, inl, linRange = gain_inl(y=chdf['DAC'], x=chdf['data'], item=self.item)
+                #slope, yintercept, inl, linRange = gain_inl(y=chdf['DAC'], x=chdf['data'], item=self.item)
+                inv_gain_epb, yintercept, inl_pcg, linRange = gain_inl(y=chdf['DAC'], x=chdf['data'], item=self.item)
 
-                INLs[chn] = inl # need to  multiply by 100  to get %
-                GAINs[chn] = slope
+                INLs[chn] = inl_pcg # need to  multiply by 100  to get %
+                GAINs[chn] = round(inv_gain_epb, 2)
                 linearity_range[chn] = linRange
             all_INLs[dac_cfg] = INLs # INL*100 gives %
             all_GAINs[dac_cfg] = GAINs # in fC/ADC bit
@@ -443,7 +457,7 @@ class QC_CALI_Ana(BaseClass_Ana):
         items = ['posAmp', 'negAmp']
         BLs = ['SNC0', 'SNC1']
         BL_dict = {'SNC0': '900mV', 'SNC1' : '200mV'}
-        out_dict = {'item': [], 'CFG': [], 'BL': [], 'ch': [], 'gain (fC/ADC bit)': [], 'worstINL (%)': [], 'linRange (fC)': []}
+        out_dict = {'item': [], 'CFG': [], 'BL': [], 'ch': [], 'gain (e-/bit)': [], 'worstINL (%)': [], 'linRange (fC)': []}
 
         # Original data processing code remains unchanged
         for item in items:
@@ -465,8 +479,8 @@ class QC_CALI_Ana(BaseClass_Ana):
                             out_dict['item'].append(item)
                             out_dict['BL'].append(BL)
                             out_dict['CFG'].append(cfg)
-                            out_dict['gain (fC/ADC bit)'].append(np.round(cfg_GAIN_dict[ich], 4))
-                            out_dict['worstINL (%)'].append(np.round(cfg_INL_dict[ich]*100, 2))
+                            out_dict['gain (e-/bit)'].append(np.round(cfg_GAIN_dict[ich], 2))
+                            out_dict['worstINL (%)'].append(np.round(cfg_INL_dict[ich], 2))
                             out_dict['linRange (fC)'].append(np.round(cfg_linRange_dict[ich][1]-cfg_linRange_dict[ich][0], 2))
 
         out_df = pd.DataFrame(out_dict)
@@ -497,7 +511,7 @@ class QC_CALI_Ana(BaseClass_Ana):
                     result_Amp_cfg.append('_'.join([__BL, item, cfg]))
 
                     for ich, ch in enumerate(cfg_df['ch']):
-                        gain = cfg_df.iloc[ich]['gain (fC/ADC bit)']
+                        gain = cfg_df.iloc[ich]['gain (e-/bit)']
                         worstINL = cfg_df.iloc[ich]['worstINL (%)']
                         linRange = cfg_df.iloc[ich]['linRange (fC)']
                         result_Amp_cfg.append("CH{}=(worstINL={};gain={};linRangeCharge={})".format(ch, worstINL, round(gain,1), round(linRange)))

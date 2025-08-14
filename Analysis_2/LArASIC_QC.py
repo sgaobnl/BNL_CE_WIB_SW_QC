@@ -79,7 +79,7 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
     for FE_ID in FE_IDs:
         chip_path = '/'.join([root_path + "Ana"+ "_" + env, FE_ID])
         jfs = ["QC_INIT_CHK.json", "QC_PWR.json", "QC_PWR_CYCLE.json", "QC_CHKRES.json", "QC_CALI_ASICDAC.json", 
-               "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json"  ]
+               "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json", 'QC_Cap_Meas.json'  ]
         for fn in jfs:
             if not os.path.isfile('/'.join([chip_path, fn])):
                 return None
@@ -171,7 +171,9 @@ def DecodeJson2csv(root_path, FE_ID, env):
 
 
 if __name__ =="__main__":
-    root_path = "S:/RTS_DAT_LArASIC_QC/B009T0010/"""
+    root_path = "Y:/RTS_DAT_LArASIC_QC/B009T0009/"""
+    #root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
+    #root_path = "Time_20250529153639_DUT_0047_1048_2049_3066_4067_5068_6069_7082"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
     for root, dirs, files in os.walk(root_path):
         break
@@ -199,7 +201,15 @@ if __name__ =="__main__":
                         DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
                         DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
                         DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
-
+#    FE_ID = "001_00001_20250529153639_Tray47_SKT0"
+#    env="LN"
+#    output_path = root_path + "Ana"+ "_" + env
+#    from QC_CALIBRATION import QC_CALI_Ana
+#    ana_cali = QC_CALI_Ana(root_path=root_path, chipID=FE_ID, output_path=output_path, CALI_item="QC_CALI_ASICDAC")
+#    tmp = ana_cali.run_Ana()
+#    print (tmp)
+#    print (tmp[0])
+#    print (tmp[0][0])
 
 #    import shutil
 #    FE_ID = "20250529153639" #009-3495

@@ -126,7 +126,7 @@ class QC_INIT_CHK(BaseClass):
                     "FE_in_Tray":fe_id_list[3],
                     "FE_in_Socket":fe_id_list[4],
                     "tester": self.logs_dict['tester'],
-                    "Email": self.logs_dict['Email'],
+                   # "Email": self.logs_dict['Email'],
                     "testsite": self.logs_dict['testsite'],
                     "env": self.logs_dict['env'],
                     "note": self.logs_dict['note'],
@@ -139,6 +139,8 @@ class QC_INIT_CHK(BaseClass):
 
                 }
             }
+            if "Email" in self.logs_dict.keys():
+                oneChip_data['logs'].update( { "Email": self.logs_dict['Email']})
             pwr_params = ['V', 'I', 'P']
             params_units = {'V': 'V', 'I': 'mA', 'P': 'mW'}
             for param in self.param_meanings:
