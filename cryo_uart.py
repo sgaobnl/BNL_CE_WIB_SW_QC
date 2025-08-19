@@ -12,7 +12,7 @@ import serial
 
 from colorama import just_fix_windows_console
 just_fix_windows_console()
-
+from sendemail import sendemail
 ####### Input test information #######
 #Red = '\033[91m'
 #Green = '\033[92m'
@@ -34,6 +34,7 @@ class cryobox:
         self.cmd_dict[b'3'] = b'Setting STATE to 3 (TC LN2 Puddle)'
         self.cmd_dict[b'4'] = b'Setting STATE to 4 (TC LN2 Immersion)'
         self.portno = 4
+        self.cryo_close()
 
 #    def cryo_create(self):
 #        try:
@@ -51,12 +52,13 @@ class cryobox:
     def cryo_create(self):
         while True:
             try:
-                self.ser = serial.Serial('COM%d'%self.portno, 9600, timeout=5, parity=serial.PARITY_NONE)
+                self.ser = serial.Serial('COM%d'%self.portno, 9600, timeout=5, write_timeout=5, parity=serial.PARITY_NONE)
                 print("Cryogenic box is connected.")
                 time.sleep(0.5)  # Optional: allow hardware to stabilize
                 break
             except serial.SerialException:
                 print("Could not open COM port. Please call the tech coordinator to fix it.")
+                sendemail(subject="RTS: Cryo control box error", message="Please contact tech coordinator (Cryo control box issue)", user_email="sgao@bnl.gov;", inform_tech=True)
                 while True:
                     try: 
                         self.portno = int(input("Input COM Port num?: "))
@@ -64,6 +66,7 @@ class cryobox:
                         self.portno = 4
                     yorn = input("Fixed the issue? (Y/N): ").strip().lower()
                     if yorn == 'y':
+                        self.cryo_close()
                         break
                     elif yorn == 'n':
                         print("Waiting... Please fix the issue and try again.")
@@ -72,23 +75,69 @@ class cryobox:
                         print("Invalid input. Please enter 'Y' or 'N'.")
 
     def cryo_close(self):
-        self.ser.close()
-        print ("cryogenic box is disconnected")
+        try: 
+            self.ser.close()
+            print ("cryogenic box is disconnected")
+        except Exception as e:
+            print(f"Cryo Control Box Serial close error: {e}")
+
+    def uart_write(self, mode=b'1'):
+        while True:
+            try: 
+                self.ser.write(mode)
+                break
+            except serial.SerialTimeoutException as e:
+                print(f"Cryo Control Box Serial write timeout error: {e}")
+                sendemail(subject="RTS: Cryo control box error", message="Please contact tech coordinator (Cryo control box issue)", user_email="sgao@bnl.gov;", inform_tech=True)
+                while True:
+                    yorn = input("Fixed the issue? (Y/N): ").strip().lower()
+                    if yorn == 'y':
+                        self.cryo_close()
+                        self.cryo_create()
+                        break
+                    elif yorn == 'n':
+                        print("Waiting... Please fix the issue and try again.")
+                        time.sleep(1)
+                    else:
+                        print("Invalid input. Please enter 'Y' or 'N'.")
+            except Exception as e:
+                print(f"Cryo Control Box Unexpected Serial error: {e}")
+                print("Please call the tech coordinator to fix it.")
+                sendemail(subject="RTS: Cryo control box error", message="Please contact tech coordinator (Cryo control box issue)", user_email="sgao@bnl.gov;", inform_tech=True)
+                while True:
+                    yorn = input("Fixed the issue? (Y/N): ").strip().lower()
+                    if yorn == 'y':
+                        self.cryo_close()
+                        self.cryo_create()
+                        break
+                    elif yorn == 'n':
+                        print("Wait... Please fix the issue and try again.")
+                        time.sleep(1)
+                    else:
+                        print("Invalid input. Please enter 'Y' or 'N'.")
+
+    def uart_read(self):
+        try:
+            val = self.ser.read(4096)
+        except Exception as e:
+            print(f"Cryo Control Box Serial read error: {e}")
+            val = b''
+        return val
 
     def cryo_cmd(self, mode=b'1'):
         rd = b''
         while True:
-            self.ser.write(mode)
+            self.uart_write(mode)
             for i in range(2):
                 time.sleep(1)
-                rd = rd + self.ser.read(4096)
+                rd = rd + self.uart_read()
             if self.cmd_dict[mode] in rd:
                 print ("\033[92m", self.cmd_dict[mode], "\033[0m")
                 if mode!=b'0': #readback status
-                    self.ser.write(b'm')
+                    self.uart_write(b'm')
                     for i in range(2):
                         time.sleep(1)
-                        rd = rd + self.ser.read(4096)
+                        rd = rd + self.uart_read()
                     if b'State= ' + mode in rd:
                         print (rd)
                         break
@@ -112,7 +161,7 @@ class cryobox:
                 rd = self.cryo_cmd(mode=b'0')
                 while True:
                     time.sleep(1)
-                    tmp = self.ser.read(4096)
+                    tmp = self.uart_read()
                     if tmp!=b'':
                         print (tmp)
                         rd = rd + tmp
@@ -128,6 +177,7 @@ class cryobox:
                 fill_flg = True
                 rd += self.cryo_cmd(mode=b'1')
                 print ("Please shut down valve of 22psi dewar")
+                sendemail(subject="22psi dewar is empty", message="Please contact tech coordinator (22psi dewar is empty)", user_email="sgao@bnl.gov;", inform_tech=True)
                 while True:
                     yorn = input("Is 22pis Dewar \033[91m value CLOSE \033[0m completely?(y or n) : ")
                     if "Y" in yorn or "y" in yorn:
@@ -182,6 +232,6 @@ if __name__=="__main__":
     #cryo.cryo_highlevel(waitminutes=5)
     #cryo.cryo_highlevel(waitminutes=60)
 #    input ("Wait...")
-    cryo.cryo_warmup(waitminutes=0.1)
+    cryo.cryo_warmup(waitminutes=30)
     cryo.cryo_close()
 

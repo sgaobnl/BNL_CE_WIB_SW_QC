@@ -171,7 +171,7 @@ def DecodeJson2csv(root_path, FE_ID, env):
 
 
 if __name__ =="__main__":
-    root_path = "Y:/RTS_DAT_LArASIC_QC/B009T0009/"""
+    root_path = "S:/RTS_DAT_LArASIC_QC/B002T0001/"""
     #root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
     #root_path = "Time_20250529153639_DUT_0047_1048_2049_3066_4067_5068_6069_7082"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
