@@ -461,18 +461,6 @@ def Tray_SCAN_OCR(rootdir):
 rts = RTS_CFG()
 cryo = cryobox()
 
-rts.msg = "10000000000"
-rts.rts_init(port=2001, host_ip='192.168.0.2')
-input ("kkk")
-time.sleep(1)
-rts.MotorOn()
-rts.JumpToCamera()
-rts.rts_shutdown()
-exit()
-
-
-
-
 LN2_flg = init_chk()
 gui_info = get_user_input()
 logs = {}
@@ -535,8 +523,6 @@ rts.rts_init(port=2001, host_ip='192.168.0.2')
 rts.RootDirSet(rootdir=rootdir)
 rts.MotorOn()
 rts.JumpToCamera()
-rts.rts_shutdown()
-exit()
 bad_tray_spot, chip_ocr, ocrbin_fp = Tray_SCAN_OCR(rootdir)
 rts.rts_idle()
 
