@@ -62,6 +62,15 @@ class RTS_CFG():
        
 
     def MotorOn(self): #
+#        while True: 
+#            rdval = self.Safeguard()
+#            if "-195" in rdval:
+#                print (rdval)
+#                time.sleep(10)
+#            elif "194" in rdval:
+#                time.sleep(3)
+#                break
+#
         while True:
             try:
                 msg = "MotorOn"
@@ -77,6 +86,24 @@ class RTS_CFG():
             except ConnectionAbortedError:
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
+
+    def Safeguard(self): #
+        if True:
+            try:
+                msg = "Safeguard"
+                self.s.send(msg.encode())
+                self.s.send(b"\r\n") 
+                self.msg = self.s.recv(1024).decode() 
+                self.msg = self.msg.strip()
+                print (self.msg)
+                #if "199" in self.msg:
+                #    break
+                #else:
+                #    time.sleep(1)
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+            return self.msg
 
     def CoverStatus(self): #
         if True:
