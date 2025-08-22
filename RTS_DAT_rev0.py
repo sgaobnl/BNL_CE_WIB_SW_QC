@@ -646,6 +646,7 @@ dst_root=r"S:/RTS_DAT_LArASIC_QC/"
 copy_and_delete_folder(src_root, src_folder, dst_root)
 
 print ("Done")
+sendemail(subject ="Congratulations! The tray is done...", message="Please remove the tested tray and place a new tray with label.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
 
 
 
