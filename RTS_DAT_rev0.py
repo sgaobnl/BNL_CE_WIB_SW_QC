@@ -97,7 +97,8 @@ def RTS_debug (info, user_email, status=None, trayno=None, trayc=None, trayr=Non
                 exit()
             elif "6" in userinput[0] :
                 input ("Make sure the chip back to orginal position and click anykey")
-                rts.MotorOn()
+                if "OCR" not in info:
+                    rts.MotorOn()
                 break
 
 def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
@@ -574,7 +575,7 @@ while (len(duts) > 0) :
             ocr_info = ocr_chip(image_fp = dut_chip_dir, image_fn = dut_chip_fn, ocr_image_dir = ocr_image_dir, degree=180, x=1115, y=785, w=330, h=330, valid_flg=False)
             if ocr_sn not in ocr_info:
                 print ("Chip to be tested have different SN from the tray scanning!")
-                print ("Tray Scan: {ocr_info}, Move to Socket: {ocr_sn}")
+                print (f"Tray Scan: {ocr_info}, Move to Socket: {ocr_sn}")
                 print (f"file path: {ocr_image_dir}")
                 RTS_debug ("OCR",user_email)
 

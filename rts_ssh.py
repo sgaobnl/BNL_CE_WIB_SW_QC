@@ -128,9 +128,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
             if "FE" in duttype:
                 if "FE" in tmp[0][0:2]:
                     sktno = int(tmp[0][2])
-                    print (tmp, sktno)
                     key = dut_skt[x[sktno]][0] + 1
                     tmp[1] = chip_ocr[key][1]
+                    print (tmp, sktno)
             if "DUT" in tmp[0][0:3]:
                 tmp[1] = duttype
             cln=','.join(tmp)
