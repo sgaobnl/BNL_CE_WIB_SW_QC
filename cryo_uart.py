@@ -153,26 +153,23 @@ class cryobox:
             try:
                 print ("Start fill 50L dewar...")
                 print ("\033[93m If 22psi dewar is empty, please \033[91m Ctrl + C (only once) \033[0m")
-                #while True: #to be decided later if needed
-                #    yorn = input("Please open value of 22psi dewar : ")
-                #    if "Y" in yorn or "y" in yorn:
-                #        break
                 rd = self.cryo_cmd(mode=b'0')
+                t0 = time.time_ns()
                 while True:
                     time.sleep(1)
                     tmp = self.uart_read()
                     if tmp!=b'':
-                        print (tmp)
                         rd = rd + tmp
                     if b'AutoFill ended. Setting State 2 (Warm/Purge)' in rd:
                         fill_flg = False
-                        #while True: #to be decided later if needed
-                        #    yorn = input("Please close value of 22psi dewar : ")
-                        #    if "Y" in yorn or "y" in yorn:
-                        #        break
                         break
+                    t1 = (time.time_ns() - t0 ) // 1e9
+                    if t1 > 1800:
+                        x = 10/0
+                    if t1 %30 == 0:
+                        print (tmp)
                 rd += self.cryo_cmd(mode=b'1')
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt,ZeroDivisionError ) as e  :
                 fill_flg = True
                 rd += self.cryo_cmd(mode=b'1')
                 print ("Please shut down valve of 22psi dewar")
