@@ -56,22 +56,34 @@ class cryobox:
                 time.sleep(0.5)  # Optional: allow hardware to stabilize
                 break
             except serial.SerialException:
-                print("Could not open COM port. Please call the tech coordinator to fix it.")
+                print("Could not open COM port. Please : ") 
+                print("step 1: Power off cold control box ") 
+                print("step 2: Unplug USB cable from cold control box ") 
+                print("step 3: Wait 5 seconds ") 
+                print("step 4: Turn cold control box back on") 
+                print("step 5: Replug USB cable to cold control box") 
+                print("Try 1-5 for 3 times, if it doesn't work, call the tech coordinator") 
                 sendemail(subject="RTS: Cryo control box error", message="Please contact tech coordinator (Cryo control box issue)", user_email="sgao@bnl.gov;", inform_tech=True)
                 while True:
                     try: 
-                        self.portno = int(input("Input COM Port num?: "))
+                        self.portno = int(input("Input COM Port num (4 by default)?: "))
                     except:
                         self.portno = 4
-                    yorn = input("Fixed the issue? (Y/N): ").strip().lower()
-                    if yorn == 'y':
-                        self.cryo_close()
-                        break
-                    elif yorn == 'n':
-                        print("Waiting... Please fix the issue and try again.")
-                        time.sleep(1)
-                    else:
-                        print("Invalid input. Please enter 'Y' or 'N'.")
+
+                    self.cryo_close()
+                    break
+
+                    #yorn = input("Fixed the issue? (Y/N): ").strip().lower()
+                    #if yorn == 'y':
+                    #    self.cryo_close()
+                    #    break
+                    #elif yorn == 'n':
+                    #    print("Try 1-5 for 3 times, if it doesn't work, call the tech coordinator") 
+                    #    sendemail(subject="RTS: Cryo control box error", message="Please contact tech coordinator (Cryo control box issue)", user_email="sgao@bnl.gov;", inform_tech=True)
+                    #    print("Waiting... Please fix the issue and try again.")
+                    #    time.sleep(1)
+                    #else:
+                    #    print("Invalid input. Please enter 'Y' or 'N'.")
 
     def cryo_close(self):
         try: 
@@ -223,11 +235,11 @@ class cryobox:
                     
 if __name__=="__main__":
     cryo=cryobox()
-    #cryo.cryo_fill()
+#    cryo.cryo_fill()
     #cryo.cryo_lowlevel(waitminutes=10)
     #cryo.cryo_highlevel(waitminutes=5)
     #cryo.cryo_highlevel(waitminutes=60)
 #    input ("Wait...")
-    cryo.cryo_warmup(waitminutes=0.1)
+    cryo.cryo_warmup(waitminutes=5)
     cryo.cryo_close()
 

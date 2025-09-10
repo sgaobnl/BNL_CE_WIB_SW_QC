@@ -575,9 +575,14 @@ while (len(duts) > 0) :
             ocr_info = ocr_chip(image_fp = dut_chip_dir, image_fn = dut_chip_fn, ocr_image_dir = ocr_image_dir, degree=180, x=1115, y=785, w=330, h=330, valid_flg=False)
             if ocr_sn not in ocr_info:
                 print ("Chip to be tested have different SN from the tray scanning!")
-                print (f"Tray Scan: {ocr_info}, Move to Socket: {ocr_sn}")
-                print (f"file path: {ocr_image_dir}")
-                RTS_debug ("OCR",user_email)
+                print (f"OCR while scaning tray: {ocr_sn}, OCR while moving to socket: {ocr_info}")
+                sendemail(subject = "Chip SN mismatch, come to check pop-up window", message=f"OCR result {ocr_info} doesn't consist Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                from sn_match_gui import run_sn_match_gui
+                yorn = run_sn_match_gui(image_path=ocr_image_dir, text=f"Is chip SN {ocr_sn} ?")
+                if yorn:
+                    pass
+                else:
+                    RTS_debug ("OCR",user_email)
 
     dut_skt.update(dut_skt_n)
     print ("Chips to be tested: ", dut_skt)
