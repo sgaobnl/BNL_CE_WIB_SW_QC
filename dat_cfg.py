@@ -52,15 +52,12 @@ class DAT_CFGS(WIB_CFGS):
         self.fembs_vol_set(vfe=vfe, vcd=vcd, vadc=vadc)
 
         #power on FEMBs in safe mode
-        if 'RT' in env:
-            init_ok, pwr_meas  = self.femb_safe_powering(fembs=self.fembs, bias_ilim=0.3, dc0_ilim=1.5,dc1_ilim=1.5, dc2_ilim=2.5)
-        else:
-            for i in range(3):
-                init_ok, pwr_meas  = self.femb_safe_powering(fembs=self.fembs, bias_ilim=0.3, dc0_ilim=1.5,dc1_ilim=1.5, dc2_ilim=2.5)
-                if init_ok: #unexpected large current
-                    break
-                else:
-                    time.sleep(5)
+        for i in range(3):
+            init_ok, pwr_meas  = self.femb_safe_powering(fembs=self.fembs, bias_ilim=0.1, dc0_ilim=0.8,dc1_ilim=0.7, dc2_ilim=1.9)
+            if init_ok: #unexpected large current
+                break
+            else:
+                time.sleep(2)
 
         self.data_align_pwron_flg = True
 

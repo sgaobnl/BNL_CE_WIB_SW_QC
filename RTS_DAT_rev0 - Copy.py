@@ -39,10 +39,7 @@ from sendemail import sendemail
 from User_Input import get_user_input
 from init_check import init_chk 
 
-global TRAY_N 
 TRAY_N = 90
-global BAD_TRAY_SPOT 
-BAD_TRAY_SPOT = 1
 
 import datetime
 def is_weekday_work_hours():
@@ -145,62 +142,13 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
             continue
         else:
             dut_skt[rts.msg] = (chipi, skt)
-            current_ids = rts.msg
-            chips = len(dut_skt)
-            QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, chips=chips)  
-            if ("Code#E001" in QCstatus) : #move back to original positions and then move back
-                while True: 
-                    status = rts.MoveChipFromSocketToTray(sinkno, sktn, trayno, trayc, trayr, duttype)
-                    if status < 0:
-                        RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
-                        continue
-                    else:
-                        dut_skt.pop(current_ids, None)  
-
-                    status = rts.MoveChipFromTrayToSocket(trayno, trayc, trayr, sinkno, sktn,duttype)    
-                    if status < 0:
-                        RTS_debug ("T2S", user_email, status, trayno, trayc, trayr, sinkno, sktn)
-                        continue
-                    else:
-                        dut_skt[rts.msg] = (chipi, skt)
-                        current_ids = rts.msg
-                        chips = len(dut_skt)
-                        break
-
-                QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, chips=chips)  
-                if ("Code#E001" in QCstatus) : #move back to bad tray 
-                    ids = current_ids
-                    #ids_bads[ids] = dut_skt[ids]
-                    removekey = ids
-                    dut_skt.pop(removekey, None)  
-                    ids_g = list(dut_skt.keys())
-                    while True: 
-                        FindSpotOnBadTray(user_email)
-                        bad_dut_order = BAD_TRAY_SPOT - 1
-                        if "CD" in duttype:
-                            trayc=(bad_dut_order%10) +1
-                            trayr=(bad_dut_order//10) +1
-                        else:
-                            trayc=(bad_dut_order%15) +1
-                            trayr=(bad_dut_order//15) +1
-    
-                        status = rts.MoveChipFromSocketToTray(sinkno, sktn, badtrayno, trayc, trayr, duttype)
-                        if status < 0:
-                            RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
-                            continue
-                        else:
-                            break
-                    tmpi= tmpi
-                    duts= duts #bad chip is removed
-                    continue
-            else:
-                tmpi = tmpi + 1
+            tmpi = tmpi + 1
     rts.rts_idle()
     return duts, dut_skt
 
-def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, chips=8) :
+def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, short_clr=False) :
     while True:
-        QCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="RT", chips=chips)
+        QCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="RT", short_clr=False)
         if QCresult != None:
             QCstatus = QCresult[0]
             if "CD" in duttype:
@@ -291,8 +239,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, chips=8) :
     return QCstatus, badchips #badchips range from 0 to7
 
 ################STEP3#################################
-def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=True) :
-    global BAD_TRAY_SPOT, TRAY_N, trayno, bad_trayno
+def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot, duttype="FE", LN2_flg=True) :
     ids_goods = {}
     ids_bads = {}
 
@@ -310,23 +257,26 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
         CHIPS = 8
 
     #if "Terminate" in QCstatus: #move back to original positions
-    if ("Terminate" in QCstatus) : #move back to original positions
+    if ("Code#E001" in QCstatus) or ("Code#E002" in QCstatus) or ("Terminate" in QCstatus) : #move back to original positions
         rts.rts_idle()
-        admincode = DAT_debug (QCstatus, user_email)
-        if "2" in admincode:
-            QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg)  
-        elif "444" in admincode:
-            RTS_debug ("DAT", user_email )
+        #admincode = DAT_debug (QCstatus, user_email)
+        #if "2" in admincode:
+        #    QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg)  
+        #elif "444" in admincode:
+        #    RTS_debug ("DAT", user_email )
         rts.MotorOn()
         rts.PumpOn()
         time.sleep(5)
         rts.PumpOff()
 
-            
         tmpi = 0
-        while tmpi < CHIPS:
+#        while tmpi < CHIPS:
+        while tmpi < len(badchips):
+            skt = badchips[tmpi]
+
             for ids in ids_g:
-                if dut_skt[ids][1] == tmpi:
+                #if dut_skt[ids][1] == tmpi:
+                if dut_skt[ids][1] == skt:
                     chipi=dut_skt[ids][0]
                     sktn =dut_skt[ids][1] + 1
                     break
@@ -337,7 +287,6 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
                 trayc=(chipi%15) +1
                 trayr=(chipi//15) +1
             status = rts.MoveChipFromSocketToTray(sinkno, sktn, trayno, trayc, trayr, duttype)
-
             if status < 0:
                 RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
                 tmpi = tmpi
@@ -345,15 +294,81 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
             else:
                 tmpi = tmpi + 1
 
+        tmpi = 0
+        while tmpi < len(badchips):
+            skt = badchips[tmpi]
+            for ids in ids_g:
+                if dut_skt[ids][1] == skt:
+                    chipi=dut_skt[ids][0]
+                    sktn =dut_skt[ids][1] + 1
+                    break
+            if "CD" in duttype:
+                trayc=(chipi%10) +1
+                trayr=(chipi//10) +1
+            else:
+                trayc=(chipi%15) +1
+                trayr=(chipi//15) +1
+            status = rts.MoveChipFromTrayToSocket (trayno, trayc, trayr, sinkno, sktn,duttype) 
+            if status < 0:
+                RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
+                tmpi = tmpi
+                continue
+
+            QCstatus_n, badchips_n = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, short_clr=True)  
+            if ("Code#E001" in QCstatus) or ("Code#E002" in QCstatus) or ("Terminate" in QCstatus) :
+                while True:
+                    skt = badchips[tmpi]
+                    for ids in ids_g:
+                        if dut_skt[ids][1] == skt:
+                            chipi=dut_skt[ids][0]
+                            sktn =dut_skt[ids][1] + 1
+                            ids_bads[ids] = dut_skt[ids]
+                            removekey = ids
+                            dut_skt.pop(removekey, None)  
+                            ids_g = list(dut_skt.keys())
+                            break
+                    bad_tray_spot = FindSpotOnBadTray(user_email, bad_tray_spot)
+                    bad_dut_order = bad_tray_spot - 1
+                    if "CD" in duttype:
+                        trayc=(bad_dut_order%10) +1
+                        trayr=(bad_dut_order//10) +1
+                    else:
+                        trayc=(bad_dut_order%15) +1
+                        trayr=(bad_dut_order//15) +1
+                    status = rts.MoveChipFromSocketToTray(sinkno, sktn, badtrayno, trayc, trayr, duttype)
+
+                    if status < 0:
+                        RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
+                        tmpi = tmpi
+                        continue
+
+
+
+
+
+
+
+            if status < 0:
+                RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
+                tmpi = tmpi
+                continue
+            QCstatus_n, badchips_n = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg)  
+            if ("Code#E001" in QCstatus) or ("Code#E002" in QCstatus) or ("Terminate" in QCstatus) :
+                tmpi = tmpi + 1
+            else:
+                break
+
+
         tmps = []
         for ids in ids_g:
             tmps.append(dut_skt[ids][0])
         tmps = sorted(tmps)
         duts = tmps + duts
 
-        return duts, {}, ids_goods, ids_bads
+        return duts, {}, bad_tray_spot, ids_goods, ids_bads
     else:
         if "Code#" in QCstatus:
+        elif "Code#" in QCstatus:
             tmpi = 0
             while tmpi < len(badchips):
                 skt = badchips[tmpi]
@@ -366,8 +381,8 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
                         dut_skt.pop(removekey, None)  
                         ids_g = list(dut_skt.keys())
                         break
-                FindSpotOnBadTray(user_email)
-                bad_dut_order = BAD_TRAY_SPOT - 1
+                bad_tray_spot = FindSpotOnBadTray(user_email, bad_tray_spot)
+                bad_dut_order = bad_tray_spot - 1
                 if "CD" in duttype:
                     trayc=(bad_dut_order%10) +1
                     trayr=(bad_dut_order//10) +1
@@ -382,9 +397,9 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
                     continue
                 else:
                     ids_bads[rts.msg] = (chipi, skt)
-                    BAD_TRAY_SPOT +=1
+                    bad_tray_spot +=1
                     tmpi = tmpi + 1
-            return duts,dut_skt , ids_goods, ids_bads
+            return duts,dut_skt, bad_tray_spot , ids_goods, ids_bads
 
         if "PASS" in QCstatus:
             tmpi = 0
@@ -401,8 +416,8 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
                     trayc=(chipi%15) +1
                     trayr=(chipi//15) +1
                 if tmpi in badchips:
-                    FindSpotOnBadTray(user_email)
-                    bad_dut_order = BAD_TRAY_SPOT - 1
+                    bad_tray_spot = FindSpotOnBadTray(user_email, bad_tray_spot)
+                    bad_dut_order = bad_tray_spot - 1
                     if "CD" in duttype:
                         trayc=(bad_dut_order%10) +1
                         trayr=(bad_dut_order//10) +1
@@ -428,33 +443,30 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
                                 ids_bads[rts.msg] = (chipi, skt)
                                 ids_g = list(dut_skt.keys())
                                 break
-                        BAD_TRAY_SPOT +=1
+                        bad_tray_spot +=1
                     else:
                         ids_goods[rts.msg] = (chipi,tmpi)
                     tmpi = tmpi + 1
 
-            return duts, dut_skt, ids_goods, ids_bads
+            return duts, dut_skt, bad_tray_spot, ids_goods, ids_bads
 
-def FindSpotOnBadTray(user_email):
-    global BAD_TRAY_SPOT, TRAY_N, bad_trayno
+def FindSpotOnBadTray(user_email, bad_tray_spot = 1):
     while True:
-        if BAD_TRAY_SPOT >= TRAY_N:
+        if bad_tray_spot >= TRAY_N:
             sendemail(message="!WARNING! Tray#1 (bac chips) is full, please replace with a new empty tray. ", user_email=user_email, inform_tech=True)
             print ("\033[91m !WARNING! Tray#1 (bac chips) is full: \033[0m")
             yorn = input ("\033[91m Replace with a new tray? (y/Y): \033[0m")
             if "Y" in yorn or "y" in yorn:
-                BAD_TRAY_SPOT = 1
-        bad_trayc = (BAD_TRAY_SPOT-1)%15 + 1
-        bad_trayr = (BAD_TRAY_SPOT-1)//15 + 1
+                bad_tray_spot = 1
+        bad_trayc = (bad_tray_spot-1)%15 + 1
+        bad_trayr = (bad_tray_spot-1)//15 + 1
         flg = rts.isChipInTray(bad_trayno,bad_trayc, bad_trayr)
         if not flg:#no chip in it
-            break
-        #return BAD_TRAY_SPOT
+            return bad_tray_spot
         else:
-            BAD_TRAY_SPOT += 1
+            bad_tray_spot += 1
 
 def Tray_SCAN_OCR(rootdir):
-    global BAD_TRAY_SPOT, TRAY_N, trayno, bad_trayno
     ocrbin_fp = rootdir + "ocr_results.bin"
     if os.path.isfile(ocrbin_fp) :
         with open(ocrbin_fp, 'rb') as fn:
@@ -487,7 +499,7 @@ def Tray_SCAN_OCR(rootdir):
         if not chip_ocr[key][0] :
             badchips[key]= chip_ocr[key]    
    
-    BAD_TRAY_SPOT = 1
+    bad_tray_spot = 1
     for key in list(chip_ocr.keys()):
         if not chip_ocr[key][0] :
             if ("Failed" in chip_ocr[key][-2]) and ("Moved" in chip_ocr[key][-1]): #already removed
@@ -495,24 +507,24 @@ def Tray_SCAN_OCR(rootdir):
             tray_slot = key
             trayc = (tray_slot-1)%15 + 1
             trayr = (tray_slot-1)//15 + 1
-            FindSpotOnBadTray(user_email)
-            bad_trayc = (BAD_TRAY_SPOT-1)%15 + 1
-            bad_trayr = (BAD_TRAY_SPOT-1)//15 + 1
+            bad_tray_spot = FindSpotOnBadTray(user_email, bad_tray_spot)
+            bad_trayc = (bad_tray_spot-1)%15 + 1
+            bad_trayr = (bad_tray_spot-1)//15 + 1
             while True:
                 status = rts.MoveChipFromTrayToTray(trayno, trayc, trayr, bad_trayno, bad_trayc,bad_trayr)    
                 if status > 0 :
                     #print (f'remove {key}, {chip_ocr[key]}')
                     #chip_ocr.pop(key) #remove it from bad chip
-                    chip_ocr[key] = chip_ocr[key] + ["Failed_in_OCR"] + [f'Moved_to_bad_tray_slot_{BAD_TRAY_SPOT}']
+                    chip_ocr[key] = chip_ocr[key] + ["Failed_in_OCR"] + [f'Moved_to_bad_tray_slot_{bad_tray_spot}']
                     print (chip_ocr[key])
                     with open(ocrbin_fp, 'wb') as fn:
                         pickle.dump(chip_ocr, fn)
-                    BAD_TRAY_SPOT += 1
+                    bad_tray_spot += 1
                     break
                 else:
                     RTS_debug ("T2T", user_email, status )
     
-    return chip_ocr, ocrbin_fp 
+    return bad_tray_spot, chip_ocr, ocrbin_fp 
 
 ############################################################
 rts = RTS_CFG()
@@ -580,7 +592,7 @@ rts.rts_init(port=2001, host_ip='192.168.0.2')
 rts.RootDirSet(rootdir=rootdir)
 rts.MotorOn()
 rts.JumpToCamera()
-chip_ocr, ocrbin_fp = Tray_SCAN_OCR(rootdir)
+bad_tray_spot, chip_ocr, ocrbin_fp = Tray_SCAN_OCR(rootdir)
 rts.rts_idle()
 
 #rts.MoveChipFromTrayToSocket(2, 8, 2, 2, 8, "FE")    
@@ -655,7 +667,7 @@ while (len(duts) > 0) :
     print (QCstatus, "Badchips:", badchips)
 
 
-    duts, dut_skt, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, BAD_TRAY_SPOT,duttype=duttype, LN2_flg=LN2_flg) 
+    duts, dut_skt, bad_tray_spot, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, bad_tray_spot,duttype=duttype, LN2_flg=LN2_flg) 
     ids_dict_good.update(ids_goods)
     ids_dict_bad.update(ids_bads)
 
@@ -664,7 +676,7 @@ while (len(duts) > 0) :
         chip_ocr[ocr_key] = chip_ocr[ocr_key] + [f'PASS_QC'] 
     for key in list(ids_bads.keys()):
         ocr_key = ids_bads[key][0] + 1
-        chip_ocr[ocr_key] = [False] + chip_ocr[ocr_key][1:] + [f'Failed_in_QC'] + [f'Moved_to_bad_tray_slot_{BAD_TRAY_SPOT}']
+        chip_ocr[ocr_key] = [False] + chip_ocr[ocr_key][1:] + [f'Failed_in_QC'] + [f'Moved_to_bad_tray_slot_{bad_tray_spot}']
     with open(ocrbin_fp, 'wb') as fn:
         pickle.dump(chip_ocr, fn)
 

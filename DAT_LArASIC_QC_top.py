@@ -121,6 +121,8 @@ if 10 in tms:
 if 0 in tms:
     print ("Init check after chips are installed")
     for tryi in range(5):
+        if tryi >=3:
+            break
         datad = {}
         pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = logs['env'])
         datad["WIB_PWR"] = pwr_meas
@@ -142,8 +144,6 @@ if 0 in tms:
                 break
             else:
                 dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
-        if tryi >3:
-            break
 
     if True:
         if warn_flg:

@@ -83,25 +83,28 @@ def perform_ocr_minicpm(image_path):
         },
     }
 
-    # Send the request to MiniCPM API
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    for tryi in range(12):
+        # Send the request to MiniCPM API
+        response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    # Process the response
-    if response.status_code == 200:
-        try:
-            responses = response.text.strip().split('\n')
-            for line in responses:
-                data = json.loads(line)
-                actual_response = data.get("response", "")
-                if actual_response:
-                    return actual_response.strip()
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON: {e}")
-            return "Error: Unable to process OCR"
-    else:
-        print(f"Error {response.status_code}: {response.text}")
-        return "Error: API request failed"
-
+        # Process the response
+        if response.status_code == 200:
+            try:
+                responses = response.text.strip().split('\n')
+                for line in responses:
+                    data = json.loads(line)
+                    actual_response = data.get("response", "")
+                    if actual_response:
+                        return actual_response.strip()
+            except json.JSONDecodeError as e:
+                print(f"Error parsing JSON: {e}")
+                return "Error: Unable to process OCR"
+        else:
+            print(f"Error {response.status_code}: {response.text}")
+            if tryi < 10:
+                print ("try again....")
+            else:
+                return "Error: API request failed"
 
 
 # Function to validate OCR results
@@ -420,7 +423,7 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir, degree, x=350, y=220, w=330, h=3
 if __name__ == '__main__':
 
     fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/Tested/B099T0097/images/20250612163810_OCR/"""
-    fp = """E:/tmp\ocr/run3\images/20250714164318_OCR/"""
-    fn = """tray_18_180.bmp"""
-    x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = fp + "../1_ocr.png", degree=180)
+    fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0001/images/20250925130831_OCR"""
+    fn = """tray_1_180.bmp"""
+    x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = fp + "./1_ocr.png", degree=180)
     print (x)

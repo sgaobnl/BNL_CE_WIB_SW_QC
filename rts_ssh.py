@@ -88,10 +88,7 @@ def Sinkcover():
         else:
             print ("Please close the covers and continue...")
 
-def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" ):
-
-    QC_TST_EN =  True 
-    
+def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT", chips=8 ):
     logs = {}
     logs['RTS_IDs'] = dut_skt
 
@@ -100,21 +97,22 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
         chip_ocr = pickle.load(fn)
 
     x = list(dut_skt.keys())
+    lenx = len(x)
     if "FE"in duttype or "ADC"in duttype:
         logs['PC_rawdata_root'] = root + "Time_{}_DUT_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}_{:04d}/".format(x[0],
-                                                                            dut_skt[x[0]][1]*1000 + dut_skt[x[0]][0], 
-                                                                            dut_skt[x[1]][1]*1000 + dut_skt[x[1]][0], 
-                                                                            dut_skt[x[2]][1]*1000 + dut_skt[x[2]][0], 
-                                                                            dut_skt[x[3]][1]*1000 + dut_skt[x[3]][0], 
-                                                                            dut_skt[x[4]][1]*1000 + dut_skt[x[4]][0], 
-                                                                            dut_skt[x[5]][1]*1000 + dut_skt[x[5]][0], 
-                                                                            dut_skt[x[6]][1]*1000 + dut_skt[x[6]][0], 
-                                                                            dut_skt[x[7]][1]*1000 + dut_skt[x[7]][0] 
+                                                                            dut_skt[x[0%lenx]][1]*1000 + dut_skt[x[0%lenx]][0], 
+                                                                            dut_skt[x[1%lenx]][1]*1000 + dut_skt[x[1%lenx]][0], 
+                                                                            dut_skt[x[2%lenx]][1]*1000 + dut_skt[x[2%lenx]][0], 
+                                                                            dut_skt[x[3%lenx]][1]*1000 + dut_skt[x[3%lenx]][0], 
+                                                                            dut_skt[x[4%lenx]][1]*1000 + dut_skt[x[4%lenx]][0], 
+                                                                            dut_skt[x[5%lenx]][1]*1000 + dut_skt[x[5%lenx]][0], 
+                                                                            dut_skt[x[6%lenx]][1]*1000 + dut_skt[x[6%lenx]][0], 
+                                                                            dut_skt[x[7%lenx]][1]*1000 + dut_skt[x[7%lenx]][0] 
                                                                             ) 
     else:
         logs['PC_rawdata_root'] = root + "Time_{}_DUT_{:04d}_{:04d}/".format(x[0],
-                                                                            dut_skt[x[0]][1]*1000 + dut_skt[x[0]][0], 
-                                                                            dut_skt[x[1]][1]*1000 + dut_skt[x[1]][0]
+                                                                            dut_skt[x[0%lenx]][1]*1000 + dut_skt[x[0%lenx]][0], 
+                                                                            dut_skt[x[1%lenx]][1]*1000 + dut_skt[x[1%lenx]][0]
                                                                             )
     
     logs['PC_WRCFG_FN'] = "./asic_info.csv"
@@ -128,7 +126,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
             if "FE" in duttype:
                 if "FE" in tmp[0][0:2]:
                     sktno = int(tmp[0][2])
-                    key = dut_skt[x[sktno]][0] + 1
+                    key = dut_skt[x[sktno%lenx]][0] + 1
                     tmp[1] = chip_ocr[key][1]
                     print (tmp, sktno)
             if "DUT" in tmp[0][0:3]:
@@ -140,56 +138,145 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
     with open(csvfp, 'w') as fp:
         for cl in tmps:
             fp.write(cl)
-    
-    #[0, 1, 2, 3, 4,5,61, 62, 63, 64, 7,8, 9]
-    tms_items = {}
-    if "FE" in duttype:
-        tms_items[0 ] = "\033[96m 0 : Initilization checkout (not selectable for itemized test item)  \033[0m"
-        tms_items[1 ] = "\033[96m 1 : FE power consumption measurement  \033[0m"
-        tms_items[2 ] = "\033[96m 2 : FE response measurement checkout  \033[0m" 
-        tms_items[3 ] = "\033[96m 3 : FE monitoring measurement  \033[0m"
-        tms_items[4 ] = "\033[96m 4 : FE power cycling measurement  \033[0m"
-        tms_items[5 ] = "\033[96m 5 : FE noise measurement  \033[0m"
-        tms_items[61] = "\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m"
-        tms_items[62] = "\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m"
-        tms_items[63] = "\033[96m 63: FE calibration measurement (Direct-Input) \033[0m"
-        tms_items[64] = "\033[96m 64: FE calibration measurement ((ASIC-DAC, 4.7mV/fC) \033[0m"
-        tms_items[7 ] = "\033[96m 7 : FE delay run  \033[0m"
-        tms_items[8 ] = "\033[96m 8 : FE cali-cap measurement \033[0m"
-        tms_items[9 ] = "\033[96m 9 : Turn DAT off \033[0m"
-#        tms_items[10] = "\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m"
-    elif "ADC" in duttype:
-        tms_items[0  ] = "\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m"
-        tms_items[1  ] = "\033[96m 1: ADC power cycling measurement  \033[0m"
-#        tms_items[2  ] = "\033[96m 2: ADC reserved...  \033[0m"
-        tms_items[3  ] = "\033[96m 3: ADC reference voltage measurement  \033[0m"
-        tms_items[4  ] = "\033[96m 4: ADC autocalibration check  \033[0m"
-        tms_items[5  ] = "\033[96m 5: ADC noise measurement  \033[0m"
-        tms_items[7  ] = "\033[96m 7: ADC DAT-DAC SCAN  \033[0m"
-        tms_items[11 ] = "\033[96m 11: ADC ring oscillator frequency readout \033[0m"
-        tms_items[12 ] = "\033[96m 12: ADC RANGE test \033[0m"
-        tms_items[8  ] = "\033[96m 8: ADC ENOB measurement \033[0m"
-        tms_items[6  ] = "\033[96m 6: ADC DNL/INL measurement  \033[0m"
-        tms_items[9  ] = "\033[96m 9: Turn DAT off \033[0m"
-#        tms_items[10 ] = "\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m"
-    elif "CD" in duttype:
-        tms_items[0  ] = "\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m"
-        tms_items[1  ] = "\033[96m 1: COLDATA basic functionality checkout  \033[0m"
-        tms_items[2  ] = "\033[96m 2: COLDATA primary/secondary swap check  \033[0m"
-        tms_items[3  ] = "\033[96m 3: COLDATA power consumption measurement  \033[0m"
-        tms_items[4  ] = "\033[96m 4: COLDATA PLL lock range measurement  \033[0m"
-        tms_items[5  ] = "\033[96m 5: COLDATA fast command verification  \033[0m"
-        tms_items[6  ] = "\033[96m 6: COLDATA output link verification \033[0m"
-        if False:
-            tms_items[7  ] = "\033[96m 7: COLDATA EFUSE burn-in \033[0m"
-        else: 
-            print ("Burn-in is ignore")
-        tms_items[9  ] = "\033[96m 9: Turn DAT off \033[0m"
-#        tms_items[10 ] = "\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m"
 
-    logs['tms_items'] = tms_items
+    if chips < 8:
+        QC_TST_EN =   False
+        testid = chips%8 + 90
+    else:
+        QC_TST_EN =  True 
+
+    if testid in [91,92,93,94,95,96,97,98]:
+        if "FE" in duttype:
+            DUT = 'FE'
+        elif "ADC" in duttype:
+            DUT = 'ADC'
+        elif "CD" in duttype:
+            DUT = 'CD'
+        print (datetime.datetime.utcnow(), " : check if there is a short")
+        if True:
+            print (datetime.datetime.utcnow(), " : New Test Item Starts, please wait...")
+            if "FE" in DUT:
+                command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_LArASIC_QC_top.py -t {}".format(testid)]
+            elif "ADC" in DUT:
+                command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_ColdADC_QC_top.py -t {}".format(testid)]
+            elif "CD" in DUT:
+                command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_COLDATA_QC_top.py -t {}".format(testid)]
+            result=subrun(command, timeout = None) #rewrite with Popen later
+            if result != None:
+                resultstr = result.stdout
+                logs["QC_TestItemID_%03d"%testid] = [command, resultstr]
+                if "Pass!" in result.stdout:
+                    print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+                elif "DAT_Power_On" in result.stdout:
+                    print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS & Turn DAT on!  \033[0m")
+                elif "DAT_Power_Off" in result.stdout:
+                    print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS & Done!  \033[0m")
+                else:
+                    print ("FAIL!")
+                    print (result.stdout)
+                    print ("Exit anyway")
+                    return None
+            else:
+                print ("FAIL!")
+                return None
+   
+            print ("Transfer data to PC...")
+            fdir = resultstr[resultstr.find("save_fdir_start_")+16:resultstr.find("_end_save_fdir")] 
+            #wib_raw_dir = fdir #later save it into log file
+            logs['wib_raw_dir'] = fdir
+            fs = resultstr[resultstr.find("save_file_start_")+16:resultstr.find("_end_save_file")] 
+            fsubdirs = fdir.split("/")
+            fn = fs.split("/")[-1]
+            fddir =logs['PC_rawdata_root'] + fsubdirs[-2] + "/" 
+    
+            if not os.path.exists(fddir):
+                try:
+                    os.makedirs(fddir)
+                except OSError:
+                    print ("Error to create folder %s"%fddir)
+                    print ("Exit anyway")
+                    #sys.exit()
+                    return None
+            fsrc = wibhost + ":" + fs
+            command = ["scp", "-r",fsrc , fddir]
+            result=subrun(command, timeout = None)
+            if result != None:
+                print ("data save at {}".format(fddir))
+                logs['pc_raw_dir'] = fddir #later save it into log file
+                logs["QC_TestItemID_%03d_SCP"%testid] = [command, result]
+                logs["QC_TestItemID_%03d_Save"%testid] = logs['pc_raw_dir']
+                print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+            else:
+                print ("FAIL!")
+                return None
+
+            if ("RT" in env):
+                print ("Run quick analysis...")
+                QCstatus, bads = dat_initchk(fdir=logs['pc_raw_dir'])
+                print (QCstatus, bads)
+
+                if (len(bads) > 0) or ("Code#E" in QCstatus):
+                    #if logs['New_chips']:
+                    if True:
+                        fp = logs['pc_raw_dir'] + "QC.log"
+                        with open(fp, 'wb') as fn:
+                            pickle.dump(logs, fn)
+                    fdirdel = logs['wib_raw_dir']
+                    command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
+                    result=subrun(command, timeout = None)
+                    if result != None:
+                        print ("WIB folder {} is deleted!".format(fdirdel))
+                    return (QCstatus, bads)
+
     
     if QC_TST_EN:
+        #[0, 1, 2, 3, 4,5,61, 62, 63, 64, 7,8, 9]
+        tms_items = {}
+        if "FE" in duttype:
+            tms_items[0 ] = "\033[96m 0 : Initilization checkout (not selectable for itemized test item)  \033[0m"
+            tms_items[1 ] = "\033[96m 1 : FE power consumption measurement  \033[0m"
+            tms_items[2 ] = "\033[96m 2 : FE response measurement checkout  \033[0m" 
+            tms_items[3 ] = "\033[96m 3 : FE monitoring measurement  \033[0m"
+            tms_items[4 ] = "\033[96m 4 : FE power cycling measurement  \033[0m"
+            tms_items[5 ] = "\033[96m 5 : FE noise measurement  \033[0m"
+            tms_items[61] = "\033[96m 61: FE calibration measurement (ASIC-DAC)  \033[0m"
+            tms_items[62] = "\033[96m 62: FE calibration measurement (DAT-DAC) \033[0m"
+            tms_items[63] = "\033[96m 63: FE calibration measurement (Direct-Input) \033[0m"
+            tms_items[64] = "\033[96m 64: FE calibration measurement ((ASIC-DAC, 4.7mV/fC) \033[0m"
+            tms_items[7 ] = "\033[96m 7 : FE delay run  \033[0m"
+            tms_items[8 ] = "\033[96m 8 : FE cali-cap measurement \033[0m"
+            tms_items[9 ] = "\033[96m 9 : Turn DAT off \033[0m"
+    #        tms_items[10] = "\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m"
+        elif "ADC" in duttype:
+            tms_items[0  ] = "\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m"
+            tms_items[1  ] = "\033[96m 1: ADC power cycling measurement  \033[0m"
+    #        tms_items[2  ] = "\033[96m 2: ADC reserved...  \033[0m"
+            tms_items[3  ] = "\033[96m 3: ADC reference voltage measurement  \033[0m"
+            tms_items[4  ] = "\033[96m 4: ADC autocalibration check  \033[0m"
+            tms_items[5  ] = "\033[96m 5: ADC noise measurement  \033[0m"
+            tms_items[7  ] = "\033[96m 7: ADC DAT-DAC SCAN  \033[0m"
+            tms_items[11 ] = "\033[96m 11: ADC ring oscillator frequency readout \033[0m"
+            tms_items[12 ] = "\033[96m 12: ADC RANGE test \033[0m"
+            tms_items[8  ] = "\033[96m 8: ADC ENOB measurement \033[0m"
+            tms_items[6  ] = "\033[96m 6: ADC DNL/INL measurement  \033[0m"
+            tms_items[9  ] = "\033[96m 9: Turn DAT off \033[0m"
+    #        tms_items[10 ] = "\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m"
+        elif "CD" in duttype:
+            tms_items[0  ] = "\033[96m 0: Initilization checkout (not selectable for itemized test item) \033[0m"
+            tms_items[1  ] = "\033[96m 1: COLDATA basic functionality checkout  \033[0m"
+            tms_items[2  ] = "\033[96m 2: COLDATA primary/secondary swap check  \033[0m"
+            tms_items[3  ] = "\033[96m 3: COLDATA power consumption measurement  \033[0m"
+            tms_items[4  ] = "\033[96m 4: COLDATA PLL lock range measurement  \033[0m"
+            tms_items[5  ] = "\033[96m 5: COLDATA fast command verification  \033[0m"
+            tms_items[6  ] = "\033[96m 6: COLDATA output link verification \033[0m"
+            if False:
+                tms_items[7  ] = "\033[96m 7: COLDATA EFUSE burn-in \033[0m"
+            else: 
+                print ("Burn-in is ignore")
+            tms_items[9  ] = "\033[96m 9: Turn DAT off \033[0m"
+    
+        logs['tms_items'] = tms_items
+
         tms = list(tms_items.keys())
         #print (datetime.datetime.utcnow(), "\033[93m   : Please put chips into the sockets carefully \033[0m")
         #print ("Please update chip serial numbers")
@@ -198,7 +285,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
         #from DAT_chk_cfgfile import dat_chk_cfgfile
         #pf= dat_chk_cfgfile(fcfg = logs['PC_WRCFG_FN'], duttype=duttype )
         #if pf:
-        logs['New_chips'] = True
+        #logs['New_chips'] = True
         logs['TestIDs'] = tms
     
     #if QC_TST_EN:
@@ -312,7 +399,6 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
     if QC_TST_EN:
         print (datetime.datetime.utcnow(), " : Start DUT (%s) QC.(takes < 1200s)"%DUT)
         tmsi = 0
-        cd_qc_ana = CD_QC_ANA()
         retry_fi = 0
         while True:
             if tmsi >= len(tms):
@@ -348,7 +434,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
             else:
                 print ("FAIL!")
                 return None
-    
+   
             print ("Transfer data to PC...")
             fdir = resultstr[resultstr.find("save_fdir_start_")+16:resultstr.find("_end_save_fdir")] 
             #wib_raw_dir = fdir #later save it into log file
@@ -389,7 +475,8 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
                 #bads = []
 
                 if (len(bads) > 0) or ("Code#E" in QCstatus):
-                    if logs['New_chips']:
+                    #if logs['New_chips']:
+                    if True:
                         fp = logs['pc_raw_dir'] + "QC.log"
                         with open(fp, 'wb') as fn:
                             pickle.dump(logs, fn)
@@ -402,6 +489,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
                     return (QCstatus, bads)
 
             if duttype == "CD":
+                cd_qc_ana = CD_QC_ANA()
                 cd_qc_ana.env = env
                 cd_qc_ana.qc_stats = {}
                 cd_qc_ana.dat_cd_qc_ana(fdir=logs['pc_raw_dir'], tms=[testid])
@@ -446,11 +534,12 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
         result=subrun(command, timeout = 60)
         if result != None:
             print ("WIB folder {} is deleted!".format(fdirdel))
-   
-    #if True:
-    if QC_TST_EN:
+
+  
+    if True:
         print ("save log info during QC")
-        if logs['New_chips']:
+        #if logs['New_chips']:
+        if True:
             fp = logs['pc_raw_dir'] + "QC.log"
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
@@ -461,21 +550,22 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT" 
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
     
-#    print ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-#    else:
-#    print ("LArASIC QC analysis script from Rado will add here")
     QCstatus = "PASS"
     bads = []
-    #chip_passed = [0,1,2,3,4,5,6,7]
-    #chip_failed = []
 
     return QCstatus, bads 
 
 if __name__=="__main__":
-   fdirdel = "/home/root/BNL_CE_WIB_SW_QC/tmp_data/RT_CD_031702417_031752417/"
-   command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-   print (command)
-   result=subrun(command,timeout=20)
-   if result != None:
-       print ("WIB folder {} is deleted!".format(fdirdel))
+    result = rts_ssh(dut_skt={20250926130804:(0,0)}, root = "C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0001/", duttype="FE", env="RT", chips=1 )
+    if result != None:
+        QCstatus = result[0]
+        print (QCstatus)
+        print (result)
+
+   #fdirdel = "/home/root/BNL_CE_WIB_SW_QC/tmp_data/RT_CD_031702417_031752417/"
+   #command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
+   #print (command)
+   #result=subrun(command,timeout=20)
+   #if result != None:
+   #    print ("WIB folder {} is deleted!".format(fdirdel))
 
