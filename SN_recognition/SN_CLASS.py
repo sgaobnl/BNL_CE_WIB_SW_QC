@@ -57,7 +57,10 @@ class SN_CLASS():
             else:
                 if ("NAN" not in ifn) and (".bmp" in ifn) and ("tray_" in ifn):
                     tmps = ifn[0:-4].split("_")
-                    self.chip_ds[int(tmps[1])] = {"Degree":int(tmps[2]), "fn":ifn}
+                    if len(tmps) >= 3:
+                        self.chip_ds[int(tmps[1])] = {"Degree":int(tmps[2]), "fn":ifn}
+                    elif len(tmps) == 2:
+                        self.chip_ds[int(tmps[1])] = {"Degree":int(180), "fn":ifn}
         chips = list(self.chip_ds.keys())
         chips.sort()
         #goodchips = {}
@@ -81,7 +84,7 @@ class SN_CLASS():
         #print ( self.chip_ds)
 
 if __name__ == '__main__':
-    rootdir = "C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0001/"
+    rootdir = "C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0002/"
     sn = SN_CLASS()
     #chips = sn.Chips_on_Tray(rootdir)
     sn.chip_ocr(rootdir)

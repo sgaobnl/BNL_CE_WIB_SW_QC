@@ -88,7 +88,7 @@ def Sinkcover():
         else:
             print ("Please close the covers and continue...")
 
-def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT", chips=8 ):
+def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT", testid=0 ):
     logs = {}
     logs['RTS_IDs'] = dut_skt
 
@@ -139,9 +139,8 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         for cl in tmps:
             fp.write(cl)
 
-    if chips < 8:
+    if testid in [91,92,93,94,95,96,97,98]:
         QC_TST_EN =   False
-        testid = chips%8 + 90
     else:
         QC_TST_EN =  True 
 

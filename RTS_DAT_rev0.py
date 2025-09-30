@@ -146,8 +146,19 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
         else:
             dut_skt[rts.msg] = (chipi, skt)
             current_ids = rts.msg
-            chips = len(dut_skt)
-            QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, chips=chips)  
+
+            if "CD" in duttype:
+                if len(skts) < 2:
+                    chips =2
+                else:
+                    chips = len(dut_skt)
+            else:
+                if len(skts) < 8:
+                    chips =8
+                else:
+                    chips = len(dut_skt)
+
+            QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, testid=90+chips)  
             if ("Code#E001" in QCstatus) : #move back to original positions and then move back
                 while True: 
                     status = rts.MoveChipFromSocketToTray(sinkno, sktn, trayno, trayc, trayr, duttype)
@@ -167,7 +178,7 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                         chips = len(dut_skt)
                         break
 
-                QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, chips=chips)  
+                QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, testid=90+chips)  
                 if ("Code#E001" in QCstatus) : #move back to bad tray 
                     ids = current_ids
                     #ids_bads[ids] = dut_skt[ids]
@@ -193,14 +204,16 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                     tmpi= tmpi
                     duts= duts #bad chip is removed
                     continue
+                else:
+                    tmpi = tmpi + 1 
             else:
                 tmpi = tmpi + 1
     rts.rts_idle()
     return duts, dut_skt
 
-def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, chips=8) :
+def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
     while True:
-        QCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="RT", chips=chips)
+        QCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="RT", testid=testid)
         if QCresult != None:
             QCstatus = QCresult[0]
             if "CD" in duttype:
@@ -305,9 +318,9 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
 
 
     if "CD" in duttype:
-        CHIPS = 2
+        SKT_N = 2
     else:
-        CHIPS = 8
+        SKT_N = 8
 
     #if "Terminate" in QCstatus: #move back to original positions
     if ("Terminate" in QCstatus) : #move back to original positions
@@ -324,7 +337,7 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
 
             
         tmpi = 0
-        while tmpi < CHIPS:
+        while tmpi < SKT_N:
             for ids in ids_g:
                 if dut_skt[ids][1] == tmpi:
                     chipi=dut_skt[ids][0]
@@ -388,7 +401,7 @@ def MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype="FE", LN2_flg=
 
         if "PASS" in QCstatus:
             tmpi = 0
-            while tmpi < CHIPS:
+            while tmpi < SKT_N:
                 for ids in ids_g:
                     if dut_skt[ids][1] == tmpi:
                         chipi=dut_skt[ids][0]
@@ -655,7 +668,7 @@ while (len(duts) > 0) :
     print (QCstatus, "Badchips:", badchips)
 
 
-    duts, dut_skt, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, BAD_TRAY_SPOT,duttype=duttype, LN2_flg=LN2_flg) 
+    duts, dut_skt, ids_goods, ids_bads= MovetoTray(sinkno, duts, dut_skt, QCstatus, badchips, duttype=duttype, LN2_flg=LN2_flg) 
     ids_dict_good.update(ids_goods)
     ids_dict_bad.update(ids_bads)
 
