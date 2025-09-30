@@ -481,6 +481,33 @@ def dat_initchk(fdir="/."):
             return "PASS", []
 
     if "Code#P001" in QCstatus :
+        import shutil
+        import os
+
+        # Check if the folder exists before deleting
+        if os.path.exists(fdir):
+            try:
+                shutil.rmtree(fdir)
+                print(f"Deleted folder: {fdir}")
+            except Exception as e:
+                print(f"Error: {e}")
+            ffdir=fdir + "/../"
+            if os.path.exists(ffdir):
+                if not os.listdir(ffdir):  # Folder is empty
+                    try:
+                        os.rmdir(ffdir)        # Works only for empty folders
+                        print(f"Deleted empty folder: {ffdir}")
+                    except Exception as e:
+                        print(f"Error: {e}")
+                else:
+                    print("Folder is not empty, keeping it.")
+            else:
+                print("Folder does not exist.")
+        else:
+            print("Folder does not exist")
+
+
+
         return QCstatus, []
 
 if __name__=="__main__":
@@ -490,7 +517,7 @@ if __name__=="__main__":
     fdir = '''D:\DAT_ColdADC_QC\\RT_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
 #    fdir = '''D:\DAT_LArASIC_QC\Tested\Time_20250102143601_DUT_1000_2000_3000_4000_5000_6000_7000_8000\RT_FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/'''
     fdir = '''D:\DAT_LArASIC_QC\Tested\Time_20250116211125_DUT_1000_2000_3000_4000_5000_6000_7000_8000\LN_FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/'''
-    fdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B006T0001\Time_20250926173225_DUT_0001_0001_0001_0001_0001_0001_0001_0001\RT_FE_006002301_006002301_006002301_006002301_006002301_006002301_006002301_006002301/'''
+    fdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B006T0002bak\Time_20250929184538_DUT_0000_1001_0000_1001_0000_1001_0000_1001\RT_FE_006002354_006002355_006002356_006002369_006002362_006002363_006002361_006002304/'''
     print (fdir)
     #QCstatus, bads = dat_initchk(fdir=fdir)
     print (  dat_initchk(fdir=fdir))
