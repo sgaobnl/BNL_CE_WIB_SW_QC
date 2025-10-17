@@ -26,36 +26,90 @@ runi = 0
 #fembs = [int(sys.argv[2])]
 fembs = [0]
 
-wibdata = wib_dec(rawdata,fembs, spy_num=10)
-#wibdata = wib_dec(rawdata,fembs, spy_num=1)
+#wibdata = wib_dec(rawdata,fembs, spy_num=100)
+wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
 datd = []
 fechndata = []
 for i in [0]:
     wibdatai = wibdata[i]
     datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+    for fe in [70//16]:
+        for fe_chn in [70%16]:
+            fechndata = datd[fe*16+fe_chn]
 
+#wibdata = wib_dec(rawdata,fembs, spy_num=100)
+#ch =108 
+#fechndata = []
+#ch2 =109 
+#fechndata2 = []
+#for i in range(100):
+#    wibdatai = wibdata[i]
+#    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+#    fechndata += datd[ch]
+#    fechndata2 += datd[ch2]
+#
+#print (len(fechndata))
+#from fft_chn import chn_rfft_psd
+#f,p = chn_rfft_psd(fechndata,  fft_s = 5000, avg_cycle = 20)
+#f2,p2 = chn_rfft_psd(fechndata2,  fft_s = 5000, avg_cycle = 20)
+#plt.plot(f2,p2, label="CH%d"%ch2,color='g')
+#plt.plot(f,p, label="CH%d"%ch, color='r')
+#plt.legend()
+#plt.title("FFT ")
+#plt.ylabel(" / dB ")
+#plt.xlabel("Freq / Hz")
+#plt.show()
+#plt.close()
+##
+#exit()
+###
 
-if 1:
+if 0:
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
-    for fe in range(8):
-    #for fe in [4]:
-        for fe_chn in range(16):
-        #for fe_chn in [6,7]:
+    #for fe in range(8):
+    #for fe in [70//16]:
+        #for fe_chn in range(16):
+    #    for fe_chn in [70%16-1, 70%16, 70%16 + 1]:
+        #for fe_chn in [70%16, ]:
+    if True:
+        #for chx in [3, 4, 69,70, 113,114]:
+        #for chx in [3, 4, 69,70, 113,114]:
+        #for chx in [1,61, 62]:
+        #for chx in [108,109]:
+        for chx in range(128):
     
-            fechndata = datd[fe*16+fe_chn]
+            #fechndata = datd[fe*16+fe_chn]
+            fechndata = datd[chx]
+
+            if True:
+                #plt.plot(fechndata, label="%d"%(fe*16+fe_chn))
+                plt.plot(fechndata, label="%d"%(chx))
+            else:
+                from fft_chn import chn_rfft_psd
+                f,p = chn_rfft_psd(fechndata,  fft_s = 2000, avg_cycle = 20)
+                #import matplotlib.pyplot as plt
+                plt.plot(f,p)
+                #plt.title("Waveform (leakage current = 500pA)")
+                plt.title("FFT ")
+                plt.ylabel(" / dB ")
+                plt.xlabel("Freq / Hz")
+                plt.show()
+                plt.close()
+                exit()
+
             #if fe == 5 and (fe_chn in [11, 12, 13]):
             #if fe == 6 and (fe_chn in [3, 4, 5]):
             #if fe == 3 and (fe_chn in [0, 1]):
             #if fe == 4 and (fe_chn in [3, 4,5]):
             #if fe == 7 and (fe_chn in [0, 1,2]):
             #if fe == 3  :
-            #if True :
-            if (fe==6) and (fe_chn in [1,2,3]):
+            if False :
+            #if (fe==6) and (fe_chn in [1,2,3]):
             #if np.max(fechndata) < 6000 :
             #    print (fe, fe_chn)
             #if fe == 4 and (fe_chn in [0, 8, 10]):
@@ -84,7 +138,7 @@ if 1:
     plt.close()
     exit()
 
-    plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
+    #plt.plot(np.arange(128),rms, color='b', marker = '.', label="RMS")
 #    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
 #    plt.legend()
 #    plt.grid()
@@ -169,7 +223,7 @@ if 1:
 ##exit()
 #####
 
-if 0:
+if 1:
     import matplotlib.pyplot as plt
     rms = []
     pkp  = []
@@ -181,9 +235,11 @@ if 0:
     #        print (np.std(fechndata))
             rms.append(np.std(fechndata))
 #            pkp.append(np.max(fechndata))
-#            rms.append(np.mean(fechndata))
-    plt.plot(np.arange(64),rms[0:64], color='b', label="Tied")
-    plt.plot(np.arange(64,128,1),rms[64:128], color='r', label="Separate")
+            #rms.append(np.max(fechndata))
+            #rms.append(np.mean(fechndata))
+    plt.plot(np.arange(64),rms[0:64], marker = '.', color='b', label="left")
+    plt.plot(np.arange(64,128,1),rms[64:128], marker = '.',color='r', label="right")
+#    plt.plot(pkp)
     plt.legend()
 #    plt.plot(np.arange(128),pkp)
 
@@ -208,7 +264,7 @@ if 0:
     exit()
 
 
-if 1:
+if 0:
     import matplotlib.pyplot as plt
     rms = []
     pkp  = []
