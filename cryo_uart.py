@@ -176,8 +176,12 @@ class cryobox:
                         fill_flg = False
                         break
                     t1 = (time.time_ns() - t0 ) // 1e9
-                    if t1 > 1800:
-                        x = 10/0
+                    if t1 >= 300:
+                        yorn = input("Continue filling?(y or n) : ")
+                        if "Y" in yorn or "y" in yorn:
+                            t0 = t1
+                        else:
+                            x = 10/0
                     if t1 %30 == 0:
                         print (tmp)
                 rd += self.cryo_cmd(mode=b'1')
@@ -240,6 +244,6 @@ if __name__=="__main__":
     #cryo.cryo_highlevel(waitminutes=5)
     #cryo.cryo_highlevel(waitminutes=60)
 #    input ("Wait...")
-    cryo.cryo_warmup(waitminutes=5)
+    cryo.cryo_warmup(waitminutes=30)
     cryo.cryo_close()
 

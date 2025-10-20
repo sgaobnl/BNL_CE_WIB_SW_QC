@@ -209,23 +209,15 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                 print ("FAIL!")
                 return None
 
-            if ("RT" in env):
-                print ("Run quick analysis...")
-                QCstatus, bads = dat_initchk(fdir=logs['pc_raw_dir'])
-                print (QCstatus, bads)
-
-                if (len(bads) > 0) or ("Code#E" in QCstatus):
-                    #if logs['New_chips']:
-                    if True:
-                        fp = logs['pc_raw_dir'] + "QC.log"
-                        with open(fp, 'wb') as fn:
-                            pickle.dump(logs, fn)
-                    fdirdel = logs['wib_raw_dir']
-                    command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-                    result=subrun(command, timeout = None)
-                    if result != None:
-                        print ("WIB folder {} is deleted!".format(fdirdel))
-                    return (QCstatus, bads)
+            print ("Run quick analysis...")
+            QCstatus, bads = dat_initchk(fdir=logs['pc_raw_dir'])
+            print (QCstatus, bads)
+            fdirdel = logs['wib_raw_dir']
+            command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
+            result=subrun(command, timeout = None)
+            if result != None:
+                print ("WIB folder {} is deleted!".format(fdirdel))
+            return (QCstatus, bads)
 
     
     if QC_TST_EN:
@@ -535,7 +527,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
             print ("WIB folder {} is deleted!".format(fdirdel))
 
   
-    if True:
+    if QC_TST_EN:
         print ("save log info during QC")
         #if logs['New_chips']:
         if True:

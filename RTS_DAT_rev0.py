@@ -237,7 +237,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
                 elif "2" in userinput[0] :
                     print ("debugging, ")
                     input ("click any key to start ASIC QC again...")
-    if len(badchips) > 0:
+    if (len(badchips) > 0) or ("Code#P001" in QCstatus):
         return QCstatus, badchips #badchips range from 0 to7
 
     if LN2_flg:
@@ -271,7 +271,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
             print ("####################")
 
         cryo.cryo_lowlevel(waitminutes=10)
-        cryo.cryo_highlevel(waitminutes=5)
+        cryo.cryo_highlevel(waitminutes=10)
 
         LNQCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="LN" )
 
@@ -642,8 +642,8 @@ while (len(duts) > 0) :
             ocr_chip_fn =  f'SN_{ocr_sn}_Tray_{tray_slot}_{key}.bmp'.replace("-","_")
             ocr_image_dir = sn_ocr_imgdir + "/" + ocr_chip_fn
             ocr_info = ocr_chip(image_fp = dut_chip_dir, image_fn = dut_chip_fn, ocr_image_dir = ocr_image_dir, degree=180, x=1115, y=785, w=330, h=330, valid_flg=False)
-            #if ocr_sn not in ocr_info:
-            if False: #bypass the online check now
+            if ocr_sn not in ocr_info:
+            #if False: #bypass the online check now
                 print ("Chip to be tested have different SN from the tray scanning!")
                 print (f"OCR while scaning tray: {ocr_sn}, OCR while moving to socket: {ocr_info}")
                 p_shifter=True
