@@ -174,74 +174,79 @@ def DecodeJson2csv(root_path, FE_ID, env):
 
 
 if __name__ =="__main__":
-    root_path = '''S:/RTS_DAT_LArASIC_QC/'''
+    root_path = '''S:/RTS_DAT_LArASIC_QC/B002T0001/'''
     #root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
     #root_path = "Time_20250529153639_DUT_0047_1048_2049_3066_4067_5068_6069_7082"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
+
     for root, dirs, files in os.walk(root_path):
         break
+    data_dir = 'Time_20250813122458_DUT_0008_1009_2010_3011_4012_5013_6014_7015'
+    dirs = [data_dir]
+
+    for data_dir in dirs:
+        if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+            for subdir in os.listdir("/".join([root_path, data_dir])):
+                if os.path.isdir("/".join([root_path, data_dir, subdir])):
+                    env=subdir[0:2]
+                    fdp = "/".join([root_path, data_dir, subdir])
+                    if "_FE_" in subdir:
+                        qcdone_flg = qc_files_status(rootdir=fdp, duttype = 'FE')
+                        if not qcdone_flg:
+                            print ("Warning: Folder with incompleted QC data, ignore!", "/".join([root_path, data_dir, subdir]), )
+                            continue
+                    if ("RT" in env) or ("LN" in env):
+                        print ("www")
+                        print ("/".join([root_path, data_dir, subdir]))
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
+                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
+ #                       DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
+
+#    Bdirs = [] 
+#    for onedir in dirs:
+#        if ("B" in onedir[0:1]) and ("T0" in  onedir):
+#            Bdirs.append(onedir)
+#
+#    for bdir in Bdirs:
+#        bpath = "/".join([root_path, bdir])
+#        for broot, bsubdirs, files in os.walk(bpath):
+#            break
+#        #print (bsubdirs)
+#        for data_dir in bsubdirs:
+#            if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+#                for subdir in os.listdir("/".join([bpath, data_dir])):
+#                    if os.path.isdir("/".join([bpath, data_dir, subdir])):
+#                        env=subdir[0:2]
+#                        fdp = "/".join([bpath, data_dir, subdir])
+#                        if "_FE_" in subdir:
+#                            qcdone_flg = qc_files_status(rootdir=fdp, duttype = 'FE')
+#                            if not qcdone_flg:
+#                                print ("Warning: Folder with incompleted QC data, ignore!", "/".join([bpath, data_dir, subdir]), )
+#                                continue
+#                        if ("RT" in env) or ("LN" in env):
+#                            print ("/".join([bpath, data_dir, subdir]))
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
+#                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
+#
 
 
-    Bdirs = [] 
-    for onedir in dirs:
-        if ("B" in onedir[0:1]) and ("T0" in  onedir):
-            Bdirs.append(onedir)
-
-    for bdir in Bdirs:
-        bpath = "/".join([root_path, bdir])
-        for broot, bsubdirs, files in os.walk(bpath):
-            break
-        #print (bsubdirs)
-        for data_dir in bsubdirs:
-            if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
-                for subdir in os.listdir("/".join([bpath, data_dir])):
-                    if os.path.isdir("/".join([bpath, data_dir, subdir])):
-                        env=subdir[0:2]
-                        fdp = "/".join([bpath, data_dir, subdir])
-                        if "_FE_" in subdir:
-                            qcdone_flg = qc_files_status(rootdir=fdp, duttype = 'FE')
-                            if not qcdone_flg:
-                                print ("Warning: Folder with incompleted QC data, ignore!", "/".join([bpath, data_dir, subdir]), )
-                                continue
-                        if ("RT" in env) or ("LN" in env):
-                            print ("/".join([bpath, data_dir, subdir]))
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
-
-
-#    for data_dir in dirs:
-#        if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
-#            for subdir in os.listdir("/".join([root_path, data_dir])):
-#                if os.path.isdir("/".join([root_path, data_dir, subdir])):
-#                    env=subdir[0:2]
-#                    fdp = "/".join([root_path, data_dir, subdir])
-#                    if "_FE_" in subdir:
-#                        qcdone_flg = qc_files_status(rootdir=fdp, duttype = 'FE')
-#                        if not qcdone_flg:
-#                            print ("Warning: Folder with incompleted QC data, ignore!", "/".join([root_path, data_dir, subdir]), )
-#                            continue
-#                    if ("RT" in env) or ("LN" in env):
-#                        print ("/".join([root_path, data_dir, subdir]))
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=0)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=1)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=2)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=3)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=4)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=5)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=61)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=62)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=63)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=64)
-#                        DecodeRawData_func(root_path=root_path, data_dir=data_dir, env=env, tms=8)
 #    FE_ID = "001_00001_20250529153639_Tray47_SKT0"
 #    env="LN"
 #    output_path = root_path + "Ana"+ "_" + env
