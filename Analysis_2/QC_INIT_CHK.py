@@ -23,7 +23,9 @@ class QC_INIT_CHK(BaseClass):
         if self.ERROR:
             return
         tmps = root_path.split("/")
+        tmps = [item for item in tmps if item != ""]
         for tmp in tmps:
+            print (tmp)
             if "B" in tmp[0] and "T" in tmp[4]:
                 self.tray_id = tmp
                 break
