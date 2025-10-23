@@ -98,9 +98,10 @@ def gain_inl(x: list, y: list, item='', returnDNL=False):
     if len(posINL)==0:
         i1 = -1
     else:
-        i1 = posINL[0]
-        if i1==0:
-            i0 = -1
+        if posINL[0] > (len(inl)//2):
+            i1 = posINL[0]
+            if i1==0:
+                i0 = -1
     
     peakinl = np.max(inl)
     linRange = [y[i0], y[i1]]
@@ -368,6 +369,7 @@ class BaseClass:
         # with open('/'.join([root_path, data_dir, self.filename]), 'rb') as fn:
         with open('/'.join([self.input_dir, self.filename]), 'rb') as fn:
             self.raw_data = pickle.load(fn)
+
         # self.raw_data = raw_data
         self.logs_dict = self.raw_data['logs']
         self.logs_dict['position'] = {'on Tray': dict(),
