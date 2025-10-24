@@ -17,6 +17,7 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
         init_chk = QC_INIT_CHK(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
         FE_IDs = init_chk.decode_FE_PWR()
 
+
     if tms == 1:
         # # Power consumption measurement
         from QC_PWR import QC_PWR, QC_PWR_analysis
@@ -34,6 +35,19 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
         from QC_FE_MON import FE_MON
         fe_mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
         FE_IDs = fe_mon.decodeFE_MON()
+
+        for FE_ID in FE_IDs:
+            chip_path = '/'.join([root_path + "/Ana"+ "_" + env + "/", FE_ID])
+            jfs = ["QC_INIT_CHK.json", "QC_PWR.json", "QC_PWR_CYCLE.json", "QC_CHKRES.json", "QC_CALI_ASICDAC.json", 
+                   "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json", 'QC_Cap_Meas.json'  ]
+            for fn in jfs:
+                print (fn)
+                if not os.path.isfile('/'.join([chip_path, fn])):
+                    return None
+            DecodeJson2csv(root_path, FE_ID, env)
+
+        return FE_IDs
+
 
     if tms == 4:
         # Power cycling
@@ -218,17 +232,21 @@ if __name__ =="__main__":
                                 continue
                         if ("RT" in env) or ("LN" in env):
                             print ("/".join([bpath, data_dir, subdir]))
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
+                            FE_IDs = DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+                            if FE_IDs != None :
+                                pass
+                            else:
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
 
 
 #    for data_dir in dirs:

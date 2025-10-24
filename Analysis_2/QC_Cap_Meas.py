@@ -205,8 +205,8 @@ class QC_Cap_Meas_Ana(BaseClass_Ana):
             vref = [float(v.split('m')[0]) for v in chn_ref.keys()]
             imin_vref, imax_vref = np.argmin(vref), np.argmax(vref)
             delta_vref = vref[imax_vref] - vref[imin_vref]
-            refmax = str(int(vref[imax_vref])) + 'mV'
-            refmin = str(int(vref[imin_vref])) + 'mV'
+            refmax = str(int(vref[imax_vref])).zfill(4) + 'mV'
+            refmin = str(int(vref[imin_vref])).zfill(4) + 'mV'
             Aref = chn_ref[refmax]['ppeak'] - chn_ref[refmin]['ppeak']
             Cref = (Aref/delta_vref)*0.185
 

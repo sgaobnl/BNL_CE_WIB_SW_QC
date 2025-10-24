@@ -86,7 +86,12 @@ def gain_inl(x: list, y: list, item='', returnDNL=False):
     x = np.array(x)
     y = np.array(y)
     
-    slope, yintercept = np.polyfit(x, y, 1)
+    try:
+        slope, yintercept = np.polyfit(x, y, 1)
+    except:
+        slope = 0
+        yintercept = 0
+        
     y_fit = np.array(x) * slope + yintercept
     delta_y = np.abs(np.array(y) - y_fit)
     inl = abs(delta_y / (np.max(y) - np.min(y)))
