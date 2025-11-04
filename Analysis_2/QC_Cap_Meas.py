@@ -205,8 +205,8 @@ class QC_Cap_Meas_Ana(BaseClass_Ana):
             vref = [float(v.split('m')[0]) for v in chn_ref.keys()]
             imin_vref, imax_vref = np.argmin(vref), np.argmax(vref)
             delta_vref = vref[imax_vref] - vref[imin_vref]
-            refmax = str(int(vref[imax_vref])) + 'mV'
-            refmin = str(int(vref[imin_vref])) + 'mV'
+            refmax = str(int(vref[imax_vref])).zfill(4) + 'mV'
+            refmin = str(int(vref[imin_vref])).zfill(4) + 'mV'
             Aref = chn_ref[refmax]['ppeak'] - chn_ref[refmin]['ppeak']
             Cref = (Aref/delta_vref)*0.185
 
@@ -214,11 +214,11 @@ class QC_Cap_Meas_Ana(BaseClass_Ana):
             vcali = [float(v.split('m')[0]) for v in chn_cali.keys()]
             imin_vcali, imax_vcali = np.argmin(vcali), np.argmax(vcali)
             delta_vcali = vcali[imax_vcali] - vcali[imin_vcali]
-            icalimax, icalimin = '0'+str(int(vcali[imax_vcali])) + 'mV', '0'+str(int(vcali[imin_vcali])) + 'mV'
+            icalimax, icalimin = str(int(vcali[imax_vcali])).zfill(4) + 'mV', str(int(vcali[imin_vcali])).zfill(4) + 'mV'
             Acali = chn_cali[icalimax]['ppeak'] - chn_cali[icalimin]['ppeak']
             Ccali = (Acali/delta_vcali)
             
-            ratio = Ccali/Cref
+            ratio = Ccali/(Cref + 0.00001)
             ## NOTE ABOUT THIS IS ON MY IPAD : notes from the chat with Shanshan
             ratioC.append(ratio)
         self.ratioCap = ratioC

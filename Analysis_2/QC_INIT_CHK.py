@@ -20,9 +20,11 @@ class QC_INIT_CHK(BaseClass):
         printItem('Initialization checkout')
         self.item = "QC_INIT_CHK"
         super().__init__(root_path=root_path, data_dir=data_dir, output_path=output_path, tms=1, QC_filename='QC_INIT_CHK.bin', env=env)
+
         if self.ERROR:
             return
         tmps = root_path.split("/")
+        tmps = [item for item in tmps if item != ""]
         for tmp in tmps:
             if "B" in tmp[0] and "T" in tmp[4]:
                 self.tray_id = tmp
@@ -150,12 +152,22 @@ class QC_INIT_CHK(BaseClass):
                     tmpconfig = param
                     oneChip_data[tmpconfig]['CFG_info'] = {}
                     for pwr_param in pwr_params:
-                        oneChip_data[tmpconfig][pwr_param] = tmpdata_onechip[tmpconfig][pwr_param]
+                        if pwr_param in tmpdata_onechip[tmpconfig].keys():
+                            oneChip_data[tmpconfig][pwr_param] = tmpdata_onechip[tmpconfig][pwr_param]
+                        else:
+                            oneChip_data[tmpconfig][pwr_param] = {"VDDA": 0, "VDDO": 0, "VDDP": 0 } 
                     oneChip_data[tmpconfig]['unitPWR'] = params_units
-                    oneChip_data[tmpconfig]['pedestal'] = chResponseAllChips[chip_id][tmpconfig]["pedrms"]['pedestal']['data']
-                    oneChip_data[tmpconfig]['rms'] = chResponseAllChips[chip_id][tmpconfig]['pedrms']['rms']['data']
-                    oneChip_data[tmpconfig]['pospeak'] = chResponseAllChips[chip_id][tmpconfig]['pulseResponse']['pospeak']['data']
-                    oneChip_data[tmpconfig]['negpeak'] = chResponseAllChips[chip_id][tmpconfig]['pulseResponse']['negpeak']['data']
+                    if tmpconfig in chResponseAllChips[chip_id].keys():
+                        oneChip_data[tmpconfig]['pedestal'] = chResponseAllChips[chip_id][tmpconfig]["pedrms"]['pedestal']['data']
+                        oneChip_data[tmpconfig]['rms']      = chResponseAllChips[chip_id][tmpconfig]['pedrms']['rms']['data']
+                        oneChip_data[tmpconfig]['pospeak']  = chResponseAllChips[chip_id][tmpconfig]['pulseResponse']['pospeak']['data']
+                        oneChip_data[tmpconfig]['negpeak']  = chResponseAllChips[chip_id][tmpconfig]['pulseResponse']['negpeak']['data']
+                    else:
+                        oneChip_data[tmpconfig]['pedestal'] =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+                        oneChip_data[tmpconfig]['rms']      =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+                        oneChip_data[tmpconfig]['pospeak']  =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+                        oneChip_data[tmpconfig]['negpeak']  =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+
             dumpJson(output_path=FE_output_dir, output_name="QC_INIT_CHK", data_to_dump=oneChip_data)
         return FE_IDs
 
