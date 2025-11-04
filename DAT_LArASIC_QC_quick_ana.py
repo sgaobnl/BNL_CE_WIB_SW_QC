@@ -143,6 +143,17 @@ def plt_fepwr(plt, pwr_meas):
 
 
 def data_ana(fembs, rawdata, rms_flg=False):
+    #wibdata_all = wib_dec(rawdata,fembs, spy_num=10, cd0cd1sync=False)
+    #import matplotlib.pyplot as plt
+    #for xtmp in range(10):
+    #    wibdata = wibdata_all[xtmp]
+    #    datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
+    #    ch0data = datd[0]
+    #    plt.plot(ch0data)
+    #    print (len(ch0data))
+    #plt.show()
+    #plt.close()
+    #exit()
     wibdata = wib_dec(rawdata,fembs, spy_num=1, cd0cd1sync=False)[0]
     datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][fembs[0]]
 

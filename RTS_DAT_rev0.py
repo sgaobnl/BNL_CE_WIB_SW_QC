@@ -271,7 +271,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
             print ("####################")
 
         cryo.cryo_lowlevel(waitminutes=10)
-        cryo.cryo_highlevel(waitminutes=10)
+        cryo.cryo_highlevel(waitminutes=5)
 
         LNQCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="LN" )
 

@@ -150,7 +150,7 @@ class cryobox:
                         time.sleep(1)
                         rd = rd + self.uart_read()
                     if b'State= ' + mode in rd:
-                        print (rd)
+                        #print (rd)
                         break
                     else:
                         pass
@@ -176,9 +176,11 @@ class cryobox:
                         fill_flg = False
                         break
                     t1 = (time.time_ns() - t0 ) // 1e9
-                    if t1 >= 300:
+                    if t1 >= 600:
+                        rd = self.cryo_cmd(mode=b'1') #stop filling
                         yorn = input("Continue filling?(y or n) : ")
                         if "Y" in yorn or "y" in yorn:
+                            rd = self.cryo_cmd(mode=b'0')
                             t0 = t1
                         else:
                             x = 10/0
