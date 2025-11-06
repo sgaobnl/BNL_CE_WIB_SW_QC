@@ -61,16 +61,22 @@ def DAT_debug (QCstatus, user_email):
     print (QCstatus)
     sendemail(message="Please contact tech coordinator (DAT issue)", user_email=user_email, inform_tech=True)
     while True:#
-        print ("444-> Move chips back to original positions")
-        print ("2->fixed,")
+        #print ("444-> Move chips back to original positions")
+        print ("444-> Shutdown RTS and exit anyway")
+        print ("6->fixed,")
         userinput = input ("Please contact tech coordinator : ")
         if len(userinput) > 0:
             if "444" in userinput :
-                return "444"
-            elif "2" in userinput :
+                rts.MotorOn()
+                rts.JumpToCamera()
+                rts.rts_shutdown()
+                print ("Exit anyway")
+                exit()
+                #return "444"
+            elif "6" in userinput :
                 yorn = input ("Fixed. Are you sure? (y/Y):")
                 if "Y" in yorn or "y" in yorn:
-                    return "2"
+                    return "6"
 
 def RTS_debug (info, user_email, status=None, trayno=None, trayc=None, trayr=None, sinkno=None, sktn=None):
     sendemail(message="Please contact tech coordinator (RTS issue)", user_email=user_email, inform_tech=True)
@@ -200,7 +206,11 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                             RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
                             continue
                         else:
-                            break
+
+                            QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, testid=90+chips)  
+                            if ("Code#E001" in QCstatus) : #move back to bad tray 
+                                DAT_debug (QCstatus, user_email)
+                                break
                     tmpi= tmpi
                     duts= duts #bad chip is removed
                     continue
@@ -490,6 +500,7 @@ def Tray_SCAN_OCR(rootdir):
     if len(bad_chip_ds) > 0:
         sys.path.append('./SN_recognition/')  
         from pyqt import ocr_correct_gui
+        sendemail(subject ="Correct OCR Error", message="!WARNING! Please check the pop-up windows to correct OCR error.", user_email=user_email, inform_tech=True)
         chip_ds = ocr_correct_gui(bad_chip_ds)
         chip_ocr.update(chip_ds)
         for key in chip_ds.keys():
