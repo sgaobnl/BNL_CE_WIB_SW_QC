@@ -113,7 +113,7 @@ class RTS_CFG():
                 self.s.send(b"\r\n") 
                 self.msg = self.s.recv(1024).decode() 
                 self.msg = self.msg.strip()
-                print (self.msg)
+                #print (self.msg)
                 #if "199" in self.msg:
                 #    break
                 #else:

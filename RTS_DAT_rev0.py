@@ -253,6 +253,8 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
     if LN2_flg:
         p_shifter=True
         s_shifter=False
+        cover_sts = rts.CoverStatus()
+        print (cover_sts)
         sendemail(subject = "Please close RTS chamber cover", message="Please close the chamber cover. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
         #yorn = input ("\033[96m Do you want to perform cold test? (Y/N) :\033[0m")
         t0 = int(time.time())
@@ -260,7 +262,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
             cover_sts = rts.CoverStatus()
             if "-198" in cover_sts:
                 print ("Cover is close! Start the cold test in 10 seconds")
-                sendemail(subject = "A genuis just closed cover", message="Next call is ~ 1 hour later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                sendemail(subject = "A genius just closed cover", message="Next call is ~ 1 hour later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
                 s_shifter=False
                 time.sleep(10)
                 break
@@ -288,6 +290,8 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
         cryo.cryo_warmup(waitminutes=30)
 
         s_shifter=False
+        cover_sts = rts.CoverStatus()
+        print (cover_sts)
         sendemail(subject = "Please open RTS chamber cover", message="Cold test is done, please open the sink cover", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
 
         t0 = int(time.time())
@@ -295,7 +299,7 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
             cover_sts = rts.CoverStatus()
             if "197" in cover_sts:
                 print ("Cover is open! Activate robot in 10 seconds")
-                sendemail(subject = "A genuis just opened cover", message="Next call is ~40 minutes later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                sendemail(subject = "A genius just opened cover", message="Next call is ~40 minutes later. ", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
                 s_shifter=False
                 time.sleep(10)
                 break
@@ -632,7 +636,8 @@ else:
     skts=[0,1,2,3,4,5,6,7]
 dut_skt = {}
 
-while (len(duts) > 0) :
+Undone_Flag = False 
+while (len(duts) > 0) or Undone_Flag :
 #    rts.PumpOn()
 #    time.sleep(5)
 #    rts.PumpOff()
@@ -697,6 +702,8 @@ while (len(duts) > 0) :
         if len(badchips) > 0:
             skts=badchips
     else: #PASS
+        if len(duts) == 0:
+            Undone_Flag = True
         ids_dict.update(dut_skt)
         dut_skt = {}
         if "CD" in duttype:
