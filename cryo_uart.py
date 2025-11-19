@@ -177,7 +177,11 @@ class cryobox:
                         break
                     t1 = (time.time_ns() - t0 ) // 1e9
                     if t1 >= 600:
+                        sendemail(subject="Warning: LN2 filling over 10 minutes", message="Please check if 22psi dewar is empty.\n If not, type 'y' and enter in the terminal! \n If yes, contact tech coordiantor to replace the 22PSI dewar", user_email="sgao@bnl.gov;", inform_tech=True)
                         rd = self.cryo_cmd(mode=b'1') #stop filling
+                        time.sleep(5)
+                        tmp = self.uart_read()
+                        time.sleep(5)
                         yorn = input("Continue filling?(y or n) : ")
                         if "Y" in yorn or "y" in yorn:
                             rd = self.cryo_cmd(mode=b'0')

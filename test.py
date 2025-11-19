@@ -2,31 +2,25 @@ import sys
 import numpy as np
 import copy
 import os
+import pickle
 
-####### Input test information #######
-#Red = '\033[91m'
-#Green = '\033[92m'
-#Blue = '\033[94m'
-#Cyan = '\033[96m'
-#White = '\033[97m'
-#Yellow = '\033[93m'
-#Magenta = '\033[95m'
-#Grey = '\033[90m'
-#Black = '\033[90m'
-#Default = '\033[99m'
-index_f = "./kk.csv"
 
-env = "RT"
+rootdir = "S:/RTS_DAT_LArASIC_QC/B006T0011/"
+rootdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B006T0011/'''
+ocrbin_fp = rootdir + "ocr_results_2nd.bin"
+if os.path.isfile(ocrbin_fp) :
+    with open(ocrbin_fp, 'rb') as fn:
+        chip_ocr  = pickle.load(fn)
+#for key in chip_ocr.keys():
+#    print (key, chip_ocr[key])
+#
+#    if key in [17,18,19,20,21,22,23,24]:
+#        chip_ocr[key] = chip_ocr[key][0:8]
+#        chip_ocr[key][0] = True
 
-tmps = []
-with open(index_f, 'r') as fp:
-    for cl in fp:
-        tmp = cl.split(",")
-        if "env" in tmp[0]:
-            tmp[1] = env
-        cln=','.join(tmp)
-        tmps.append(cln)
+for key in chip_ocr.keys():
+    print (key, chip_ocr[key])
 
-with open(index_f, 'w') as fp:
-    for cl in tmps:
-        fp.write(cl)
+ocrbin_fp = rootdir + "ocr_results_2nd.bin"
+with open(ocrbin_fp, 'wb') as fn:
+    pickle.dump(chip_ocr,fn)
