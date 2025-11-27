@@ -210,13 +210,12 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                             RTS_debug ("S2T", user_email, status, trayno, trayc, trayr, sinkno, sktn)
                             continue
                         else:
-                            if len(dut_skt) > 0:
+                            chips = len(dut_skt) #how many chips in sockets
+                            if chips > 0:
                                 QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, testid=90+chips)  
-                                if ("Code#E001" in QCstatus) : #move back to bad tray 
+                                if ("Code#E001" in QCstatus) : 
                                     DAT_debug (QCstatus, user_email)
-                                    break
-                            else:
-                                break
+                            break
                     tmpi= tmpi
                     duts= duts #bad chip is removed
                     continue
@@ -707,9 +706,9 @@ while (len(duts) > 0) or Undone_Flag :
     if "PASS" not in QCstatus :
         if len(badchips) > 0:
             skts=badchips
-    else: #PASS
         if len(duts) == 0:
             Undone_Flag = True
+    else: #PASS
         ids_dict.update(dut_skt)
         dut_skt = {}
         if "CD" in duttype:

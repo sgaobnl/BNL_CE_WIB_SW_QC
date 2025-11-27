@@ -34,7 +34,6 @@ class RTS_MANIP():
     def manip_extract(self,  rts_r, rts_msg_wfp): # default port for socket 
         rts_msg = rts_msg_wfp[1]
         self.rts_msg_fp  = rts_msg_wfp[0]
-        print (self.rts_msg_fp)
 
 #        pic_dir = self.rootdir + "images/"
 #        if not os.path.exists(pic_dir):
@@ -49,9 +48,12 @@ class RTS_MANIP():
 #        
         f=self.rts_msg_fp 
         x = f.find("_log.bin")
-        msg0 = f[x-14:x]
+        msg0 = f[x-14-5:x-9]
+        msg0 = msg0[6:] + msg0[0:2] + msg0[3:5]
+
         x = rts_r.find(msg0)
-        msg_full = rts_r[x:]
+
+        msg_full = rts_r
         msg_rls = msg_full.splitlines()
 
         r2s_p = sorted(list(rts_msg['RTS_MSG_R2S_P'].keys()))
@@ -128,7 +130,7 @@ class RTS_MANIP():
 if __name__ == "__main__":
     a = RTS_MANIP()
     a.manip_fp = "C:/Users/coldelec/RTS/manip.csv"
-    a.rootdir = "S:/RTS_DAT_LArASIC_QC/B009T0006/"
+    a.rootdir = "C:/SGAO\ColdTest/Tested/DAT_LArASIC_QC/B011T0011/"
     rts_r = a.read_manipfp()
 
     rts_msgs = a.read_rtsmsgfp()
