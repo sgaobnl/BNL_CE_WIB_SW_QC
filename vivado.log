@@ -1,0 +1,118 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Mon Nov  3 12:47:28 2025
+# Process ID: 10872
+# Current directory: D:/WIB_QC/DUNE_WIB_QC_Script
+# Command line: vivado.exe -mode batch -source ./file/tcl_02.tcl
+# Log file: D:/WIB_QC/DUNE_WIB_QC_Script/vivado.log
+# Journal file: D:/WIB_QC/DUNE_WIB_QC_Script\vivado.jou
+# Running On: WPO-153452, OS: Windows, CPU Frequency: 3392 MHz, CPU Physical cores: 4, Host memory: 12792 MB
+#-----------------------------------------------------------
+source ./file/tcl_02.tcl
+# open_hw_manager
+open_hw_manager: Time (s): cpu = 00:00:08 ; elapsed = 00:00:08 . Memory (MB): peak = 477.188 ; gain = 180.168
+# connect_hw_server
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
+INFO: [Labtools 27-2222] Launching hw_server...
+INFO: [Labtools 27-2221] Launch Output:
+ECHO is off.
+ECHO is off.
+
+****** Xilinx hw_server v2023.2
+  **** Build date : Oct 13 2023 at 21:31:40
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+
+INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
+INFO: [Labtools 27-3417] Launching cs_server...
+INFO: [Labtools 27-2221] Launch Output:
+ECHO is off.
+ECHO is off.
+
+
+******** Xilinx cs_server v2023.2.0
+  ****** Build date   : Oct 09 2023-23:01:56
+    **** Build number : 2023.2.1696910516
+      ** Copyright 2017-2022 Xilinx, Inc. All Rights Reserved.
+      ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+
+connect_hw_server: Time (s): cpu = 00:00:00 ; elapsed = 00:00:10 . Memory (MB): peak = 480.168 ; gain = 2.980
+# open_hw
+WARNING: 'open_hw' is deprecated, please use 'open_hw_manager' instead.
+# open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Digilent/210249A74687
+# set device [lindex [get_hw_devices] 0]
+# refresh_hw_device $device
+INFO: [Labtools 27-2302] Device xczu6 (JTAG device index = 0) is programmed with a design that has 1 IBERT core(s).
+# detect_hw_sio_links
+INFO: [Labtools 27-2267] Found 2 links.
+# set iberts [get_hw_sio_iberts]
+# if {[llength $iberts] == 0} {
+#     puts "No IBERT cores detected. Exiting."
+#     exit
+# }
+# set ibert [lindex $iberts 0]
+# open_hw_target [get_hw_targets *]
+INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Digilent/210249A74687
+# set rx_channels [get_hw_sio_rxs -of_objects $ibert]
+# set rx_channels [get_hw_sio_rxs -of_objects $ibert]
+# if {[llength $rx_channels] == 0} {
+#     puts "No RX channels detected. Exiting."
+#     close_hw
+#     exit
+# }
+# puts "IBERT RX Channel BER Report:"
+IBERT RX Channel BER Report:
+# puts "--------------------------------------"
+--------------------------------------
+# foreach rx $rx_channels {
+#     # Get Bit Error Rate (BER)
+#     set ber [get_property RX_BER $rx]
+# 
+#     # Get Total Received Bit Count
+#     set bit_count [get_property RX_RECEIVED_BIT_COUNT $rx]
+# 
+#     # Get Bit Error Count (LOGIC.ERRBIT_COUNT)
+#     set error_count [get_property LOGIC.ERRBIT_COUNT $rx]
+# 
+#     # Print results
+#     #Bit Error Rate (BER) second BER
+#     #Bit Errors second BEN
+#     #Total Received Bits second TCB
+#     puts "RX Channel First: $rx"
+#     puts " $rx Total_BER: $ber"
+#     puts " $rx Total_ERROR_count: $error_count"
+#     puts " $rx Total_BIT_count: $bit_count"
+#     puts "--------------------------------------"
+# }
+RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y4/RX
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y4/RX Total_BER: 8.163164405945211e-13
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y4/RX Total_ERROR_count: 000000000000
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y4/RX Total_BIT_count: 1225015141520
+--------------------------------------
+RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y5/RX
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y5/RX Total_BER: 2.790393158300927e-10
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y5/RX Total_ERROR_count: 000000000156
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y5/RX Total_BIT_count: 1225633739040
+--------------------------------------
+RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y6/RX
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y6/RX Total_BER: 0.59999909222021408
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y6/RX Total_ERROR_count: 00AC44F236E8
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y6/RX Total_BIT_count: 1233153698000
+--------------------------------------
+RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y7/RX
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y7/RX Total_BER: 0.57499974196596704
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y7/RX Total_ERROR_count: 00A5C6D3C7CE
+ localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y7/RX Total_BIT_count: 1238270767600
+--------------------------------------
+# Close the connection
+invalid command name "Close"
+    while executing
+"Close the connection"
+    (file "./file/tcl_02.tcl" line 52)
+INFO: [Common 17-206] Exiting Vivado at Mon Nov  3 12:47:55 2025...

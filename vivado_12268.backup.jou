@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Mon Nov  3 12:46:14 2025
+# Process ID: 12268
+# Current directory: D:/WIB_QC/DUNE_WIB_QC_Script
+# Command line: vivado.exe -mode batch -source ./file/eyeScan.tcl
+# Log file: D:/WIB_QC/DUNE_WIB_QC_Script/vivado.log
+# Journal file: D:/WIB_QC/DUNE_WIB_QC_Script\vivado.jou
+# Running On: WPO-153452, OS: Windows, CPU Frequency: 3392 MHz, CPU Physical cores: 4, Host memory: 12792 MB
+#-----------------------------------------------------------
+source ./file/eyeScan.tcl
