@@ -6,7 +6,8 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Now it's safe to import from 'function'
-from function.rigol_dp832_ps import RIGOL_PS_CTL
+# from function.rigol_dp832_ps import RIGOL_PS_CTL
+import function.Rigol_DP800 as rigol
 # Other imports...
 
 import file.report_dict as rp_dict
@@ -66,21 +67,23 @@ input('Please insert the WIB into [TEST SLOT]')
 
 input('Power On and Check the current')
 
-fm_ps = RIGOL_PS_CTL()
+psu = rigol.RigolDP800()
 print("Turn FM on")
-fm_ps.ps_init()
 print('power on begin')
-fm_ps.off([1, 2, 3])
-fm_ps.set_channel(channel=1, voltage=11.8, v_limit=12.1, c_limit=3)
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
 # fm_ps.set_channel(channel=2, voltage=11.95, v_limit=12.1, c_limit=3)
-fm_ps.on([1, 2])
 time.sleep(10)
-c1 = fm_ps.measure_params(channel = 1)
-c2 = fm_ps.measure_params(channel = 2)
-print(c1)
-print(c2)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
+# v2, i2 = psu.measure(2)
+
+# c1 = fm_ps.measure_params(channel = 1)
+# c2 = fm_ps.measure_params(channel = 2)
+print(v1, c1)
+print(v2, c2)
 time.sleep(3)
-fm_ps.off([1, 2, 3])
+psu.close()
 
 rp_dict.log01_wib['Power Check channel 1'] = c1
 rp_dict.log01_wib['Power Check channel 2'] = c2

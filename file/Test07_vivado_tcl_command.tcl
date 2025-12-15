@@ -9,11 +9,11 @@ open_hw_target
 set device [lindex [get_hw_devices] 0]
 
 # Program FPGA with .bin file
-set_property PROGRAM.FILE "D:/WIB_QC/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.bit" $device
+set_property PROGRAM.FILE "/home/dune/Documents/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.bit" $device
 program_hw_devices $device
 
 # Load the .ltx file for debugging (optional)
-set_property PROBES.FILE "D:/WIB_QC/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.ltx" $device
+set_property PROBES.FILE "/home/dune/Documents/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.ltx" $device
 refresh_hw_device $device
 detect_hw_sio_links
 # we use list code to get the detail of hw_sio_links and explain the detail of the property we record the detail in a python file in ./file/record_code

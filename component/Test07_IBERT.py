@@ -1,36 +1,50 @@
-from function.rigol_dp832_ps import RIGOL_PS_CTL
+import sys
+import os
+# import path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from function.rigol_dp832_ps import RIGOL_PS_CTL
 from function.ping_host import ping_host
 from datetime import datetime
 import subprocess
-import sys
-import os
-import path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
+
+
 import file.report_dict as rp_dict
 import time
+import path
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 
-t1 = time.time()
-fm_ps = RIGOL_PS_CTL()
-print("Turn FM on")
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
-time.sleep(2)
-fm_ps.set_channel(channel=1, voltage=11.9, v_limit=12.1, c_limit=3)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import function.Rigol_DP800 as rigol
 
-fm_ps.set_channel(channel=2, voltage=12, v_limit=12.1, c_limit=3)
-fm_ps.on([1, 2])
-time.sleep(1)
-c1 = fm_ps.measure_params(channel = 1)
-c2 = fm_ps.measure_params(channel = 2)
+t1 = time.time()
+psu = rigol.RigolDP800()
+# fm_ps = RIGOL_PS_CTL()
+print("Turn FM on")
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
+# fm_ps.ps_init()
+# fm_ps.off([1, 2, 3])
+# time.sleep(2)
+# fm_ps.set_channel(channel=1, voltage=11.9, v_limit=12.1, c_limit=3)
+#
+# fm_ps.set_channel(channel=2, voltage=12, v_limit=12.1, c_limit=3)
+# fm_ps.on([1, 2])
+# time.sleep(1)
+# c1 = fm_ps.measure_params(channel = 1)
+# c2 = fm_ps.measure_params(channel = 2)
 print(c1)
 print(c2)
 time.sleep(1) # wait for boot
 
-
+project_dir = "/home/dune/Documents/DUNE_WIB_QC_Script"
 # # from ../file import example_ibert_ultrascale_gth_0.bit
 #
 # # Path to Vivado executable (adjust this based on your system)
@@ -40,7 +54,7 @@ vivado_path = path.xilinx_path
 command = [vivado_path, "-mode", "batch", "-source", "./file/Test07_vivado_tcl_command.tcl"]
 #
 # # Execute the command
-process = subprocess.run(command, capture_output=True, text=True)
+process = subprocess.run(command, capture_output=True, text=True, cwd = project_dir)
 #
 # # Print the output and errors (if any)
 print(process.stdout)
@@ -53,21 +67,22 @@ print(process.stderr)
 # Path to Vivado executable (adjust this based on your system)
 # vivado_path = "D:/Xilinx/Vivado/2023.2/bin/vivado.bat"
 # time.sleep(1000)
-command = [vivado_path, "-mode", "batch", "-source", "./file/eyeScan.tcl"]
-# # Execute the command
-process = subprocess.run(command, capture_output=True, text=True)
-print(process.stdout)
+
 
 # time to test
-time.sleep(10)
+time.sleep(20)
 
-command = [vivado_path, "-mode", "batch", "-source", "./file/tcl_02.tcl"]
+command = [vivado_path, "-mode", "batch", "-source", "file/tcl_02.tcl"]
 # # Execute the command
-process = subprocess.run(command, capture_output=True, text=True)
+process = subprocess.run(command, capture_output=True, text=True, cwd = project_dir)
 
 print(process.stdout)
 
-
+time.sleep(10)
+command = [vivado_path, "-mode", "batch", "-source", "file/eyeScan.tcl"]
+# # Execute the command
+process = subprocess.run(command, capture_output=True, text=True, cwd = project_dir)
+print(process.stdout)
 
 log_text = process.stdout
 for line in log_text.splitlines():
@@ -91,13 +106,17 @@ t2 = time.time()
 print(t2 - t1)
 
 time.sleep(2)
-fm_ps.off([1, 2, 3])
+psu.close()
+# fm_ps.off([1, 2, 3])
+
+
+
 
 # === Step 1: Load specific region from CSV ===
 base_dir = os.path.dirname(os.path.abspath(__file__))
 # target_file_path = os.path.join(base_dir, "..", "report", "scan00.csv")
 
-filename = 'D:/scan00.csv'
+filename = '../scan00.csv'
 eye_data = pd.read_csv(filename, skiprows=22, nrows=30, header=None, usecols=range(1, 10))
 eye_matrix = eye_data.apply(pd.to_numeric, errors='coerce').dropna(how='any').values
 
@@ -130,7 +149,7 @@ target_file_path1 = os.path.join(base_dir, "..", "report", "eye_scan_X0Y4.png")
 plt.savefig(target_file_path1, dpi=300, bbox_inches='tight')
 
 # === Step 1: Load specific region from CSV ===
-filename = 'D:/scan01.csv'  # your CSV
+filename = '../scan01.csv'  # your CSV
 eye_data = pd.read_csv(filename, skiprows=22, nrows=30, header=None, usecols=range(1, 10))
 eye_matrix = eye_data.apply(pd.to_numeric, errors='coerce').dropna(how='any').values
 

@@ -1,37 +1,31 @@
 #-----------------------------------------------------------
-# Vivado v2023.2 (64-bit)
-# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
-# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
-# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
-# Start of session at: Mon Nov  3 12:46:14 2025
-# Process ID: 12268
-# Current directory: D:/WIB_QC/DUNE_WIB_QC_Script
-# Command line: vivado.exe -mode batch -source ./file/eyeScan.tcl
-# Log file: D:/WIB_QC/DUNE_WIB_QC_Script/vivado.log
-# Journal file: D:/WIB_QC/DUNE_WIB_QC_Script\vivado.jou
-# Running On: WPO-153452, OS: Windows, CPU Frequency: 3392 MHz, CPU Physical cores: 4, Host memory: 12792 MB
+# Vivado v2022.2 (64-bit)
+# SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Mon Dec 15 16:57:40 2025
+# Process ID: 128043
+# Current directory: /home/dune/Documents/DUNE_WIB_QC_Script
+# Command line: vivado -mode batch -source file/eyeScan.tcl
+# Log file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.log
+# Journal file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.jou
+# Running On: dune-MS-7A58, OS: Linux, CPU Frequency: 4199.915 MHz, CPU Physical cores: 4, Host memory: 67301 MB
 #-----------------------------------------------------------
-source ./file/eyeScan.tcl
+source file/eyeScan.tcl
 # open_hw_manager
-open_hw_manager: Time (s): cpu = 00:00:08 ; elapsed = 00:00:08 . Memory (MB): peak = 478.395 ; gain = 180.039
 # connect_hw_server
 INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
 INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
 INFO: [Labtools 27-3417] Launching cs_server...
 INFO: [Labtools 27-2221] Launch Output:
-ECHO is off.
-ECHO is off.
 
 
-******** Xilinx cs_server v2023.2.0
-  ****** Build date   : Oct 09 2023-23:01:56
-    **** Build number : 2023.2.1696910516
-      ** Copyright 2017-2022 Xilinx, Inc. All Rights Reserved.
-      ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+******** Xilinx cs_server v2022.2.0
+  ****** Build date   : Oct 04 2022-19:25:37
+    **** Build number : 2022.2.1664925937
+      ** Copyright 2017-2025 Xilinx, Inc. All Rights Reserved.
 
 
 
-connect_hw_server: Time (s): cpu = 00:00:00 ; elapsed = 00:00:05 . Memory (MB): peak = 481.332 ; gain = 2.938
 # open_hw
 WARNING: 'open_hw' is deprecated, please use 'open_hw_manager' instead.
 # open_hw_target
@@ -50,7 +44,7 @@ INFO: [Labtools 27-2302] Device xczu6 (JTAG device index = 0) is programmed with
 # set scan0 [create_hw_sio_scan -description {Scan 0} 2d_full_eye [get_hw_sio_rxs -of $link0]]
 # run_hw_sio_scan [get_hw_sio_scans $scan0]
 # after 10000
-# write_hw_sio_scan -force "D:/scan00.csv" [get_hw_sio_scans {SCAN_0}]
+# write_hw_sio_scan -force "./scan00.csv" [get_hw_sio_scans {SCAN_0}]
 # refresh_hw_device [lindex [get_hw_devices] 1]
 # set tx1 [lindex [get_hw_sio_txs] 1]
 # set rx1 [lindex [get_hw_sio_rxs] 1]
@@ -61,5 +55,5 @@ INFO: [Labtools 27-2302] Device xczu6 (JTAG device index = 0) is programmed with
 # set scan1 [create_hw_sio_scan -description {Scan 1} 2d_full_eye [get_hw_sio_rxs -of $link1]]
 # run_hw_sio_scan [get_hw_sio_scans $scan1]
 # after 10000
-# write_hw_sio_scan -force "D:/scan01.csv" [get_hw_sio_scans {SCAN_0}]
-INFO: [Common 17-206] Exiting Vivado at Mon Nov  3 12:46:56 2025...
+# write_hw_sio_scan -force "./scan01.csv" [get_hw_sio_scans {SCAN_1}]
+INFO: [Common 17-206] Exiting Vivado at Mon Dec 15 16:58:15 2025...

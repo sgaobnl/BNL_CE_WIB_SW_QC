@@ -22,7 +22,7 @@ with open(target_file_path, mode='r', newline='', encoding='utf-8-sig') as file:
             key, value = row
             csv_data[key.strip()] = value.strip()
 if 'tester' not in csv_data:
-    csv_data['tester'] = 'sgao'
+    csv_data['tester'] = 'LingyunKe'
 else:
     csv_data['tester'] = input_name
 if 'WIB_ID' not in csv_data:
