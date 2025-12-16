@@ -4,8 +4,8 @@ import os
 
 # Add the parent directory to sys.path so 'function' can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import function.Rigol_DP800 as rigol
 
-from function.rigol_dp832_ps import RIGOL_PS_CTL
 from function.ping_host import ping_host
 from datetime import datetime
 from function.cls_udp import CLS_UDP
@@ -15,22 +15,18 @@ from function.raw_convertor import RAW_CONV
 import time
 import file.report_dict as rp_dict
 
-print("\033[35m" + "A_RT03_02 : Power Rail" + "\033[0m")
+print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
 t1 = time.time()
-fm_ps = RIGOL_PS_CTL()
-print("Turn FM on")
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
-time.sleep(2)
+psu = rigol.RigolDP800()
 
-fm_ps.set_channel(channel=1, voltage=11.9, v_limit=12, c_limit=3)
-fm_ps.set_channel(channel=2, voltage=11.95, v_limit=12, c_limit=3)
-fm_ps.on([1, 2])
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
 time.sleep(1)
 
 time.sleep(30) # wait for boot
-c1 = fm_ps.measure_params(channel = 1)
-c2 = fm_ps.measure_params(channel = 2)
 print(c1)
 print(c2)
 # Internet Connection
@@ -271,5 +267,4 @@ print(f"HTML report saved (new file) to {target_file_path}")
 
 #
 time.sleep(3)
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
+psu.close()
