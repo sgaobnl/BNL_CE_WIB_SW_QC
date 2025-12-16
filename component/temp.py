@@ -52,7 +52,6 @@ def send_command(sock, command):
     except Exception as e:
         print("Error sending command:", e)
         return None
-import tcp as tco
 # if __name__ == "__main__":
 connection = connect_to_server()
 if connection:
@@ -69,5 +68,4 @@ if connection:
         #     else:
         #         send_command(connection, cmd)
 
-import tcp
 
