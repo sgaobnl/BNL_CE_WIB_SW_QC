@@ -1,10 +1,12 @@
-
-
-
 # WIB Power Rail
 import socket
+import sys
+import os
+# Add the parent directory to sys.path so 'function' can be imported
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from function.rigol_dp832_ps import RIGOL_PS_CTL
+import function.Rigol_DP800 as rigol
 import time
-from function.rigol_dp832_ps import RIGOL_PS_CTL
 from function.ping_host import ping_host
 from datetime import datetime
 from function.cls_udp import CLS_UDP
@@ -12,7 +14,6 @@ from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
 import time
 import file.report_dict as rp_dict
-import os
 import function.tcp as tcp_con
 from datetime import datetime
 
@@ -111,22 +112,24 @@ def parse_ltc2499_output(temp_result):
 print("\033[35m" + "A_RT05_02 : I2C Sensor Information" + "\033[0m")
 t1 = time.time()
 
-fm_ps = RIGOL_PS_CTL()
-print("Turn FM on")
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
 time.sleep(2)
 tcp = TCP_CFG()
 udp = CLS_UDP()
 conv = RAW_CONV()
 now = datetime.now()
 
-fm_ps.set_channel(channel=1, voltage=11.9, v_limit=12, c_limit=3)
-fm_ps.set_channel(channel=2, voltage=11.95, v_limit=12, c_limit=3)
-fm_ps.on([1, 2])
-time.sleep(20)
-c1 = fm_ps.measure_params(channel = 1)
-c2 = fm_ps.measure_params(channel = 2)
+print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
+t1 = time.time()
+psu = rigol.RigolDP800()
+
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
+time.sleep(1)
+
+time.sleep(30) # wait for boot
 print(c1)
 print(c2)
 ping_host(ip_address="192.168.121.1", count=4)
@@ -236,7 +239,8 @@ rp_dict.log04_wib['INA226_Current'] = current
 #######################
 # Send initial command
 tcp.tcp_poke(1, 0x05)
-time.sleep(0.1)
+tcp.tcp_poke(1, 0x05)
+time.sleep(0.5)
 readback = send_command(connection, 'i2cdetect -r -y 1')
 print(readback)
 Device = 'AD7414_0x4A';    Address = '4a'
@@ -464,6 +468,10 @@ msb, lsb = [int(x, 16) for x in result.splitlines()[1].split()]
 raw = ((msb << 8) | lsb)
 current_5 = ((((raw & 0x3fff)) * 0.000019075) / 0.1)
 rp_dict.log04_wib['LTC2990_0x4e_V0.9_c'] = current_5
+
+time.sleep(0.5)
+psu.safe_power_off()
+psu.close()
 
 import os
 
