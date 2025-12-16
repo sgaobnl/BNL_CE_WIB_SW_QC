@@ -83,6 +83,7 @@ v2, c2 = psu.measure(1)
 print(v1, c1)
 print(v2, c2)
 time.sleep(3)
+psu.safe_power_off()
 psu.close()
 
 rp_dict.log01_wib['Power Check channel 1'] = c1

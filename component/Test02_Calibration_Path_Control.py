@@ -10,6 +10,8 @@ import datetime
 import file.report_dict as rp_dict
 t1 = time.time()
 import component.temp as initial
+import function.Rigol_DP800 as rigol
+
 initial
 time.sleep(1)
 
@@ -237,6 +239,8 @@ print(rp_dict.log05_Cal)
 rp_dict.log05_Cal['Communication_Time_Consumption'] = round(t2-t1, 3)
 # time < 40 seconds
 
+psu = rigol.RigolDP800()
+psu.safe_power_off()
 import os
 
 # === Setup relative path to ../file/Calibration_report_02.html ===

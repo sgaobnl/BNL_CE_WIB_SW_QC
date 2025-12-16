@@ -2,6 +2,9 @@ import pyvisa
 import time
 import usb.core
 import usb.util
+import colorama
+from colorama import init, Fore, Style
+
 
 class RigolDP800:
     """
@@ -36,6 +39,81 @@ class RigolDP800:
         except Exception as e:
             print(f"❌ Connection failed: {e}")
             raise
+
+    def safe_power_off(psu, current_threshold=0.2, max_attempts=5):
+        """
+        Safely power off WIB with current verification.
+        Attempts automatic power-off up to max_attempts times.
+        If current remains high, enters manual confirmation mode with verification.
+
+        Args:
+            psu: Power supply unit object
+            current_threshold: Maximum acceptable current (A) to consider power OFF successful
+            max_attempts: Maximum number of automatic attempts before requiring manual intervention
+
+        Returns:
+            True if power-off successful
+        """
+        attempt = 0
+        print(Fore.YELLOW + "\n⚡ Initiating safe power OFF sequence..." + Style.RESET_ALL)
+
+        while True:
+            # Attempt power off
+            psu.turn_off_all()
+            time.sleep(1)
+            # Measure current on both channels
+            total_i = 0
+            for ch in (1, 2):
+                v, i = psu.measure(ch)
+                print(f"  CH{ch}: {v:.3f} V, {i:.3f} A")
+                total_i += i
+            print(Fore.CYAN + f"  Total current: {total_i:.3f} A" + Style.RESET_ALL)
+            # Check if successful
+            if total_i < current_threshold:
+                print(Fore.GREEN + "✓ Power OFF successful" + Style.RESET_ALL)
+                return True
+
+            # Failed → auto retry
+            attempt += 1
+            print(Fore.YELLOW +
+                  f"⚠️  Power off attempt {attempt}/{max_attempts} failed (current too high)" +
+                  Style.RESET_ALL)
+
+            # Max attempts reached → require manual intervention
+            if attempt >= max_attempts:
+                print(Fore.RED + "\n" + "=" * 70)
+                print("⚠️  WARNING: AUTO POWER-OFF FAILED")
+                print("    Manual power shutdown is REQUIRED!")
+                print("=" * 70 + "\n" + Style.RESET_ALL)
+
+                # Manual confirmation mode with current verification
+                while True:
+                    print(Fore.YELLOW + "Please manually turn OFF the WIB power supply." + Style.RESET_ALL)
+                    print('Type ' + Fore.GREEN + '"confirm"' + Style.RESET_ALL + ' after power is OFF')
+                    com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+
+                    if com.lower() == "confirm":
+                        # Verify power is actually off
+                        v1, i1 = psu.measure(1)
+                        v2, i2 = psu.measure(2)
+                        total_i = i1 + i2
+
+                        if total_i < current_threshold:
+                            print(Fore.GREEN +
+                                  "✓ Manual power-off verified. Proceeding..." +
+                                  Style.RESET_ALL)
+                            return True
+                        else:
+                            print(Fore.RED +
+                                  f"✗ Verification failed: Current still high ({total_i:.3f} A)" +
+                                  Style.RESET_ALL)
+                            print(Fore.YELLOW +
+                                  "Please ensure power is completely OFF and try again." +
+                                  Style.RESET_ALL)
+                    else:
+                        print(Fore.RED + "Invalid input. Please type 'confirm'." + Style.RESET_ALL)
+
+            print(Fore.CYAN + "Retrying auto power off...\n" + Style.RESET_ALL)
 
     def _release_usb_device(self):
         """释放被占用的USB设备"""

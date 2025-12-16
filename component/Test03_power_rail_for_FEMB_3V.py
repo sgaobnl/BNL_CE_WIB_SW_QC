@@ -266,4 +266,5 @@ print(f"HTML report saved (new file) to {target_file_path}")
 
 #
 time.sleep(3)
+psu.safe_power_off()
 psu.close()
