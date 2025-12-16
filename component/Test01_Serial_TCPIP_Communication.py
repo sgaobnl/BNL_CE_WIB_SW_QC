@@ -17,49 +17,112 @@ import file.report_dict as rp_dict
 import os
 import datetime
 from datetime import datetime, timezone
-import sys
+import function.Rigol_DP800 as rigol
 
+psu = rigol.RigolDP800()
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+print("Turn FM on")
 
+
+import serial
+import serial.tools.list_ports
+from datetime import datetime, timezone
+import time
+
+
+
+
+
+
+
+
+
+
+
+
+# 寻找串口
 print("\033[35m" + "A_RT01 : Serial_TCPIP_Communication Test" + "\033[0m")
 utc_time = datetime.now(timezone.utc)
 t1 = time.time()
-# Find the correct port for "Silicon Labs Dual CP2105 USB to UART Bridge: Standard COM Port"
-device_name = "Silicon Labs Dual CP2105 USB to UART Bridge: Standard COM Port"
-fm_ps = RIGOL_PS_CTL()
-ports = serial.tools.list_ports.comports()
-com_port = None
 
+# Silicon Labs CP2105 的 VID 和 PID
+VID = 0x10C4  # Silicon Labs
+PID = 0xEA70  # CP2105 Dual UART Bridge
+
+# 列出所有串口设备（类似 lsusb）
+print("\n=== Available USB Serial Devices ===")
+ports = serial.tools.list_ports.comports()
 for port in ports:
-    if device_name in port.description:
+    if port.vid is not None and port.pid is not None:
+        print(f"  VID:PID = {port.vid:04X}:{port.pid:04X}")
+    print(f"  Manufacturer: {port.manufacturer}")
+    print(f"  Serial Number: {port.serial_number}")
+
+# 通过 VID/PID 查找设备
+com_port = None
+for port in ports:
+    if port.vid == VID and port.pid == PID:
         com_port = port.device
+        print(f"\033[32mFound device: {port.device}\033[0m")
+        print(f"  Description: {port.description}")
+        print(f"  Serial Number: {port.serial_number}")
         break
 
 rp_dict.log02_wib['uart_date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
 if com_port is None:
-    raise Exception("Device not found. Check the connection or device name.")
+    # 如果找不到，打印当前所有设备的VID/PID供参考
+    print("\n\033[31mDevice not found!\033[0m")
+    print(f"Looking for VID:PID = {VID:04X}:{PID:04X}")
+    print("\nAvailable devices:")
+    for port in ports:
+        if port.vid is not None:
+            print(f"  {port.device}: VID:PID = {port.vid:04X}:{port.pid:04X}")
+    raise Exception("Device not found. Check the connection or VID/PID.")
 else:
-    rp_dict.log02_wib['uart_com'] = 'COM_PORT is {}'.format(com_port)
+    rp_dict.log02_wib['uart_com'] = f'COM_PORT is {com_port}'
 
 # Configure the serial port
 ser = serial.Serial(
     port=com_port,
-    baudrate=115200,  # Speed: 115200
-    bytesize=serial.EIGHTBITS,  # Data bits: 8
-    parity=serial.PARITY_NONE,  # Parity: None
-    stopbits=serial.STOPBITS_ONE,  # Stop bits: 1
-    timeout=1,  # Read timeout
-    rtscts=False,  # Flow control: None
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    timeout=1,
+    rtscts=False,
     dsrdtr=False,
     xonxoff=False
 )
 
+print(f"\n\033[32mSerial port {com_port} opened successfully\033[0m")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 print("Turn FM on")
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
-fm_ps.set_channel(channel=1, voltage=12, v_limit=12.1, c_limit=3)
-fm_ps.set_channel(channel=2, voltage=12, v_limit=12.1, c_limit=3)
-fm_ps.on([1, 2])
+print("Turn FM on")
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
 print(f"Connected to {com_port}")
 uart_status = False
 uart_note = ''
@@ -117,6 +180,7 @@ rp_dict.log02_wib['uart_note'] = uart_note
 
 tcpip_rd = ping_host(ip_address="192.168.121.1", count=4)
 rp_dict.log02_wib['TCP_IP_date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
 rp_dict.log02_wib['TCP_IP_status'] = tcpip_rd
 if tcpip_rd:
     rp_dict.log02_wib['TCP_IP_note'] = 'TCP/IP Communication Pass'

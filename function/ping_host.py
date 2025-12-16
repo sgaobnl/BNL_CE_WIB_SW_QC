@@ -1,8 +1,11 @@
 import subprocess
+import platform
+
 
 def ping_host(ip_address="192.168.121.1", count=4):
     """
-    Pings the specified IP address on Windows.
+    Pings the specified IP address on Windows or Linux/Ubuntu.
+    Automatically detects the operating system and uses appropriate command.
 
     Args:
         ip_address (str): The IP address to ping.
@@ -12,9 +15,23 @@ def ping_host(ip_address="192.168.121.1", count=4):
         bool: True if the host is reachable, False otherwise.
     """
     try:
-        # Use Windows ping command: -n <count> specifies the number of pings
+        # Detect the operating system
+        system = platform.system().lower()
+
+        if system == "windows":
+            # Windows ping command: -n <count>
+            cmd = ["ping", "-n", str(count), ip_address]
+            success_indicator = "Reply from"
+        else:
+            # Linux/Unix/Mac ping command: -c <count> -W <timeout>
+            cmd = ["ping", "-c", str(count), "-W", "1", ip_address]
+            success_indicator = None  # Use return code instead
+
+        print(f"Detected OS: {platform.system()}")
+        print(f"Pinging {ip_address}...\n")
+
         result = subprocess.run(
-            ["ping", "-n", str(count), ip_address],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
@@ -22,14 +39,19 @@ def ping_host(ip_address="192.168.121.1", count=4):
 
         print(result.stdout)  # Print ping results
 
-        return "Reply from" in result.stdout  # True if host responds, False otherwise
+        # Determine success based on OS
+        if system == "windows":
+            return success_indicator in result.stdout
+        else:
+            return result.returncode == 0
 
     except Exception as e:
         print(f"Error: {e}")
         return False
 
+
 if __name__ == "__main__":
     if ping_host():
-        print("Host is reachable!")
+        print("\n✓ Host is reachable!")
     else:
-        print("Host is unreachable!")
+        print("\n✗ Host is unreachable!")
