@@ -1,12 +1,17 @@
 ## =========================================
 import numpy as np
+# import path
+import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import time
 from function.cls_udp import CLS_UDP
 from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
 import datetime
-from function.rigol_dp832_ps import RIGOL_PS_CTL      # import power component
+
+
+import function.Rigol_DP800 as rigol
 from function.ping_host import ping_host
 import file.report_dict as rp_dict
 
@@ -14,17 +19,18 @@ import file.report_dict as rp_dict
 # initial
 print("\033[35m" + "A_RT06: PTB Interface Path" + "\033[0m")
 t1 = time.time()
-fm_ps = RIGOL_PS_CTL()
-print("Turn FM on")
-fm_ps.ps_init()
-fm_ps.off([1, 2, 3])
-time.sleep(2)
-fm_ps.set_channel(channel=1, voltage=11.95, v_limit=12.1, c_limit=3)
-fm_ps.set_channel(channel=2, voltage=11.95, v_limit=12.1, c_limit=3)
-fm_ps.on([1, 2])
+print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
+t1 = time.time()
+psu = rigol.RigolDP800()
+
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
 time.sleep(1)
-c1 = fm_ps.measure_params(channel = 1)
-c2 = fm_ps.measure_params(channel = 2)
+
+time.sleep(30) # wait for boot
 print(c1)
 print(c2)
 time.sleep(27) # wait for boot
@@ -734,7 +740,9 @@ time.sleep(0.1)
 tcp.tcp_poke(addr=0x0D, data=0x01)
 tcp.tcp_poke(addr=0x0D, data=0x00)
 #
-fm_ps.off([1, 2, 3])
+time.sleep(0.5)
+psu.safe_power_off()
+psu.close()
 t2 = time.time()
 print('time consumption = {}'.format(t2-t1))
 

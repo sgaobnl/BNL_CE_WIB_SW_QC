@@ -21,6 +21,7 @@ import os
 
 # Add the parent directory to sys.path so 'function' can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import function.Rigol_DP800 as rigol
 
 from function.cls_udp import CLS_UDP
 from function.tcp_cfg import TCP_CFG
@@ -45,22 +46,21 @@ import subprocess
 
 
 
-print("\033[35m" + "A_RT04_slot_01 : WIB_FEMB_Pulse" + "\033[0m")
-print("Power on")
-ps = Power.RIGOL_PS_CTL()
-ps.ps_init()
-ps.off([1, 2, 3])
-time.sleep(2)
-ps.set_channel(channel=2, voltage=11.95, v_limit=12, c_limit=3)
-ps.set_channel(channel=1, voltage=11.8, v_limit=12, c_limit=3)
+print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
+t1 = time.time()
+psu = rigol.RigolDP800()
 
-ps.on([2])
-time.sleep(0.1)
-ps.on([1])
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
 time.sleep(1)
-c1 = ps.measure_params(channel = 1)
-c2 = ps.measure_params(channel = 2)
-time.sleep(30)
+print(c1)
+print(c2)
+
+time.sleep(20) # wait for boot
+
 print("Power is acquired, Please start")
 ## =========================================
 time.sleep(1)
@@ -355,6 +355,7 @@ for fembi in [1]:
     print("Report is saved at {}".format(result_dict["save_dir"]))
 
 print("Turn Power Supply on")
-ps.ps_init()
-ps.off([1, 2, 3])
+time.sleep(0.5)
+psu.safe_power_off()
+psu.close()
 #
