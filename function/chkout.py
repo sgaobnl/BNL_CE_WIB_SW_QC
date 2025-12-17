@@ -184,16 +184,16 @@ def generate_report(result_dict):
             ["{}".format(4), 0, 0, 0, 0, 0, 0],
             ]
     asic = 0
-    data[1][1] = int(result_dict["Mon_LArASIC{:02d}_BGR".format(asic)][0])
-    data[1][2] = int(result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)][0])
+    # data[1][1] = int(result_dict["Mon_LArASIC{:02d}_BGR".format(asic)][0])
+    # data[1][2] = int(result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)][0])
     data[1][3] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][1][0])
     data[1][4] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][2][0])
     data[1][5] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][3][0])
     data[1][6] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][4][0])
 
     asic = 4
-    data[2][1] = int(result_dict["Mon_LArASIC{:02d}_BGR".format(asic)][0])
-    data[2][2] = int(result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)][0])
+    # data[2][1] = int(result_dict["Mon_LArASIC{:02d}_BGR".format(asic)][0])
+    # data[2][2] = int(result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)][0])
     data[2][3] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][1][0])
     data[2][4] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][2][0])
     data[2][5] = int(result_dict["ADC{:02d}_MeasRef".format(asic)][3][0])

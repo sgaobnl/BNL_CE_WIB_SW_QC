@@ -570,7 +570,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
         self.set_fe_sync()
-        self.fe_spi_prog()  # here is fe_channel configuration
+        # self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]
@@ -631,7 +631,9 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.fc_act_rst_larasic()
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
-        self.fe_spi_prog()  # here is fe_channel configuration
+        print(4444444444444)
+        # self.set_fe_sync()
+        # self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]
@@ -692,7 +694,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.fc_act_rst_larasic()
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
-        self.fe_spi_prog()  # here is fe_channel configuration
+        # self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]

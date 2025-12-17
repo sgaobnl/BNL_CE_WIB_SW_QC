@@ -49,7 +49,8 @@ import subprocess
 print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
 t1 = time.time()
 psu = rigol.RigolDP800()
-
+psu.safe_power_off()
+time.sleep(0.1)
 psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)
@@ -72,7 +73,11 @@ time.sleep(1)
 
 # putty = input("link with putty (y/n)")
 
+## ========= Initialize WIB Service =========
+print("\033[35m" + "Initializing WIB service..." + "\033[0m")
 import temp as initial
+print("\033[32m" + "WIB service ready" + "\033[0m")
+
 ## =========================================
 tcp = TCP_CFG()
 udp = CLS_UDP()
@@ -168,7 +173,15 @@ for fembi in [1]:
     tcp.femb_pwr_set(femb=femb, pwr_on=1, v_fe=v_fe, v_adc=v_adc, v_cd=v_cd)
     time.sleep(1)
 
-    #
+    # === SEOFF Mode Test ===
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("\033[36m" + "Starting SEOFF Mode Power Test" + "\033[0m")
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("Restarting WIB service for SEOFF test...")
+    initial.restart_wib_service()
+    tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    time.sleep(2)
+
     print('SEOFF')
     tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
     tcp.femb_cfg()
@@ -192,8 +205,15 @@ for fembi in [1]:
     result_dict["power_bias_ref"] = (v_bias, iref_bias)
 
 
+    # === SEON (SDC) Mode Test ===
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("\033[36m" + "Starting SEON (SDC) Mode Power Test" + "\033[0m")
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("Restarting WIB service for SEON test...")
+    initial.restart_wib_service()
+    tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    time.sleep(2)
 
-    # SEON
     print('SEON')
     tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdf = 1, swdac=1, dac=0x20)
     tcp.femb_cfg_sdc()
@@ -216,7 +236,15 @@ for fembi in [1]:
     result_dict["power_vcd_ref_sdc"] = (v_cd, iref_cd)
     result_dict["power_bias_ref_sdc"] = (v_bias, iref_bias)
 
-    # DIFF
+    # === DIFF Mode Test ===
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("\033[36m" + "Starting DIFF Mode Power Test" + "\033[0m")
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("Restarting WIB service for DIFF test...")
+    initial.restart_wib_service()
+    tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    time.sleep(2)
+
     print('DIFF')
     tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdd = 1, swdac=1, dac=0x20)
     tcp.femb_cfg_diff()
@@ -241,6 +269,15 @@ for fembi in [1]:
 
 
 
+    # === Data Acquisition & Analysis ===
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("\033[36m" + "Starting Data Acquisition & Analysis" + "\033[0m")
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("Restarting WIB service for data acquisition...")
+    initial.restart_wib_service()
+    tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    time.sleep(2)
+
     ##########1#####################################################################################
     # FEMB configuration: 14mV/fC, 200mV BL, 2.0us, single-ended, 500pA, ASICDAC=0x10, Cali_enable, SDC off,
     result_dict["FE_CFG"] = "14mV/fC, 900mV BL, 2.0us, SE_OFF, 500pA, ASIC_CAL, ASICDAC=0x10"
@@ -257,13 +294,33 @@ for fembi in [1]:
         tmp = tcp.femb_adc_mon_cs(femb_no=femb, adc_no=asic)
         result_dict["ADC{:02d}_SetRef".format(asic)] = tmp[1]
         result_dict["ADC{:02d}_MeasRef".format(asic)] = tmp[0]
-    for asic in [0, 4]:
-        tmp = tcp.femb_fe_mon_cs(femb_no=femb, ext_lemo=0, rst_fe=0, mon_type=2, mon_chip=asic)
-        result_dict["Mon_LArASIC{:02d}_BGR".format(asic)] = tmp
-    for asic in [0, 4]:
-        tmp = tcp.femb_fe_mon_cs(femb_no=femb, ext_lemo=0, rst_fe=0, mon_type=1, mon_chip=asic)
-        result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)] = tmp
 
+    # # === Data Acquisition & Analysis ===
+    # print("\033[36m" + "=" * 60 + "\033[0m")
+    # print("\033[36m" + "Starting Data Acquisition & Analysis" + "\033[0m")
+    # print("\033[36m" + "=" * 60 + "\033[0m")
+    # print("Restarting WIB service for data acquisition...")
+    # initial.restart_wib_service()
+    # tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    # time.sleep(2)
+    # tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
+    # tcp.femb_cfg()
+    #
+    # for asic in [0, 4]:
+    #     tmp = tcp.femb_fe_mon_cs(femb_no=femb, ext_lemo=0, rst_fe=0, mon_type=2, mon_chip=asic)
+    #     result_dict["Mon_LArASIC{:02d}_BGR".format(asic)] = tmp
+    # for asic in [0, 4]:
+    #     tmp = tcp.femb_fe_mon_cs(femb_no=femb, ext_lemo=0, rst_fe=0, mon_type=1, mon_chip=asic)
+    #     result_dict["Mon_LArASIC{:02d}_Temperature".format(asic)] = tmp
+
+    # === Data Acquisition & Analysis ===
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("\033[36m" + "Starting Data Acquisition & Analysis" + "\033[0m")
+    print("\033[36m" + "=" * 60 + "\033[0m")
+    print("Restarting WIB service for data acquisition...")
+    initial.restart_wib_service()
+    tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
+    time.sleep(2)
     print("Start FEMB configuration: 14mV/fC, 900mV BL, 2.0us, single-ended, 500pA, ASICDAC=0x10, Cali_enable, SDC off")
     #   [sg0 = 0, sg1 = 0 => 14mV/fC]   [snc = 0 => 900mV baseline] [st0 = 1, st1 = 1 => 2 us] [sts = 1 => test capacitance enable]
     tcp.set_fe_reset()
@@ -354,8 +411,19 @@ for fembi in [1]:
     print("Test is done...")
     print("Report is saved at {}".format(result_dict["save_dir"]))
 
-print("Turn Power Supply on")
+print("Turn Power Supply off")
 time.sleep(0.5)
 psu.safe_power_off()
 psu.close()
+
+# Close Telnet connection if exists
+print("Cleaning up Telnet connection...")
+try:
+    import temp as initial
+    if hasattr(initial, 'disconnect'):
+        initial.disconnect()
+except:
+    pass
+
+print("Test completed successfully!")
 #

@@ -22,6 +22,8 @@ class TCPSocket:
         self.SYSKEY=0xdeadbeef
         self.link_cs = 0 #femb0 = 0, femb1=2, femb2=4, femb3 = 8
         self.longcable=0
+        self._restart_attempts = 0  # Track restart attempts
+        self._max_restart_attempts = 2  # Max auto-restart attempts
 
     def create(self):
         sock = None
@@ -47,6 +49,10 @@ class TCPSocket:
                 time.sleep(5)
                 self.create()
 
+    def reset_restart_counter(self):
+        """Reset the auto-restart attempt counter (call at start of new test phase)"""
+        self._restart_attempts = 0
+
     def close(self):
         while True:
             try:
@@ -71,13 +77,47 @@ class TCPSocket:
     def tcpreceive(self, length = 4096):
         chunks = []
         bytes_recd = 0
-        self.sock.settimeout(3.0)
+        time.sleep(0.2)
+        self.sock.settimeout(5.0)  # Increased timeout
         try:
             chunk = self.sock.recv(length)
-        #except socket.timeout:
-        except :
-            print("Warning: Please source ./FEMB_start in Putty, and click any button.")
-            import component.temp as initial
+            # Reset restart counter on successful receive
+            self._restart_attempts = 0
+        except socket.timeout:
+            print("\033[31m" + "ERROR: TCP timeout - WIB service not responding" + "\033[0m")
+
+            # Try to auto-restart if within attempt limit
+            if self._restart_attempts < self._max_restart_attempts:
+                self._restart_attempts += 1
+                print(f"\033[33m" + f"Auto-restart attempt {self._restart_attempts}/{self._max_restart_attempts}..." + "\033[0m")
+
+                try:
+                    import component.temp as initial
+                    if hasattr(initial, 'restart_wib_service'):
+                        print("Restarting WIB service...")
+                        success = initial.restart_wib_service()
+                        if success:
+                            print("\033[32m" + "Service restarted, retrying communication..." + "\033[0m")
+                            return None  # Return None to let caller retry
+                        else:
+                            print("\033[31m" + "Service restart failed" + "\033[0m")
+                    else:
+                        print("restart_wib_service() not available")
+                except Exception as e:
+                    print(f"Failed to restart service: {e}")
+            else:
+                print("\033[31m" + f"Max restart attempts ({self._max_restart_attempts}) reached" + "\033[0m")
+                print("Please check:")
+                print("  1. WIB board is powered on")
+                print("  2. Network connection is stable")
+                print("  3. Hardware issue may exist")
+
+            return None
+        except OSError as err:
+            print(f"ERROR: TCP receive failed - {err}")
+            return None
+        except Exception as e:
+            print(f"ERROR: Unexpected error during TCP receive - {e}")
             return None
         self.sock.settimeout(None)
         return chunk
