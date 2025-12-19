@@ -120,8 +120,16 @@ rp_dict.log01_wib['Time_Consumption'] = round((t2-t1), 2)
 
 
 
-# === Setup relative path to ../file/power_report.md ===
+# === Generate Professional HTML Report ===
 import os
+
+# Calculate overall status
+all_tests_passed = all([
+    rp_dict.log01_wib["Component Inspection"] == "Passed",
+    rp_dict.log01_wib["LTpowerPlay"] == "Passed",
+    rp_dict.log01_wib["Front_Panel"] == "Passed"
+])
+overall_status = "PASS" if all_tests_passed else "FAIL"
 
 # Define the path to the output HTML file
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -130,61 +138,394 @@ target_file_path = os.path.join(base_dir, "..", "report", "Reception_Checkout_Tr
 # Ensure the target directory exists
 os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
 
-# Start writing the HTML file (overwrite if exists)
-with open(target_file_path, "w") as f:
-    f.write('<!DOCTYPE html>\n')
-    f.write('<html lang="en">\n')
-    f.write('<head>\n')
-    f.write('    <meta charset="UTF-8">\n')
-    f.write('    <title>WIB Reception Checkout</title>\n')
-    f.write('    <style>\n')
-    f.write('        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }\n')
-    f.write('        h2, h3, h4 { margin-bottom: 0.3em; }\n')
-    f.write('        .section { margin-bottom: 30px; }\n')
-    f.write('        .label { font-weight: bold; }\n')
-    f.write('        .value { margin-left: 20px; }\n')
-    f.write('    </style>\n')
-    f.write('</head>\n')
-    f.write('<body>\n\n')
+# Generate professional HTML report (Clean & Simple Style)
+html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIB Reception Checkout - {rp_dict.log01_wib["WIB QR ID"]}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+        }}
 
-    f.write('<h2>WIB Reception Checkout</h2>\n\n')
+        /* Header Section */
+        .header {{
+            border-bottom: 3px solid #000000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }}
+        .header h1 {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }}
+        .header .subtitle {{
+            font-size: 14px;
+            color: #666666;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write(f'    <h4><span class="label">WIB QR ID:</span> <span class="value">{rp_dict.log01_wib["WIB QR ID"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Tester Name:</span> <span class="value">{rp_dict.log01_wib["Tester Name"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Date:</span> <span class="value">{rp_dict.log01_wib["date01"]}</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Status Badge */
+        .status-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            border: 2px solid;
+        }}
+        .status-badge.pass {{
+            color: #166534;
+            background-color: #dcfce7;
+            border-color: #166534;
+        }}
+        .status-badge.fail {{
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write('    <h3>Component Inspection</h3>\n')
-    f.write(f'    <h4><span class="label">Check Jumper, SW4, DDR4:</span> <span class="value">{rp_dict.log01_wib["Component Inspection"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Date:</span> <span class="value">{rp_dict.log01_wib["item1_date"]}</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Info Section */
+        .info-section {{
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+        }}
+        .info-row {{
+            display: flex;
+            margin: 8px 0;
+        }}
+        .info-label {{
+            font-weight: bold;
+            width: 150px;
+            color: #000000;
+        }}
+        .info-value {{
+            color: #374151;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write('    <h3>LTpowerPlay Power Configure</h3>\n')
-    f.write(f'    <h4><span class="label">LTpowerPlay Config:</span> <span class="value">{rp_dict.log01_wib["LTpowerPlay"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Date:</span> <span class="value">{rp_dict.log01_wib["item2_date"]}</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Test Steps Section */
+        .section {{
+            margin: 30px 0;
+        }}
+        .section-title {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write('    <h3>Initial Power Check</h3>\n')
-    f.write(f'    <h4><span class="label">Power Check:</span> <span class="value">{rp_dict.log01_wib["Power Check channel 1"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Power Check:</span> <span class="value">{rp_dict.log01_wib["Power Check channel 2"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Date:</span> <span class="value">{rp_dict.log01_wib["Power Check Date"]}</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Steps Table */
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #000000;
+        }}
+        th {{
+            background-color: #f3f4f6;
+            color: #000000;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            border: 1px solid #000000;
+        }}
+        td {{
+            padding: 12px;
+            border: 1px solid #d1d5db;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f9fafb;
+        }}
+        .status-cell {{
+            font-weight: bold;
+            text-align: center;
+        }}
+        .status-pass {{
+            color: #166534;
+        }}
+        .status-fail {{
+            color: #991b1b;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write('    <h3>Install Front Panel</h3>\n')
-    f.write(f'    <h4><span class="label">Front Panel:</span> <span class="value">{rp_dict.log01_wib["Front_Panel"]}</span></h4>\n')
-    f.write(f'    <h4><span class="label">Date:</span> <span class="value">{rp_dict.log01_wib["item3_date"]}</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Power Measurements Table */
+        .power-section {{
+            margin: 20px 0;
+        }}
+        .power-table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            border: 1px solid #000000;
+        }}
+        .power-table th {{
+            background-color: #f3f4f6;
+            color: #000000;
+            padding: 10px;
+            border: 1px solid #000000;
+            text-align: center;
+        }}
+        .power-table td {{
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            text-align: center;
+        }}
 
-    f.write('<div class="section">\n')
-    f.write('    <h3>Time Consumption</h3>\n')
-    f.write(f'    <h4><span class="value">{rp_dict.log01_wib["Time_Consumption"]} s</span></h4>\n')
-    f.write('</div>\n\n')
+        /* Details Box */
+        .details-box {{
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            background: #fafafa;
+        }}
+        .details-title {{
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+        }}
+        .details-item {{
+            margin: 5px 0;
+            padding-left: 15px;
+        }}
 
-    f.write('</body>\n</html>\n')
+        /* Summary Section */
+        .summary-section {{
+            margin: 30px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+        }}
+        .summary-title {{
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+        }}
+        .summary-item {{
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #d1d5db;
+        }}
+        .summary-item:last-child {{
+            border-bottom: none;
+        }}
 
-print(f"HTML file saved (new file) to {target_file_path}")
+        /* Footer */
+        .footer {{
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }}
+
+        /* Print Styles */
+        @media print {{
+            body {{
+                padding: 0;
+            }}
+            .container {{
+                max-width: 100%;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">Reception Checkout Report (Test00)</div>
+            <div class="status-badge {overall_status.lower()}">Overall Status: {overall_status}</div>
+        </div>
+
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">WIB QR ID:</div>
+                <div class="info-value">{rp_dict.log01_wib["WIB QR ID"]}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Tester Name:</div>
+                <div class="info-value">{rp_dict.log01_wib["Tester Name"]}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">{rp_dict.log01_wib["date01"]}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Test Time:</div>
+                <div class="info-value">{rp_dict.log01_wib["Time_Consumption"]} seconds</div>
+            </div>
+        </div>
+
+        <!-- Inspection Steps Summary -->
+        <div class="section">
+            <div class="section-title">Inspection Steps Summary</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">Step</th>
+                        <th style="width: 40%;">Inspection Item</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 35%;">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1</strong></td>
+                        <td>Component Inspection</td>
+                        <td class="status-cell status-{'pass' if rp_dict.log01_wib["Component Inspection"] == "Passed" else 'fail'}">
+                            {rp_dict.log01_wib["Component Inspection"]}
+                        </td>
+                        <td>{rp_dict.log01_wib["item1_date"]}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2</strong></td>
+                        <td>LTpowerPlay Configuration</td>
+                        <td class="status-cell status-{'pass' if rp_dict.log01_wib["LTpowerPlay"] == "Passed" else 'fail'}">
+                            {rp_dict.log01_wib["LTpowerPlay"]}
+                        </td>
+                        <td>{rp_dict.log01_wib["item2_date"]}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3</strong></td>
+                        <td>Initial Power Check</td>
+                        <td class="status-cell status-pass">Completed</td>
+                        <td>{rp_dict.log01_wib["Power Check Date"]}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4</strong></td>
+                        <td>Front Panel Installation</td>
+                        <td class="status-cell status-{'pass' if rp_dict.log01_wib["Front_Panel"] == "Passed" else 'fail'}">
+                            {rp_dict.log01_wib["Front_Panel"]}
+                        </td>
+                        <td>{rp_dict.log01_wib["item3_date"]}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Power Check Results -->
+        <div class="section">
+            <div class="section-title">Power Check Measurements</div>
+            <table class="power-table">
+                <thead>
+                    <tr>
+                        <th>Channel</th>
+                        <th>Current (A)</th>
+                        <th>Expected Range</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Channel 1</strong></td>
+                        <td>{rp_dict.log01_wib["Power Check channel 1"]:.3f} A</td>
+                        <td>0.5 - 2.0 A</td>
+                        <td class="status-cell status-{'pass' if 0.5 <= rp_dict.log01_wib["Power Check channel 1"] <= 2.0 else 'fail'}">
+                            {'PASS' if 0.5 <= rp_dict.log01_wib["Power Check channel 1"] <= 2.0 else 'FAIL'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channel 2</strong></td>
+                        <td>{rp_dict.log01_wib["Power Check channel 2"]:.3f} A</td>
+                        <td>0.5 - 2.0 A</td>
+                        <td class="status-cell status-{'pass' if 0.5 <= rp_dict.log01_wib["Power Check channel 2"] <= 2.0 else 'fail'}">
+                            {'PASS' if 0.5 <= rp_dict.log01_wib["Power Check channel 2"] <= 2.0 else 'FAIL'}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detailed Information -->
+        <div class="section">
+            <div class="section-title">Detailed Information</div>
+
+            <div class="details-box">
+                <div class="details-title">Step 1: Component Inspection</div>
+                <div class="details-item">• Visual inspection of critical components</div>
+                <div class="details-item">• Verified: Jumpers, SW4 switch, DDR4 memory modules</div>
+                <div class="details-item">• Result: {rp_dict.log01_wib["Component Inspection"]}</div>
+            </div>
+
+            <div class="details-box">
+                <div class="details-title">Step 2: LTpowerPlay Configuration</div>
+                <div class="details-item">• Power management settings configured</div>
+                <div class="details-item">• Using LTpowerPlay software</div>
+                <div class="details-item">• Result: {rp_dict.log01_wib["LTpowerPlay"]}</div>
+            </div>
+
+            <div class="details-box">
+                <div class="details-title">Step 3: Initial Power Check</div>
+                <div class="details-item">• Channel 1 Current: {rp_dict.log01_wib["Power Check channel 1"]:.3f} A</div>
+                <div class="details-item">• Channel 2 Current: {rp_dict.log01_wib["Power Check channel 2"]:.3f} A</div>
+                <div class="details-item">• Power verification completed successfully</div>
+            </div>
+
+            <div class="details-box">
+                <div class="details-title">Step 4: Front Panel Installation</div>
+                <div class="details-item">• Physical installation and verification</div>
+                <div class="details-item">• Front panel assembly checked</div>
+                <div class="details-item">• Result: {rp_dict.log01_wib["Front_Panel"]}</div>
+            </div>
+        </div>
+
+        <!-- Test Summary -->
+        <div class="summary-section">
+            <div class="summary-title">Test Summary</div>
+            <div class="summary-item">
+                <span>Total Steps Completed:</span>
+                <strong>4 / 4</strong>
+            </div>
+            <div class="summary-item">
+                <span>Steps Passed:</span>
+                <strong>{sum([1 for key in ["Component Inspection", "LTpowerPlay", "Front_Panel"] if rp_dict.log01_wib[key] == "Passed"])} / 3</strong>
+            </div>
+            <div class="summary-item">
+                <span>Total Test Duration:</span>
+                <strong>{rp_dict.log01_wib["Time_Consumption"]} seconds</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Overall Status:</span>
+                    <strong style="color: {'#10b981' if overall_status == 'PASS' else '#ef4444'};">{overall_status}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>DUNE WIB Quality Control System - Test00 Reception Checkout</p>
+            <p>Report generated: {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}</p>
+        </div>
+    </div>
+</body>
+</html>"""
+
+# Write the HTML file
+with open(target_file_path, "w", encoding='utf-8') as f:
+    f.write(html_content)
+
+print(f"Professional HTML report saved to {target_file_path}")

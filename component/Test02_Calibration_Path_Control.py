@@ -9,10 +9,19 @@ from function.raw_convertor import RAW_CONV
 import datetime
 import file.report_dict as rp_dict
 t1 = time.time()
-import component.temp as initial
 import function.Rigol_DP800 as rigol
 
-initial
+psu = rigol.RigolDP800()
+psu.safe_power_off()
+print("Turn FM on")
+psu.set_channel(1, 12.0, 3.0, on=True)
+psu.set_channel(2, 12.0, 3.0, on=True)
+time.sleep(10)
+v1, c1 = psu.measure(1)
+v2, c2 = psu.measure(1)
+
+time.sleep(20)
+
 time.sleep(1)
 
 # Begin
@@ -20,7 +29,8 @@ tcp = TCP_CFG()
 udp = CLS_UDP()
 conv = RAW_CONV()
 now = datetime.datetime.now()
-
+import component.temp as initial
+initial
 
 def Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 1):
     DAC_step = 0.00003125
@@ -72,6 +82,7 @@ def WIB_ADC_read():
     adc2_v = ((channel_Value_2_3 >>16)&0xffff)*2.5/16384.0
     adc3_v = (channel_Value_2_3 & 0xffff)*2.5/16384.0
     return adc0_v, adc1_v, adc2_v, adc3_v
+
 
 
 # DAC Set Test
@@ -239,8 +250,8 @@ print(rp_dict.log05_Cal)
 rp_dict.log05_Cal['Communication_Time_Consumption'] = round(t2-t1, 3)
 # time < 40 seconds
 
-psu = rigol.RigolDP800()
 psu.safe_power_off()
+
 import os
 
 # === Setup relative path to ../file/Calibration_report_02.html ===
@@ -254,123 +265,303 @@ os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
 # Collect values
 cal = rp_dict.log05_Cal
 
-# HTML content with CSS styling
-html_content = f"""
-<!DOCTYPE html>
+# Define test thresholds for validation
+test_configs = [
+    {
+        "name": "DAC Voltage Test",
+        "description": "Test Four SLOT with DAC voltage (1V expected)",
+        "slots": ['1v_slot_0_P8', '1v_slot_1_P7', '1v_slot_2_P6', '1v_slot_3_P4'],
+        "min": 0.9, "max": 1.1
+    },
+    {
+        "name": "Reference Voltage Test",
+        "description": "Test Four SLOT with Ref voltage (1.65V expected)",
+        "slots": ['1_6v_slot_0_P8', '1_6v_slot_1_P7', '1_6v_slot_2_P6', '1_6v_slot_3_P4'],
+        "min": 1.6, "max": 1.7
+    },
+    {
+        "name": "Path Control Test A",
+        "description": "SLOT0/2 output, SLOT1/3 input with DAC voltage",
+        "slots": ['0123_slot_0_P8', '0123_slot_1_P7', '0123_slot_2_P6', '0123_slot_3_P4'],
+        "min": 0.5, "max": 0.55
+    },
+    {
+        "name": "Path Control Test B",
+        "description": "SLOT0/2 input, SLOT1/3 output with DAC voltage",
+        "slots": ['3210_slot_0_P8', '3210_slot_1_P7', '3210_slot_2_P6', '3210_slot_3_P4'],
+        "min": 0.5, "max": 0.55
+    },
+    {
+        "name": "LEMO P5 Injection Test",
+        "description": "Test LEMO P5 Calibration pulse injection",
+        "slots": ['P5_slot_0_P8', 'P5_slot_1_P7', 'P5_slot_2_P6', 'P5_slot_3_P4'],
+        "min": 0.7, "max": 0.85
+    },
+    {
+        "name": "Test Points",
+        "description": "Test Points measurement",
+        "slots": ['TP_slot_0_P8', 'TP_slot_1_P7', 'TP_slot_2_P6', 'TP_slot_3_P4'],
+        "min": 0.0, "max": 0.5
+    }
+]
+
+# Validate all measurements
+all_passed = True
+for test in test_configs:
+    for slot_key in test['slots']:
+        value = cal.get(slot_key, 0)
+        if not (test['min'] <= value <= test['max']):
+            all_passed = False
+            break
+
+overall_status = "PASS" if all_passed else "FAIL"
+overall_status_class = "pass" if all_passed else "fail"
+
+# HTML content with professional styling (Clean & Simple)
+html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIB_02 Calibration Test Report</title>
+    <title>WIB Calibration Path Control Test Report</title>
     <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
         body {{
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
+            line-height: 1.6;
         }}
-        h2 {{
-            text-align: center;
-            color: #444;
+        .container {{
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
         }}
-        .section {{
+
+        /* Header Section */
+        .header {{
+            border-bottom: 3px solid #000000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }}
+        .header h1 {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }}
+        .header .subtitle {{
+            font-size: 14px;
+            color: #666666;
+        }}
+
+        /* Status Badge */
+        .status-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            border: 2px solid;
+        }}
+        .status-badge.pass {{
+            color: #166534;
+            background-color: #dcfce7;
+            border-color: #166534;
+        }}
+        .status-badge.fail {{
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }}
+
+        /* Info Section */
+        .info-section {{
             margin: 20px 0;
             padding: 15px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: #f9fafb;
+            border-left: 4px solid #000000;
         }}
-        .section h3 {{
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
+        .info-row {{
+            display: flex;
+            margin: 8px 0;
         }}
-        .slots {{
-            margin: 10px 0;
-            padding-left: 15px;
-        }}
-        .slot {{
-            margin: 5px 0;
-        }}
-        .label {{
+        .info-label {{
             font-weight: bold;
-            color: #555;
+            width: 150px;
+            color: #000000;
         }}
-        .value {{
-            margin-left: 10px;
+        .info-value {{
+            color: #374151;
         }}
+
+        /* Test Section */
+        .section {{
+            margin: 30px 0;
+        }}
+        .section-title {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }}
+
+        /* Tables */
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #000000;
+        }}
+        th {{
+            background-color: #f3f4f6;
+            color: #000000;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            border: 1px solid #000000;
+        }}
+        td {{
+            padding: 12px;
+            border: 1px solid #d1d5db;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f9fafb;
+        }}
+        .status-cell {{
+            font-weight: bold;
+            text-align: center;
+        }}
+        .status-pass {{
+            color: #166534;
+        }}
+        .status-fail {{
+            color: #991b1b;
+        }}
+        .error-cell {{
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: bold;
+        }}
+
+        /* Test Description Box */
+        .test-description {{
+            margin: 10px 0;
+            padding: 10px;
+            background: #fafafa;
+            border-left: 3px solid #9ca3af;
+            font-size: 14px;
+            color: #4b5563;
+        }}
+
+        /* Footer */
         .footer {{
-            margin-top: 30px;
-            font-style: italic;
-            color: #666;
-            text-align: right;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }}
+
+        /* Print Styles */
+        @media print {{
+            body {{
+                padding: 0;
+            }}
+            .container {{
+                max-width: 100%;
+            }}
         }}
     </style>
 </head>
 <body>
-    <h2>Calibration Test Report</h2>
-
-    <div class="section">
-        <h3>1. Test Four SLOT with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['1v_slot_0_P8']} [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['1v_slot_1_P7']} [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['1v_slot_2_P6']} [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['1v_slot_3_P4']} [0.9–1.1]</span></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">Calibration Path Control Test Report (Test02)</div>
+            <div class="status-badge {overall_status_class}">Overall Status: {overall_status}</div>
         </div>
-    </div>
 
-    <div class="section">
-        <h3>2. Test Four SLOT with Ref voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['1_6v_slot_0_P8']} [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['1_6v_slot_1_P7']} [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['1_6v_slot_2_P6']} [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['1_6v_slot_2_P6']} [1.6–1.7]</span></div>
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">{now.strftime("%Y-%m-%d %H:%M:%S UTC")}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Test Time:</div>
+                <div class="info-value">{cal['Communication_Time_Consumption']} seconds</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Test Items:</div>
+                <div class="info-value">6 calibration path tests, 24 total measurements</div>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
-        <h3>3. Test SLOT1_output SLOT2_input SLOT3_output SLOT4_input with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['0123_slot_0_P8']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['0123_slot_1_P7']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['0123_slot_2_P6']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['0123_slot_3_P4']} [0.5–0.55]</span></div>
+        <!-- Test Results Summary -->
+        <div class="section">
+            <div class="section-title">Test Results Summary</div>"""
+
+# Generate table for each test configuration
+for idx, test in enumerate(test_configs, 1):
+    # Check if this test passed
+    test_passed = all(test['min'] <= cal.get(slot_key, 0) <= test['max'] for slot_key in test['slots'])
+
+    html_content += f"""
+            <div class="test-description">
+                <strong>Test {idx}: {test['name']}</strong> - {test['description']}
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>"""
+
+    slot_names = ['SLOT0', 'SLOT1', 'SLOT2', 'SLOT3']
+    port_names = ['P8', 'P7', 'P6', 'P4']
+
+    for slot_idx, slot_key in enumerate(test['slots']):
+        value = cal.get(slot_key, 0)
+        in_range = test['min'] <= value <= test['max']
+        status_text = "PASS" if in_range else "FAIL"
+        status_class = "status-pass" if in_range else "status-fail"
+        error_class = "" if in_range else ' class="error-cell"'
+
+        html_content += f"""
+                    <tr>
+                        <td><strong>{slot_names[slot_idx]}</strong></td>
+                        <td{error_class}>{value:.4f} V</td>
+                        <td>{test['min']:.2f} - {test['max']:.2f} V</td>
+                        <td class="status-cell {status_class}">{status_text}</td>
+                        <td>{port_names[slot_idx]}</td>
+                    </tr>"""
+
+    html_content += """
+                </tbody>
+            </table>"""
+
+html_content += f"""
         </div>
-    </div>
 
-    <div class="section">
-        <h3>4. Test SLOT1_input SLOT2_output SLOT3_input SLOT4_output with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['3210_slot_0_P8']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['3210_slot_1_P7']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['3210_slot_2_P6']} [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['3210_slot_3_P4']} [0.5–0.55]</span></div>
+        <!-- Footer -->
+        <div class="footer">
+            <p>DUNE WIB Quality Control System - Test02 Calibration Path Control</p>
+            <p>Report generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}</p>
         </div>
-    </div>
-
-    <div class="section">
-        <h3>5. Test LEMO P5 Calibration pulse injection</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['P5_slot_0_P8']} [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['P5_slot_1_P7']} [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['P5_slot_2_P6']} [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['P5_slot_3_P4']} [0.7–0.85]</span></div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>6. Test Points</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">{cal['TP_slot_0_P8']} [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">{cal['TP_slot_1_P7']} [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">{cal['TP_slot_2_P6']} [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">{cal['TP_slot_3_P4']} [0–0.5]</span></div>
-        </div>
-    </div>
-
-    <div class="footer">
-        Time Consumption = {cal['Communication_Time_Consumption']}
     </div>
 </body>
 </html>

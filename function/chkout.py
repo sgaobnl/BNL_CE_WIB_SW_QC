@@ -19,10 +19,666 @@ import struct
 import matplotlib.pyplot as plt
 import h5py
 import datetime
+import base64
 
 
 def generate_report(result_dict):
-    print("Generator the test report...")
+    """Generate HTML test report for FEMB Checkout Test"""
+    print("Generating HTML test report...")
+    import pickle
+
+    # Calculate power consumption for all modes
+    def calc_power(pwr_data):
+        """Calculate total power from power rail data"""
+        if not pwr_data or len(pwr_data) < 5:
+            return 0.0
+        # pwr_data format: [(V, I), (V, I), (V, I), skip[3], (V, I)]
+        p_fe = pwr_data[0][0] * pwr_data[0][1] if len(pwr_data[0]) >= 2 else 0
+        p_adc = pwr_data[1][0] * pwr_data[1][1] if len(pwr_data[1]) >= 2 else 0
+        p_cd = pwr_data[2][0] * pwr_data[2][1] if len(pwr_data[2]) >= 2 else 0
+        p_bias = pwr_data[4][0] * pwr_data[4][1] if len(pwr_data[4]) >= 2 else 0
+        return p_fe + p_adc + p_cd + p_bias
+
+    # Get power measurements for all three modes
+    pwr_seoff = result_dict.get("power_vfe_meas", [(0,0)])
+    pwr_sdc = result_dict.get("power_vfe_meas_sdc", [(0,0)])
+    pwr_diff = result_dict.get("power_vfe_meas_diff", [(0,0)])
+
+    # Encode response.png as base64 for embedding
+    response_png_path = result_dict.get("response.png", "")
+    img_base64 = ""
+    if response_png_path and os.path.exists(response_png_path):
+        with open(response_png_path, "rb") as img_file:
+            img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+
+    # Get timing information
+    timing_dict = result_dict.get("timing_dict", {})
+    total_time = result_dict.get("total_test_time", 0)
+
+    # Get test status
+    seoff_status = result_dict.get("seoff_test_status", "UNKNOWN")
+    seon_status = result_dict.get("seon_test_status", "UNKNOWN")
+    diff_status = result_dict.get("diff_test_status", "UNKNOWN")
+    data_status = result_dict.get("data_acq_status", "UNKNOWN")
+
+    # Overall test status
+    overall_status = "PASS" if all(s == "PASS" for s in [seoff_status, seon_status, diff_status, data_status]) else "FAIL"
+
+    # Build HTML content
+    html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEMB#{result_dict["FEMB_SN"]} Checkout Test Report</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }}
+        .header {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }}
+        .header h1 {{
+            font-size: 32px;
+            margin-bottom: 10px;
+        }}
+        .header .status {{
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+        }}
+        .status.pass {{
+            background: #10b981;
+        }}
+        .status.fail {{
+            background: #ef4444;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .section {{
+            margin-bottom: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+        }}
+        .section-header {{
+            background: #f3f4f6;
+            padding: 15px 20px;
+            border-left: 4px solid #667eea;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }}
+        .section-content {{
+            padding: 20px;
+        }}
+        .info-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }}
+        .info-item {{
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }}
+        .info-label {{
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }}
+        .info-value {{
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }}
+        th {{
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+        }}
+        td {{
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }}
+        tr:last-child td {{
+            border-bottom: none;
+        }}
+        tr:nth-child(even) {{
+            background: #f9fafb;
+        }}
+        .power-comparison {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }}
+        .power-card {{
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            transition: transform 0.2s;
+        }}
+        .power-card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }}
+        .power-card h3 {{
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }}
+        .power-value {{
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 10px 0;
+        }}
+        .power-unit {{
+            font-size: 16px;
+            color: #6b7280;
+        }}
+        .test-status {{
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }}
+        .test-status.pass {{
+            background: #d1fae5;
+            color: #065f46;
+        }}
+        .test-status.fail {{
+            background: #fee2e2;
+            color: #991b1b;
+        }}
+        .error-cell {{
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: bold;
+        }}
+        .warning-icon {{
+            color: #dc2626;
+            margin-right: 4px;
+        }}
+        .timing-bar {{
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }}
+        .timing-label {{
+            min-width: 220px;
+            font-weight: 500;
+        }}
+        .timing-progress {{
+            flex: 1;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 15px;
+        }}
+        .timing-fill {{
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }}
+        .timing-value {{
+            min-width: 100px;
+            text-align: right;
+            font-weight: 600;
+        }}
+        .waveform-container {{
+            text-align: center;
+            margin: 20px 0;
+        }}
+        .waveform-container img {{
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }}
+        .footer {{
+            background: #f3f4f6;
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }}
+        @media print {{
+            body {{
+                background: white;
+                padding: 0;
+            }}
+            .container {{
+                box-shadow: none;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FEMB #{result_dict["FEMB_SN"]} Checkout Test Report</h1>
+            <div class="status {overall_status.lower()}">{overall_status}</div>
+        </div>
+
+        <div class="content">
+            <!-- Test Information Section -->
+            <div class="section">
+                <div class="section-header">Test Information</div>
+                <div class="section-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">FEMB ID</div>
+                            <div class="info-value">{result_dict["FEMB_SN"]}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Date & Time</div>
+                            <div class="info-value">{result_dict["datetime"].strftime("%Y-%m-%d %H:%M:%S")}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Tester</div>
+                            <div class="info-value">{result_dict["Tester"]}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Temperature</div>
+                            <div class="info-value">{result_dict["Env"]}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Input Capacitor (Cd)</div>
+                            <div class="info-value">{result_dict["Cd"]}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">WIB TCP Version</div>
+                            <div class="info-value">0x{result_dict["WIB_TCP_FW_ver"]:02x}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">WIB UDP Version</div>
+                            <div class="info-value">0x{result_dict["WIB_UDP_FW_ver"]:02x}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Total Test Time</div>
+                            <div class="info-value">{total_time:.1f}s</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Note</div>
+                        <div class="info-value">{result_dict["Note"]}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Status Section -->
+            <div class="section">
+                <div class="section-header">Test Status Summary</div>
+                <div class="section-content">
+                    <table>
+                        <tr>
+                            <th>Test Phase</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                        </tr>
+                        <tr>
+                            <td>SEOFF Mode Power Test</td>
+                            <td><span class="test-status {seoff_status.lower()}">{seoff_status}</span></td>
+                            <td>{timing_dict.get('05_SEOFF_Test', 0):.1f}s</td>
+                        </tr>
+                        <tr>
+                            <td>SEON (SDC) Mode Power Test</td>
+                            <td><span class="test-status {seon_status.lower()}">{seon_status}</span></td>
+                            <td>{timing_dict.get('06_SEON_Test', 0):.1f}s</td>
+                        </tr>
+                        <tr>
+                            <td>DIFF Mode Power Test</td>
+                            <td><span class="test-status {diff_status.lower()}">{diff_status}</span></td>
+                            <td>{timing_dict.get('07_DIFF_Test', 0):.1f}s</td>
+                        </tr>
+                        <tr>
+                            <td>Data Acquisition & Analysis</td>
+                            <td><span class="test-status {data_status.lower()}">{data_status}</span></td>
+                            <td>{timing_dict.get('08_Data_Acquisition', 0):.1f}s</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>"""
+
+    # Add power consumption comparison section
+    html_content += f"""
+            <!-- Power Consumption Comparison -->
+            <div class="section">
+                <div class="section-header">Power Consumption Comparison (All Modes)</div>
+                <div class="section-content">
+                    <div class="power-comparison">
+                        <div class="power-card">
+                            <h3>SEOFF Mode</h3>
+                            <div class="power-value">{calc_power([result_dict.get("power_vfe_meas", (0,0)), result_dict.get("power_vadc_meas", (0,0)), result_dict.get("power_vcd_meas", (0,0)), None, result_dict.get("power_bias_meas", (0,0))]):.3f}</div>
+                            <div class="power-unit">Watts</div>
+                        </div>
+                        <div class="power-card">
+                            <h3>SEON (SDC) Mode</h3>
+                            <div class="power-value">{calc_power([result_dict.get("power_vfe_meas_sdc", (0,0)), result_dict.get("power_vadc_meas_sdc", (0,0)), result_dict.get("power_vcd_meas_sdc", (0,0)), None, result_dict.get("power_bias_meas_sdc", (0,0))]):.3f}</div>
+                            <div class="power-unit">Watts</div>
+                        </div>
+                        <div class="power-card">
+                            <h3>DIFF Mode</h3>
+                            <div class="power-value">{calc_power([result_dict.get("power_vfe_meas_diff", (0,0)), result_dict.get("power_vadc_meas_diff", (0,0)), result_dict.get("power_vcd_meas_diff", (0,0)), None, result_dict.get("power_bias_meas_diff", (0,0))]):.3f}</div>
+                            <div class="power-unit">Watts</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <tr>
+                            <th>Power Rail</th>
+                            <th>V_set (V)</th>
+                            <th colspan="3">SEOFF Mode</th>
+                            <th colspan="3">SEON (SDC) Mode</th>
+                            <th colspan="3">DIFF Mode</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>V_meas (V)</th>
+                            <th>I_meas (A)</th>
+                            <th>P_meas (W)</th>
+                            <th>V_meas (V)</th>
+                            <th>I_meas (A)</th>
+                            <th>P_meas (W)</th>
+                            <th>V_meas (V)</th>
+                            <th>I_meas (A)</th>
+                            <th>P_meas (W)</th>
+                        </tr>"""
+
+    # Add power rail data rows
+    rails = [
+        ("LArASIC", "power_vfe_ref", "power_vfe_meas", "power_vfe_meas_sdc", "power_vfe_meas_diff"),
+        ("ColdADC", "power_vadc_ref", "power_vadc_meas", "power_vadc_meas_sdc", "power_vadc_meas_diff"),
+        ("COLDATA", "power_vcd_ref", "power_vcd_meas", "power_vcd_meas_sdc", "power_vcd_meas_diff"),
+        ("BIAS", "power_bias_ref", "power_bias_meas", "power_bias_meas_sdc", "power_bias_meas_diff")
+    ]
+
+    # Get detailed check results
+    detailed_checks = result_dict.get("detailed_checks", {})
+
+    rail_map = {"LArASIC": "FE", "ColdADC": "ADC", "COLDATA": "CD", "BIAS": "BIAS"}
+
+    for rail_name, ref_key, seoff_key, sdc_key, diff_key in rails:
+        ref_v = result_dict.get(ref_key, (0, 0))[0]
+
+        seoff_v, seoff_i = result_dict.get(seoff_key, (0, 0))
+        seoff_p = seoff_v * seoff_i
+
+        sdc_v, sdc_i = result_dict.get(sdc_key, (0, 0))
+        sdc_p = sdc_v * sdc_i
+
+        diff_v, diff_i = result_dict.get(diff_key, (0, 0))
+        diff_p = diff_v * diff_i
+
+        # Check for errors in each mode
+        rail_key = rail_map[rail_name]
+
+        # SEOFF errors
+        seoff_v_error = not detailed_checks.get("SEOFF", {}).get(rail_key, {}).get("voltage", {}).get("pass", True)
+        seoff_i_error = not detailed_checks.get("SEOFF", {}).get(rail_key, {}).get("current", {}).get("pass", True)
+        seoff_v_class = ' class="error-cell"' if seoff_v_error else ''
+        seoff_i_class = ' class="error-cell"' if seoff_i_error else ''
+        seoff_p_class = ' class="error-cell"' if (seoff_v_error or seoff_i_error) else ''
+
+        # SEON errors
+        seon_v_error = not detailed_checks.get("SEON", {}).get(rail_key, {}).get("voltage", {}).get("pass", True)
+        seon_i_error = not detailed_checks.get("SEON", {}).get(rail_key, {}).get("current", {}).get("pass", True)
+        seon_v_class = ' class="error-cell"' if seon_v_error else ''
+        seon_i_class = ' class="error-cell"' if seon_i_error else ''
+        seon_p_class = ' class="error-cell"' if (seon_v_error or seon_i_error) else ''
+
+        # DIFF errors
+        diff_v_error = not detailed_checks.get("DIFF", {}).get(rail_key, {}).get("voltage", {}).get("pass", True)
+        diff_i_error = not detailed_checks.get("DIFF", {}).get(rail_key, {}).get("current", {}).get("pass", True)
+        diff_v_class = ' class="error-cell"' if diff_v_error else ''
+        diff_i_class = ' class="error-cell"' if diff_i_error else ''
+        diff_p_class = ' class="error-cell"' if (diff_v_error or diff_i_error) else ''
+
+        html_content += f"""
+                        <tr>
+                            <td><strong>{rail_name}</strong></td>
+                            <td>{ref_v:.3f}</td>
+                            <td{seoff_v_class}>{seoff_v:.3f}</td>
+                            <td{seoff_i_class}>{seoff_i:.3f}</td>
+                            <td{seoff_p_class}>{seoff_p:.3f}</td>
+                            <td{seon_v_class}>{sdc_v:.3f}</td>
+                            <td{seon_i_class}>{sdc_i:.3f}</td>
+                            <td{seon_p_class}>{sdc_p:.3f}</td>
+                            <td{diff_v_class}>{diff_v:.3f}</td>
+                            <td{diff_i_class}>{diff_i:.3f}</td>
+                            <td{diff_p_class}>{diff_p:.3f}</td>
+                        </tr>"""
+
+    html_content += """
+                    </table>
+                </div>
+            </div>"""
+
+    # Add timing section
+    if timing_dict:
+        html_content += """
+            <!-- Timing Performance -->
+            <div class="section">
+                <div class="section-header">Test Performance & Timing</div>
+                <div class="section-content">"""
+
+        for phase_name, duration in timing_dict.items():
+            percentage = (duration / total_time * 100) if total_time > 0 else 0
+            html_content += f"""
+                    <div class="timing-bar">
+                        <div class="timing-label">{phase_name.replace('_', ' ')}</div>
+                        <div class="timing-progress">
+                            <div class="timing-fill" style="width: {percentage}%">
+                                {percentage:.1f}%
+                            </div>
+                        </div>
+                        <div class="timing-value">{duration:.2f}s</div>
+                    </div>"""
+
+        html_content += f"""
+                    <div class="timing-bar" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                        <div class="timing-label"><strong>TOTAL TEST TIME</strong></div>
+                        <div class="timing-progress">
+                            <div class="timing-fill" style="width: 100%; background: #10b981;">
+                                100%
+                            </div>
+                        </div>
+                        <div class="timing-value"><strong>{total_time:.2f}s</strong></div>
+                    </div>
+                </div>
+            </div>"""
+
+    # Add configuration section
+    html_content += f"""
+            <!-- FEMB Configuration -->
+            <div class="section">
+                <div class="section-header">FEMB Configuration</div>
+                <div class="section-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">FE Configuration</div>
+                            <div class="info-value" style="font-size: 14px;">{result_dict.get("FE_CFG", "N/A")}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">ADC Configuration 0</div>
+                            <div class="info-value" style="font-size: 14px;">{result_dict.get("ADC_CFG0", "N/A")}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">ADC Configuration 1</div>
+                            <div class="info-value" style="font-size: 14px;">{result_dict.get("ADC_CFG1", "N/A")}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">CD FE Pulse</div>
+                            <div class="info-value" style="font-size: 14px;">{result_dict.get("CD_FE_pulse", "N/A")}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Parameters -->
+            <div class="section">
+                <div class="section-header">Monitoring Parameters (ADC Voltage References)</div>
+                <div class="section-content">
+                    <table>
+                        <tr>
+                            <th>ASIC #</th>
+                            <th>ADC VCMI (mV)</th>
+                            <th>ADC VCMO (mV)</th>
+                            <th>ADC VREFP (mV)</th>
+                            <th>ADC VREFN (mV)</th>
+                        </tr>"""
+
+    for asic in [0, 4]:
+        adc_meas = result_dict.get(f"ADC{asic:02d}_MeasRef", [None, (0,), (0,), (0,), (0,)])
+        vcmi = int(adc_meas[1][0]) if len(adc_meas) > 1 and len(adc_meas[1]) > 0 else 0
+        vcmo = int(adc_meas[2][0]) if len(adc_meas) > 2 and len(adc_meas[2]) > 0 else 0
+        vrefp = int(adc_meas[3][0]) if len(adc_meas) > 3 and len(adc_meas[3]) > 0 else 0
+        vrefn = int(adc_meas[4][0]) if len(adc_meas) > 4 and len(adc_meas[4]) > 0 else 0
+
+        html_content += f"""
+                        <tr>
+                            <td>{asic}</td>
+                            <td>{vcmi}</td>
+                            <td>{vcmo}</td>
+                            <td>{vrefp}</td>
+                            <td>{vrefn}</td>
+                        </tr>"""
+
+    html_content += """
+                    </table>
+                </div>
+            </div>"""
+
+    # Add error log section if there are errors
+    errors = result_dict.get("error_log", [])
+    if errors:
+        html_content += """
+            <!-- Error Log -->
+            <div class="section">
+                <div class="section-header" style="border-left-color: #dc2626;">
+                    <span class="warning-icon">⚠</span> Error Log
+                </div>
+                <div class="section-content">
+                    <table>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Test Phase</th>
+                            <th>Error Type</th>
+                            <th>Description</th>
+                        </tr>"""
+
+        for error in errors:
+            html_content += f"""
+                        <tr>
+                            <td>{error.get("timestamp", "")}</td>
+                            <td>{error.get("phase", "")}</td>
+                            <td style="color: #dc2626; font-weight: bold;">{error.get("type", "")}</td>
+                            <td>{error.get("description", "")}</td>
+                        </tr>"""
+
+        html_content += """
+                    </table>
+                    <div style="margin-top: 15px; padding: 12px; background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 4px; color: #991b1b;">
+                        <strong>Note:</strong> The test continued to collect all data despite these errors. Please review and address all errors before approving this FEMB.
+                    </div>
+                </div>
+            </div>"""
+
+    # Add waveform section
+    if img_base64:
+        html_content += f"""
+            <!-- Channel Response Waveforms -->
+            <div class="section">
+                <div class="section-header">Channel Response Waveforms</div>
+                <div class="section-content">
+                    <div class="waveform-container">
+                        <img src="data:image/png;base64,{img_base64}" alt="Channel Response Waveforms">
+                    </div>
+                </div>
+            </div>"""
+
+    # Footer
+    html_content += f"""
+        </div>
+
+        <div class="footer">
+            Report generated on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}<br>
+            DUNE WIB Quality Control System | FEMB Checkout Test
+            {' | <strong style="color: #dc2626;">ERRORS DETECTED - Review Required</strong>' if errors else ''}
+        </div>
+    </div>
+</body>
+</html>"""
+
+    # Save HTML report
+    html_filename = result_dict["save_dir"] + "result.html"
+    with open(html_filename, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    # Save result_dict as pickle for backward compatibility
+    with open(result_dict["save_dir"] + "result.bin", 'wb') as fp:
+        pickle.dump(result_dict, fp)
+
+    print(f"HTML report saved to: {{html_filename}}")
+    print(f"Result data saved to: {{result_dict['save_dir']}}result.bin")
+
+    return html_filename
+
+
+def generate_report_pdf_old(result_dict):
+    """OLD PDF VERSION - Kept for reference"""
+    print("Generator the test report (OLD PDF)...")
     from fpdf import FPDF
     import pickle
     pdf = FPDF(orientation='P', unit='mm', format='Letter')
@@ -369,40 +1025,108 @@ def FEMB_CHKOUT_Input(SN = '4', rootdir = 'D:/Warm_Integrated_Board/Report/'):
     return femb_sn, env, ToyTPC, save_dir, tester, note
 
 
-def pwr_chk(pwr_info, v_fe, v_adc, v_cd, v_bias, iref_fe, iref_adc, iref_cd, iref_bias):
-    pwr_en = 1
-    if abs(v_fe - pwr_info[0][0]) > 0.2:
-        print("Power rail for FE, set={}V, read={}V, please check connection".format(v_fe, pwr_info[0][0]))
-        pwr_en = 0
-    if abs(v_adc - pwr_info[1][0]) > 0.2:
-        print("Power rail for ADC, set={}V, read={}V, please check connection".format(v_adc, pwr_info[1][0]))
-        pwr_en = 0
-    if abs(v_cd - pwr_info[2][0]) > 0.2:
-        print("Power rail for CD, set={}V, read={}V, please check connection".format(v_cd, pwr_info[2][0]))
-        pwr_en = 0
-    if abs(v_bias - pwr_info[4][0]) > 0.2:
-        print("Power rail for BIAS, set={}V, read={}V, please check connection".format(v_bias, pwr_info[4][0]))
-        pwr_en = 0
+def pwr_chk(pwr_info, v_fe, v_adc, v_cd, v_bias, iref_fe, iref_adc, iref_cd, iref_bias, use_config=True):
+    """
+    Check power rail measurements against expected values
 
-    if abs(iref_fe - pwr_info[0][1]) > 0.1:
-        if abs(0.63 - pwr_info[0][1]) > 0.1:
-            if abs(iref_fe - pwr_info[0][1]) > 0.1:
-                print("Power rail for FE, current of range, ref={}A, read={}A, please check connection".format(iref_fe,
-                                                                                                       pwr_info[0][1]))
+    Args:
+        pwr_info: Power measurement data [(V, I), (V, I), (V, I), skip, (V, I)]
+        v_fe, v_adc, v_cd, v_bias: Expected voltage values
+        iref_fe, iref_adc, iref_cd, iref_bias: Reference current values
+        use_config: Whether to use thresholds from config file (default: True)
+
+    Returns:
+        (int, dict): (overall_pass, detailed_results)
+            overall_pass: 1 if all checks passed, 0 if any failed
+            detailed_results: Dictionary with per-rail status and error messages
+    """
+    # Load thresholds from config if requested
+    if use_config:
+        try:
+            import sys
+            import os
+            sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+            from config.test_thresholds import (
+                VOLTAGE_TOLERANCE,
+                CURRENT_THRESHOLDS,
+                check_voltage_in_range,
+                check_current_in_range
+            )
+        except ImportError:
+            print("Warning: Could not load config/test_thresholds.py, using hardcoded values")
+            use_config = False
+
+    # Use hardcoded values if config not available
+    if not use_config:
+        VOLTAGE_TOLERANCE = 0.2
+        CURRENT_THRESHOLDS = {
+            "FE": {"tolerance": 0.1, "I_ref_alt": 0.63, "tolerance_alt": 0.1},
+            "ADC": {"tolerance": 0.2},
+            "CD": {"tolerance": 0.1},
+            "BIAS": {"tolerance": 0.1}
+        }
+
+    pwr_en = 1
+    detailed_results = {
+        "FE": {"voltage": {"pass": True, "error": ""}, "current": {"pass": True, "error": ""}},
+        "ADC": {"voltage": {"pass": True, "error": ""}, "current": {"pass": True, "error": ""}},
+        "CD": {"voltage": {"pass": True, "error": ""}, "current": {"pass": True, "error": ""}},
+        "BIAS": {"voltage": {"pass": True, "error": ""}, "current": {"pass": True, "error": ""}}
+    }
+
+    # Check voltages
+    rails = [
+        ("FE", v_fe, pwr_info[0][0], 0),
+        ("ADC", v_adc, pwr_info[1][0], 1),
+        ("CD", v_cd, pwr_info[2][0], 2),
+        ("BIAS", v_bias, pwr_info[4][0], 4)
+    ]
+
+    for rail_name, v_set, v_meas, idx in rails:
+        if abs(v_set - v_meas) > VOLTAGE_TOLERANCE:
+            error_msg = f"V_set={v_set:.3f}V, V_meas={v_meas:.3f}V (tolerance: ±{VOLTAGE_TOLERANCE}V)"
+            print(f"\033[31mPower rail for {rail_name}, {error_msg}, please check connection\033[0m")
+            detailed_results[rail_name]["voltage"]["pass"] = False
+            detailed_results[rail_name]["voltage"]["error"] = error_msg
+            pwr_en = 0
+
+    # Check currents
+    current_checks = [
+        ("FE", iref_fe, pwr_info[0][1], 0),
+        ("ADC", iref_adc, pwr_info[1][1], 1),
+        ("CD", iref_cd, pwr_info[2][1], 2),
+        ("BIAS", iref_bias, pwr_info[4][1], 4)
+    ]
+
+    for rail_name, i_ref, i_meas, idx in current_checks:
+        tolerance = CURRENT_THRESHOLDS[rail_name]["tolerance"]
+
+        # Special handling for FE - check alternative reference
+        if rail_name == "FE":
+            i_ref_alt = CURRENT_THRESHOLDS["FE"].get("I_ref_alt", 0.63)
+            tol_alt = CURRENT_THRESHOLDS["FE"].get("tolerance_alt", 0.1)
+
+            if abs(i_ref - i_meas) > tolerance and abs(i_ref_alt - i_meas) > tol_alt:
+                error_msg = f"I_ref={i_ref:.3f}A, I_meas={i_meas:.3f}A (tolerance: ±{tolerance}A, alt ref: {i_ref_alt:.3f}±{tol_alt}A)"
+                print(f"\033[31mPower rail for {rail_name}, {error_msg}, please check connection\033[0m")
+                detailed_results[rail_name]["current"]["pass"] = False
+                detailed_results[rail_name]["current"]["error"] = error_msg
                 pwr_en = 0
-    if abs(iref_adc - pwr_info[1][1]) > 0.2:
-        print("Power rail for ADC, current of range, ref={}A, read={}A, please check connection".format(iref_adc,
-                                                                                                        pwr_info[1][1]))
-        pwr_en = 0
-    if abs(iref_cd - pwr_info[2][1]) > 0.1:
-        print("Power rail for CD, current of range, ref={}A, read={}A, please check connection".format(iref_cd,
-                                                                                                       pwr_info[2][1]))
-        pwr_en = 0
-    if abs(iref_bias - pwr_info[4][1]) > 0.1:
-        print("Power rail for BIAS, current of range, ref={}A, read={}A, please check connection".format(iref_bias,
-                                                                                                         pwr_info[4][1]))
-        pwr_en = 0
-    return pwr_en
+        else:
+            if abs(i_ref - i_meas) > tolerance:
+                error_msg = f"I_ref={i_ref:.3f}A, I_meas={i_meas:.3f}A (tolerance: ±{tolerance}A)"
+                print(f"\033[31mPower rail for {rail_name}, {error_msg}, please check connection\033[0m")
+                detailed_results[rail_name]["current"]["pass"] = False
+                detailed_results[rail_name]["current"]["error"] = error_msg
+                pwr_en = 0
+
+    return pwr_en, detailed_results
+
+
+def pwr_chk_old(pwr_info, v_fe, v_adc, v_cd, v_bias, iref_fe, iref_adc, iref_cd, iref_bias):
+    """OLD VERSION - kept for compatibility"""
+    result, _ = pwr_chk(pwr_info, v_fe, v_adc, v_cd, v_bias, iref_fe, iref_adc, iref_cd, iref_bias, use_config=False)
+    return result
 
 
 '''

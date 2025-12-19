@@ -9,7 +9,7 @@ INITIAL_COMMAND = "source ./FEMB_start"
 
 def receive_response(sock):
     """ Helper function to receive data from the socket """
-    time.sleep(1)  # Give the server time to respond
+    time.sleep(0.5)  # Reduced from 1s to 0.5s
     response = sock.recv(4096).decode(errors='ignore')
     print(response)  # Print the response for debugging
     return response
@@ -69,7 +69,7 @@ def start_femb_service_background(sock):
         sock.sendall((INITIAL_COMMAND + "\n").encode())
 
         # Wait for service to start (look for "started server" message)
-        time.sleep(3)  # Give it time to start
+        time.sleep(2)  # Reduced from 3s to 2s
 
         # Read initial output
         try:
@@ -83,7 +83,7 @@ def start_femb_service_background(sock):
         # Send Ctrl+Z (ASCII 26) to suspend the process
         print("Suspending process with Ctrl+Z...")
         sock.sendall(b"\x1a")  # Ctrl+Z
-        time.sleep(1)
+        time.sleep(0.5)  # Reduced from 1s to 0.5s
 
         # Receive response
         try:
@@ -97,7 +97,7 @@ def start_femb_service_background(sock):
         # Send 'bg' command to put job in background
         print("Putting job in background with 'bg' command...")
         sock.sendall(b"bg\n")
-        time.sleep(1)
+        time.sleep(0.5)  # Reduced from 1s to 0.5s
 
         # Get prompt back
         try:

@@ -1,119 +1,465 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIB_02 Calibration Test Report</title>
+    <title>WIB Calibration Path Control Test Report</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
+            line-height: 1.6;
         }
-        h2 {
-            text-align: center;
-            color: #444;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
         }
-        .section {
+
+        /* Header Section */
+        .header {
+            border-bottom: 3px solid #000000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            font-size: 14px;
+            color: #666666;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            border: 2px solid;
+        }
+        .status-badge.pass {
+            color: #166534;
+            background-color: #dcfce7;
+            border-color: #166534;
+        }
+        .status-badge.fail {
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }
+
+        /* Info Section */
+        .info-section {
             margin: 20px 0;
             padding: 15px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: #f9fafb;
+            border-left: 4px solid #000000;
         }
-        .section h3 {
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
+        .info-row {
+            display: flex;
+            margin: 8px 0;
         }
-        .slots {
-            margin: 10px 0;
-            padding-left: 15px;
-        }
-        .slot {
-            margin: 5px 0;
-        }
-        .label {
+        .info-label {
             font-weight: bold;
-            color: #555;
+            width: 150px;
+            color: #000000;
         }
-        .value {
-            margin-left: 10px;
+        .info-value {
+            color: #374151;
         }
+
+        /* Test Section */
+        .section {
+            margin: 30px 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #000000;
+        }
+        th {
+            background-color: #f3f4f6;
+            color: #000000;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            border: 1px solid #000000;
+        }
+        td {
+            padding: 12px;
+            border: 1px solid #d1d5db;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .status-cell {
+            font-weight: bold;
+            text-align: center;
+        }
+        .status-pass {
+            color: #166534;
+        }
+        .status-fail {
+            color: #991b1b;
+        }
+        .error-cell {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: bold;
+        }
+
+        /* Test Description Box */
+        .test-description {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fafafa;
+            border-left: 3px solid #9ca3af;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        /* Footer */
         .footer {
-            margin-top: 30px;
-            font-style: italic;
-            color: #666;
-            text-align: right;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Calibration Test Report</h2>
-
-    <div class="section">
-        <h3>1. Test Four SLOT with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">0.9135 [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">0.9135 [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">0.9164 [0.9–1.1]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">1.0034 [0.9–1.1]</span></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">Calibration Path Control Test Report (Test02)</div>
+            <div class="status-badge fail">Overall Status: FAIL</div>
         </div>
-    </div>
 
-    <div class="section">
-        <h3>2. Test Four SLOT with Ref voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">1.6321 [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">1.631 [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">1.6347 [1.6–1.7]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">1.6347 [1.6–1.7]</span></div>
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">2025-12-18 17:45:30 UTC</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Test Time:</div>
+                <div class="info-value">75.923 seconds</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Test Items:</div>
+                <div class="info-value">6 calibration path tests, 24 total measurements</div>
+            </div>
         </div>
-    </div>
 
-    <div class="section">
-        <h3>3. Test SLOT1_output SLOT2_input SLOT3_output SLOT4_input with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">0.9102 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">0.0044 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">0.9134 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">0.0078 [0.5–0.55]</span></div>
+        <!-- Test Results Summary -->
+        <div class="section">
+            <div class="section-title">Test Results Summary</div>
+            <div class="test-description">
+                <strong>Test 1: DAC Voltage Test</strong> - Test Four SLOT with DAC voltage (1V expected)
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td>0.9129 V</td>
+                        <td>0.90 - 1.10 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td>0.9126 V</td>
+                        <td>0.90 - 1.10 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td>0.9154 V</td>
+                        <td>0.90 - 1.10 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td>1.0023 V</td>
+                        <td>0.90 - 1.10 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Test 2: Reference Voltage Test</strong> - Test Four SLOT with Ref voltage (1.65V expected)
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td>1.6327 V</td>
+                        <td>1.60 - 1.70 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td>1.6321 V</td>
+                        <td>1.60 - 1.70 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td>1.6342 V</td>
+                        <td>1.60 - 1.70 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td>1.6356 V</td>
+                        <td>1.60 - 1.70 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Test 3: Path Control Test A</strong> - SLOT0/2 output, SLOT1/3 input with DAC voltage
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td class="error-cell">0.9113 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td class="error-cell">0.0063 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td class="error-cell">0.9140 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td class="error-cell">0.0082 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Test 4: Path Control Test B</strong> - SLOT0/2 input, SLOT1/3 output with DAC voltage
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td class="error-cell">0.0063 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td class="error-cell">0.9129 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td class="error-cell">0.0070 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td class="error-cell">1.0019 V</td>
+                        <td>0.50 - 0.55 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Test 5: LEMO P5 Injection Test</strong> - Test LEMO P5 Calibration pulse injection
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td class="error-cell">0.0061 V</td>
+                        <td>0.70 - 0.85 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td class="error-cell">0.0063 V</td>
+                        <td>0.70 - 0.85 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td class="error-cell">0.0075 V</td>
+                        <td>0.70 - 0.85 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td class="error-cell">1.6357 V</td>
+                        <td>0.70 - 0.85 V</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Test 6: Test Points</strong> - Test Points measurement
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">SLOT</th>
+                        <th style="width: 20%;">Measured (V)</th>
+                        <th style="width: 30%;">Expected Range (V)</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SLOT0</strong></td>
+                        <td>0.0029 V</td>
+                        <td>0.00 - 0.50 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT1</strong></td>
+                        <td>0.0195 V</td>
+                        <td>0.00 - 0.50 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT2</strong></td>
+                        <td>0.0067 V</td>
+                        <td>0.00 - 0.50 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLOT3</strong></td>
+                        <td>0.1126 V</td>
+                        <td>0.00 - 0.50 V</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>P4</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
 
-    <div class="section">
-        <h3>4. Test SLOT1_input SLOT2_output SLOT3_input SLOT4_output with DAC voltage</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">0.0052 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">0.9117 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">0.0072 [0.5–0.55]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">1.0023 [0.5–0.55]</span></div>
+        <!-- Footer -->
+        <div class="footer">
+            <p>DUNE WIB Quality Control System - Test02 Calibration Path Control</p>
+            <p>Report generated: 2025-12-18 17:46:11 UTC</p>
         </div>
-    </div>
-
-    <div class="section">
-        <h3>5. Test LEMO P5 Calibration pulse injection</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">0.0058 [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">0.0058 [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">0.0081 [0.7–0.85]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">1.6362 [0.7–0.85]</span></div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>6. Test Points</h3>
-        <div class="slots">
-            <div class="slot"><span class="label">SLOT0:</span><span class="value">0.0008 [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT1:</span><span class="value">0.0189 [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT2:</span><span class="value">0.0021 [0–0.5]</span></div>
-            <div class="slot"><span class="label">SLOT3:</span><span class="value">0.1987 [0–0.5]</span></div>
-        </div>
-    </div>
-
-    <div class="footer">
-        Time Consumption = 1078.514
     </div>
 </body>
 </html>

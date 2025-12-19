@@ -3,65 +3,263 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIB_01 Communication Test Report</title>
+    <title>WIB Communication Test Report</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
+            line-height: 1.6;
         }
-        h2 {
-            text-align: center;
-            color: #444;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
         }
-        .section {
+
+        /* Header Section */
+        .header {
+            border-bottom: 3px solid #000000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            font-size: 14px;
+            color: #666666;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            border: 2px solid;
+        }
+        .status-badge.pass {
+            color: #166534;
+            background-color: #dcfce7;
+            border-color: #166534;
+        }
+        .status-badge.fail {
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }
+
+        /* Info Section */
+        .info-section {
             margin: 20px 0;
             padding: 15px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: #f9fafb;
+            border-left: 4px solid #000000;
         }
-        .section h3 {
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-        }
-        .item {
+        .info-row {
+            display: flex;
             margin: 8px 0;
         }
-        .label {
+        .info-label {
             font-weight: bold;
-            color: #555;
+            width: 150px;
+            color: #000000;
         }
-        .value {
-            margin-left: 10px;
+        .info-value {
+            color: #374151;
+        }
+
+        /* Test Results Table */
+        .section {
+            margin: 30px 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #000000;
+        }
+        th {
+            background-color: #f3f4f6;
+            color: #000000;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            border: 1px solid #000000;
+        }
+        td {
+            padding: 12px;
+            border: 1px solid #d1d5db;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .status-cell {
+            font-weight: bold;
+            text-align: center;
+        }
+        .status-pass {
+            color: #166534;
+        }
+        .status-fail {
+            color: #991b1b;
+        }
+
+        /* Details Section */
+        .details-box {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            background: #fafafa;
+        }
+        .details-title {
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+        }
+        .details-item {
+            margin: 5px 0;
+            padding-left: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Communication Test Report</h2>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">Communication Test Report (Test01)</div>
+            <div class="status-badge pass">Overall Status: PASS</div>
+        </div>
 
-    <div class="section">
-        <h3>UART Communication</h3>
-        <div class="item"><span class="label">Date:</span><span class="value">2025-12-16 16:25:15 UTC</span></div>
-        <div class="item"><span class="label">COM:</span><span class="value">COM_PORT is /dev/ttyUSB1</span></div>
-        <div class="item"><span class="label">Status:</span><span class="value">False</span></div>
-        <div class="item"><span class="label">Note:</span><span class="value">Serial Communication Failed Test</span></div>
-    </div>
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">2025-12-18 21:56:31 UTC</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Test Time:</div>
+                <div class="info-value">33.92 seconds</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Serial Interface:</div>
+                <div class="info-value">COM_PORT is /dev/ttyUSB1 using Silicon Labs CP2105</div>
+            </div>
+        </div>
 
-    <div class="section">
-        <h3>TCP/IP Communication</h3>
-        <div class="item"><span class="label">Date:</span><span class="value">2025-12-16 16:25:15 UTC</span></div>
-        <div class="item"><span class="label">Status:</span><span class="value">True</span></div>
-        <div class="item"><span class="label">Note:</span><span class="value">TCP/IP Communication Pass</span></div>
-    </div>
+        <!-- Test Results Summary -->
+        <div class="section">
+            <div class="section-title">Test Results Summary</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Test Item</th>
+                        <th style="width: 25%;">Target</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 30%;">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. UART/Serial Communication</strong></td>
+                        <td>/dev/ttyUSB1</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>Serial Communication Pass</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. TCP/IP Communication</strong></td>
+                        <td>192.168.121.1</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>TCP/IP Communication Pass</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. UDP Communication</strong></td>
+                        <td>192.168.121.2</td>
+                        <td class="status-cell status-pass">PASS</td>
+                        <td>UDP Communication Pass</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="section">
-        <h3>UDP Communication</h3>
-        <div class="item"><span class="label">Date:</span><span class="value">2025-12-16 16:25:15 UTC</span></div>
-        <div class="item"><span class="label">Status:</span><span class="value">True</span></div>
-        <div class="item"><span class="label">Note:</span><span class="value">TCP/IP Communication Pass</span></div>
+        <!-- Detailed Results -->
+        <div class="section">
+            <div class="section-title">Detailed Test Information</div>
+
+            <div class="details-box">
+                <div class="details-title">1. UART/Serial Communication Test</div>
+                <div class="details-item">• Test Timestamp: 2025-12-18 21:56:31 UTC</div>
+                <div class="details-item">• Communication Port: /dev/ttyUSB1</div>
+                <div class="details-item">• USB Adapter: COM_PORT is /dev/ttyUSB1 using Silicon Labs CP2105</div>
+                <div class="details-item">• Auto-login: Verified (root@WIB_Petalinux)</div>
+                <div class="details-item">• System Version: PetaLinux 2019.1 detected</div>
+                <div class="details-item">• Result: Serial Communication Pass</div>
+            </div>
+
+            <div class="details-box">
+                <div class="details-title">2. TCP/IP Communication Test</div>
+                <div class="details-item">• Test Timestamp: 2025-12-18 21:56:31 UTC</div>
+                <div class="details-item">• Target IP Address: 192.168.121.1</div>
+                <div class="details-item">• Protocol: ICMP Echo Request (ping)</div>
+                <div class="details-item">• Ping Count: 4 packets</div>
+                <div class="details-item">• Result: TCP/IP Communication Pass</div>
+            </div>
+
+            <div class="details-box">
+                <div class="details-title">3. UDP Communication Test</div>
+                <div class="details-item">• Test Timestamp: 2025-12-18 21:56:31 UTC</div>
+                <div class="details-item">• Target IP Address: 192.168.121.2</div>
+                <div class="details-item">• Protocol: ICMP Echo Request (ping)</div>
+                <div class="details-item">• Ping Count: 4 packets</div>
+                <div class="details-item">• Result: UDP Communication Pass</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>DUNE WIB Quality Control System - Test01 Communication Test</p>
+            <p>Report generated: 2025-12-18 16:57:05 UTC</p>
+        </div>
     </div>
 </body>
 </html>

@@ -77,7 +77,7 @@ class TCPSocket:
     def tcpreceive(self, length = 4096):
         chunks = []
         bytes_recd = 0
-        time.sleep(0.2)
+        # time.sleep(0.2)  # Removed - unnecessary delay!
         self.sock.settimeout(5.0)  # Increased timeout
         try:
             chunk = self.sock.recv(length)
