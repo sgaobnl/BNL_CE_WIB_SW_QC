@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now it's safe to import from 'function'
 # from function.rigol_dp832_ps import RIGOL_PS_CTL
 import function.Rigol_DP800 as rigol
+from function.csv_manager import WIB_QC_CSV_Manager
 # Other imports...
 
 import file.report_dict as rp_dict
@@ -22,10 +23,26 @@ print('######## Part 00 Information    ########')
 print('######## Part 00     ########')
 Test_name_d = input('Input your name')
 Test_WIB_ID_d = input('Scan or input WIB QR ID')
+Test_site_d = input('Input test site (e.g., BNL, FNAL): ')
 utc_time = datetime.now(timezone.utc)
 rp_dict.log01_wib['WIB QR ID'] = Test_WIB_ID_d
 rp_dict.log01_wib['Tester Name'] = Test_name_d
 rp_dict.log01_wib['date01'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+# Initialize CSV Manager for unified test results recording
+print(f"\n{'='*60}")
+print("Initializing unified CSV test results file...")
+print(f"{'='*60}")
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+csv_filepath = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "report",
+    f"WIB_{Test_WIB_ID_d}_QC_Results_{timestamp}.csv"
+)
+rp_dict.csv_manager = WIB_QC_CSV_Manager(wib_id=Test_WIB_ID_d, csv_filepath=csv_filepath)
+rp_dict.csv_manager.update_wib_info(tester=Test_name_d, test_site=Test_site_d, comment="")
+print(f"✓ CSV results file created: {csv_filepath}\n")
 
 
 
@@ -49,19 +66,29 @@ item1 = input('Component Inspection Y/N')
 print(item1)
 if item1 == 'n' or item1 == 'N':
     rp_dict.log01_wib['Component Inspection'] = 'Failed'
+    item1_status = 'FAIL'
 else:
     rp_dict.log01_wib['Component Inspection'] = 'Passed'
+    item1_status = 'PASS'
 utc_time = datetime.now(timezone.utc)
 rp_dict.log01_wib['item1_date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+# Update CSV
+rp_dict.csv_manager.update_item("T00_01", item1_status, status=item1_status)
 
 # print('Insert SD card')
 item2 = input('Use LTpowerPlay configure the Power Rail')
 if item2 == 'n' or item2 == 'N':
     rp_dict.log01_wib['LTpowerPlay'] = 'Failed'
+    item2_status = 'FAIL'
 else:
     rp_dict.log01_wib['LTpowerPlay'] = 'Passed'
+    item2_status = 'PASS'
 utc_time = datetime.now(timezone.utc)
 rp_dict.log01_wib['item2_date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+# Update CSV
+rp_dict.csv_manager.update_item("T00_02", item2_status, status=item2_status)
 
 input('Please insert the WIB into [TEST SLOT]')
 
@@ -75,7 +102,7 @@ psu.set_channel(2, 12.0, 3.0, on=True)
 # fm_ps.set_channel(channel=2, voltage=11.95, v_limit=12.1, c_limit=3)
 time.sleep(10)
 v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
+v2, c2 = psu.measure(2)
 # v2, i2 = psu.measure(2)
 
 # c1 = fm_ps.measure_params(channel = 1)
@@ -91,18 +118,33 @@ rp_dict.log01_wib['Power Check channel 2'] = c2
 utc_time = datetime.now(timezone.utc)
 rp_dict.log01_wib['Power Check Date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
 
+# Update CSV with power measurements
+c1_status = "PASS" if 0.5 <= c1 <= 2.0 else "FAIL"
+c2_status = "PASS" if 0.5 <= c2 <= 2.0 else "FAIL"
+rp_dict.csv_manager.batch_update([
+    {"item_id": "T00_03", "value": round(c1, 3), "status": c1_status},
+    {"item_id": "T00_04", "value": round(c2, 3), "status": c2_status}
+])
 
 item3 = input('Install Front Panel')
 if item3 == 'n' or item3 == 'N':
     rp_dict.log01_wib['Front_Panel'] = 'Failed'
+    item3_status = 'FAIL'
 else:
     rp_dict.log01_wib['Front_Panel'] = 'Passed'
+    item3_status = 'PASS'
 utc_time = datetime.now(timezone.utc)
 rp_dict.log01_wib['item3_date'] = utc_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+# Update CSV
+rp_dict.csv_manager.update_item("T00_05", item3_status, status=item3_status)
 
 t2 = time.time()
 
 rp_dict.log01_wib['Time_Consumption'] = round((t2-t1), 2)
+
+# Update CSV with test duration
+rp_dict.csv_manager.update_item("T00_06", round(t2-t1, 2), status="COMPLETE")
 
 
 

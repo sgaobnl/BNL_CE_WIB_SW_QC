@@ -174,15 +174,62 @@
         <div class="info-section">
             <div class="info-row">
                 <div class="info-label">Test Date:</div>
-                <div class="info-value">2025-12-18 17:45:30 UTC</div>
+                <div class="info-value">2025-12-19 10:42:22 UTC</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Total Test Time:</div>
-                <div class="info-value">75.923 seconds</div>
+                <div class="info-value">70.595 seconds</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Test Items:</div>
                 <div class="info-value">6 calibration path tests, 24 total measurements</div>
+            </div>
+        </div>
+
+        <!-- Power Measurements -->
+        <div class="section">
+            <div class="section-title">Power Supply Measurements</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Channel</th>
+                        <th style="width: 20%;">Voltage (V)</th>
+                        <th style="width: 20%;">Current (A)</th>
+                        <th style="width: 20%;">Power (W)</th>
+                        <th style="width: 20%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Channel 1</strong></td>
+                        <td>12.000 V</td>
+                        <td>0.991 A</td>
+                        <td>11.892 W</td>
+                        <td class="status-cell status-pass">
+                            PASS
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channel 2</strong></td>
+                        <td>12.010 V</td>
+                        <td>0.498 A</td>
+                        <td>5.981 W</td>
+                        <td class="status-cell status-fail">
+                            FAIL
+                        </td>
+                    </tr>
+                    <tr style="background-color: #f3f4f6; font-weight: bold;">
+                        <td><strong>TOTAL</strong></td>
+                        <td colspan="2"></td>
+                        <td>17.873 W</td>
+                        <td class="status-cell status-pass">
+                            PASS
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Note:</strong> Power measurements taken at test completion. Expected current range: 0.5-3.0A per channel. Total power range: 4.0-30.0W.
             </div>
         </div>
 
@@ -205,28 +252,28 @@
                 <tbody>
                     <tr>
                         <td><strong>SLOT0</strong></td>
-                        <td>0.9129 V</td>
+                        <td>0.9132 V</td>
                         <td>0.90 - 1.10 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P8</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td>0.9126 V</td>
+                        <td>0.9128 V</td>
                         <td>0.90 - 1.10 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P7</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT2</strong></td>
-                        <td>0.9154 V</td>
+                        <td>0.9158 V</td>
                         <td>0.90 - 1.10 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P6</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td>1.0023 V</td>
+                        <td>1.0020 V</td>
                         <td>0.90 - 1.10 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P4</td>
@@ -249,28 +296,28 @@
                 <tbody>
                     <tr>
                         <td><strong>SLOT0</strong></td>
-                        <td>1.6327 V</td>
+                        <td>1.6330 V</td>
                         <td>1.60 - 1.70 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P8</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td>1.6321 V</td>
+                        <td>1.6316 V</td>
                         <td>1.60 - 1.70 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P7</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT2</strong></td>
-                        <td>1.6342 V</td>
+                        <td>1.6345 V</td>
                         <td>1.60 - 1.70 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P6</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td>1.6356 V</td>
+                        <td>1.6350 V</td>
                         <td>1.60 - 1.70 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P4</td>
@@ -300,21 +347,21 @@
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td class="error-cell">0.0063 V</td>
+                        <td class="error-cell">0.0053 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P7</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT2</strong></td>
-                        <td class="error-cell">0.9140 V</td>
+                        <td class="error-cell">0.9137 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P6</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td class="error-cell">0.0082 V</td>
+                        <td class="error-cell">0.0075 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P4</td>
@@ -337,14 +384,14 @@
                 <tbody>
                     <tr>
                         <td><strong>SLOT0</strong></td>
-                        <td class="error-cell">0.0063 V</td>
+                        <td class="error-cell">0.0041 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P8</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td class="error-cell">0.9129 V</td>
+                        <td class="error-cell">0.9113 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P7</td>
@@ -358,7 +405,7 @@
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td class="error-cell">1.0019 V</td>
+                        <td class="error-cell">1.0010 V</td>
                         <td>0.50 - 0.55 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P4</td>
@@ -381,28 +428,28 @@
                 <tbody>
                     <tr>
                         <td><strong>SLOT0</strong></td>
-                        <td class="error-cell">0.0061 V</td>
+                        <td class="error-cell">0.0053 V</td>
                         <td>0.70 - 0.85 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P8</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td class="error-cell">0.0063 V</td>
+                        <td class="error-cell">0.0044 V</td>
                         <td>0.70 - 0.85 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P7</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT2</strong></td>
-                        <td class="error-cell">0.0075 V</td>
+                        <td class="error-cell">0.0064 V</td>
                         <td>0.70 - 0.85 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P6</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td class="error-cell">1.6357 V</td>
+                        <td class="error-cell">1.6351 V</td>
                         <td>0.70 - 0.85 V</td>
                         <td class="status-cell status-fail">FAIL</td>
                         <td>P4</td>
@@ -425,28 +472,28 @@
                 <tbody>
                     <tr>
                         <td><strong>SLOT0</strong></td>
-                        <td>0.0029 V</td>
+                        <td>0.0171 V</td>
                         <td>0.00 - 0.50 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P8</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT1</strong></td>
-                        <td>0.0195 V</td>
+                        <td>0.0044 V</td>
                         <td>0.00 - 0.50 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P7</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT2</strong></td>
-                        <td>0.0067 V</td>
+                        <td>0.0192 V</td>
                         <td>0.00 - 0.50 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P6</td>
                     </tr>
                     <tr>
                         <td><strong>SLOT3</strong></td>
-                        <td>0.1126 V</td>
+                        <td>0.2090 V</td>
                         <td>0.00 - 0.50 V</td>
                         <td class="status-cell status-pass">PASS</td>
                         <td>P4</td>
@@ -458,7 +505,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>DUNE WIB Quality Control System - Test02 Calibration Path Control</p>
-            <p>Report generated: 2025-12-18 17:46:11 UTC</p>
+            <p>Report generated: 2025-12-19 10:42:58 UTC</p>
         </div>
     </div>
 </body>

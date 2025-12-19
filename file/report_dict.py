@@ -9,6 +9,9 @@ Test_name_d = defaultdict(dict)
 Test_WIB_ID_d = defaultdict(dict)
 wib_info = defaultdict(dict)
 
+# Global CSV Manager instance (initialized in Test00)
+csv_manager = None
+
 
 
 

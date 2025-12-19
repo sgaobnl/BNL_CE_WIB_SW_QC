@@ -3,79 +3,194 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIB_05 I2C Device Report</title>
+    <title>WIB I2C Device Search Report - Test05</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            background-color: #ffffff;
+            color: #000000;
         }
-        h2 {
-            text-align: center;
-            color: #444;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            border-bottom: 2px solid #000000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #333333;
+            margin-top: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 10px 0;
+            font-weight: bold;
+            border: 2px solid #000000;
+        }
+        .status-pass {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .status-fail {
+            background-color: #fee2e2;
+            color: #000000;
+        }
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border: 1px solid #cccccc;
+        }
+        .info-row {
+            display: flex;
+            padding: 5px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            min-width: 200px;
+        }
+        .info-value {
+            flex: 1;
         }
         table {
-            width: 60%;
-            margin: 20px auto;
+            width: 100%;
             border-collapse: collapse;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
+            margin: 20px 0;
+            background-color: #ffffff;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 10px 15px;
+            border: 1px solid #000000;
+            padding: 10px;
             text-align: left;
         }
         th {
-            background-color: #f0f0f0;
+            background-color: #e5e5e5;
             font-weight: bold;
-            text-align: center;
         }
-        tr:nth-child(even) td {
-            background-color: #fafafa;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #cccccc;
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <h2>I2C Device Report</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>SI5342</td><td>Detected</td></tr>
-<tr><td>SI5344</td><td>Detected</td></tr>
-<tr><td>TCA9546ADR 0x70</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x48</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x49</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x4a</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x4b</td><td>Detected</td></tr>
-<tr><td>LTC2990 0x4e</td><td>Detected</td></tr>
-<tr><td>TCA6424 0x22</td><td>Detected</td></tr>
-<tr><td>TCA642 0x23</td><td>Detected</td></tr>
-<tr><td>LTC2499 0x15</td><td>Detected</td></tr>
-<tr><td>INA226 0x46</td><td>Detected</td></tr>
-<tr><td>AD7414A 0x49</td><td>Detected</td></tr>
-<tr><td>AD7414A 0x4a</td><td>Detected</td></tr>
-<tr><td>AD7414A 0x4d</td><td>Detected</td></tr>
-<tr><td>SODIMM 0x51</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x4c</td><td>Detected</td></tr>
-<tr><td>LTC2991 0x4e</td><td>Detected</td></tr>
-<tr><td>DAC7574 0x4c</td><td>Detected</td></tr>
-<tr><td>DAC7574 0x4d</td><td>Detected</td></tr>
-<tr><td>DAC7574 0x4e</td><td>Detected</td></tr>
-<tr><td>DAC7574 0x4f</td><td>Detected</td></tr>
-<tr><td>LTC2977 0x5c</td><td>Detected</td></tr>
-<tr><td>24LC64SN 0x50</td><td>Detected</td></tr>
-<tr><td>ADN2814 0x40</td><td>Detected</td></tr>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">I2C Device Search Report (Test05)</div>
+            <div class="status-badge status-fail">Overall Status: FAIL</div>
+        </div>
 
-        </tbody>
-    </table>
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">2025-12-19 18:48:13 UTC</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Test Duration:</div>
+                <div class="info-value">78.08 seconds</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Devices Detected:</div>
+                <div class="info-value">24 / 25</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">WIB IP Address:</div>
+                <div class="info-value">192.168.121.1</div>
+            </div>
+        </div>
+
+        <!-- Power Measurements -->
+        <h2>WIB Power Supply</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Channel</th>
+                    <th>Voltage (V)</th>
+                    <th>Current (A)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Channel 1</td>
+                    <td>12.000</td>
+                    <td>1.028</td>
+                    <td class="status-pass">PASS</td>
+                </tr>
+                <tr>
+                    <td>Channel 2</td>
+                    <td>12.010</td>
+                    <td>0.470</td>
+                    <td class="status-fail">FAIL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- I2C Device Detection Results -->
+        <h2>I2C Device Detection Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device Name & Address</th>
+                    <th>Detection Result</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>SI5342</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>SI5344</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>TCA9546ADR 0x70</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x48</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x49</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x4a</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x4b</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2990 0x4e</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>TCA6424 0x22</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>TCA642 0x23</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2499 0x15</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>INA226 0x46</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>AD7414A 0x49</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>AD7414A 0x4a</td><td>No</td><td class='status-fail'>FAIL</td></tr>
+<tr><td>AD7414A 0x4d</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>SODIMM 0x51</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x4c</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2991 0x4e</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>DAC7574 0x4c</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>DAC7574 0x4d</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>DAC7574 0x4e</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>DAC7574 0x4f</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>LTC2977 0x5c</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>24LC64SN 0x50</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+<tr><td>ADN2814 0x40</td><td>Detected</td><td class='status-pass'>PASS</td></tr>
+
+            </tbody>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Generated by DUNE WIB QC System - Test05: I2C Device Search</p>
+            <p>Report generated: 2025-12-19 18:48:13</p>
+        </div>
+    </div>
 </body>
 </html>

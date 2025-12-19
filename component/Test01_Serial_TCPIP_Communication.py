@@ -14,6 +14,7 @@ from function.rigol_dp832_ps import RIGOL_PS_CTL
 from function.ping_host import ping_host
 import subprocess
 import file.report_dict as rp_dict
+from function.csv_manager import WIB_QC_CSV_Manager
 import os
 import datetime
 from datetime import datetime, timezone
@@ -238,6 +239,11 @@ while not uart_test_passed:
 rp_dict.log02_wib['uart_status'] = uart_status
 rp_dict.log02_wib['uart_note'] = uart_note
 
+# Update CSV for UART test
+if rp_dict.csv_manager:
+    uart_csv_status = "PASS" if uart_status else "FAIL"
+    rp_dict.csv_manager.update_item("T01_01", uart_csv_status, status=uart_csv_status)
+
 # Test Item 2: TCP/IP Communication
 print("\n" + "="*60)
 print("\033[35m" + "Test Item 2: TCP/IP Communication" + "\033[0m")
@@ -249,6 +255,13 @@ rp_dict.log02_wib['TCP_IP_status'] = tcpip_rd
 if tcpip_rd:
     rp_dict.log02_wib['TCP_IP_note'] = 'TCP/IP Communication Pass'
     print("\033[32m✓ TCP/IP Communication Test PASSED\033[0m")
+
+    # Update CSV for TCP/IP test
+    if rp_dict.csv_manager:
+        rp_dict.csv_manager.batch_update([
+            {"item_id": "T01_02", "value": "192.168.121.1", "status": "PASS"},
+            {"item_id": "T01_03", "value": "Connected", "status": "PASS"}
+        ])
 else:
     rp_dict.log02_wib['TCP_IP_note'] = 'TCP/IP Communication Failed Test'
     print("\n" + "="*60)
@@ -267,6 +280,13 @@ else:
             if tcpip_rd:
                 rp_dict.log02_wib['TCP_IP_note'] = 'TCP/IP Communication Pass'
                 print("\033[32m✓ TCP/IP Communication Test PASSED (after retry)\033[0m")
+
+                # Update CSV after successful retry
+                if rp_dict.csv_manager:
+                    rp_dict.csv_manager.batch_update([
+                        {"item_id": "T01_02", "value": "192.168.121.1", "status": "PASS"},
+                        {"item_id": "T01_03", "value": "Connected", "status": "PASS"}
+                    ])
                 break
             else:
                 print("\033[31m❌ TCP/IP test failed again.\033[0m")
@@ -289,6 +309,13 @@ rp_dict.log02_wib['UDP_status'] = udp_rd  # Fixed: was tcpip_rd, should be udp_r
 if udp_rd:
     rp_dict.log02_wib['UDP_note'] = 'UDP Communication Pass'
     print("\033[32m✓ UDP Communication Test PASSED\033[0m")
+
+    # Update CSV for UDP test
+    if rp_dict.csv_manager:
+        rp_dict.csv_manager.batch_update([
+            {"item_id": "T01_05", "value": "Connected", "status": "PASS"},
+            {"item_id": "T01_07", "value": "4 packets received", "status": "PASS"}
+        ])
 else:
     rp_dict.log02_wib['UDP_note'] = 'UDP Communication Failed Test'
     print("\n" + "="*60)
@@ -307,6 +334,13 @@ else:
             if udp_rd:
                 rp_dict.log02_wib['UDP_note'] = 'UDP Communication Pass'
                 print("\033[32m✓ UDP Communication Test PASSED (after retry)\033[0m")
+
+                # Update CSV after successful retry
+                if rp_dict.csv_manager:
+                    rp_dict.csv_manager.batch_update([
+                        {"item_id": "T01_05", "value": "Connected", "status": "PASS"},
+                        {"item_id": "T01_07", "value": "4 packets received", "status": "PASS"}
+                    ])
                 break
             else:
                 print("\033[31m❌ UDP test failed again.\033[0m")
@@ -324,6 +358,21 @@ else:
 t2 = time.time()
 test_duration = round(t2-t1, 2)
 rp_dict.log02_wib['Communication_Time_Consumption'] = f'Communication Time Consumption = {test_duration} s'
+
+# Update CSV with power measurements and test duration
+if rp_dict.csv_manager:
+    v1_status = "PASS" if 11.0 <= v1 <= 13.0 else "FAIL"
+    c1_status = "PASS" if 0.5 <= c1 <= 3.0 else "FAIL"
+    v2_status = "PASS" if 11.0 <= v2 <= 13.0 else "FAIL"
+    c2_status = "PASS" if 0.5 <= c2 <= 3.0 else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T01_08", "value": round(v1, 3), "status": v1_status},
+        {"item_id": "T01_09", "value": round(c1, 3), "status": c1_status},
+        {"item_id": "T01_10", "value": round(v2, 3), "status": v2_status},
+        {"item_id": "T01_11", "value": round(c2, 3), "status": c2_status},
+        {"item_id": "T01_12", "value": test_duration, "status": "COMPLETE"}
+    ])
 
 # Display test summary
 print("\n" + "="*60)

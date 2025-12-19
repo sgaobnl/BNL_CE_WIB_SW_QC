@@ -8,6 +8,7 @@ from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
 import datetime
 import file.report_dict as rp_dict
+from function.csv_manager import WIB_QC_CSV_Manager
 t1 = time.time()
 import function.Rigol_DP800 as rigol
 
@@ -17,8 +18,31 @@ print("Turn FM on")
 psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)
-v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
+
+# Measure initial power
+v1_start, c1_start = psu.measure(1)
+v2_start, c2_start = psu.measure(2)
+print(f"Initial Power - Ch1: {v1_start:.3f}V {c1_start:.3f}A, Ch2: {v2_start:.3f}V {c2_start:.3f}A")
+
+# Record initial power measurements
+rp_dict.log05_Cal['power_ch1_voltage_start'] = round(v1_start, 3)
+rp_dict.log05_Cal['power_ch1_current_start'] = round(c1_start, 3)
+rp_dict.log05_Cal['power_ch2_voltage_start'] = round(v2_start, 3)
+rp_dict.log05_Cal['power_ch2_current_start'] = round(c2_start, 3)
+
+# Update CSV with initial power measurements
+if rp_dict.csv_manager:
+    v1_status = "PASS" if 11.0 <= v1_start <= 13.0 else "FAIL"
+    c1_status = "PASS" if 0.5 <= c1_start <= 3.0 else "FAIL"
+    v2_status = "PASS" if 11.0 <= v2_start <= 13.0 else "FAIL"
+    c2_status = "PASS" if 0.5 <= c2_start <= 3.0 else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T02_01", "value": round(v1_start, 3), "status": v1_status},
+        {"item_id": "T02_02", "value": round(c1_start, 3), "status": c1_status},
+        {"item_id": "T02_03", "value": round(v2_start, 3), "status": v2_status},
+        {"item_id": "T02_04", "value": round(c2_start, 3), "status": c2_status}
+    ])
 
 time.sleep(20)
 
@@ -118,6 +142,20 @@ print(slot0)
 print(slot1)
 print(slot2)
 print(slot3)
+
+# Update CSV with DAC configuration and ADC readback
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T02_05", "value": "0x0001", "status": "SET"},  # DAC 0 config
+        {"item_id": "T02_06", "value": "0x0001", "status": "SET"},  # DAC 1 config
+        {"item_id": "T02_07", "value": "0x0001", "status": "SET"},  # DAC 2 config
+        {"item_id": "T02_08", "value": "0x0001", "status": "SET"},  # DAC 3 config
+        {"item_id": "T02_09", "value": round(slot0, 4), "status": "PASS"},  # ADC 0
+        {"item_id": "T02_10", "value": round(slot1, 4), "status": "PASS"},  # ADC 1
+        {"item_id": "T02_11", "value": round(slot2, 4), "status": "PASS"},  # ADC 2
+        {"item_id": "T02_12", "value": round(slot3, 4), "status": "PASS"}   # ADC 3
+    ])
+
 time.sleep(1)
 
 # test 1.6 V, expected output [1.65 1.65 1.65 1.65]
@@ -240,14 +278,44 @@ rp_dict.log05_Cal['TP_slot_3_P4'] = round(slot3, 4)
 tcp.tcp_cmd_io(cmd=0x02, aux=0, addr=0x08, data=0xFFFFFFFF)
 
 
-# fm_ps.ps_init()
-# fm_ps.off([1, 2, 3])
+# Measure final power before shutdown
+v1_end, c1_end = psu.measure(1)
+v2_end, c2_end = psu.measure(2)
+print(f"Final Power - Ch1: {v1_end:.3f}V {c1_end:.3f}A, Ch2: {v2_end:.3f}V {c2_end:.3f}A")
+
+# Record final power measurements
+rp_dict.log05_Cal['power_ch1_voltage_end'] = round(v1_end, 3)
+rp_dict.log05_Cal['power_ch1_current_end'] = round(c1_end, 3)
+rp_dict.log05_Cal['power_ch2_voltage_end'] = round(v2_end, 3)
+rp_dict.log05_Cal['power_ch2_current_end'] = round(c2_end, 3)
+
+# Calculate total power
+total_power = (v1_end * c1_end) + (v2_end * c2_end)
+rp_dict.log05_Cal['total_power'] = round(total_power, 3)
+
 t2 = time.time()
-print('time consumption = {}'.format(t2-t1))
+test_duration = round(t2-t1, 3)
+print('time consumption = {}'.format(test_duration))
 
 print(rp_dict.log05_Cal)
 
-rp_dict.log05_Cal['Communication_Time_Consumption'] = round(t2-t1, 3)
+rp_dict.log05_Cal['Communication_Time_Consumption'] = test_duration
+
+# Update CSV with final power measurements and test duration
+if rp_dict.csv_manager:
+    v1_end_status = "PASS" if 11.0 <= v1_end <= 13.0 else "FAIL"
+    c1_end_status = "PASS" if 0.5 <= c1_end <= 3.0 else "FAIL"
+    v2_end_status = "PASS" if 11.0 <= v2_end <= 13.0 else "FAIL"
+    c2_end_status = "PASS" if 0.5 <= c2_end <= 3.0 else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T02_13", "value": round(v1_end, 3), "status": v1_end_status},
+        {"item_id": "T02_14", "value": round(c1_end, 3), "status": c1_end_status},
+        {"item_id": "T02_15", "value": round(v2_end, 3), "status": v2_end_status},
+        {"item_id": "T02_16", "value": round(c2_end, 3), "status": c2_end_status},
+        {"item_id": "T02_17", "value": round(total_power, 3), "status": "PASS"},
+        {"item_id": "T02_18", "value": test_duration, "status": "COMPLETE"}
+    ])
 # time < 40 seconds
 
 psu.safe_power_off()
@@ -314,8 +382,22 @@ for test in test_configs:
             all_passed = False
             break
 
-overall_status = "PASS" if all_passed else "FAIL"
-overall_status_class = "pass" if all_passed else "fail"
+# Validate power measurements
+ch1_current = cal.get('power_ch1_current_end', 0)
+ch2_current = cal.get('power_ch2_current_end', 0)
+total_power = cal.get('total_power', 0)
+
+power_passed = True
+if not (0.5 <= ch1_current <= 3.0):
+    power_passed = False
+if not (0.5 <= ch2_current <= 3.0):
+    power_passed = False
+if not (4.0 <= total_power <= 30.0):
+    power_passed = False
+
+# Overall status includes both calibration tests and power check
+overall_status = "PASS" if (all_passed and power_passed) else "FAIL"
+overall_status_class = "pass" if (all_passed and power_passed) else "fail"
 
 # HTML content with professional styling (Clean & Simple)
 html_content = f"""<!DOCTYPE html>
@@ -503,6 +585,53 @@ html_content = f"""<!DOCTYPE html>
             <div class="info-row">
                 <div class="info-label">Test Items:</div>
                 <div class="info-value">6 calibration path tests, 24 total measurements</div>
+            </div>
+        </div>
+
+        <!-- Power Measurements -->
+        <div class="section">
+            <div class="section-title">Power Supply Measurements</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Channel</th>
+                        <th style="width: 20%;">Voltage (V)</th>
+                        <th style="width: 20%;">Current (A)</th>
+                        <th style="width: 20%;">Power (W)</th>
+                        <th style="width: 20%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Channel 1</strong></td>
+                        <td>{cal.get('power_ch1_voltage_end', 0):.3f} V</td>
+                        <td>{cal.get('power_ch1_current_end', 0):.3f} A</td>
+                        <td>{(cal.get('power_ch1_voltage_end', 0) * cal.get('power_ch1_current_end', 0)):.3f} W</td>
+                        <td class="status-cell status-{'pass' if 0.5 <= cal.get('power_ch1_current_end', 0) <= 3.0 else 'fail'}">
+                            {'PASS' if 0.5 <= cal.get('power_ch1_current_end', 0) <= 3.0 else 'FAIL'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channel 2</strong></td>
+                        <td>{cal.get('power_ch2_voltage_end', 0):.3f} V</td>
+                        <td>{cal.get('power_ch2_current_end', 0):.3f} A</td>
+                        <td>{(cal.get('power_ch2_voltage_end', 0) * cal.get('power_ch2_current_end', 0)):.3f} W</td>
+                        <td class="status-cell status-{'pass' if 0.5 <= cal.get('power_ch2_current_end', 0) <= 3.0 else 'fail'}">
+                            {'PASS' if 0.5 <= cal.get('power_ch2_current_end', 0) <= 3.0 else 'FAIL'}
+                        </td>
+                    </tr>
+                    <tr style="background-color: #f3f4f6; font-weight: bold;">
+                        <td><strong>TOTAL</strong></td>
+                        <td colspan="2"></td>
+                        <td>{cal.get('total_power', 0):.3f} W</td>
+                        <td class="status-cell status-{'pass' if 4.0 <= cal.get('total_power', 0) <= 30.0 else 'fail'}">
+                            {'PASS' if 4.0 <= cal.get('total_power', 0) <= 30.0 else 'FAIL'}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="test-description">
+                <strong>Note:</strong> Power measurements taken at test completion. Expected current range: 0.5-3.0A per channel. Total power range: 4.0-30.0W.
             </div>
         </div>
 

@@ -1,123 +1,476 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Power Report</title>
+    <title>WIB FEMB Power Rail Test Report</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 30px;
+            line-height: 1.6;
         }
-        h2 {
-            text-align: center;
-            color: #444;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
         }
+
+        /* Header Section */
+        .header {
+            border-bottom: 3px solid #000000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            font-size: 14px;
+            color: #666666;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+            border: 2px solid;
+        }
+        .status-badge.pass {
+            color: #166534;
+            background-color: #dcfce7;
+            border-color: #166534;
+        }
+        .status-badge.fail {
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-color: #991b1b;
+        }
+
+        /* Info Section */
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+        }
+        .info-row {
+            display: flex;
+            margin: 8px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+            color: #000000;
+        }
+        .info-value {
+            color: #374151;
+        }
+
+        /* Section */
         .section {
             margin: 30px 0;
-            padding: 20px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-        h3 {
-            margin-bottom: 10px;
-            color: #2c3e50;
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
         }
+
+        /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+            margin: 15px 0;
+            border: 1px solid #000000;
         }
         th {
-            background-color: #f0f0f0;
+            background-color: #f3f4f6;
+            color: #000000;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #000000;
+        }
+        td {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .status-cell {
             font-weight: bold;
         }
-        tr:nth-child(even) td {
-            background-color: #fafafa;
+        .status-pass {
+            color: #166534;
+        }
+        .status-fail {
+            color: #991b1b;
+        }
+        .error-cell {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: bold;
+        }
+        .rail-label {
+            text-align: left;
+            font-weight: bold;
+            padding-left: 15px;
+        }
+
+        /* Test Description */
+        .test-description {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fafafa;
+            border-left: 3px solid #9ca3af;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Power Rail Report</h2>
-    
-    <div class="section">
-        <h3>WIB_03_1V Power Rail in FEMB SLOT 0</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rail</th>
-                    <th>FE</th><th>CD</th><th>ADC</th><th>IDLE</th><th>BIAS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Set Voltage (V)</td><td>1</td><td>1</td><td>1</td><td>1</td><td>5</td></tr>
-                <tr><td>Measured Voltage (V)</td><td>1.009</td><td>1.023</td><td>0.999</td><td>1.030</td><td>5.000</td></tr>
-                <tr><td>Measured Current (A)</td><td>0.120</td><td>0.075</td><td>0.231</td><td>0.351</td><td>0.028</td></tr>
-            </tbody>
-        </table>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <div class="subtitle">FEMB Power Rail Test Report (Test03)</div>
+            <div class="status-badge fail">Overall Status: FAIL</div>
+        </div>
+
+        <!-- Test Information -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-label">Test Date:</div>
+                <div class="info-value">2025-12-19 10:48:22 UTC</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Test Time:</div>
+                <div class="info-value">77.14 seconds</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Test Configuration:</div>
+                <div class="info-value">4 FEMB Slots, 5 Power Rails each (1V test voltage)</div>
+            </div>
+        </div>
+
+        <!-- WIB Power Supply -->
+        <div class="section">
+            <div class="section-title">WIB Power Supply Measurements</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Channel</th>
+                        <th style="width: 25%;">Voltage (V)</th>
+                        <th style="width: 25%;">Current (A)</th>
+                        <th style="width: 25%;">Power (W)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Channel 1</strong></td>
+                        <td>12.000 V</td>
+                        <td>1.030 A</td>
+                        <td>12.360 W</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channel 2</strong></td>
+                        <td>12.010 V</td>
+                        <td>0.473 A</td>
+                        <td>5.681 W</td>
+                    </tr>
+                    <tr style="background-color: #f3f4f6; font-weight: bold;">
+                        <td><strong>TOTAL</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td>18.041 W</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">FEMB SLOT 0 Power Rail Measurements</div>
+            <div class="test-description">
+                <strong>Test Configuration:</strong> Set voltage = 1V for FE/CD/ADC/IDLE, 5V for BIAS
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Rail</th>
+                        <th style="width: 16%;">Set V (V)</th>
+                        <th style="width: 16%;">Meas V (V)</th>
+                        <th style="width: 16%;">Meas I (A)</th>
+                        <th style="width: 16%;">Power (W)</th>
+                        <th style="width: 16%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rail-label"><strong>FE</strong> (LArASIC)</td>
+                        <td>1.00</td>
+                        <td>1.012</td>
+                        <td>0.121</td>
+                        <td>0.122</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>ADC</strong> (ColdADC)</td>
+                        <td>1.00</td>
+                        <td>1.002</td>
+                        <td>0.227</td>
+                        <td>0.227</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>CD</strong> (COLDATA)</td>
+                        <td>1.00</td>
+                        <td>1.024</td>
+                        <td>0.075</td>
+                        <td>0.077</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>IDLE</strong> (IDLE)</td>
+                        <td>1.00</td>
+                        <td>1.031</td>
+                        <td class="error-cell">0.337</td>
+                        <td>0.347</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>BIAS</strong> (BIAS)</td>
+                        <td>5.00</td>
+                        <td>4.990</td>
+                        <td>0.028</td>
+                        <td>0.138</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title">FEMB SLOT 1 Power Rail Measurements</div>
+            <div class="test-description">
+                <strong>Test Configuration:</strong> Set voltage = 1V for FE/CD/ADC/IDLE, 5V for BIAS
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Rail</th>
+                        <th style="width: 16%;">Set V (V)</th>
+                        <th style="width: 16%;">Meas V (V)</th>
+                        <th style="width: 16%;">Meas I (A)</th>
+                        <th style="width: 16%;">Power (W)</th>
+                        <th style="width: 16%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rail-label"><strong>FE</strong> (LArASIC)</td>
+                        <td>1.00</td>
+                        <td>1.020</td>
+                        <td>0.123</td>
+                        <td>0.126</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>ADC</strong> (ColdADC)</td>
+                        <td>1.00</td>
+                        <td>1.009</td>
+                        <td>0.231</td>
+                        <td>0.233</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>CD</strong> (COLDATA)</td>
+                        <td>1.00</td>
+                        <td>1.026</td>
+                        <td>0.075</td>
+                        <td>0.077</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>IDLE</strong> (IDLE)</td>
+                        <td>1.00</td>
+                        <td>1.027</td>
+                        <td>0.219</td>
+                        <td>0.225</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>BIAS</strong> (BIAS)</td>
+                        <td>5.00</td>
+                        <td>5.000</td>
+                        <td>0.028</td>
+                        <td>0.142</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title">FEMB SLOT 2 Power Rail Measurements</div>
+            <div class="test-description">
+                <strong>Test Configuration:</strong> Set voltage = 1V for FE/CD/ADC/IDLE, 5V for BIAS
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Rail</th>
+                        <th style="width: 16%;">Set V (V)</th>
+                        <th style="width: 16%;">Meas V (V)</th>
+                        <th style="width: 16%;">Meas I (A)</th>
+                        <th style="width: 16%;">Power (W)</th>
+                        <th style="width: 16%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rail-label"><strong>FE</strong> (LArASIC)</td>
+                        <td>1.00</td>
+                        <td>0.987</td>
+                        <td>0.113</td>
+                        <td>0.111</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>ADC</strong> (ColdADC)</td>
+                        <td>1.00</td>
+                        <td>1.015</td>
+                        <td>0.233</td>
+                        <td>0.237</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>CD</strong> (COLDATA)</td>
+                        <td>1.00</td>
+                        <td>1.022</td>
+                        <td>0.073</td>
+                        <td>0.074</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>IDLE</strong> (IDLE)</td>
+                        <td>1.00</td>
+                        <td>1.005</td>
+                        <td class="error-cell">0.312</td>
+                        <td>0.313</td>
+                        <td class="status-cell status-fail">FAIL</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>BIAS</strong> (BIAS)</td>
+                        <td>5.00</td>
+                        <td>5.000</td>
+                        <td>0.028</td>
+                        <td>0.141</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title">FEMB SLOT 3 Power Rail Measurements</div>
+            <div class="test-description">
+                <strong>Test Configuration:</strong> Set voltage = 1V for FE/CD/ADC/IDLE, 5V for BIAS
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Rail</th>
+                        <th style="width: 16%;">Set V (V)</th>
+                        <th style="width: 16%;">Meas V (V)</th>
+                        <th style="width: 16%;">Meas I (A)</th>
+                        <th style="width: 16%;">Power (W)</th>
+                        <th style="width: 16%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rail-label"><strong>FE</strong> (LArASIC)</td>
+                        <td>1.00</td>
+                        <td>0.977</td>
+                        <td>0.110</td>
+                        <td>0.107</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>ADC</strong> (ColdADC)</td>
+                        <td>1.00</td>
+                        <td>0.985</td>
+                        <td>0.217</td>
+                        <td>0.213</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>CD</strong> (COLDATA)</td>
+                        <td>1.00</td>
+                        <td>1.013</td>
+                        <td>0.071</td>
+                        <td>0.072</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>IDLE</strong> (IDLE)</td>
+                        <td>1.00</td>
+                        <td>0.992</td>
+                        <td>0.273</td>
+                        <td>0.271</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td class="rail-label"><strong>BIAS</strong> (BIAS)</td>
+                        <td>5.00</td>
+                        <td>5.000</td>
+                        <td>0.028</td>
+                        <td>0.141</td>
+                        <td class="status-cell status-pass">PASS</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Footer -->
+        <div class="footer">
+            <p>DUNE WIB Quality Control System - Test03 FEMB Power Rail Test</p>
+            <p>Report generated: 2025-12-19 10:48:22 UTC</p>
+        </div>
     </div>
-    
-    
-    <div class="section">
-        <h3>WIB_03_1V Power Rail in FEMB SLOT 1</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rail</th>
-                    <th>FE</th><th>CD</th><th>ADC</th><th>IDLE</th><th>BIAS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Set Voltage (V)</td><td>1</td><td>1</td><td>1</td><td>1</td><td>5</td></tr>
-                <tr><td>Measured Voltage (V)</td><td>1.017</td><td>1.025</td><td>1.007</td><td>1.026</td><td>5.000</td></tr>
-                <tr><td>Measured Current (A)</td><td>0.123</td><td>0.074</td><td>0.233</td><td>0.237</td><td>0.029</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    
-    <div class="section">
-        <h3>WIB_03_1V Power Rail in FEMB SLOT 2</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rail</th>
-                    <th>FE</th><th>CD</th><th>ADC</th><th>IDLE</th><th>BIAS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Set Voltage (V)</td><td>1</td><td>1</td><td>1</td><td>1</td><td>5</td></tr>
-                <tr><td>Measured Voltage (V)</td><td>0.985</td><td>1.021</td><td>1.012</td><td>1.004</td><td>5.000</td></tr>
-                <tr><td>Measured Current (A)</td><td>0.112</td><td>0.072</td><td>0.236</td><td>0.326</td><td>0.028</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
-    
-    <div class="section">
-        <h3>WIB_03_1V Power Rail in FEMB SLOT 3</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rail</th>
-                    <th>FE</th><th>CD</th><th>ADC</th><th>IDLE</th><th>BIAS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Set Voltage (V)</td><td>1</td><td>1</td><td>1</td><td>1</td><td>5</td></tr>
-                <tr><td>Measured Voltage (V)</td><td>0.977</td><td>1.012</td><td>0.984</td><td>0.993</td><td>5.000</td></tr>
-                <tr><td>Measured Current (A)</td><td>0.110</td><td>0.070</td><td>0.219</td><td>0.285</td><td>0.028</td></tr>
-            </tbody>
-        </table>
-    </div>
-    
 </body>
 </html>

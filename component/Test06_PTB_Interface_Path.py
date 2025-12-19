@@ -8,6 +8,7 @@ import time
 from function.cls_udp import CLS_UDP
 from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
+from function.csv_manager import WIB_QC_CSV_Manager
 import datetime
 
 
@@ -27,7 +28,23 @@ psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)
 v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
+v2, c2 = psu.measure(2)  # FIXED: was psu.measure(1)
+print(f"WIB Power - Ch1: {v1:.3f}V {c1:.3f}A, Ch2: {v2:.3f}V {c2:.3f}A")
+
+# Update CSV with WIB power measurements
+if rp_dict.csv_manager:
+    v1_status = "PASS" if 11.0 <= v1 <= 13.0 else "FAIL"
+    c1_status = "PASS" if 0.5 <= c1 <= 3.0 else "FAIL"
+    v2_status = "PASS" if 11.0 <= v2 <= 13.0 else "FAIL"
+    c2_status = "PASS" if 0.5 <= c2 <= 3.0 else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T06_00", "value": round(v1, 3), "status": v1_status},
+        {"item_id": "T06_01", "value": round(c1, 3), "status": c1_status},
+        {"item_id": "T06_02", "value": round(v2, 3), "status": v2_status},
+        {"item_id": "T06_03", "value": round(c2, 3), "status": c2_status}
+    ])
+
 time.sleep(1)
 
 time.sleep(30) # wait for boot
@@ -37,8 +54,18 @@ time.sleep(27) # wait for boot
 
 # Internet Connection
 # TCP/IP 192.168.121.1
-ping_host(ip_address="192.168.121.1", count=4)
-ping_host(ip_address="192.168.121.2", count=4)
+ping1_result = ping_host(ip_address="192.168.121.1", count=4)
+ping2_result = ping_host(ip_address="192.168.121.2", count=4)
+
+# Update CSV with ping test results
+if rp_dict.csv_manager:
+    ping1_status = "PASS" if ping1_result else "FAIL"
+    ping2_status = "PASS" if ping2_result else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T06_04", "value": "Connected" if ping1_result else "Failed", "status": ping1_status},
+        {"item_id": "T06_05", "value": "Connected" if ping2_result else "Failed", "status": ping2_status}
+    ])
 
 time.sleep(1)
 # input('open putty')
@@ -191,9 +218,17 @@ print(SI5342)
 if SI5342 == 0x42:
     print("SI5342 is Selected")
     rp_dict.log06_PTB['SI5342'] = True
+    si5342_result = "Selected"
+    si5342_status = "PASS"
 else:
     print("SI5342 is NOT Selected")
     rp_dict.log06_PTB['SI5342'] = False
+    si5342_result = "Not Selected"
+    si5342_status = "FAIL"
+
+# Update CSV with SI5342 test result
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.update_item("T06_10", si5342_result, status=si5342_status)
 
 
 # Select Si5344
@@ -205,9 +240,17 @@ print(SI5344)
 if SI5344 == 0x44:
     print("SI5344 is Selected")
     rp_dict.log06_PTB['SI5344'] = True
+    si5344_result = "Selected and Configured"
+    si5344_status = "PASS"
 else:
     print("SI5344 is NOT Selected")
     rp_dict.log06_PTB['SI5344'] = False
+    si5344_result = "Not Selected"
+    si5344_status = "FAIL"
+
+# Update CSV with SI5344 test result (will update after configuration)
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.update_item("T06_11", si5344_result, status=si5344_status)
 
 
 time.sleep(0.1)
@@ -730,10 +773,17 @@ print(FP_BK)
 if FP_BK == 0x60000000:
     print("FP_BK is Selected")
     rp_dict.log06_PTB['FP_BK'] = True
-
+    fp_bk_result = "Interface Active (0x60000000)"
+    fp_bk_status = "PASS"
 else:
     print("FP_BK is NOT Selected")
     rp_dict.log06_PTB['FP_BK'] = False
+    fp_bk_result = f"Interface Error (0x{FP_BK:08X})"
+    fp_bk_status = "FAIL"
+
+# Update CSV with FP_BK interface test result
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.update_item("T06_12", fp_bk_result, status=fp_bk_status)
 
 # reset
 time.sleep(0.1)
@@ -744,9 +794,15 @@ time.sleep(0.5)
 psu.safe_power_off()
 psu.close()
 t2 = time.time()
-print('time consumption = {}'.format(t2-t1))
+test_duration = round(t2 - t1, 2)
+print('time consumption = {}'.format(test_duration))
+
+# Update CSV with test duration
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.update_item("T06_99", test_duration, status="COMPLETE")
 
 import os
+from datetime import datetime
 
 # === Setup relative path to ../report/PTB_Interface.html ===
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -756,35 +812,210 @@ print(target_file_path)
 # Ensure target directory exists
 os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
 
-# Build HTML table
-html = """<!DOCTYPE html>
-<html>
+# Determine overall status
+all_tests_passed = all(value == True for value in rp_dict.log06_PTB.values())
+overall_status = "PASS" if all_tests_passed else "FAIL"
+overall_status_class = "status-pass" if all_tests_passed else "status-fail"
+
+# Count test results
+total_tests = len(rp_dict.log06_PTB)
+passed_tests = sum(1 for value in rp_dict.log06_PTB.values() if value == True)
+
+# Build professional HTML report
+html = f"""<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PTB Interface Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 60%; margin: auto; }
-    th, td { border: 1px solid #999; padding: 8px 12px; text-align: center; }
-    th { background-color: #f2f2f2; }
-    tr:nth-child(even) { background-color: #fafafa; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUNE WIB PTB Interface Test Report</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 20px;
+        }}
+
+        .container {{
+            max-width: 1000px;
+            margin: 0 auto;
+        }}
+
+        .header {{
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
+        }}
+
+        .header h1 {{
+            font-size: 28px;
+            margin-bottom: 10px;
+        }}
+
+        .header h2 {{
+            font-size: 20px;
+            color: #666666;
+            font-weight: normal;
+        }}
+
+        .status-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 18px;
+            border: 2px solid #000000;
+        }}
+
+        .status-pass {{
+            background-color: #ffffff;
+            color: #000000;
+        }}
+
+        .status-fail {{
+            background-color: #fee2e2;
+            color: #000000;
+        }}
+
+        .info-section {{
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #000000;
+        }}
+
+        .info-row {{
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #cccccc;
+        }}
+
+        .info-row:last-child {{
+            border-bottom: none;
+        }}
+
+        .info-label {{
+            font-weight: bold;
+        }}
+
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            border: 1px solid #000000;
+        }}
+
+        th {{
+            background-color: #e5e5e5;
+            color: #000000;
+            font-weight: bold;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #000000;
+        }}
+
+        td {{
+            padding: 12px;
+            border: 1px solid #000000;
+        }}
+
+        tr.test-pass {{
+            background-color: #ffffff;
+        }}
+
+        tr.test-fail {{
+            background-color: #fee2e2;
+        }}
+
+        .footer {{
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
+        }}
+    </style>
 </head>
 <body>
-  <h2 style="text-align:center;">WIB_06 PTB Interface Report</h2>
-  <table>
-    <tr><th>Item</th><th>Check Result</th></tr>
+    <div class="container">
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <h2>PTB Interface Test Report (Test06)</h2>
+            <div class="status-badge {overall_status_class}">
+                Overall Status: {overall_status}
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3 style="margin-bottom: 15px;">Test Information</h3>
+            <div class="info-row">
+                <span class="info-label">Test Date:</span>
+                <span>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Test Duration:</span>
+                <span>{test_duration} seconds</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tests Passed:</span>
+                <span>{passed_tests} / {total_tests}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">WIB Power Ch1:</span>
+                <span>{v1:.3f}V, {c1:.3f}A</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">WIB Power Ch2:</span>
+                <span>{v2:.3f}V, {c2:.3f}A</span>
+            </div>
+        </div>
+
+        <h3 style="margin: 30px 0 15px 0;">PTB Interface Test Results</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Item</th>
+                    <th>Result</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
 """
 
-# Fill rows
+# Fill test result rows
 for key, value in rp_dict.log06_PTB.items():
-    html += f"    <tr><td>{key}</td><td>{value}</td></tr>\n"
+    status = "PASS" if value == True else "FAIL"
+    row_class = "test-pass" if value == True else "test-fail"
+    result_text = "✓ Passed" if value == True else "✗ Failed"
+
+    html += f"""                <tr class="{row_class}">
+                    <td><strong>{key}</strong></td>
+                    <td>{result_text}</td>
+                    <td><strong>{status}</strong></td>
+                </tr>
+"""
 
 # Close HTML
-html += """  </table>
+html += """            </tbody>
+        </table>
+
+        <div class="footer">
+            <p>DUNE WIB Quality Control System</p>
+            <p>Generated on {}</p>
+        </div>
+    </div>
 </body>
 </html>
-"""
+""".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 # Write to file
 with open(target_file_path, "w") as f:
