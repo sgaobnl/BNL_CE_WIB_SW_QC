@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont  # add at top if not present
-
+from PyQt5.QtCore import QTime
 
 class InitChecklist(QWidget):
     def __init__(self):
@@ -32,9 +32,20 @@ class InitChecklist(QWidget):
         self.chk_robot.setFont(QFont("Arial", 14))
         self.chk_robot.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
 
-        self.chk_coldtest  = QCheckBox("Cold test")
+        # --- Disable cold test checkbox after 3 PM ---
+        current_time = QTime.currentTime()
+        cutoff_time = QTime(15, 0)  # 15:00 (3 PM)
+
+        if current_time >= cutoff_time:
+            self.chk_coldtest  = QCheckBox("Cold test (Disable after 3PM)")
+            self.chk_coldtest.setEnabled(False)
+            self.LN2_flg=False
+        else:
+            self.chk_coldtest  = QCheckBox("Cold test")
+            self.chk_coldtest.setEnabled(True)
         self.chk_coldtest.setFont(QFont("Arial", 14))
         self.chk_coldtest.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
+
 
         layout.addWidget(QLabel("Checklist:"))
         layout.addWidget(self.chk_tray)

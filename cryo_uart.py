@@ -241,15 +241,18 @@ class cryobox:
         self.cryo_close()
         print ("Please wait %d minutes..."%waitminutes)
         time.sleep(waitminutes*60)
-                   
+
                     
 if __name__=="__main__":
     cryo=cryobox()
-#    cryo.cryo_fill()
-    #cryo.cryo_lowlevel(waitminutes=10)
-    #cryo.cryo_highlevel(waitminutes=5)
-    #cryo.cryo_highlevel(waitminutes=60)
-#    input ("Wait...")
-    cryo.cryo_warmup(waitminutes=30)
-    cryo.cryo_close()
+    for i in range(8):
+        print (i)
+        #cryo.cryo_fill()
+        #cryo.cryo_lowlevel(waitminutes=10)
+        #cryo.cryo_highlevel(waitminutes=5)
+        #cryo.cryo_highlevel(waitminutes=60)
+    #    input ("Wait...")
+     #   cryo.cryo_warmup(waitminutes=30)
+        cryo.cryo_warmup(waitminutes=30)
+        #cryo.cryo_close()
 

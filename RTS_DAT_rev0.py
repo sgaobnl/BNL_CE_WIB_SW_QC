@@ -113,6 +113,7 @@ def RTS_debug (info, user_email, status=None, trayno=None, trayc=None, trayr=Non
 def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
     print ("DUTtype", duttype)
     dut_skt = {}
+    ids_bads = {}
     #make sure DAT is powered off
     DAT_power_off()
 
@@ -191,7 +192,7 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                 QCstatus, badchips = DAT_QC(user_email, dut_skt,duttype, LN2_flg=LN2_flg, testid=90+chips)  
                 if ("Code#E001" in QCstatus) : #move back to bad tray 
                     ids = current_ids
-                    #ids_bads[ids] = dut_skt[ids]
+                    ids_bads[ids] = dut_skt[ids]
                     removekey = ids
                     dut_skt.pop(removekey, None)  
                     ids_g = list(dut_skt.keys())
@@ -224,7 +225,7 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
             else:
                 tmpi = tmpi + 1
     rts.rts_idle()
-    return duts, dut_skt
+    return duts, dut_skt, ids_bads
 
 def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
     while True:
@@ -642,12 +643,20 @@ else:
 dut_skt = {}
 
 Undone_Flag = False 
+NIGHT_ON = False
 while (len(duts) > 0) or Undone_Flag :
 #    rts.PumpOn()
 #    time.sleep(5)
 #    rts.PumpOff()
 
-    duts, dut_skt_n = MovetoSoket(sinkno, duts,ids_dict, skts=skts,duttype=duttype) 
+    duts, dut_skt_n, ids_bads = MovetoSoket(sinkno, duts,ids_dict, skts=skts,duttype=duttype) 
+
+    for key in list(ids_bads.keys()):
+        ocr_key = ids_bads[key][0] + 1
+        chip_ocr[ocr_key] = [False] + chip_ocr[ocr_key][1:] + [f'Failed_in_QC'] + [f'Moved_to_bad_tray_slot']
+    with open(ocrbin_fp, 'wb') as fn:
+        pickle.dump(chip_ocr, fn)
+
     print ("Remain chips on tray: ", duts)
 
     for key in list(dut_skt_n.keys()):
@@ -698,7 +707,7 @@ while (len(duts) > 0) or Undone_Flag :
         chip_ocr[ocr_key] = chip_ocr[ocr_key] + [f'PASS_QC'] 
     for key in list(ids_bads.keys()):
         ocr_key = ids_bads[key][0] + 1
-        chip_ocr[ocr_key] = [False] + chip_ocr[ocr_key][1:] + [f'Failed_in_QC'] + [f'Moved_to_bad_tray_slot_{BAD_TRAY_SPOT}']
+        chip_ocr[ocr_key] = [False] + chip_ocr[ocr_key][1:] + [f'Failed_in_QC'] + [f'Moved_to_bad_tray_slot']
     with open(ocrbin_fp, 'wb') as fn:
         pickle.dump(chip_ocr, fn)
 
@@ -727,6 +736,13 @@ while (len(duts) > 0) or Undone_Flag :
             logs["RTS_MSG_S2R_F"] = ids_bads
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
+    switch_hr = int(datetime.datetime.now().strftime("%H"))
+    if (switch_hr >= 15) and LN2_flg and ((len(duts) > 0) or Undone_Flag ): 
+        NIGHT_ON = True
+        sendemail(subject ="Please replace the tray for warm test at night!", message="Please put aside current tray for cold test. \n Then place a new tray for warm test only at night!", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
+        break
+    else:
+        NIGHT_ON = False
 
 rts.rts_shutdown()
 
@@ -740,14 +756,15 @@ rts_msgs = manip.read_rtsmsgfp()
 for rts_msg_wfp in rts_msgs:
     manip.manip_extract(rts_r, rts_msg_wfp)
 
-from move_data import copy_and_delete_folder
-src_root=rootdir +"/../"
-src_folder= trayid
-dst_root=r"S:/RTS_DAT_LArASIC_QC/"
-copy_and_delete_folder(src_root, src_folder, dst_root)
-
-print ("Done")
-sendemail(subject ="Congratulations! The tray is done...", message="Please remove the tested tray and place a new tray with label.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
+if not NIGHT_ON:
+    from move_data import copy_and_delete_folder
+    src_root=rootdir +"/../"
+    src_folder= trayid
+    dst_root=r"S:/RTS_DAT_LArASIC_QC/"
+    copy_and_delete_folder(src_root, src_folder, dst_root)
+    
+    print ("Done")
+    sendemail(subject ="Congratulations! The tray is done...", message="Please remove the tested tray and place a new tray with label.", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
 
 
 

@@ -578,3 +578,7 @@ class RTS_CFG():
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
+if __name__=="__main__":
+    rts=RTS_CFG()
+    rts.rts_init()
+    rts.rts_shutdown()
