@@ -1,0 +1,13 @@
+﻿tester,lke
+SLOT0,1826-1K-35
+SLOT1,1826-1K-37
+SLOT2,
+SLOT3,
+test_site,BNL
+toy_TPC,y
+comment,QC test
+top_path,/home/dune/
+Tech_site_email,lke@gmail.com
+Test_Site,BNL
+Tech_Coordinator,LKE
+QC_data_root_folder,/home/dune/

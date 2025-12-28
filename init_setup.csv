@@ -1,0 +1,9 @@
+Test_Site,BNL
+Tech_site_email,lke@bnl.gov
+Tech_Coordinator,LKE
+QC_data_root_folder,/mnt/data
+Rigol_PS_for_WIB,True
+Rigol_PS_ID,USB0::0x1AB1::0x0E11::DP8C184550857::INSTR
+CTS_LN2_AM, 1800
+CTS_LN2_PM, 1200
+

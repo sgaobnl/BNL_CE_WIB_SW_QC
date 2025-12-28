@@ -1,0 +1,17 @@
+
+1. WIB standalone operation
+
+python3 wib_startup.py #init the WIB
+
+python3 femb_assembly_chk.py 0 1 2 3 save 5  #0 - if femb0 exists, 1-femb1, 2-femb2, 3-femb3
+#input the necessary infomation such as tester name, femb_sn. 
+
+copy data back to PC (scp command) 
+
+
+2. PC access 
+
+setup sshkey
+
+
+python top_checkout.py path_in_PC

@@ -1,0 +1,8 @@
+# An early power-on script. Does not enable all on-FEMB regulators.
+run coldata_power_off
+# Timing system & PLL setup
+run conf_pll_timing
+# Setup frontend power
+run femb_voltages
+run coldata_power_on
+delay 1000000
