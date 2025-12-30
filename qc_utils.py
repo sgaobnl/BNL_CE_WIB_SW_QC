@@ -135,23 +135,27 @@ def check_fault_files(paths, show_p_files=False, inform=None, time_limit_hours=N
 
     s0 = True
     s1 = True
+    s2 = True
+    s3 = True
+
     if len(f_files) > 0:
         print(Fore.YELLOW + "\n⚠️  Fault files detected:" + Style.RESET_ALL)
+        # Print all fault files with proper formatting
+        for ff in f_files:
+            print(Fore.RED + f"  ✗ {ff}" + Style.RESET_ALL)
     else:
         print(Fore.GREEN + "\n✓ No fault files detected" + Style.RESET_ALL)
+
+    # Check slot status
     for ff in f_files:
-        if 'Slot0' in ff:
+        if 'S0' in ff:
             s0 = False
-            print(ff)
-        if 'Slot1' in ff:
+        if 'S1' in ff:
             s1 = False
-            print(ff)
-        if 'Slot2' in ff:
+        if 'S2' in ff:
             s2 = False
-            print(ff)
-        if 'Slot3' in ff:
+        if 'S3' in ff:
             s3 = False
-            print(ff)
 
     if inform:
         if s0:

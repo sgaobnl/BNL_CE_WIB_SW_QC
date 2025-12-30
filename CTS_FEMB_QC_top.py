@@ -238,7 +238,7 @@ if 1 in state_list:
             print(Fore.CYAN + "         [1/2] Scan the QR code (1st scan)" + Style.RESET_ALL)
             femb_id_00 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
             ##### Validate: Must contain IO-1826-1 (HD) or IO-1865-1 (VD)
-            if ("IO-1826-1" in femb_id_00) or ("IO-1865-1" in femb_id_00):
+            if ("-1826-1" in femb_id_00) or ("-1865-1" in femb_id_00):
                 break
             else:
                 print_status('error', "         No valid FEMB ID detected. Please try again.")
@@ -247,7 +247,7 @@ if 1 in state_list:
         while True:
             print(Fore.CYAN + "         [2/2] Scan the QR code (2nd scan)" + Style.RESET_ALL)
             femb_id_01 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("IO-1826-1" in femb_id_01) or ("IO-1865-1" in femb_id_01):
+            if ("-1826-1" in femb_id_01) or ("-1865-1" in femb_id_01):
                 break
             else:
                 print_status('error', "         No valid FEMB ID detected. Please try again.")
@@ -263,7 +263,7 @@ if 1 in state_list:
                 while True:
                     print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
                     femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                    if ("IO-1826-1" in femb_id_2) or ("IO-1865-1" in femb_id_2):
+                    if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
                         break
                     else:
                         print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -271,7 +271,7 @@ if 1 in state_list:
                 while True:
                     print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
                     femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                    if ("IO-1826-1" in femb_id_3) or ("IO-1865-1" in femb_id_3):
+                    if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
                         break
                     else:
                         print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -349,7 +349,7 @@ if 1 in state_list:
             print(
                 Fore.YELLOW + "         Step 1.21: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(1st scan)" + Style.RESET_ALL)
             femb_id_10 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("IO-1826-1" in femb_id_10) or ("IO-1865-1" in femb_id_10):
+            if ("-1826-1" in femb_id_10) or ("-1865-1" in femb_id_10):
                 break
             else:
                 print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -359,7 +359,7 @@ if 1 in state_list:
             print(
                 Fore.YELLOW + "         Step 1.22: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(2nd scan)" + Style.RESET_ALL)
             femb_id_11 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("IO-1826-1" in femb_id_11) or ("IO-1865-1" in femb_id_11):
+            if ("-1826-1" in femb_id_11) or ("-1865-1" in femb_id_11):
                 break
             else:
                 print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -375,7 +375,7 @@ if 1 in state_list:
                 while True:
                     print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
                     femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-                    if ("IO-1826-1" in femb_id_2) or ("IO-1865-1" in femb_id_2):
+                    if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
                         break
                     else:
                         print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -383,7 +383,7 @@ if 1 in state_list:
                 while True:
                     print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
                     femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-                    if ("IO-1826-1" in femb_id_3) or ("IO-1865-1" in femb_id_3):
+                    if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
                         break
                     else:
                         print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
@@ -738,6 +738,17 @@ if 3 in state_list:
                         else:
                             print(Fore.RED + "✗ Warm QC FAILED" + Style.RESET_ALL)
 
+                            # Print fault file paths
+                            print(Fore.YELLOW + "\n" + "-" * 70)
+                            print("  📋 Checking for fault files in Warm QC results...")
+                            print("-" * 70 + Style.RESET_ALL)
+                            check_fault_files(
+                                paths=[wqdata_path, wqreport_path],
+                                show_p_files=False,
+                                inform=inform,
+                                time_limit_hours=None
+                            )
+
                             # Send email notification
                             print(Fore.RED + "\n" + "=" * 70)
                             print("  ⚠️  WARM QC TEST FAILED")
@@ -998,8 +1009,19 @@ if 4 in state_list and not goto_disassembly:
                     print("  ➡️  Proceeding to Cold QC anyway...")
                     print("=" * 70 + Style.RESET_ALL)
 
+                    # Print fault file paths
+                    print(Fore.YELLOW + "\n" + "-" * 70)
+                    print("  📋 Checking for fault files in Cold Checkout results...")
+                    print("-" * 70 + Style.RESET_ALL)
+                    check_fault_files(
+                        paths=[lcdata_path, lcreport_path],
+                        show_p_files=False,
+                        inform=infoln,
+                        time_limit_hours=None
+                    )
+
                     # Send email notification
-                    print(Fore.YELLOW + "📧 Sending failure notification email..." + Style.RESET_ALL)
+                    print(Fore.YELLOW + "\n📧 Sending failure notification email..." + Style.RESET_ALL)
                     send_email.send_email(
                         sender, password, receiver,
                         f"Cold Checkout Failed - {pre_info.get('test_site', 'Unknown')}",
@@ -1094,8 +1116,19 @@ if 4 in state_list and not goto_disassembly:
                 print("  ⚠️  COLD QC TEST FAILED")
                 print("=" * 70 + Style.RESET_ALL)
 
+                # Print fault file paths
+                print(Fore.YELLOW + "\n" + "-" * 70)
+                print("  📋 Checking for fault files in Cold QC results...")
+                print("-" * 70 + Style.RESET_ALL)
+                check_fault_files(
+                    paths=[lqdata_path, lqreport_path],
+                    show_p_files=False,
+                    inform=infoln,
+                    time_limit_hours=None
+                )
+
                 # Send failure notification
-                print(Fore.YELLOW + "📧 Sending failure notification email..." + Style.RESET_ALL)
+                print(Fore.YELLOW + "\n📧 Sending failure notification email..." + Style.RESET_ALL)
                 send_email.send_email(
                     sender, password, receiver,
                     f"Cold QC Test Failed - {pre_info.get('test_site', 'Unknown')}",
@@ -1403,19 +1436,52 @@ print(Fore.CYAN + "\nPlease prepare for the next test cycle.\n" + Style.RESET_AL
 ### 53. Final Comprehensive Result Check (Optional)
 time.sleep(2)
 
-# Scan results from this test session only (last 2 hours)
-final_data_directory = os.path.join(pre_info['QC_data_root_folder'], 'FEMB_QC', 'Data')
-final_report_directory = os.path.join(pre_info['QC_data_root_folder'], 'FEMB_QC', 'Report')
-
-paths = [
-    final_data_directory,
-    final_report_directory
-]
+# Collect actual paths generated during this test run
+# Use specific paths from QC_Process instead of scanning entire directories
+paths = []
 
 print(Fore.CYAN + "\n" + "=" * 70)
 print("  FINAL COMPREHENSIVE RESULTS REVIEW")
-print(f"  (Test session from last 2 hours)")
 print("=" * 70 + Style.RESET_ALL)
+
+print(Fore.YELLOW + "\n📁 Collecting test result paths from this run..." + Style.RESET_ALL)
+
+# Add warm checkout paths (Phase 3)
+if wcdata_path != r"D:\data\temp":
+    paths.extend([wcdata_path, wcreport_path])
+    print(Fore.CYAN + f"  ✓ Warm Checkout Data:   {wcdata_path}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"  ✓ Warm Checkout Report: {wcreport_path}" + Style.RESET_ALL)
+
+# Add warm QC paths (Phase 3)
+if wqdata_path != r"D:\data\temp":
+    paths.extend([wqdata_path, wqreport_path])
+    print(Fore.CYAN + f"  ✓ Warm QC Data:         {wqdata_path}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"  ✓ Warm QC Report:       {wqreport_path}" + Style.RESET_ALL)
+
+# Add cold checkout paths (Phase 4)
+if lcdata_path != r"D:\data\temp":
+    paths.extend([lcdata_path, lcreport_path])
+    print(Fore.CYAN + f"  ✓ Cold Checkout Data:   {lcdata_path}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"  ✓ Cold Checkout Report: {lcreport_path}" + Style.RESET_ALL)
+
+# Add cold QC paths (Phase 4)
+if lqdata_path != r"D:\data\temp":
+    paths.extend([lqdata_path, lqreport_path])
+    print(Fore.CYAN + f"  ✓ Cold QC Data:         {lqdata_path}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"  ✓ Cold QC Report:       {lqreport_path}" + Style.RESET_ALL)
+
+# Add final checkout paths (Phase 5)
+if fcdata_path != r"D:\data\temp":
+    paths.extend([fcdata_path, fcreport_path])
+    print(Fore.CYAN + f"  ✓ Final Checkout Data:  {fcdata_path}" + Style.RESET_ALL)
+    print(Fore.CYAN + f"  ✓ Final Checkout Report: {fcreport_path}" + Style.RESET_ALL)
+
+if len(paths) == 0:
+    print(Fore.YELLOW + "  ⚠️  No test paths were generated during this run" + Style.RESET_ALL)
+else:
+    print(Fore.GREEN + f"\n✓ Total paths collected: {len(paths)}" + Style.RESET_ALL)
+
+print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
 print("\nWould you like to review the complete test results?")
 print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Yes, show detailed results")
 print("  " + Fore.YELLOW + "'n'" + Style.RESET_ALL + " - No, skip to completion")
@@ -1423,8 +1489,8 @@ print("  " + Fore.YELLOW + "'n'" + Style.RESET_ALL + " - No, skip to completion"
 while True:
     choice = input(Fore.YELLOW + ">> " + Style.RESET_ALL).lower()
     if choice == 'y':
-        # Display comprehensive results with verbose output (only recent files)
-        result = analyze_test_results(paths, pre_info, time_limit_hours=2)
+        # Display comprehensive results using actual test paths (no time filtering needed)
+        result = analyze_test_results(paths, pre_info, time_limit_hours=None)
         display_qc_results(result, "Complete QC Cycle", verbose=True)
         break
     elif choice == 'n':
@@ -1432,6 +1498,41 @@ while True:
         break
     else:
         print(Fore.RED + "Invalid input. Please enter 'y' or 'n'" + Style.RESET_ALL)
+
+### 53b. Labeling Instructions Based on Test Results
+print("\n" + Fore.CYAN + "=" * 70)
+print("  📋 FEMB LABELING INSTRUCTIONS")
+print("=" * 70 + Style.RESET_ALL)
+
+# Analyze final results to determine which FEMBs passed/failed
+if len(paths) > 0:
+    final_result = analyze_test_results(paths, pre_info, time_limit_hours=None)
+
+    print(Fore.YELLOW + "\nPlease label the FEMB boards according to test results:\n" + Style.RESET_ALL)
+
+    # Check each slot and provide labeling instructions
+    labeled_count = 0
+    for slot_num in ['0', '1', '2', '3']:
+        if slot_num in final_result.slot_status:
+            passed, femb_id = final_result.slot_status[slot_num]
+            slot_name = "Bottom" if slot_num == '0' else ("Top" if slot_num == '1' else f"Slot{slot_num}")
+
+            if passed:
+                print(Fore.GREEN + f"  ✓ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
+                print(Fore.GREEN + f"     → Apply GREEN label" + Style.RESET_ALL)
+            else:
+                print(Fore.RED + f"  ✗ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
+                print(Fore.RED + f"     → Apply RED label" + Style.RESET_ALL)
+            print()
+            labeled_count += 1
+
+    if labeled_count == 0:
+        print(Fore.YELLOW + "  ⚠️  No FEMB boards found in this test session" + Style.RESET_ALL)
+else:
+    print(Fore.YELLOW + "\n⚠️  No test results available. Please label boards manually.\n" + Style.RESET_ALL)
+
+print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
+confirm("Have you labeled all FEMB boards correctly?")
 
 ### 54. Record Test Result
 confirm("Please Record the Test Result")

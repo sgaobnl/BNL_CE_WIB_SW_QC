@@ -78,8 +78,19 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
         femb_id = inform.get(slot_name.upper(), 'N/A') if inform else 'N/A'
 
         # Check if any fault files contain this slot
+        # Support multiple naming conventions: Slot0, S0, _S0, FEMB_0, FEMB0
+        slot_patterns = [
+            slot_name,           # e.g., "Slot0"
+            slot_name.lower(),   # e.g., "slot0"
+            f"S{slot_num}",      # e.g., "S0"
+            f"_S{slot_num}",     # e.g., "_S0"
+            f"FEMB_{slot_num}",  # e.g., "FEMB_0"
+            f"FEMB{slot_num}",   # e.g., "FEMB0"
+        ]
+
         for fault_file in result.fault_files:
-            if slot_name in fault_file:
+            # Check if any pattern matches in the fault file path
+            if any(pattern in fault_file for pattern in slot_patterns):
                 passed = False
                 break
 
