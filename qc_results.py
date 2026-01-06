@@ -18,6 +18,7 @@ class QCResult:
         self.fault_files = []
         self.pass_files = []
         self.slot_status = {}  # {slot_num: (passed, femb_id)}
+        self.slot_files = {}  # {slot_num: {'faults': [], 'passes': []}}
         self.test_phase = ""
         self.total_faults = 0
         self.total_passes = 0
@@ -26,6 +27,7 @@ class QCResult:
 def analyze_test_results(paths, inform=None, time_limit_hours=None):
     """
     Analyze test result files and return structured result data
+    Files are grouped by slot based on filename patterns (FEMB_0_ for slot0, FEMB_1_ for slot1)
 
     Args:
         paths: List of directories to check for result files
@@ -42,7 +44,11 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
     if time_limit_hours is not None:
         time_threshold = time.time() - (time_limit_hours * 3600)
 
-    # Scan all paths for fault and pass files
+    # Initialize slot file groups
+    for slot_num in ['0', '1', '2', '3']:
+        result.slot_files[slot_num] = {'faults': [], 'passes': []}
+
+    # Scan all paths for fault and pass files, grouping by slot
     for path in paths:
         if not os.path.isdir(path):
             continue
@@ -59,56 +65,96 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
                     except OSError:
                         continue
 
-                # Check for fault files
-                if "_F." in file or "_F_S" in file:
+                # Determine if this is a fault or pass file
+                is_fault = "_F." in file or "_F_S" in file
+                is_pass = "_P." in file or "_P_S" in file
+
+                if not (is_fault or is_pass):
+                    continue
+
+                # Identify which slot this file belongs to based on filename
+                slot_identified = None
+                file_upper = file.upper()
+
+                # Check for FEMB_X_ pattern (where X is slot number)
+                # This is the primary pattern: FEMB_0_ for slot0, FEMB_1_ for slot1
+                for slot_num in ['0', '1', '2', '3']:
+                    if f"FEMB_{slot_num}_" in file_upper:
+                        slot_identified = slot_num
+                        break
+
+                # Fallback: check other slot patterns if primary pattern not found
+                if slot_identified is None:
+                    for slot_num in ['0', '1', '2', '3']:
+                        slot_patterns = [
+                            f"SLOT{slot_num}",   # e.g., "Slot0" or "SLOT0"
+                            f"_S{slot_num}_",    # e.g., "_S0_"
+                            f"_S{slot_num}.",    # e.g., "_S0."
+                            f"-S{slot_num}_",    # e.g., "-S0_"
+                            f"S{slot_num}_",     # e.g., "S0_" at start
+                        ]
+
+                        for pattern in slot_patterns:
+                            if pattern in file_upper:
+                                slot_identified = slot_num
+                                break
+                        if slot_identified:
+                            break
+
+                # Group file by slot and type
+                if is_fault:
                     result.fault_files.append(file_path)
-                # Check for pass files
-                elif "_P." in file or "_P_S" in file:
+                    if slot_identified:
+                        result.slot_files[slot_identified]['faults'].append(file_path)
+                elif is_pass:
                     result.pass_files.append(file_path)
+                    if slot_identified:
+                        result.slot_files[slot_identified]['passes'].append(file_path)
 
     result.total_faults = len(result.fault_files)
     result.total_passes = len(result.pass_files)
 
-    # Analyze slot-specific results
+    # Analyze slot-specific results based on grouped files
     slots_to_check = ['Slot0', 'Slot1', 'Slot2', 'Slot3']
 
     for slot_name in slots_to_check:
         slot_num = slot_name[-1]  # Extract slot number
-        passed = True
         femb_id = inform.get(slot_name.upper(), 'N/A') if inform else 'N/A'
 
-        # Check if any fault files contain this slot
-        # Support multiple naming conventions: Slot0, S0, _S0, FEMB_0, FEMB0
-        slot_patterns = [
-            slot_name,           # e.g., "Slot0"
-            slot_name.lower(),   # e.g., "slot0"
-            f"S{slot_num}",      # e.g., "S0"
-            f"_S{slot_num}",     # e.g., "_S0"
-            f"FEMB_{slot_num}",  # e.g., "FEMB_0"
-            f"FEMB{slot_num}",   # e.g., "FEMB0"
-        ]
+        # Only process this slot if FEMB is installed (has valid ID)
+        if not (inform and slot_name.upper() in inform and
+                inform[slot_name.upper()] not in ['', ' ', 'N/A', 'EMPTY', 'NONE']):
+            continue
 
-        for fault_file in result.fault_files:
-            # Check if any pattern matches in the fault file path
-            if any(pattern in fault_file for pattern in slot_patterns):
-                passed = False
-                break
+        # Determine pass/fail based on files grouped for this slot
+        slot_faults = result.slot_files[slot_num]['faults']
+        slot_passes = result.slot_files[slot_num]['passes']
 
-        # Only add to status if FEMB is installed (has valid ID)
-        if inform and slot_name.upper() in inform and inform[slot_name.upper()] not in ['', ' ', 'N/A']:
-            result.slot_status[slot_num] = (passed, femb_id)
+        # Slot passes only if it has no fault files
+        passed = len(slot_faults) == 0
+
+        # Debug: print slot file summary (if debug enabled)
+        if os.environ.get('QC_DEBUG') == '1':
+            print(f"DEBUG: Slot{slot_num} (FEMB {femb_id}):")
+            print(f"  - Fault files: {len(slot_faults)}")
+            print(f"  - Pass files: {len(slot_passes)}")
+            if slot_faults:
+                for fault_file in slot_faults:
+                    print(f"    • {os.path.basename(fault_file)}")
+
+        result.slot_status[slot_num] = (passed, femb_id)
 
     return result
 
 
 def display_qc_results(result, test_phase="QC Test", verbose=False):
     """
-    Display formatted QC test results
+    Display formatted QC test results with per-slot file breakdown
 
     Args:
         result: QCResult object
         test_phase: Name of the test phase (e.g., "Warm QC", "Cold QC")
-        verbose: If True, show detailed file lists
+        verbose: If True, show detailed file lists for each slot
     """
     print("\n" + "=" * 70)
     print(f"  {test_phase.upper()} - TEST RESULTS")
@@ -128,6 +174,12 @@ def display_qc_results(result, test_phase="QC Test", verbose=False):
         passed, femb_id = result.slot_status[slot_num]
         slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
 
+        # Get slot-specific file counts
+        slot_faults = result.slot_files.get(slot_num, {}).get('faults', [])
+        slot_passes = result.slot_files.get(slot_num, {}).get('passes', [])
+        fault_count = len(slot_faults)
+        pass_count = len(slot_passes)
+
         if passed:
             status_icon = "✓"
             status_text = "PASS"
@@ -140,14 +192,32 @@ def display_qc_results(result, test_phase="QC Test", verbose=False):
             failed_slots.append((slot_num, femb_id))
 
         print(f"   {color}{status_icon} {slot_position} Slot{slot_num}: FEMB {femb_id} - {status_text}{Style.RESET_ALL}")
+        print(f"      Files: {Fore.RED}{fault_count} faults{Style.RESET_ALL}, {Fore.GREEN}{pass_count} passes{Style.RESET_ALL}")
 
-    # Detailed fault file list (if verbose or if there are faults)
-    if result.fault_files and (verbose or result.total_faults > 0):
-        print(f"\n⚠️  Fault Files Detected:")
-        for fault_file in result.fault_files:
-            print(f"   {Fore.YELLOW}• {os.path.basename(fault_file)}{Style.RESET_ALL}")
-            if verbose:
-                print(f"     {Fore.CYAN}Path: {fault_file}{Style.RESET_ALL}")
+        # Show detailed file list for this slot if verbose
+        if verbose and (slot_faults or slot_passes):
+            if slot_faults:
+                print(f"      {Fore.YELLOW}Fault files for Slot{slot_num}:{Style.RESET_ALL}")
+                for fault_file in slot_faults:
+                    print(f"        {Fore.RED}• {os.path.basename(fault_file)}{Style.RESET_ALL}")
+            if slot_passes and verbose:
+                print(f"      {Fore.CYAN}Pass files for Slot{slot_num}:{Style.RESET_ALL}")
+                for pass_file in slot_passes[:3]:  # Show first 3 pass files
+                    print(f"        {Fore.GREEN}• {os.path.basename(pass_file)}{Style.RESET_ALL}")
+                if len(slot_passes) > 3:
+                    print(f"        {Fore.CYAN}... and {len(slot_passes)-3} more{Style.RESET_ALL}")
+
+    # Overall fault file summary (if there are faults)
+    if result.fault_files and result.total_faults > 0:
+        print(f"\n⚠️  All Fault Files Detected ({result.total_faults} total):")
+        # Group by slot for display
+        for slot_num in sorted(result.slot_files.keys()):
+            slot_faults = result.slot_files[slot_num]['faults']
+            if slot_faults:
+                slot_name = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+                print(f"   {Fore.YELLOW}{slot_name} Slot{slot_num}:{Style.RESET_ALL}")
+                for fault_file in slot_faults:
+                    print(f"      {Fore.RED}• {os.path.basename(fault_file)}{Style.RESET_ALL}")
 
     # Overall result
     print("\n" + "=" * 70)

@@ -519,9 +519,10 @@ class ana_tools:
 
     def PlotADCMon(self, fembs, mon_list, savedir, fdir, fembNo, NewWIB=True):
         issue_inl = defaultdict(dict)
-        mon_items = ["VBGR", "VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
-        mon_items_n = [1, 2, 3, 4]
+        mon_items = ["VCMI", "VCMO", "VREFP", "VREFN", "VBGR", "VSSA", "VSSA"]
+        mon_items_n = [0,1, 2, 3]
         nvset = len(mon_list)
+        print(nvset)
         status = True
         if NewWIB:
             fadc = 1 / (2 ** 14) * 2500
@@ -532,14 +533,19 @@ class ana_tools:
             femb_id = "FEMB ID {}".format(fembNo['femb%d' % nfemb])
             check = True
             check_issue = []
+            print(mon_list[4][1])
             for imon in mon_items_n:
+
                 vset_list = []
                 fig, ax = plt.subplots(figsize=(6, 4))
                 data_dic = {}
 
-                for i in range(nvset):
+                for i in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]:#range(nvset):
+                    print(i)
                     vset_list.append(mon_list[i][0])
                     mon_data = mon_list[i][1]
+                    print(mon_list[i][1])
+                    print(imon)
                     chip_dic = mon_data[imon]
                     # for key, chip_data in chip_dic.items():
                     #     print(key)
@@ -567,7 +573,8 @@ class ana_tools:
 
                 for key, chip_data in chip_dic.items():
                     #   INL judgement
-                    x_data = np.array(range(0, 256, 16))
+                    # x_data = np.array(range(0, 256, 16))
+                    x_data = [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240,255]
                     y_data = np.array(data_dic[key])
                     coefficients = np.polyfit(x_data[0:14], y_data[0:14], deg=1)
                     fit_function = np.poly1d(coefficients)

@@ -234,62 +234,100 @@ if 1 in state_list:
 
         #### 10. QR Code Scanning & Validation (Triple verification)
         ##### First scan
+        femb_id_0 = None  # Initialize
         while True:
             print(Fore.CYAN + "         [1/2] Scan the QR code (1st scan)" + Style.RESET_ALL)
-            femb_id_00 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
+            print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+            femb_id_00 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+
+            ##### Check if slot is empty
+            if femb_id_00.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                femb_id_0 = 'EMPTY'
+                print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
+                break
             ##### Validate: Must contain IO-1826-1 (HD) or IO-1865-1 (VD)
-            if ("-1826-1" in femb_id_00) or ("-1865-1" in femb_id_00):
+            elif ("-1826-1" in femb_id_00) or ("-1865-1" in femb_id_00):
                 break
             else:
-                print_status('error', "         No valid FEMB ID detected. Please try again.")
+                print_status('error', "         No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board.")
 
-        ##### Second scan
-        while True:
-            print(Fore.CYAN + "         [2/2] Scan the QR code (2nd scan)" + Style.RESET_ALL)
-            femb_id_01 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("-1826-1" in femb_id_01) or ("-1865-1" in femb_id_01):
-                break
-            else:
-                print_status('error', "         No valid FEMB ID detected. Please try again.")
-
-        ##### Match check - If scans match, proceed; else require 3rd scan
-        if femb_id_01 == femb_id_00:
-            print_status('success', "         Bottom CE box QR ID recorded successfully")
-            femb_id_0 = femb_id_01
-        else:
-            ##### Third scan verification (if first two don't match)
-            print_status('warning', '         QR codes do not match! Please scan a 3rd time and verify carefully.')
+        ##### Second scan (skip if first scan was EMPTY)
+        if femb_id_0 != 'EMPTY':
             while True:
-                while True:
-                    print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
-                    femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                    if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
-                        break
-                    else:
-                        print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+                print(Fore.CYAN + "         [2/2] Scan the QR code (2nd scan)" + Style.RESET_ALL)
+                print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+                femb_id_01 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
 
-                while True:
-                    print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
-                    femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                    if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
-                        break
-                    else:
-                        print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                if femb_id_2 == femb_id_3:
-                    print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
-                    femb_id_0 = femb_id_2
+                ##### Check if slot is empty
+                if femb_id_01.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                    femb_id_0 = 'EMPTY'
+                    print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
+                    break
+                elif ("-1826-1" in femb_id_01) or ("-1865-1" in femb_id_01):
                     break
                 else:
-                    print(
-                        Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
+                    print_status('error', "         No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board.")
+
+            ##### Match check - If scans match, proceed; else require 3rd scan
+            if femb_id_0 != 'EMPTY':
+                if femb_id_01 == femb_id_00:
+                    print_status('success', "         Bottom CE box QR ID recorded successfully")
+                    femb_id_0 = femb_id_01
+                else:
+                    ##### Third scan verification (if first two don't match)
+                    print_status('warning', '         QR codes do not match! Please scan a 3rd time and verify carefully.')
+                    while True:
+                        while True:
+                            print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
+                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
+                            femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                            if femb_id_2.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                                femb_id_0 = 'EMPTY'
+                                print_status('warning', "         Bottom slot marked as EMPTY")
+                                break
+                            elif ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
+                                break
+                            else:
+                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                        if femb_id_0 == 'EMPTY':
+                            break
+
+                        while True:
+                            print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
+                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
+                            femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                            if femb_id_3.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                                femb_id_0 = 'EMPTY'
+                                print_status('warning', "         Bottom slot marked as EMPTY")
+                                break
+                            elif ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
+                                break
+                            else:
+                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                        if femb_id_0 == 'EMPTY':
+                            break
+
+                        if femb_id_2 == femb_id_3:
+                            print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
+                            femb_id_0 = femb_id_2
+                            break
+                        else:
+                            print(
+                                Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
 
         #### 11. Version Identification based on ID
-        femb_id_0 = femb_id_0.replace('/', '_')
-        if "1826" in femb_id_0:
-            version = "HD"  # Horizontal Drift
+        if femb_id_0 != 'EMPTY':
+            femb_id_0 = femb_id_0.replace('/', '_')
+            if "1826" in femb_id_0:
+                version = "HD"  # Horizontal Drift
+            else:
+                version = "VD"  # Vertical Drift
         else:
-            version = "VD"  # Vertical Drift
+            # Keep previous version or set default
+            if 'version' not in locals():
+                version = "VD"  # Default to VD if no previous version set
 
         #### 12. Serial Number Final Confirmation
         while True:
@@ -345,62 +383,98 @@ if 1 in state_list:
         )
 
         # First scan
+        femb_id_1 = None  # Initialize
         while True:
             print(
                 Fore.YELLOW + "         Step 1.21: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(1st scan)" + Style.RESET_ALL)
-            femb_id_10 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("-1826-1" in femb_id_10) or ("-1865-1" in femb_id_10):
+            print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+            femb_id_10 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+
+            ##### Check if slot is empty
+            if femb_id_10.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                femb_id_1 = 'EMPTY'
+                print_status('warning', "         Top slot marked as EMPTY (no FEMB installed)")
+                break
+            elif ("-1826-1" in femb_id_10) or ("-1865-1" in femb_id_10):
                 break
             else:
-                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board." + Style.RESET_ALL)
 
-        # Second scan
-        while True:
-            print(
-                Fore.YELLOW + "         Step 1.22: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(2nd scan)" + Style.RESET_ALL)
-            femb_id_11 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-            if ("-1826-1" in femb_id_11) or ("-1865-1" in femb_id_11):
-                break
-            else:
-                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-        if femb_id_11 == femb_id_10:
-            print(Fore.GREEN + "         ✓ Top CE box QR ID recorded successfully" + Style.RESET_ALL)
-            femb_id_1 = femb_id_11
-        else:
-            print(
-                Fore.MAGENTA + '         ⚠️  QR codes do not match! Please scan a 3rd time and verify carefully.' + Style.RESET_ALL)
-
+        # Second scan (skip if first scan was EMPTY)
+        if femb_id_1 != 'EMPTY':
             while True:
-                while True:
-                    print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
-                    femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-                    if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
-                        break
-                    else:
-                        print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+                print(
+                    Fore.YELLOW + "         Step 1.22: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(2nd scan)" + Style.RESET_ALL)
+                print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+                femb_id_11 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
 
-                while True:
-                    print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
-                    femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL)
-                    if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
-                        break
-                    else:
-                        print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                if femb_id_2 == femb_id_3:
-                    print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
-                    femb_id_1 = femb_id_2
+                if femb_id_11.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                    femb_id_1 = 'EMPTY'
+                    print_status('warning', "         Top slot marked as EMPTY (no FEMB installed)")
+                    break
+                elif ("-1826-1" in femb_id_11) or ("-1865-1" in femb_id_11):
                     break
                 else:
-                    print(
-                        Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
+                    print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board." + Style.RESET_ALL)
 
-        femb_id_1 = femb_id_1.replace('/', '_')
-        if "1826" in femb_id_1:
-            version = "HD"
-        else:
-            version = "VD"
+            # Match check (only if not EMPTY)
+            if femb_id_1 != 'EMPTY':
+                if femb_id_11 == femb_id_10:
+                    print(Fore.GREEN + "         ✓ Top CE box QR ID recorded successfully" + Style.RESET_ALL)
+                    femb_id_1 = femb_id_11
+                else:
+                    print(
+                        Fore.MAGENTA + '         ⚠️  QR codes do not match! Please scan a 3rd time and verify carefully.' + Style.RESET_ALL)
+
+                    while True:
+                        while True:
+                            print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
+                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
+                            femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                            if femb_id_2.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                                femb_id_1 = 'EMPTY'
+                                print_status('warning', "         Top slot marked as EMPTY")
+                                break
+                            elif ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
+                                break
+                            else:
+                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                        if femb_id_1 == 'EMPTY':
+                            break
+
+                        while True:
+                            print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
+                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
+                            femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                            if femb_id_3.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
+                                femb_id_1 = 'EMPTY'
+                                print_status('warning', "         Top slot marked as EMPTY")
+                                break
+                            elif ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
+                                break
+                            else:
+                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                        if femb_id_1 == 'EMPTY':
+                            break
+
+                        if femb_id_2 == femb_id_3:
+                            print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
+                            femb_id_1 = femb_id_2
+                            break
+                        else:
+                            print(
+                                Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
+
+        # Version identification
+        if femb_id_1 != 'EMPTY':
+            femb_id_1 = femb_id_1.replace('/', '_')
+            if "1826" in femb_id_1:
+                version = "HD"
+            else:
+                version = "VD"
+        # else: keep the version from bottom slot
 
         while True:
             print(Fore.RED + f"         Step 1.23: Confirm top FEMB SN is {femb_id_1}" + Style.RESET_ALL)
@@ -461,11 +535,13 @@ if 1 in state_list:
     if 'SLOT0' not in csv_data:
         csv_data['SLOT0'] = 'H01'
     else:
-        csv_data['SLOT0'] = femb_id_0
+        # If slot is marked as EMPTY, store as single space ' '
+        csv_data['SLOT0'] = ' ' if femb_id_0 == 'EMPTY' else femb_id_0
     if 'SLOT1' not in csv_data:
         csv_data['SLOT1'] = 'H02'
     else:
-        csv_data['SLOT1'] = femb_id_1
+        # If slot is marked as EMPTY, store as single space ' '
+        csv_data['SLOT1'] = ' ' if femb_id_1 == 'EMPTY' else femb_id_1
     if 'SLOT2' not in csv_data:
         csv_data['SLOT2'] = ' '
     if 'SLOT3' not in csv_data:
