@@ -14,7 +14,7 @@ just_fix_windows_console()
 wibip = "192.168.121.123"
 wibhost = "root@{}".format(wibip)
 
-def subrun(command, timeout = 30, check=True, exitflg = True):
+def subrun(command, timeout = 30, check=False, exitflg = True):
     try:
         result = subprocess.run(command,
                                 capture_output=True,
@@ -23,17 +23,23 @@ def subrun(command, timeout = 30, check=True, exitflg = True):
                                 shell=True,
                                 #stdout=subprocess.PIPE,
                                 #stderr=subprocess.PIPE,
-                                check=check
-                                )
-    except subprocess.CalledProcessError as e:
-        print ("Call Error", e.returncode)
-        if exitflg:
-            print ("Call Error FAIL!")
-            print ("Exit anyway")
-            return None
-            #exit()
-            
+                                #check=check
+                                check=False #Disable check=True and handle errors yourself (recommended)
 
+        if result.returncode != 0:
+            print("Command failed:", result.returncode)
+            print("STDERR:", result.stderr.strip())
+            if exitflg:
+                return 'Error'
+        return result
+
+    #except subprocess.CalledProcessError as e:
+    #    print ("Call Error", e.returncode)
+    #    if exitflg:
+    #        print ("Call Error FAIL!")
+    #        print ("Exit anyway")
+    #        return None
+    #        #exit()
         #continue
     except subprocess.TimeoutExpired as e:
         print ("No reponse in %d seconds"%(timeout))
@@ -41,11 +47,10 @@ def subrun(command, timeout = 30, check=True, exitflg = True):
             #print (result.stdout)
             print ("Timoout FAIL!")
             print ("Exit anyway")
-            return None
+            return 'Error'
             #exit()
 
         #continue
-    return result
 
 
 def DAT_power_off():
@@ -53,7 +58,7 @@ def DAT_power_off():
     print (datetime.datetime.utcnow(), " : Power DAT down (it takes < 60s)")
     command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
     result=subrun(command, timeout = 60)
-    if result != None:
+    if result != 'Error':
         if "Done" in result.stdout:
             print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
         else:
@@ -69,7 +74,7 @@ def DAT_power_on():
     print (datetime.datetime.utcnow(), " : Power DAT On (it takes < 60s)")
     command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py on off off off"]
     result=subrun(command, timeout = 60)
-    if result != None:
+    if result != 'Error':
         if "Done" in result.stdout:
             print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
         else:
@@ -160,8 +165,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                 command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_ColdADC_QC_top.py -t {}".format(testid)]
             elif "CD" in DUT:
                 command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_COLDATA_QC_top.py -t {}".format(testid)]
-            result=subrun(command, timeout = None) #rewrite with Popen later
-            if result != None:
+            #result=subrun(command, timeout = None) #rewrite with Popen later
+            result=subrun(command, timeout = 60*10) #rewrite with Popen later
+            if result != 'Error':
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d"%testid] = [command, resultstr]
                 if "Pass!" in result.stdout:
@@ -198,8 +204,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                     return None
             fsrc = wibhost + ":" + fs
             command = ["scp", "-r",fsrc , fddir]
-            result=subrun(command, timeout = None)
-            if result != None:
+            #result=subrun(command, timeout = None)
+            result=subrun(command, timeout = 60*10)
+            if result != 'Error':
                 print ("data save at {}".format(fddir))
                 logs['pc_raw_dir'] = fddir #later save it into log file
                 logs["QC_TestItemID_%03d_SCP"%testid] = [command, result]
@@ -214,8 +221,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
             print (QCstatus, bads)
             fdirdel = logs['wib_raw_dir']
             command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-            result=subrun(command, timeout = None)
-            if result != None:
+            #result=subrun(command, timeout = None)
+            result=subrun(command, timeout = 60*5)
+            if result != 'Error':
                 print ("WIB folder {} is deleted!".format(fdirdel))
             return (QCstatus, bads)
 
@@ -269,14 +277,6 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         logs['tms_items'] = tms_items
 
         tms = list(tms_items.keys())
-        #print (datetime.datetime.utcnow(), "\033[93m   : Please put chips into the sockets carefully \033[0m")
-        #print ("Please update chip serial numbers")
-        #command = ["notepad.exe", logs['PC_WRCFG_FN']]
-        #result=subrun(command, timeout = None, check=False)
-        #from DAT_chk_cfgfile import dat_chk_cfgfile
-        #pf= dat_chk_cfgfile(fcfg = logs['PC_WRCFG_FN'], duttype=duttype )
-        #if pf:
-        #logs['New_chips'] = True
         logs['TestIDs'] = tms
     
     #if QC_TST_EN:
@@ -291,7 +291,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                 return None
 
             result = subrun(command=command, timeout=timeout, exitflg=False)
-            if result != None:
+            if result != 'Error':
                 log = result.stdout
                 chk1 = "Reply from {}: bytes=32".format(wibip)
                 chk2p = log.find("Received =")
@@ -309,7 +309,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         formatted_now = now.strftime('%a %b %d %H:%M:%S UTC %Y')
         command = ["ssh", wibhost, "date -s \'{}\'".format(formatted_now)]
         result=subrun(command, timeout = 30)
-        if result != None:
+        if result != 'Error':
             print ("WIB Time: ", result.stdout)
             print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
             logs['WIB_UTC_Date_Time'] = result.stdout
@@ -324,7 +324,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         else:
             command = ["ssh", wibhost, "fpgautil -b /home/root/BNL_CE_WIB_SW_QC/DAT_QC_WIB_binfiles/wib_top_production.wibbin"]
         result=subrun(command, timeout = 30)
-        if result != None:
+        if result != 'Error':
             if "BIN FILE loaded through FPGA manager successfully" in result.stdout:
                 print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
             logs['WIB_bin_file'] = result.stdout
@@ -336,7 +336,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         print (datetime.datetime.utcnow(), " : Start WIB initialization (it takes < 30s)")
         command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC;  python3 wib_startup.py"]
         result=subrun(command, timeout = 30)
-        if result != None:
+        if result != 'Error':
             if "Done" in result.stdout:
                 print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
             else:
@@ -356,15 +356,17 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
     
         wibdst = "{}:/home/root/BNL_CE_WIB_SW_QC/".format(wibhost)
         command = ["scp", "-r", logs['PC_WRCFG_FN'] , wibdst]
-        result=subrun(command, timeout = None)
-        if result != None:
+        #result=subrun(command, timeout = None)
+        result=subrun(command, timeout = 60*5)
+        if result != 'Error':
             logs['CFG_wrto_WIB'] = [command, result.stdout]
     
             wibsrc = "{}:/home/root/BNL_CE_WIB_SW_QC/asic_info.csv".format(wibhost)
             pcdst = "./readback/"
             command = ["scp", "-r", wibsrc , pcdst]
-            result=subrun(command, timeout = None)
-            if result != None:
+            #result=subrun(command, timeout = None)
+            result=subrun(command, timeout = 60*5)
+            if result != 'Error':
                 logs['CFG_rbfrom_WIB'] = [command, result.stdout]
                 logs['PC_RBCFG_fn'] = pcdst + "asic_info.csv"
     
@@ -404,8 +406,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                 command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_ColdADC_QC_top.py -t {}".format(testid)]
             elif "CD" in DUT:
                 command = ["ssh", wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_COLDATA_QC_top.py -t {}".format(testid)]
-            result=subrun(command, timeout = None) #rewrite with Popen later
-            if result != None:
+            #result=subrun(command, timeout = None) #rewrite with Popen later
+            result=subrun(command, timeout = 60*10) #rewrite with Popen later
+            if result != 'Error':
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d"%testid] = [command, resultstr]
                 if "Pass!" in result.stdout:
@@ -445,8 +448,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                     return None
             fsrc = wibhost + ":" + fs
             command = ["scp", "-r",fsrc , fddir]
-            result=subrun(command, timeout = None)
-            if result != None:
+            #result=subrun(command, timeout = None)
+            result=subrun(command, timeout = 60*5)
+            if result != 'Error':
                 print ("data save at {}".format(fddir))
                 logs['pc_raw_dir'] = fddir #later save it into log file
                 logs["QC_TestItemID_%03d_SCP"%testid] = [command, result]
@@ -474,8 +478,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                     fdirdel = logs['wib_raw_dir']
                     #command = ["rm", "-rf",fdirdel] 
                     command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-                    result=subrun(command, timeout = None)
-                    if result != None:
+                    #result=subrun(command, timeout = None)
+                    result=subrun(command, timeout = 60*5)
+                    if result != 'Error':
                         print ("WIB folder {} is deleted!".format(fdirdel))
                     return (QCstatus, bads)
 
@@ -499,21 +504,6 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
                     tmsi = tmsi + 1
                     retry_fi = 0
                     #
-                    #QCstatus = "Fail"
-                    #bads = [0, 1]
-
-                    #if len(bads) > 0 :
-                    #    if logs['New_chips']:
-                    #        fp = logs['pc_raw_dir'] + "QC.log"
-                    #        with open(fp, 'wb') as fn:
-                    #            pickle.dump(logs, fn)
-                    #    fdirdel = logs['wib_raw_dir']
-                    #    command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-                    #    result=subrun(command, timeout = None)
-                    #    if result != None:
-                    #        print ("WIB folder {} is deleted!".format(fdirdel))
-                    #    DAT_power_off()
-                    #    return (QCstatus, bads)
                 else:
                     tmsi = tmsi + 1
                     retry_fi = 0
@@ -523,7 +513,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
         fdirdel = logs['wib_raw_dir']
         command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
         result=subrun(command, timeout = 60)
-        if result != None:
+        if result != 'Error':
             print ("WIB folder {} is deleted!".format(fdirdel))
 
   
@@ -548,15 +538,9 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
 
 if __name__=="__main__":
     result = rts_ssh(dut_skt={20250926130804:(0,0)}, root = "C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0001/", duttype="FE", env="RT", chips=1 )
-    if result != None:
+    if result != 'Error':
         QCstatus = result[0]
         print (QCstatus)
         print (result)
 
-   #fdirdel = "/home/root/BNL_CE_WIB_SW_QC/tmp_data/RT_CD_031702417_031752417/"
-   #command = ["ssh", wibhost, "rm -rf {}".format(fdirdel)] 
-   #print (command)
-   #result=subrun(command,timeout=20)
-   #if result != None:
-   #    print ("WIB folder {} is deleted!".format(fdirdel))
 
