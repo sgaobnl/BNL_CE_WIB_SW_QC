@@ -25,6 +25,7 @@ def subrun(command, timeout = 30, check=False, exitflg = True):
                                 #stderr=subprocess.PIPE,
                                 #check=check
                                 check=False #Disable check=True and handle errors yourself (recommended)
+                                )
 
         if result.returncode != 0:
             print("Command failed:", result.returncode)

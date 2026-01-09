@@ -423,7 +423,7 @@ def ocr_chip(image_fp, image_fn, ocr_image_dir, degree, x=350, y=220, w=330, h=3
 if __name__ == '__main__':
 
     fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/Tested/B099T0097/images/20250612163810_OCR/"""
-    fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0001/images/20250925130831_OCR"""
+    fp = """C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B006T0021\images/20260107151603_OCR"""
     fn = """tray_1_180.bmp"""
     x = ocr_chip(image_fp=fp, image_fn = fn, ocr_image_dir = fp + "./1_ocr.png", degree=180)
     print (x)
