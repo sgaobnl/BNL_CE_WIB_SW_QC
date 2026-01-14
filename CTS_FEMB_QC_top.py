@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------
 # 1. Module Imports - System and third-party libraries
 import cts_ssh_FEMB as cts
+import cts_cryo_uart
 import csv
 import colorama
 from colorama import Fore, Style
@@ -70,6 +71,288 @@ def print_progress_bar(current, total, prefix="Progress", length=40):
     print(f"\r{Fore.CYAN}{prefix}: [{bar}] {percent}%{Style.RESET_ALL}", end="")
     if current == total:
         print()  # New line when complete
+
+def upload_to_network(qc_data_root, csv_file, csv_file_implement, network_path, femb_ids=None):
+    """
+    Upload all test data and reports to network drive.
+    Copies data structure directly to network path without creating additional subfolders.
+
+    Args:
+        qc_data_root: Root folder containing FEMB_QC test data (e.g., /mnt/data)
+        csv_file: Path to femb_info.csv
+        csv_file_implement: Path to femb_info_implement.csv
+        network_path: Network drive upload path (e.g., /data/rtss/femb)
+        femb_ids: List of FEMB IDs being tested (for logging only)
+
+    Returns:
+        bool: True if upload successful, False otherwise
+    """
+    import shutil
+    from datetime import datetime
+
+    try:
+        print("\n" + Fore.CYAN + "=" * 70)
+        print("  UPLOADING TEST DATA TO NETWORK DRIVE")
+        print("=" * 70 + Style.RESET_ALL)
+
+        # Check if network path exists
+        if not os.path.exists(network_path):
+            print_status('warning', f"Network path does not exist: {network_path}")
+            print(Fore.YELLOW + "Attempting to create directory..." + Style.RESET_ALL)
+            try:
+                os.makedirs(network_path, exist_ok=True)
+                print_status('success', "Network directory created")
+            except Exception as e:
+                print_status('error', f"Failed to create network directory: {e}")
+                return False
+
+        print(Fore.CYAN + f"Source: {qc_data_root}" + Style.RESET_ALL)
+        print(Fore.CYAN + f"Destination: {network_path}" + Style.RESET_ALL)
+
+        files_copied = 0
+        total_size = 0
+
+        # 1. Copy FEMB_QC data folder
+        femb_qc_source = os.path.join(qc_data_root, "FEMB_QC")
+        femb_qc_dest = os.path.join(network_path, "FEMB_QC")
+
+        if os.path.exists(femb_qc_source) and os.path.isdir(femb_qc_source):
+            print_status('info', f"Copying FEMB_QC data...")
+
+            # Copy the entire FEMB_QC directory tree
+            shutil.copytree(femb_qc_source, femb_qc_dest, dirs_exist_ok=True)
+
+            # Count files and calculate size
+            for root, dirs, files in os.walk(femb_qc_dest):
+                files_copied += len(files)
+                for file in files:
+                    total_size += os.path.getsize(os.path.join(root, file))
+
+            print_status('success', f"Copied FEMB_QC ({files_copied} files)")
+        else:
+            print_status('warning', f"FEMB_QC folder not found: {femb_qc_source}")
+
+        # 2. Copy CSV files to network path root
+        csv_files_to_copy = [
+            (csv_file, "femb_info.csv"),
+            (csv_file_implement, "femb_info_implement.csv")
+        ]
+
+        for src_file, dest_name in csv_files_to_copy:
+            if os.path.exists(src_file):
+                dest_file = os.path.join(network_path, dest_name)
+                shutil.copy2(src_file, dest_file)
+                files_copied += 1
+                total_size += os.path.getsize(dest_file)
+                print_status('success', f"Copied {dest_name}")
+            else:
+                print_status('warning', f"File not found: {src_file}")
+
+        # Final summary
+        print(Fore.CYAN + "\n" + "=" * 70)
+        print("  UPLOAD COMPLETE")
+        print("=" * 70 + Style.RESET_ALL)
+        print(Fore.GREEN + f"  ✓ Files uploaded: {files_copied}" + Style.RESET_ALL)
+        print(Fore.GREEN + f"  ✓ Total size: {total_size / (1024*1024):.2f} MB" + Style.RESET_ALL)
+        print(Fore.GREEN + f"  ✓ Location: {network_path}" + Style.RESET_ALL)
+        print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
+
+        return True
+
+    except Exception as e:
+        print_status('error', f"Upload failed: {e}")
+        print(Fore.RED + f"Error details: {str(e)}" + Style.RESET_ALL)
+        return False
+
+def parse_assembly_data_from_comment(comment_str):
+    """
+    Parse assembly data from csv_data['comment'] string.
+
+    Format: "Bottom_HWDB=A123,Bottom_CE=ZZZ1234,Bottom_Cover=1234,Bottom_FEMB=...,Top_HWDB=...,..."
+
+    Args:
+        comment_str: CSV-style comment string from assembly
+
+    Returns:
+        dict: {
+            'bottom': {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str, 'femb_sn': str},
+            'top': {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str, 'femb_sn': str}
+        }
+    """
+    result = {
+        'bottom': {'hwdb_qr': '', 'ce_box_sn': '', 'cover_last4': '', 'femb_sn': ''},
+        'top': {'hwdb_qr': '', 'ce_box_sn': '', 'cover_last4': '', 'femb_sn': ''}
+    }
+
+    # Parse CSV-style string
+    parts = comment_str.split(',')
+    data_dict = {}
+    for part in parts:
+        if '=' in part:
+            key, value = part.split('=', 1)
+            data_dict[key.strip()] = value.strip()
+
+    # Extract bottom slot data
+    result['bottom']['hwdb_qr'] = data_dict.get('Bottom_HWDB', '')
+    result['bottom']['ce_box_sn'] = data_dict.get('Bottom_CE', '')
+    result['bottom']['cover_last4'] = data_dict.get('Bottom_Cover', '')
+    result['bottom']['femb_sn'] = data_dict.get('Bottom_FEMB', '')
+
+    # Extract top slot data
+    result['top']['hwdb_qr'] = data_dict.get('Top_HWDB', '')
+    result['top']['ce_box_sn'] = data_dict.get('Top_CE', '')
+    result['top']['cover_last4'] = data_dict.get('Top_Cover', '')
+    result['top']['femb_sn'] = data_dict.get('Top_FEMB', '')
+
+    return result
+
+def validate_disassembly_for_slot(slot_name, assembly_data, test_passed):
+    """
+    Guide user through disassembly validation for one CE box slot.
+    Ensures CE box is returned to correct foam box with correct cover.
+
+    Args:
+        slot_name: "bottom" or "top"
+        assembly_data: dict from parse_assembly_data_from_comment for this slot
+        test_passed: Boolean indicating if QC test passed
+
+    Returns:
+        None
+    """
+    # Check if slot was empty during assembly
+    if assembly_data['ce_box_sn'] == 'EMPTY':
+        print_status('info', f"{slot_name.upper()} slot was EMPTY - skipping disassembly validation")
+        return
+
+    print_separator()
+    print(Fore.CYAN + f"Disassembly Validation for {slot_name.upper()} Slot CE Box" + Style.RESET_ALL)
+    print_separator()
+
+    # Retrieve original assembly data
+    orig_hwdb = assembly_data['hwdb_qr']
+    orig_ce_box = assembly_data['ce_box_sn']
+    orig_cover = assembly_data['cover_last4']
+    femb_sn = assembly_data['femb_sn']
+
+    # Step 1: Scan CE box QR code
+    while True:
+        print(Fore.YELLOW + f"\nStep 1: Scan CE box QR code for {slot_name.upper()} slot" + Style.RESET_ALL)
+        ce_box_scanned = input(Fore.YELLOW + '         Scan or type CE box SN: ' + Style.RESET_ALL).strip()
+
+        if ce_box_scanned == orig_ce_box:
+            print_status('success', f"         ✓ CE box SN matches: {ce_box_scanned}")
+            break
+        else:
+            print_status('error', f"         ✗ Mismatch! Expected: {orig_ce_box}, Got: {ce_box_scanned}")
+            print(Fore.RED + "         Please scan the correct CE box or check assembly records." + Style.RESET_ALL)
+
+    # Step 2: Cover installation validation
+    print(Fore.CYAN + f"\nStep 2: Install cover to CE box {orig_ce_box}" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"         Please install cover ({orig_cover}) to CE box ({orig_ce_box})" + Style.RESET_ALL)
+
+    while True:
+        cover_input = input(Fore.YELLOW + '         After cover is installed, please type in cover last 4 digits of SN: ' + Style.RESET_ALL).strip()
+
+        if cover_input == orig_cover:
+            print_status('success', f"         ✓ Cover SN matches: {cover_input}")
+            break
+        else:
+            print_status('error', f"         ✗ Mismatch! Expected: {orig_cover}, Got: {cover_input}")
+            print(Fore.RED + "         Please re-check the cover SN." + Style.RESET_ALL)
+
+    # Step 3: Foam box packaging validation
+    print(Fore.CYAN + f"\nStep 3: Package CE box into foam box" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"         Please package CE box ({orig_ce_box}) in Foam box ({orig_hwdb})" + Style.RESET_ALL)
+
+    while True:
+        foam_box_scanned = input(Fore.YELLOW + '         Please scan QR code on the foam box: ' + Style.RESET_ALL).strip()
+
+        if foam_box_scanned == orig_hwdb:
+            print_status('success', f"         ✓ Foam box matches: {foam_box_scanned}")
+            break
+        else:
+            print_status('error', f"         ✗ Mismatch! Expected: {orig_hwdb}, Got: {foam_box_scanned}")
+            print(Fore.RED + "         Please use the correct foam box that originally contained this CE box." + Style.RESET_ALL)
+
+    # Step 4: QC result sticker instruction
+    print(Fore.CYAN + f"\nStep 4: Apply QC result sticker" + Style.RESET_ALL)
+    if test_passed:
+        print(Fore.GREEN + "         Put on Green 'PASS' sticker near HWDB QR sticker" + Style.RESET_ALL)
+    else:
+        print(Fore.RED + "         Put on Red 'NG' sticker near HWDB QR sticker" + Style.RESET_ALL)
+
+    # Step 5: Storage instruction
+    print(Fore.YELLOW + "\n         Store the foam box in the designated location." + Style.RESET_ALL)
+
+    print_status('success', f"         {slot_name.upper()} slot CE box disassembly validation complete!")
+    print_separator()
+
+def collect_assembly_data(slot_name):
+    """
+    Collect pre-assembly data for a CE box slot.
+    Returns dict with HWDB QR, CE box SN, cover last 4 digits.
+    Validates that cover SN matches CE box SN.
+
+    Args:
+        slot_name: String like "BOTTOM" or "TOP" for display purposes
+
+    Returns:
+        dict: {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str}
+    """
+    print_separator()
+    print(Fore.CYAN + f"Pre-Assembly Data Collection for {slot_name} Slot" + Style.RESET_ALL)
+    print_separator()
+
+    # Step 1: Scan HWDB QR code on foam box
+    while True:
+        print(Fore.CYAN + "         Step: Scan HWDB QR code on foam box" + Style.RESET_ALL)
+        hwdb_qr = input(Fore.YELLOW + '         Scan or type HWDB QR code: ' + Style.RESET_ALL).strip()
+
+        if hwdb_qr:
+            print_status('success', f"         HWDB QR recorded: {hwdb_qr}")
+            break
+        else:
+            print_status('error', "         HWDB QR code cannot be empty. Please try again.")
+
+    # Step 2: Scan/Type CE box QR code
+    while True:
+        print(Fore.CYAN + "         Step: Scan CE box QR code" + Style.RESET_ALL)
+        ce_box_sn = input(Fore.YELLOW + '         Scan CE box QR code or type SN: ' + Style.RESET_ALL).strip()
+
+        if ce_box_sn:
+            print_status('success', f"         CE box SN recorded: {ce_box_sn}")
+            break
+        else:
+            print_status('error', "         CE box SN cannot be empty. Please try again.")
+
+    # Step 3: Type last 4 digits on CE box cover with validation
+    while True:
+        print(Fore.CYAN + "         Step: Type last 4 digits on CE box cover" + Style.RESET_ALL)
+        cover_last4 = input(Fore.YELLOW + '         Type last 4 digits: ' + Style.RESET_ALL).strip()
+
+        if not cover_last4:
+            print_status('error', "         Cover digits cannot be empty. Please try again.")
+            continue
+
+        # Validation: Check if KKKK matches last 4 of ZZZXXXX
+        if len(ce_box_sn) >= 4:
+            expected_last4 = ce_box_sn[-4:]
+            if cover_last4 == expected_last4:
+                print_status('success', f"         ✓ Cover SN ({cover_last4}) matches CE box SN")
+                break
+            else:
+                print_status('error', f"         ✗ Mismatch: Cover shows '{cover_last4}' but CE box ends with '{expected_last4}'")
+                print(Fore.RED + "         Please re-enter the correct last 4 digits from the CE box cover." + Style.RESET_ALL)
+        else:
+            print_status('warning', "         CE box SN too short to validate, but recording anyway.")
+            break
+
+    print_separator()
+    return {
+        'hwdb_qr': hwdb_qr,
+        'ce_box_sn': ce_box_sn,
+        'cover_last4': cover_last4
+    }
 
 # ----------------------------------------------------------------------------
 # Global Configuration
@@ -156,7 +439,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Launch very small terminal window in bottom-right corner
 # geometry: 15 columns x 5 rows, positioned at bottom-right
 os.system(f'gnome-terminal --title="CTS Monitor" --hide-menubar --geometry=15x5-0-0 --working-directory="{current_dir}" -- bash -c "python3 {script}; exec bash" &')
-print(f"✓ Analysis Code Launched (Minimal monitor window at bottom-right)")
+print(f"✓ Analysis Code Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
 
 ## 6. Pre-Test Preparation
 ### 6.1 Email Validation - Get and confirm user email
@@ -181,27 +464,202 @@ pop.show_image_popup(
     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "4.png")
 )
 
-### 7. LN2 Dewar Refill Confirmation
-#### Determine shift and required LN2 volume
+# ----------------------------------------------------------------------------
+# CTS Cryogenic System Initialization
+# ----------------------------------------------------------------------------
+## Load CTS configuration from init_setup.csv
+cts_config = {}
+try:
+    with open(technician_csv, mode='r', newline='', encoding='utf-8-sig') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if len(row) == 2:
+                key, value = row
+                cts_config[key.strip()] = value.strip()
+except Exception as e:
+    print(Fore.YELLOW + f"⚠ Warning: Could not load CTS configuration: {e}" + Style.RESET_ALL)
+
+## Get CTS wait times from config (in seconds)
+try:
+    cts_ln2_fill_wait = int(cts_config.get('CTS_LN2_Fill_Wait', 1800))  # Default 30 min
+    cts_warmup_wait = int(cts_config.get('CTS_Warmup_Wait', 3600))     # Default 60 min
+except ValueError:
+    cts_ln2_fill_wait = 1800
+    cts_warmup_wait = 3600
+    print(Fore.YELLOW + "⚠ Invalid CTS wait time values in config, using defaults" + Style.RESET_ALL)
+
+## Initialize CTS cryogenic control box
+print(Fore.CYAN + "\n" + "=" * 70)
+print("  CTS CRYOGENIC SYSTEM INITIALIZATION")
+print("=" * 70 + Style.RESET_ALL)
+print(Fore.CYAN + f"Configuration:" + Style.RESET_ALL)
+print(f"  LN₂ Fill Wait Time: {cts_ln2_fill_wait//60} minutes")
+print(f"  Warm-up Wait Time: {cts_warmup_wait//60} minutes")
+print()
+
+cryo = cts_cryo_uart.cryobox()
+cryo_initialized = cryo.cts_init_setup()
+
+if cryo_initialized:
+    print_status('success', "CTS cryogenic box connected via USB - automatic control enabled")
+    cryo_auto_mode = True
+else:
+    if cryo.manual_flg:
+        print_status('warning', "CTS cryogenic box not found - manual control mode")
+        print(Fore.YELLOW + "  You will be prompted to control the cryogenic system manually" + Style.RESET_ALL)
+        cryo_auto_mode = False
+    else:
+        print_status('error', "CTS initialization failed")
+        cryo_auto_mode = False
+
+print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
+
+### 7. LN2 Dewar Level Check and Refill
+print(Fore.CYAN + "\n" + "=" * 70)
+print("  LN₂ DEWAR LEVEL CHECK")
+print("=" * 70 + Style.RESET_ALL)
+
+# Determine shift and set dewar level threshold
 hour = datetime.now().hour
 if 1 <= hour <= 11:
-    LN2 = '1800 [Morning shift]'
+    DEWAR_LEVEL_THRESHOLD = 1700
+    shift_name = "Morning"
 else:
-    LN2 = '1200 [Afternoon shift]'
+    DEWAR_LEVEL_THRESHOLD = 1200
+    shift_name = "Afternoon"
 
-#### Prompt for LN2 refill confirmation
-while True:
-    print(Fore.CYAN + f"Has the 50L dewar been refilled to {LN2}?" + Style.RESET_ALL)
-    print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " (Yes) or " + Fore.RED + "'N'" + Style.RESET_ALL + " (No)")
-    result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-    if result.upper() == 'N':
-        pop.show_image_popup(
-            title="Test Dewar Refill",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "5.png")
+print(Fore.CYAN + f"Current Shift: {shift_name}" + Style.RESET_ALL)
+print(Fore.CYAN + f"Required Dewar Level: >= {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
+
+if cryo_auto_mode:
+    # Automatic mode - check dewar level via CTS with verification loop
+    refill_needed = True
+    refill_performed = False  # Track if refill actually happened
+
+    while refill_needed:
+        print_status('info', "Checking dewar level via CTS...")
+        tc_level, dewar_level = cryo.cts_status()
+
+        print(Fore.CYAN + f"Current Dewar Level: {dewar_level}" + Style.RESET_ALL)
+
+        if dewar_level < DEWAR_LEVEL_THRESHOLD:
+            print_status('warning', f"Dewar level ({dewar_level}) is below {shift_name} threshold ({DEWAR_LEVEL_THRESHOLD})")
+            print(Fore.YELLOW + "⚠️  Dewar refill required!" + Style.RESET_ALL)
+
+            # Show refill instructions popup
+            pop.show_image_popup(
+                title="Test Dewar Refill",
+                image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "5.png")
+            )
+
+            # Wait for refill confirmation
+            while True:
+                print(Fore.CYAN + "\nHas the 50L dewar been refilled?" + Style.RESET_ALL)
+                print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " (Yes) to continue")
+                result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+                if result.upper() == 'Y':
+                    print(Fore.GREEN + "✓ Dewar refill confirmed." + Style.RESET_ALL)
+                    refill_performed = True  # Mark that refill happened
+                    break
+
+            # Verify dewar level after refill
+            print_status('info', "Verifying dewar level after refill...")
+            tc_level, dewar_level = cryo.cts_status()
+            print(Fore.CYAN + f"Verified Dewar Level: {dewar_level}" + Style.RESET_ALL)
+
+            if dewar_level < DEWAR_LEVEL_THRESHOLD:
+                print_status('error', f"Dewar level ({dewar_level}) is still below threshold ({DEWAR_LEVEL_THRESHOLD})")
+                print(Fore.RED + "⚠️  Refill was insufficient. Please refill again." + Style.RESET_ALL)
+                # Loop continues - will ask for refill again
+            else:
+                print_status('success', f"Dewar level ({dewar_level}) is now sufficient!")
+                refill_needed = False  # Exit loop
+        else:
+            print_status('success', f"Dewar level ({dewar_level}) is sufficient for {shift_name} shift (>= {DEWAR_LEVEL_THRESHOLD})")
+            refill_needed = False  # Exit loop
+
+    # If refill was performed, run automatic warm gas purge (20 minutes)
+    if refill_performed:
+        print_status('info', "Running automatic warm gas purge (20 minutes)...")
+        if cryo.cryo_warmgas(waitminutes=20):
+            print_status('success', "Warm gas purge completed")
+        else:
+            print_status('error', "Warm gas purge failed or manual control required")
+
+else:
+    # Manual mode - prompt user to check dewar level with verification loop
+    print_status('warning', "Manual mode - please check dewar level manually")
+
+    refill_performed = False
+    level_sufficient = False
+
+    while not level_sufficient:
+        print(Fore.CYAN + "\nPlease check the dewar level manually." + Style.RESET_ALL)
+        print(Fore.CYAN + f"Required minimum level for {shift_name} shift: {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
+        print("Is the dewar level sufficient for testing?")
+        print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " (Yes) or " + Fore.RED + "'N'" + Style.RESET_ALL + " (No, needs refill)")
+        result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+
+        if result.upper() == 'N':
+            # Show refill popup
+            pop.show_image_popup(
+                title="Test Dewar Refill",
+                image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "5.png")
+            )
+
+            # Wait for refill
+            while True:
+                print(Fore.CYAN + "\nHas the 50L dewar been refilled?" + Style.RESET_ALL)
+                print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " (Yes) when refill is complete")
+                refill_result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+                if refill_result.upper() == 'Y':
+                    print(Fore.GREEN + "✓ Dewar refill confirmed." + Style.RESET_ALL)
+                    refill_performed = True
+                    break
+
+            # Verify dewar level after refill
+            print_status('info', "Please verify the dewar level after refill")
+            print(Fore.CYAN + f"Required minimum level: {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
+            print("Is the dewar level now sufficient?")
+            print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " (Yes) or " + Fore.RED + "'N'" + Style.RESET_ALL + " (No, still insufficient)")
+            verify_result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+
+            if verify_result.upper() == 'Y':
+                print_status('success', "Dewar level verified sufficient")
+                level_sufficient = True  # Exit loop
+            else:
+                print_status('error', "Dewar level still insufficient")
+                print(Fore.RED + "⚠️  Please refill again." + Style.RESET_ALL)
+                # Loop continues - will ask for refill again
+
+        elif result.upper() == 'Y':
+            print(Fore.GREEN + "✓ Dewar level confirmed sufficient." + Style.RESET_ALL)
+            level_sufficient = True  # Exit loop
+
+    # If refill was performed, run manual warm gas purge (20 minutes)
+    if refill_performed:
+        # Manual warm gas instructions
+        print("\n" + Fore.YELLOW + "=" * 70)
+        print("  MANUAL WARM GAS PURGE REQUIRED (20 minutes)")
+        print("=" * 70 + Style.RESET_ALL)
+        print(Fore.CYAN + "Instructions:" + Style.RESET_ALL)
+        print("  1. Set CTS to " + Fore.CYAN + "STATE 2 (Warm Gas)" + Style.RESET_ALL)
+        print("  2. Wait 20 minutes")
+        print("  3. Set CTS back to " + Fore.CYAN + "STATE 1 (IDLE)" + Style.RESET_ALL)
+
+        # 20-minute timer
+        timer_count(
+            start_message="⏰ Warm gas purge timer (20 min)",
+            exit_hint="Type 's' to stop",
+            end_message="✅ Timer complete!",
+            auto_exit_seconds=1200,  # 20 minutes
+            exit_chars=['s', 'stop']
         )
-    elif result.upper() == 'Y':
-        print(Fore.GREEN + "✓ LN2 refill confirmed." + Style.RESET_ALL)
-        break
+
+        input(Fore.YELLOW + "\nPress ENTER when warm gas purge is complete and CTS is in IDLE >> " + Style.RESET_ALL)
+        print_status('success', "Warm gas purge completed")
+
+print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
 
 ## 8. Test Phase Selection - User selects which phases to execute (1-6)
 state_list = state.select_test_states()
@@ -232,90 +690,79 @@ if 1 in state_list:
             image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "6.png")
         )
 
-        #### 10. QR Code Scanning & Validation (Triple verification)
-        ##### First scan
-        femb_id_0 = None  # Initialize
-        while True:
-            print(Fore.CYAN + "         [1/2] Scan the QR code (1st scan)" + Style.RESET_ALL)
-            print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
-            femb_id_00 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+        #### 9a. Check if slot is empty first
+        print(Fore.CYAN + "         Will this slot have a FEMB installed?" + Style.RESET_ALL)
+        print(Fore.YELLOW + "         (Enter 'Y' for Yes, 'EMPTY' or 'N' if this slot will be empty)" + Style.RESET_ALL)
+        slot_status = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip().upper()
 
-            ##### Check if slot is empty
-            if femb_id_00.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                femb_id_0 = 'EMPTY'
-                print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
-                break
-            ##### Validate: Must contain IO-1826-1 (HD) or IO-1865-1 (VD)
-            elif ("-1826-1" in femb_id_00) or ("-1865-1" in femb_id_00):
-                break
-            else:
-                print_status('error', "         No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board.")
+        if slot_status in ['EMPTY', 'NONE', 'N', 'N/A', 'NA', '空', '']:
+            # Slot is empty - skip assembly data collection
+            femb_id_0 = 'EMPTY'
+            bottom_assembly_data = {
+                'hwdb_qr': 'EMPTY',
+                'ce_box_sn': 'EMPTY',
+                'cover_last4': 'EMPTY'
+            }
+            print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
+        else:
+            # Slot will have a FEMB - collect assembly data
+            #### 9b. Pre-Assembly Data Collection (HWDB, CE box, Cover SN)
+            bottom_assembly_data = collect_assembly_data("BOTTOM")
 
-        ##### Second scan (skip if first scan was EMPTY)
-        if femb_id_0 != 'EMPTY':
+            #### 10. QR Code Scanning & Validation (Triple verification)
+            ##### First scan
+            femb_id_0 = None  # Initialize
             while True:
-                print(Fore.CYAN + "         [2/2] Scan the QR code (2nd scan)" + Style.RESET_ALL)
-                print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+                print(Fore.CYAN + "         [1/2] Scan the FEMB QR code (1st scan)" + Style.RESET_ALL)
+                femb_id_00 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+
+                ##### Validate: Must contain IO-1826-1 (HD) or IO-1865-1 (VD)
+                if ("-1826-1" in femb_id_00) or ("-1865-1" in femb_id_00):
+                    break
+                else:
+                    print_status('error', "         No valid FEMB ID detected. Please try again.")
+
+            ##### Second scan
+            while True:
+                print(Fore.CYAN + "         [2/2] Scan the FEMB QR code (2nd scan)" + Style.RESET_ALL)
                 femb_id_01 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
 
-                ##### Check if slot is empty
-                if femb_id_01.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                    femb_id_0 = 'EMPTY'
-                    print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
-                    break
-                elif ("-1826-1" in femb_id_01) or ("-1865-1" in femb_id_01):
+                if ("-1826-1" in femb_id_01) or ("-1865-1" in femb_id_01):
                     break
                 else:
-                    print_status('error', "         No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board.")
+                    print_status('error', "         No valid FEMB ID detected. Please try again.")
 
             ##### Match check - If scans match, proceed; else require 3rd scan
-            if femb_id_0 != 'EMPTY':
-                if femb_id_01 == femb_id_00:
-                    print_status('success', "         Bottom CE box QR ID recorded successfully")
-                    femb_id_0 = femb_id_01
-                else:
-                    ##### Third scan verification (if first two don't match)
-                    print_status('warning', '         QR codes do not match! Please scan a 3rd time and verify carefully.')
+            if femb_id_01 == femb_id_00:
+                print_status('success', "         Bottom CE box QR ID recorded successfully")
+                femb_id_0 = femb_id_01
+            else:
+                ##### Third scan verification (if first two don't match)
+                print_status('warning', '         QR codes do not match! Please scan a 3rd time and verify carefully.')
+                while True:
                     while True:
-                        while True:
-                            print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
-                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
-                            femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                            if femb_id_2.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                                femb_id_0 = 'EMPTY'
-                                print_status('warning', "         Bottom slot marked as EMPTY")
-                                break
-                            elif ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
-                                break
-                            else:
-                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                        if femb_id_0 == 'EMPTY':
-                            break
-
-                        while True:
-                            print("         Scan bottom QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
-                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
-                            femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                            if femb_id_3.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                                femb_id_0 = 'EMPTY'
-                                print_status('warning', "         Bottom slot marked as EMPTY")
-                                break
-                            elif ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
-                                break
-                            else:
-                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                        if femb_id_0 == 'EMPTY':
-                            break
-
-                        if femb_id_2 == femb_id_3:
-                            print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
-                            femb_id_0 = femb_id_2
+                        print("         Scan bottom FEMB QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
+                        femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                        if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
                             break
                         else:
-                            print(
-                                Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
+                            print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                    while True:
+                        print("         Scan bottom FEMB QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
+                        femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                        if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
+                            break
+                        else:
+                            print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                    if femb_id_2 == femb_id_3:
+                        print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
+                        femb_id_0 = femb_id_2
+                        break
+                    else:
+                        print(
+                            Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
 
         #### 11. Version Identification based on ID
         if femb_id_0 != 'EMPTY':
@@ -382,90 +829,80 @@ if 1 in state_list:
             image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "6.png")
         )
 
-        # First scan
-        femb_id_1 = None  # Initialize
-        while True:
-            print(
-                Fore.YELLOW + "         Step 1.21: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(1st scan)" + Style.RESET_ALL)
-            print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
-            femb_id_10 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+        #### 14a. Check if slot is empty first
+        print(Fore.CYAN + "         Will this slot have a FEMB installed?" + Style.RESET_ALL)
+        print(Fore.YELLOW + "         (Enter 'Y' for Yes, 'EMPTY' or 'N' if this slot will be empty)" + Style.RESET_ALL)
+        slot_status = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip().upper()
 
-            ##### Check if slot is empty
-            if femb_id_10.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                femb_id_1 = 'EMPTY'
-                print_status('warning', "         Top slot marked as EMPTY (no FEMB installed)")
-                break
-            elif ("-1826-1" in femb_id_10) or ("-1865-1" in femb_id_10):
-                break
-            else:
-                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board." + Style.RESET_ALL)
+        if slot_status in ['EMPTY', 'NONE', 'N', 'N/A', 'NA', '空', '']:
+            # Slot is empty - skip assembly data collection
+            femb_id_1 = 'EMPTY'
+            top_assembly_data = {
+                'hwdb_qr': 'EMPTY',
+                'ce_box_sn': 'EMPTY',
+                'cover_last4': 'EMPTY'
+            }
+            print_status('warning', "         Top slot marked as EMPTY (no FEMB installed)")
+        else:
+            # Slot will have a FEMB - collect assembly data
+            #### 14b. Pre-Assembly Data Collection (HWDB, CE box, Cover SN)
+            top_assembly_data = collect_assembly_data("TOP")
 
-        # Second scan (skip if first scan was EMPTY)
-        if femb_id_1 != 'EMPTY':
+            #### 15. QR Code Scanning & Validation (Triple verification)
+            ##### First scan
+            femb_id_1 = None  # Initialize
             while True:
-                print(
-                    Fore.YELLOW + "         Step 1.22: " + Style.RESET_ALL + "Scan the QR code " + Fore.CYAN + "(2nd scan)" + Style.RESET_ALL)
-                print(Fore.YELLOW + "         (Enter 'EMPTY' or 'NONE' if this slot has no FEMB)" + Style.RESET_ALL)
+                print(Fore.YELLOW + "         Step 1.21: " + Style.RESET_ALL + "Scan the FEMB QR code " + Fore.CYAN + "(1st scan)" + Style.RESET_ALL)
+                femb_id_10 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+
+                ##### Validate: Must contain IO-1826-1 (HD) or IO-1865-1 (VD)
+                if ("-1826-1" in femb_id_10) or ("-1865-1" in femb_id_10):
+                    break
+                else:
+                    print_status('error', "         No valid FEMB ID detected. Please try again.")
+
+            ##### Second scan
+            while True:
+                print(Fore.YELLOW + "         Step 1.22: " + Style.RESET_ALL + "Scan the FEMB QR code " + Fore.CYAN + "(2nd scan)" + Style.RESET_ALL)
                 femb_id_11 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
 
-                if femb_id_11.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                    femb_id_1 = 'EMPTY'
-                    print_status('warning', "         Top slot marked as EMPTY (no FEMB installed)")
-                    break
-                elif ("-1826-1" in femb_id_11) or ("-1865-1" in femb_id_11):
+                if ("-1826-1" in femb_id_11) or ("-1865-1" in femb_id_11):
                     break
                 else:
-                    print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again or enter 'EMPTY' if no board." + Style.RESET_ALL)
+                    print_status('error', "         No valid FEMB ID detected. Please try again.")
 
-            # Match check (only if not EMPTY)
-            if femb_id_1 != 'EMPTY':
-                if femb_id_11 == femb_id_10:
-                    print(Fore.GREEN + "         ✓ Top CE box QR ID recorded successfully" + Style.RESET_ALL)
-                    femb_id_1 = femb_id_11
-                else:
-                    print(
-                        Fore.MAGENTA + '         ⚠️  QR codes do not match! Please scan a 3rd time and verify carefully.' + Style.RESET_ALL)
-
+            ##### Match check - If scans match, proceed; else require 3rd scan
+            if femb_id_11 == femb_id_10:
+                print(Fore.GREEN + "         ✓ Top CE box QR ID recorded successfully" + Style.RESET_ALL)
+                femb_id_1 = femb_id_11
+            else:
+                ##### Third scan verification (if first two don't match)
+                print(
+                    Fore.MAGENTA + '         ⚠️  QR codes do not match! Please scan a 3rd time and verify carefully.' + Style.RESET_ALL)
+                while True:
                     while True:
-                        while True:
-                            print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
-                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
-                            femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                            if femb_id_2.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                                femb_id_1 = 'EMPTY'
-                                print_status('warning', "         Top slot marked as EMPTY")
-                                break
-                            elif ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
-                                break
-                            else:
-                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                        if femb_id_1 == 'EMPTY':
-                            break
-
-                        while True:
-                            print("         Scan top QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
-                            print(Fore.YELLOW + "         (Enter 'EMPTY' if this slot has no FEMB)" + Style.RESET_ALL)
-                            femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
-                            if femb_id_3.upper() in ['EMPTY', 'NONE', 'N/A', 'NA', '空', '']:
-                                femb_id_1 = 'EMPTY'
-                                print_status('warning', "         Top slot marked as EMPTY")
-                                break
-                            elif ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
-                                break
-                            else:
-                                print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
-
-                        if femb_id_1 == 'EMPTY':
-                            break
-
-                        if femb_id_2 == femb_id_3:
-                            print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
-                            femb_id_1 = femb_id_2
+                        print("         Scan top FEMB QR code " + Fore.CYAN + "(3rd attempt - try 1):" + Style.RESET_ALL)
+                        femb_id_2 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                        if ("-1826-1" in femb_id_2) or ("-1865-1" in femb_id_2):
                             break
                         else:
-                            print(
-                                Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
+                            print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                    while True:
+                        print("         Scan top FEMB QR code " + Fore.CYAN + "(3rd attempt - try 2):" + Style.RESET_ALL)
+                        femb_id_3 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
+                        if ("-1826-1" in femb_id_3) or ("-1865-1" in femb_id_3):
+                            break
+                        else:
+                            print(Fore.RED + "         ✗ No valid FEMB ID detected. Please try again." + Style.RESET_ALL)
+
+                    if femb_id_2 == femb_id_3:
+                        print(Fore.GREEN + "         ✓ QR codes match. Proceeding..." + Style.RESET_ALL)
+                        femb_id_1 = femb_id_2
+                        break
+                    else:
+                        print(
+                            Fore.RED + "         ✗ QR codes still do not match. Please scan again carefully." + Style.RESET_ALL)
 
         # Version identification
         if femb_id_1 != 'EMPTY':
@@ -551,7 +988,17 @@ if 1 in state_list:
     if 'toy_TPC' not in csv_data:
         csv_data['toy_TPC'] = 'y'
     if 'comment' not in csv_data:
-        csv_data['comment'] = 'QC test'
+        # Format assembly data in CSV-style string
+        csv_data['comment'] = (
+            f"Bottom_HWDB={bottom_assembly_data['hwdb_qr']},"
+            f"Bottom_CE={bottom_assembly_data['ce_box_sn']},"
+            f"Bottom_Cover={bottom_assembly_data['cover_last4']},"
+            f"Bottom_FEMB={femb_id_0},"
+            f"Top_HWDB={top_assembly_data['hwdb_qr']},"
+            f"Top_CE={top_assembly_data['ce_box_sn']},"
+            f"Top_Cover={top_assembly_data['cover_last4']},"
+            f"Top_FEMB={femb_id_1}"
+        )
     if 'top_path' not in csv_data:
         csv_data['top_path'] = 'D:'
 
@@ -635,7 +1082,7 @@ send_email.send_email(sender, password, receiver, "FEMB CE QC {}".format(pre_inf
 # ----------------------------------------------------------------------------
 ### 25. Initialize power supply for warm/cold/final tests
 if any(x in state_list for x in [3, 4, 5]):
-    psu = rigol.RigolDP800()
+    psu = rigol.PowerSupplyController()
 
 # ============================================================================
 ## PHASE 3: WARM QC TEST
@@ -967,31 +1414,77 @@ if 4 in state_list and not goto_disassembly:
 
     print(Fore.CYAN + "🌡️  Initiating CTS cool down procedure..." + Style.RESET_ALL)
 
-    ### 33. LN2 Refill Wait Timer (30 min)
-    timer_count(
-        start_message="⏰ Wait for LN2 Refill!",
-        exit_hint="Type 's' to stop",
-        end_message="✅ Timer complete!",
-        auto_exit_seconds=1800,
-        exit_chars=['s', 'stop']
-    )
+    if cryo_auto_mode:
+        # Automatic CTS Control Mode
+        print_status('info', "Automatic CTS control enabled")
 
-    # Confirm LN2 Level
-    print("\n" + Fore.CYAN + "=" * 70)
-    print("  CTS COLD DOWN STATUS CHECK")
-    print("=" * 70 + Style.RESET_ALL)
-    print(Fore.YELLOW + "⚠️  Please ensure:" + Style.RESET_ALL)
-    print("   • LN2 level has reached " + Fore.CYAN + "LEVEL 3" + Style.RESET_ALL)
-    print("   • Heat LED is " + Fore.GREEN + "OFF" + Style.RESET_ALL)
-
-    while True:
-        print('\nType ' + Fore.GREEN + '"confirm"' + Style.RESET_ALL + ' once CTS is fully cooled down')
-        com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-        if com.lower() == 'confirm':
-            print(Fore.GREEN + "✓ CTS cool down confirmed." + Style.RESET_ALL)
-            break
+        ### 32a. Cold Gas Pre-cooling (5 minutes)
+        print_step("Cold gas pre-cooling", 1, 3, "~5 min")
+        if cryo.cryo_coldgas(waitminutes=5):
+            print_status('success', "Cold gas pre-cooling completed")
         else:
-            print(Fore.RED + "Not confirmed. Please verify conditions again." + Style.RESET_ALL)
+            print_status('error', "Cold gas pre-cooling failed or manual control required")
+
+        ### 32b. LN₂ Immersion with Automatic Level Monitoring
+        print_step("LN₂ immersion with level monitoring", 2, 3, f"~{cts_ln2_fill_wait//60} min")
+        if cryo.cryo_immerse(waitminutes=cts_ln2_fill_wait//60):
+            print_status('success', "LN₂ immersion complete - Level 3 or 4 reached")
+        else:
+            print_status('error', "LN₂ immersion failed or manual control required")
+
+        ### 32c. Final Status Check
+        print_step("Checking CTS status", 3, 3)
+        tc_level, dewar_level = cryo.cts_status()
+        if tc_level >= 3:
+            print_status('success', f"Chamber Level: {tc_level}, Dewar Level: {dewar_level}")
+        else:
+            print_status('warning', f"Chamber Level: {tc_level}, Dewar Level: {dewar_level}")
+            print(Fore.YELLOW + "⚠️  Level may be insufficient for cold testing" + Style.RESET_ALL)
+
+    else:
+        # Manual CTS Control Mode
+        print_status('warning', "Manual CTS control mode - follow instructions below")
+
+        ### Manual Instructions
+        print("\n" + Fore.YELLOW + "=" * 70)
+        print("  MANUAL CTS CONTROL INSTRUCTIONS")
+        print("=" * 70 + Style.RESET_ALL)
+        print(Fore.CYAN + "Step 1: Cold Gas Pre-cooling (~5 minutes)" + Style.RESET_ALL)
+        print("  1. Set CTS to " + Fore.CYAN + "STATE 3 (Cold Gas)" + Style.RESET_ALL)
+        print("  2. Wait approximately 5 minutes")
+        input(Fore.YELLOW + "Press ENTER when cold gas pre-cooling is complete >> " + Style.RESET_ALL)
+
+        print("\n" + Fore.CYAN + f"Step 2: LN₂ Immersion (~{cts_ln2_fill_wait//60} minutes)" + Style.RESET_ALL)
+        print("  1. Set CTS to " + Fore.CYAN + "STATE 4 (LN₂ Immersion)" + Style.RESET_ALL)
+        print(f"  2. Wait for LN₂ to reach " + Fore.CYAN + "LEVEL 3 or 4" + Style.RESET_ALL)
+        print(f"  3. Monitor level sensors every few minutes")
+        print(f"  4. Expected wait time: ~{cts_ln2_fill_wait//60} minutes")
+
+        ### LN2 Refill Wait Timer
+        timer_count(
+            start_message=f"⏰ Wait for LN2 Refill (~{cts_ln2_fill_wait//60} min)!",
+            exit_hint="Type 's' to stop",
+            end_message="✅ Timer complete!",
+            auto_exit_seconds=cts_ln2_fill_wait,
+            exit_chars=['s', 'stop']
+        )
+
+        # Confirm LN2 Level
+        print("\n" + Fore.CYAN + "=" * 70)
+        print("  CTS COLD DOWN STATUS CHECK")
+        print("=" * 70 + Style.RESET_ALL)
+        print(Fore.YELLOW + "⚠️  Please ensure:" + Style.RESET_ALL)
+        print("   • LN2 level has reached " + Fore.CYAN + "LEVEL 3 or 4" + Style.RESET_ALL)
+        print("   • Heat LED is " + Fore.GREEN + "OFF" + Style.RESET_ALL)
+
+        while True:
+            print('\nType ' + Fore.GREEN + '"confirm"' + Style.RESET_ALL + ' once CTS is fully cooled down')
+            com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+            if com.lower() == 'confirm':
+                print(Fore.GREEN + "✓ CTS cool down confirmed." + Style.RESET_ALL)
+                break
+            else:
+                print(Fore.RED + "Not confirmed. Please verify conditions again." + Style.RESET_ALL)
 
     # Load Cold QC Info
     infoln = cts.read_csv_to_dict(csv_file_implement, 'LN')
@@ -1104,6 +1597,16 @@ if 4 in state_list and not goto_disassembly:
                         f"Cold Checkout failed after {max_cold_checkout_attempts} attempts. Proceeding to Cold QC test."
                     )
 
+                # CTS Level Monitoring (if automatic mode)
+                if cryo_auto_mode:
+                    print_step("Checking CTS LN₂ level", estimated_time="<5 sec")
+                    tc_level, dewar_level = cryo.cts_status()
+                    if tc_level >= 3:
+                        print_status('success', f"LN₂ Level OK - Chamber: Level {tc_level}, Dewar: {dewar_level}")
+                    else:
+                        print_status('warning', f"LN₂ Level Low - Chamber: Level {tc_level}, Dewar: {dewar_level}")
+                        print(Fore.YELLOW + "⚠️  Consider refilling before continuing" + Style.RESET_ALL)
+
                 print_separator()
                 print_step("FEMB Cold Quality Control Test", estimated_time="<30 min")
                 lqdata_path, lqreport_path = QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=3, input_info=infoln)
@@ -1150,6 +1653,16 @@ if 4 in state_list and not goto_disassembly:
 
                 print_separator()
                 print_status('success', "Cold QC completed!")
+
+                # CTS Level Monitoring after Cold QC (if automatic mode)
+                if cryo_auto_mode:
+                    print_step("Final CTS LN₂ level check", estimated_time="<5 sec")
+                    tc_level, dewar_level = cryo.cts_status()
+                    if tc_level >= 3:
+                        print_status('success', f"LN₂ Level maintained - Chamber: Level {tc_level}, Dewar: {dewar_level}")
+                    else:
+                        print_status('warning', f"LN₂ Level depleted - Chamber: Level {tc_level}, Dewar: {dewar_level}")
+
                 print_separator()
 
 
@@ -1253,8 +1766,9 @@ if 4 in state_list and not goto_disassembly:
                     break
 
     # Warm Up CTS
-
-
+    print("\n" + Fore.CYAN + "=" * 70)
+    print("  CTS WARM-UP PROCEDURE")
+    print("=" * 70 + Style.RESET_ALL)
 
     print(Fore.CYAN + "Opening CTS warm-up instructions..." + Style.RESET_ALL)
     pop.show_image_popup(
@@ -1262,13 +1776,48 @@ if 4 in state_list and not goto_disassembly:
         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "15.png")
     )
 
-    timer_count(
-        start_message="⏰ Wait for warm up!",
-        exit_hint="Type 's' to stop",
-        end_message="✅ Timer complete!",
-        auto_exit_seconds=3600,
-        exit_chars=['s', 'stop']
-    )
+    if cryo_auto_mode:
+        # Automatic CTS Warm-up
+        print_status('info', "Automatic CTS warm-up control enabled")
+        print_step("CTS warm gas purge", estimated_time=f"~{cts_warmup_wait//60} min")
+
+        if cryo.cryo_warmgas(waitminutes=cts_warmup_wait//60):
+            print_status('success', "CTS warm-up completed successfully")
+        else:
+            print_status('error', "CTS warm-up failed or manual control required")
+
+        # Set to IDLE state
+        if cryo.cryo_create():
+            cryo.cryo_cmd(mode=b'1')  # Set to STATE 1 (IDLE)
+            cryo.cryo_close()
+            print_status('success', "CTS set to IDLE state")
+
+    else:
+        # Manual CTS Warm-up
+        print_status('warning', "Manual CTS warm-up control mode")
+
+        print("\n" + Fore.YELLOW + "=" * 70)
+        print("  MANUAL CTS WARM-UP INSTRUCTIONS")
+        print("=" * 70 + Style.RESET_ALL)
+        print(Fore.CYAN + "Step 1: Set CTS to Warm Gas mode" + Style.RESET_ALL)
+        print("  1. Set CTS to " + Fore.CYAN + "STATE 2 (Warm Gas)" + Style.RESET_ALL)
+        print(f"  2. Wait approximately {cts_warmup_wait//60} minutes for warm-up")
+        print()
+
+        timer_count(
+            start_message=f"⏰ Wait for warm up (~{cts_warmup_wait//60} min)!",
+            exit_hint="Type 's' to stop",
+            end_message="✅ Timer complete!",
+            auto_exit_seconds=cts_warmup_wait,
+            exit_chars=['s', 'stop']
+        )
+
+        print("\n" + Fore.CYAN + "Step 2: Return CTS to IDLE state" + Style.RESET_ALL)
+        print("  1. Set CTS to " + Fore.CYAN + "STATE 1 (IDLE)" + Style.RESET_ALL)
+        input(Fore.YELLOW + "Press ENTER when CTS is in IDLE state >> " + Style.RESET_ALL)
+        print_status('success', "CTS warm-up complete")
+
+    print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
 
 # ============================================================================
 ## PHASE 5: FINAL CHECKOUT
@@ -1476,6 +2025,63 @@ if 6 in state_list or goto_disassembly:
         image_path=img_cebox
     )
 
+    ### 49a. Disassembly Validation with Original Packaging
+    print_separator("=")
+    print(Fore.CYAN + "CE BOX PACKAGING VALIDATION" + Style.RESET_ALL)
+    print_separator("=")
+    print(Fore.YELLOW + "\n⚠️  Important: Each CE box must be returned to its ORIGINAL foam box with ORIGINAL cover" + Style.RESET_ALL)
+    print(Fore.YELLOW + "The system will guide you through the validation process.\n" + Style.RESET_ALL)
+
+    # Read assembly data from csv_data
+    csv_data_dis = {}
+    if os.path.exists(csv_file):
+        with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) == 2:
+                    key, value = row
+                    csv_data_dis[key.strip()] = value.strip()
+
+    # Parse assembly data
+    comment_str = csv_data_dis.get('comment', '')
+    if comment_str and comment_str != 'QC test':
+        assembly_data_all = parse_assembly_data_from_comment(comment_str)
+
+        # Get QC test results to determine PASS/FAIL for each slot
+        # Use final_result if available (from line 1641), otherwise analyze now
+        try:
+            if 'final_result' in locals() and final_result:
+                qc_result = final_result
+            else:
+                # Analyze test results now
+                qc_result = analyze_test_results(paths, pre_info, time_limit_hours=None)
+        except:
+            # If result analysis fails, default to all passed
+            qc_result = None
+
+        # Process Bottom Slot (SLOT0)
+        bottom_passed = True
+        if qc_result and qc_result.slot_status:
+            slot_info = qc_result.slot_status.get('0', (True, ''))
+            bottom_passed = slot_info[0] if isinstance(slot_info, tuple) else slot_info
+
+        validate_disassembly_for_slot('bottom', assembly_data_all['bottom'], bottom_passed)
+
+        # Process Top Slot (SLOT1)
+        top_passed = True
+        if qc_result and qc_result.slot_status:
+            slot_info = qc_result.slot_status.get('1', (True, ''))
+            top_passed = slot_info[0] if isinstance(slot_info, tuple) else slot_info
+
+        validate_disassembly_for_slot('top', assembly_data_all['top'], top_passed)
+
+        print_separator("=")
+        print_status('success', "All CE box packaging validation complete!")
+        print_separator("=")
+    else:
+        print_status('warning', "No assembly data found - skipping packaging validation")
+        print(Fore.YELLOW + "         (This may be an older test run without assembly tracking)\n" + Style.RESET_ALL)
+
     ### 50. Accessory Return Confirmation
     while True:
         print(Fore.CYAN + "\nOpening accessory return instructions..." + Style.RESET_ALL)
@@ -1609,6 +2215,71 @@ else:
 
 print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
 confirm("Have you labeled all FEMB boards correctly?")
+
+# ----------------------------------------------------------------------------
+# Upload Test Data to Network Drive
+# ----------------------------------------------------------------------------
+### 53a. Upload all test data and reports to network drive
+print("\n" + Fore.CYAN + "Preparing to upload test data to network drive..." + Style.RESET_ALL)
+
+# Load network upload path from config
+try:
+    with open(technician_csv, mode='r', newline='', encoding='utf-8-sig') as file:
+        reader = csv.reader(file)
+        upload_config = {}
+        for row in reader:
+            if len(row) == 2:
+                key, value = row
+                upload_config[key.strip()] = value.strip()
+
+    network_upload_path = upload_config.get('Network_Upload_Path', '/data/rtss/femb')
+    qc_root = upload_config.get('QC_data_root_folder', '/mnt/data')
+except Exception as e:
+    print_status('warning', f"Could not load upload configuration: {e}")
+    network_upload_path = '/data/rtss/femb'
+    qc_root = '/mnt/data'
+
+# Collect FEMB IDs for upload folder naming
+femb_ids = []
+try:
+    # Try to read from csv_file_implement to get FEMB IDs
+    if os.path.exists(csv_file_implement):
+        with open(csv_file_implement, mode='r', newline='', encoding='utf-8-sig') as file:
+            reader = csv.reader(file)
+            temp_data = {}
+            for row in reader:
+                if len(row) == 2:
+                    key, value = row
+                    temp_data[key.strip()] = value.strip()
+
+            # Extract FEMB IDs from SLOT0 and SLOT1
+            for slot_key in ['SLOT0', 'SLOT1', 'SLOT2', 'SLOT3']:
+                if slot_key in temp_data:
+                    femb_id = temp_data[slot_key]
+                    if femb_id and femb_id not in ['EMPTY', 'N/A', '', ' ']:
+                        femb_ids.append(femb_id)
+except Exception as e:
+    print_status('warning', f"Could not read FEMB IDs: {e}")
+
+print(Fore.CYAN + f"Network upload path: {network_upload_path}" + Style.RESET_ALL)
+print(Fore.CYAN + f"FEMB IDs: {', '.join(femb_ids) if femb_ids else 'None'}" + Style.RESET_ALL)
+
+# Perform upload
+upload_success = upload_to_network(
+    qc_data_root=qc_root,
+    csv_file=csv_file,
+    csv_file_implement=csv_file_implement,
+    network_path=network_upload_path,
+    femb_ids=femb_ids
+)
+
+if upload_success:
+    print_status('success', "All test data uploaded successfully")
+else:
+    print_status('warning', "Upload failed or incomplete - please upload manually")
+    print(Fore.YELLOW + f"  Manual upload: Copy data from {qc_root}/FEMB_QC to {network_upload_path}" + Style.RESET_ALL)
+
+# ----------------------------------------------------------------------------
 
 ### 54. Record Test Result
 confirm("Please Record the Test Result")
