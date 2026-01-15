@@ -124,7 +124,8 @@ fembs_remove = []
 # if env == "LN":
 #     chk.femb_LN2QC_powering(fembs)
 # else:
-chk.femb_safe_powering(fembs, bias_ilim=0.3, dc0_ilim=1.8, dc1_ilim=1.8, dc2_ilim=1.8)
+# chk.femb_safe_powering(fembs, bias_ilim=0.3, dc0_ilim=1.8, dc1_ilim=1.8, dc2_ilim=1.8)
+chk.femb_power_com_on(fembs)
     # for ifemb in fembs:
     #
     #     chk.femb_powering_single(ifemb, 'on')

@@ -86,7 +86,7 @@ class QC_Runs:
 
         if status=='on':
             print("Turning on FEMBs")
-            self.chk.femb_powering(self.fembs)
+            self.chk.femb_power_com_on(self.fembs)
             # self.chk.femb_power_com_on(self.fembs)
             # pwr_meas = self.chk.get_sensors()
         if status=='off':

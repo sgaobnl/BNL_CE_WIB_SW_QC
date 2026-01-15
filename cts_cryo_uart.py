@@ -251,9 +251,51 @@ class cryobox:
                 parsed = self.cryo_cmd(mode=b'1')
                 parsed = self.cryo_cmd(mode=b'm')
                 self.cryo_close()
-                return True 
+                return True
             else:
                 return False
+        else:
+            return False
+
+    def cryo_warmgas_start(self, waitminutes = 1):
+        """
+        Start warm gas mode and return immediately (non-blocking).
+        Returns the end timestamp when CTS will be ready.
+
+        Returns:
+            float: Timestamp when CTS will be ready, or None if failed
+        """
+        if self.manual_flg:
+            return None
+
+        if self.cryo_create():
+            parsed = self.cryo_cmd(mode=b'2')
+            parsed = self.cryo_cmd(mode=b'm')
+            self.cryo_close()
+            print(f"CTS Warm Gas started - will be ready in {waitminutes} minutes")
+            # Return the timestamp when CTS will be ready
+            ready_time = time.time() + (waitminutes * 60)
+            return ready_time
+        else:
+            return None
+
+    def cryo_warmgas_finish(self):
+        """
+        Finish warm gas mode by setting CTS to IDLE state.
+        Call this after the wait time has elapsed.
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        if self.manual_flg:
+            return False
+
+        if self.cryo_create():
+            parsed = self.cryo_cmd(mode=b'1')  # Set to IDLE
+            parsed = self.cryo_cmd(mode=b'm')
+            self.cryo_close()
+            print("CTS Warm Gas completed - CTS is now in IDLE state")
+            return True
         else:
             return False
 

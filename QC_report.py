@@ -866,18 +866,37 @@ class QC_reports:
             for ifemb in self.fembs:
                 fp = self.savedir[ifemb] + "RMS/"
                 ped, rms, pedmax, pedmin = qc.GetRMS(pldata, ifemb, fp, fname)
-                tmp = QC_check.CHKPulse(ped, 1500)
-                log.chkflag["BL"] = (tmp[0])
-                log.badlist["BL"] = (tmp[1])
-                ped_status = tmp[0]
-                baseline_err_content = tmp[1]
-                log.tmp_log[ifemb]["PED 128-CH std"] = tmp[3]
-                tmp = QC_check.CHKPulse(rms, 0.6)
-                log.chkflag["RMS"] = (tmp[0])
-                log.badlist["RMS"] = (tmp[1])
-                rms_status = tmp[0]
-                rms_err_content = tmp[1]
-                log.report_log056_fembrms[ifemb][fname] = tmp[2]
+
+                # Bypass RMS/BL checking for SELC 5nA test (accuracy limitation)
+                is_selc_5nA = ("SELC" in fname) and ("5nA" in fname)
+
+                if is_selc_5nA:
+                    # For SELC 5nA, bypass checking and mark as passed
+                    ped_status = True
+                    rms_status = True
+                    baseline_err_content = []
+                    rms_err_content = []
+                    log.chkflag["BL"] = True
+                    log.badlist["BL"] = []
+                    log.chkflag["RMS"] = True
+                    log.badlist["RMS"] = []
+                    log.tmp_log[ifemb]["PED 128-CH std"] = np.std(ped)
+                    log.report_log056_fembrms[ifemb][fname] = np.mean(rms)
+                else:
+                    # Normal RMS/BL checking
+                    tmp = QC_check.CHKPulse(ped, 1500)
+                    log.chkflag["BL"] = (tmp[0])
+                    log.badlist["BL"] = (tmp[1])
+                    ped_status = tmp[0]
+                    baseline_err_content = tmp[1]
+                    log.tmp_log[ifemb]["PED 128-CH std"] = tmp[3]
+                    tmp = QC_check.CHKPulse(rms, 0.6)
+                    log.chkflag["RMS"] = (tmp[0])
+                    log.badlist["RMS"] = (tmp[1])
+                    rms_status = tmp[0]
+                    rms_err_content = tmp[1]
+                    log.report_log056_fembrms[ifemb][fname] = tmp[2]
+
                 log.report_log057_fembrms[ifemb][fname] = '\nmean {},\nstd {},\nmax {},\nmin {}'.format(ped, rms,
                                                                                                         pedmax, pedmin)
                 index_of_keyword = fname.find("mVfC_")

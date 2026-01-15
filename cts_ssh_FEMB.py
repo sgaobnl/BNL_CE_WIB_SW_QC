@@ -747,7 +747,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                 return None
 
         def _transfer_data(self, test_result):
-            """Transfer data to PC"""
+            """Transfer data to PC and sync to network path"""
             # Create target directories
             time_prefix = self.current_time.strftime("%Y_%m/%d_%H_%M_%S")
             base_name = f"Time_{time_prefix}_CTS_{self.logs['CTS_IDs']}{self.savename}"
@@ -784,6 +784,9 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
             self.logs['pc_raw_dir'] = raw_dir
 
+            # Sync to network path immediately after local copy
+            self._sync_to_network(raw_dir, report_dir)
+
             return {'raw': raw_dir, 'report': report_dir}
 
         def _scp_transfer(self, src, dst):
@@ -792,6 +795,50 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             result = subrun(command, timeout=Config.SCP_TIMEOUT, check=False, out=False)
             time.sleep(0.01)
             return result is not None
+
+        def _sync_to_network(self, raw_dir, report_dir):
+            """Sync data to network path immediately after local copy"""
+            import shutil
+
+            try:
+                # Get network path from input_info
+                network_path = self.input_info.get('Network_Upload_Path', '/data/rtss/femb')
+
+                # Skip if network path not configured or same as local
+                if not network_path or network_path == self.root:
+                    return
+
+                # Calculate relative paths to maintain structure
+                # raw_dir: /mnt/data/FEMB_QC/Data/Time_XXX_CHK/
+                # Network: /data/rtss/femb/FEMB_QC/Data/Time_XXX_CHK/
+
+                # Extract relative path from root
+                # Example: Data/Time_2025_11_20_16_34_18_CTS_BNL_S0xxx_S1xxx_RT_CHK/
+                if raw_dir.startswith(self.root):
+                    raw_rel_path = os.path.relpath(raw_dir, self.root)
+                    report_rel_path = os.path.relpath(report_dir, self.root)
+
+                    network_raw_dir = os.path.join(network_path, "FEMB_QC", raw_rel_path)
+                    network_report_dir = os.path.join(network_path, "FEMB_QC", report_rel_path)
+
+                    print(Fore.CYAN + f"📤 Syncing to network: {network_path}/FEMB_QC/" + Style.RESET_ALL)
+
+                    # Copy raw data to network
+                    if os.path.exists(raw_dir):
+                        os.makedirs(os.path.dirname(network_raw_dir), exist_ok=True)
+                        shutil.copytree(raw_dir, network_raw_dir, dirs_exist_ok=True)
+                        print(Fore.GREEN + f"  ✓ Raw data synced" + Style.RESET_ALL)
+
+                    # Copy report to network
+                    if os.path.exists(report_dir):
+                        os.makedirs(os.path.dirname(network_report_dir), exist_ok=True)
+                        shutil.copytree(report_dir, network_report_dir, dirs_exist_ok=True)
+                        print(Fore.GREEN + f"  ✓ Report synced" + Style.RESET_ALL)
+
+            except Exception as e:
+                # Don't fail the test if network sync fails, just warn
+                print(Fore.YELLOW + f"⚠️  Network sync failed: {e}" + Style.RESET_ALL)
+                print(Fore.YELLOW + "  (Test data saved locally)" + Style.RESET_ALL)
 
         # def _save_ln_data(self, report_dir):
         #     """Save LN test data"""
@@ -980,6 +1027,30 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             logs["QC_TestItemID_%03d_SCP" % testid] = [command, result]
             logs["QC_TestItemID_%03d_Save" % testid] = logs['pc_raw_dir']
             print(datetime.now(timezone.utc), "\033[92m  : SUCCESS!  \033[0m")
+
+            # Sync to network path immediately after local copy
+            try:
+                import shutil
+                network_path = input_info.get('Network_Upload_Path', '/data/rtss/femb')
+
+                if network_path and network_path != root:
+                    # Calculate relative paths to maintain structure
+                    if fddir.startswith(root):
+                        data_rel_path = os.path.relpath(fddir, root)
+                        network_data_dir = os.path.join(network_path, "FEMB_QC", data_rel_path)
+
+                        print(Fore.CYAN + f"📤 Syncing QC data to network: {network_path}/FEMB_QC/" + Style.RESET_ALL)
+
+                        # Copy data to network
+                        if os.path.exists(fddir):
+                            os.makedirs(os.path.dirname(network_data_dir), exist_ok=True)
+                            shutil.copytree(fddir, network_data_dir, dirs_exist_ok=True)
+                            print(Fore.GREEN + f"  ✓ QC data synced to network" + Style.RESET_ALL)
+            except Exception as e:
+                # Don't fail the test if network sync fails, just warn
+                print(Fore.YELLOW + f"⚠️  Network sync failed: {e}" + Style.RESET_ALL)
+                print(Fore.YELLOW + "  (Test data saved locally)" + Style.RESET_ALL)
+
             # else:
             #     print("FAIL!")
             #     return None
@@ -1047,6 +1118,31 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                                 level=logging.INFO,
                                 format='%(asctime)s - %(levelname)s - %(message)s')  # Lingyun Ke set
             logging.info('info: %s', logs)
+
+    # Sync report directory to network if it exists
+    if QC_TST_EN == 3:  # QC test completed
+        try:
+            import shutil
+            network_path = input_info.get('Network_Upload_Path', '/data/rtss/femb')
+            report_path_to_sync = logs['PC_rawreport_root']
+
+            if network_path and network_path != root and os.path.exists(report_path_to_sync):
+                # Calculate relative path for report
+                if report_path_to_sync.startswith(root):
+                    report_rel_path = os.path.relpath(report_path_to_sync, root)
+                    network_report_dir = os.path.join(network_path, "FEMB_QC", report_rel_path)
+
+                    print(Fore.CYAN + f"📤 Syncing QC report to network: {network_path}/FEMB_QC/" + Style.RESET_ALL)
+
+                    # Copy report to network
+                    os.makedirs(os.path.dirname(network_report_dir), exist_ok=True)
+                    shutil.copytree(report_path_to_sync, network_report_dir, dirs_exist_ok=True)
+                    print(Fore.GREEN + f"  ✓ QC report synced to network" + Style.RESET_ALL)
+        except Exception as e:
+            # Don't fail the test if network sync fails
+            print(Fore.YELLOW + f"⚠️  Network report sync failed: {e}" + Style.RESET_ALL)
+            print(Fore.YELLOW + "  (Report will be available locally)" + Style.RESET_ALL)
+
     QCstatus = "PASS"
     bads = []
     data_path = logs['PC_rawdata_root']

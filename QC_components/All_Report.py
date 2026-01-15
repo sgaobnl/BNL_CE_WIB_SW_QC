@@ -122,9 +122,15 @@ def section_report(datareport, fembs, fembNo, fembsName):
             check_list.append(check_status04)
 
         if 5 in log.test_label:
+            print(log.report_log0500[ifemb]['Result'])
+            print(log.report_log0500[ifemb]['Result'])
+            print(log.report_log0500[ifemb]['Result'])
+            print(log.report_log0500[ifemb]['Result'])
             if log.report_log0500[ifemb]['Result'] == False:
+                print(log.report_log0500[ifemb]['Result'])
                 check_status05 = False
                 Status = 'F'
+            check_list.append(check_status05)
 
         if 6 in log.test_label:
             dict_list06 = [log.check_log0601[femb_id], log.check_log0602[femb_id], log.check_log0603[femb_id], log.check_log0604[femb_id]]#, log.check_log0605[femb_id]]
