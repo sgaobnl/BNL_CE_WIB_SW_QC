@@ -1,86 +1,89 @@
-# CTS FEMB QC 测试系统操作指南
+# CTS FEMB QC Test System Operation Guide
 
-## 目录
-1. [系统概述](#系统概述)
-2. [测试前准备](#测试前准备)
-3. [控制模式说明](#控制模式说明)
-4. [完整测试流程](#完整测试流程)
-5. [故障排除](#故障排除)
+## Table of Contents
+1. [System Overview](#system-overview)
+2. [Pre-Test Preparation](#pre-test-preparation)
+3. [Control Modes](#control-modes)
+4. [Complete Test Workflow](#complete-test-workflow)
+5. [New Features](#new-features)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 系统概述
+## System Overview
 
-### 系统组成
-- **测试主机**: 运行QC测试软件
-- **电源供应**: Rigol DP800 可编程电源（USB控制 或 手动控制）
-- **CTS低温系统**: 液氮冷却系统控制盒（USB控制 或 手动控制）
-- **WIB测试板**: 冷电子测试板
-- **网络存储**: 测试数据自动备份
+### System Components
+- **Test Host**: Runs QC test software
+- **Power Supply**: Rigol DP800 programmable power supply (USB or Manual control)
+- **CTS Cryogenic System**: Liquid nitrogen cooling system control box (USB or Manual control)
+- **WIB Test Board**: Cold electronics test board
+- **Network Storage**: Automatic test data backup
 
-### 配置文件
-所有配置参数在 `init_setup.csv` 中设置：
+### Configuration File
+All configuration parameters are set in `init_setup.csv`:
 ```csv
 Test_Site,BNL
 Tech_site_email,lke@bnl.gov
 QC_data_root_folder,/mnt/data
 Rigol_PS_ID,USB0::0x1AB1::0x0E11::DP8C184550857::INSTR
-PS_Control_Mode,USB                    # USB=自动控制, MANUAL=手动控制
-CTS_LN2_Fill_Wait,1800                 # LN₂充填等待时间（秒）
-CTS_Warmup_Wait,3600                   # 暖化等待时间（秒）
-Network_Upload_Path,/data/rtss/femb    # 网盘上传路径
+PS_Control_Mode,USB                    # USB=Automatic, MANUAL=Manual control
+CTS_LN2_Fill_Wait,1800                 # LN₂ fill wait time (seconds)
+CTS_Warmup_Wait,3600                   # Warm-up wait time (seconds)
+Network_Upload_Path,/data/rtss/femb    # Network upload path
 ```
 
 ---
 
-## 测试前准备
+## Pre-Test Preparation
 
-### 1. 硬件连接检查
-- [ ] 电源供应连接到测试主机USB端口
-- [ ] CTS控制盒连接到测试主机USB端口（通常为 `/dev/ttyACM*`）
-- [ ] WIB测试板安装到CTS测试台
-- [ ] 网络连接正常，可访问网盘路径
+### 1. Hardware Connection Check
+- [ ] Power supply connected to test host USB port
+- [ ] CTS control box connected to test host USB port (usually `/dev/ttyACM*`)
+- [ ] WIB test board installed in CTS test station
+- [ ] Network connection available, network path accessible
 
-### 2. 软件启动
+### 2. Software Startup
 ```bash
 cd /home/dune/Workspace/BNL_CE_WIB_SW_QC
 python3 CTS_FEMB_QC_top.py
 ```
 
-### 3. 初始信息输入
-1. 输入操作员姓名
-2. 确认电子邮件地址
-3. 检查预检清单（3个弹窗）
+### 3. Initial Information Input
+1. Enter operator name
+2. Confirm email address
+3. Review pre-check list (3 popup windows)
+
+<img src="GUI/output_pngs/1.png" alt="Pre-check Popup Example" width="33%">
 
 ---
 
-## 控制模式说明
+## Control Modes
 
-系统支持两种控制模式，根据硬件连接状态自动切换：
+The system supports two control modes, automatically switching based on hardware connection status:
 
-### 电源供应控制模式
+### Power Supply Control Modes
 
-#### 🤖 USB自动模式
-**触发条件**:
-- `init_setup.csv` 中 `PS_Control_Mode=USB`
-- 电源供应USB连接成功
+#### 🤖 USB Automatic Mode
+**Trigger Conditions**:
+- `PS_Control_Mode=USB` in `init_setup.csv`
+- Power supply USB connection successful
 
-**自动操作**:
-- ✅ 自动设置电压和电流
-- ✅ 自动开启/关闭输出
-- ✅ 自动测量电压和电流
-- ✅ 自动验证断电状态
+**Automatic Operations**:
+- ✅ Auto-set voltage and current
+- ✅ Auto turn ON/OFF outputs
+- ✅ Auto measure voltage and current
+- ✅ Auto verify power-off state
 
-**用户操作**: 无需手动操作
+**User Action**: No manual operation required
 
 ---
 
-#### 👤 手动控制模式
-**触发条件**:
-- `init_setup.csv` 中 `PS_Control_Mode=MANUAL`
-- 或 USB连接失败
+#### 👤 Manual Control Mode
+**Trigger Conditions**:
+- `PS_Control_Mode=MANUAL` in `init_setup.csv`
+- OR USB connection failed
 
-**提示示例**:
+**Prompt Example**:
 ```
 ======================================================================
 [MANUAL POWER CONTROL] Please configure power supply:
@@ -92,63 +95,76 @@ python3 CTS_FEMB_QC_top.py
 Press ENTER after you have completed this configuration >>
 ```
 
-**用户操作**:
-1. 在电源供应面板上手动设置参数
-2. 手动开启/关闭输出
-3. 手动读取并输入测量值
-4. 按ENTER确认完成
+**User Operations**:
+1. Manually set parameters on power supply panel
+2. Manually turn ON/OFF output
+3. Manually read and input measurement values
+4. Press ENTER to confirm completion
 
 ---
 
-### CTS低温系统控制模式
+### CTS Cryogenic System Control Modes
 
-#### 🤖 自动控制模式
-**触发条件**: CTS控制盒USB连接成功（通常为 `/dev/ttyACM1`）
+#### 🤖 Automatic Control Mode
+**Trigger Condition**: CTS control box USB connection successful (usually `/dev/ttyACM1`)
 
-**自动操作**:
-- ✅ 自动读取杜瓦瓶液位
-- ✅ 自动执行冷气预冷（5分钟）
-- ✅ 自动执行LN₂充填并监控液位
-- ✅ 自动检测液位达到Level 3或4
-- ✅ 自动执行暖气吹扫（20分钟或60分钟）
-- ✅ 自动返回IDLE状态
+**Automatic Operations**:
+- ✅ Auto-read dewar level
+- ✅ Auto cold gas pre-cooling (5 minutes) with countdown animation
+- ✅ Auto LN₂ fill with level monitoring and progress display
+- ✅ Auto detect level reaching Level 3 or 4
+- ✅ Auto warm gas purge (20 or 60 minutes) with countdown animation
+- ✅ Auto return to IDLE state
 
-**用户操作**:
-- 液位不足时需要手动加注LN₂
-- 确认加注完成后按Y继续
+**Countdown Animation Example**:
+```
+======================================================================
+  CTS Warm Gas Purge (20 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠹ [████████████████░░░░░░░░░░░░░░░░░░░░░░░░] 40.5% 11:54 remaining
+```
+
+**User Operations**:
+- Manually refill LN₂ when level is insufficient
+- Press 'Y' to confirm refill completion
+- Press 'j' to skip any countdown timer
 
 ---
 
-#### 👤 手动控制模式
-**触发条件**: CTS控制盒USB连接失败或不存在
+#### 👤 Manual Control Mode
+**Trigger Condition**: CTS control box USB connection failed or unavailable
 
-**提示示例**:
+**Prompt Example**:
 ```
 ======================================================================
   MANUAL CTS CONTROL INSTRUCTIONS
 ======================================================================
 Step 1: Cold Gas Pre-cooling (~5 minutes)
   1. Set CTS to STATE 3 (Cold Gas)
-  2. Wait approximately 5 minutes
-Press ENTER when cold gas pre-cooling is complete >>
+  2. Wait for countdown (can press 'j' to skip)
+
+⠹ [████████░░░░░░░░░░░░░░░░░░░░] 20.3% 03:59 remaining
 ```
 
-**用户操作**:
-1. 在CTS控制盒上手动设置状态
-   - STATE 1: IDLE（待机）
-   - STATE 2: Warm Gas（暖气）
-   - STATE 3: Cold Gas（冷气）
-   - STATE 4: LN₂ Immersion（液氮浸入）
-2. 等待指定时间（系统会显示倒计时）
-3. 按ENTER确认完成
+**User Operations**:
+1. Manually set CTS state on control box:
+   - STATE 1: IDLE
+   - STATE 2: Warm Gas
+   - STATE 3: Cold Gas
+   - STATE 4: LN₂ Immersion
+2. Wait for countdown timer (system displays animated countdown)
+3. Press 'j' to skip wait if needed
+4. Confirm completion when prompted
 
 ---
 
-## 完整测试流程
+## Complete Test Workflow
 
-### Phase 0: 系统初始化
+### Phase 0: System Initialization
 
-#### 🤖 自动: CTS系统初始化
+#### 🤖 Automatic: CTS System Initialization
 ```
 ==================================================================
   CTS CRYOGENIC SYSTEM INITIALIZATION
@@ -161,17 +177,17 @@ Configuration:
 ==================================================================
 ```
 
-**结果**:
-- ✅ 自动检测：系统显示"USB - automatic control enabled"
-- ⚠️  手动模式：系统显示"manual control mode"
+**Result**:
+- ✅ Automatic: System displays "USB - automatic control enabled"
+- ⚠️  Manual: System displays "manual control mode"
 
 ---
 
-#### 🤖 自动: 杜瓦瓶液位检查
-**早班（1:00-11:00）**: 要求液位 ≥ 1700
-**晚班（12:00-0:00）**: 要求液位 ≥ 1200
+#### 🤖 Automatic: Dewar Level Check
+**Morning Shift (1:00-11:00)**: Required level ≥ 1700
+**Evening Shift (12:00-0:00)**: Required level ≥ 1200
 
-**自动模式流程**:
+**Automatic Mode Flow**:
 ```
 Current Shift: Morning
 Required Dewar Level: >= 1700
@@ -180,32 +196,45 @@ Current Dewar Level: 1850
 ✓ Dewar level (1850) is sufficient for Morning shift
 ```
 
-**液位不足时**:
-1. 🖥️ **自动**: 系统检测液位 < 阈值
-2. 🖥️ **自动**: 弹出加注指导图片
-3. 👤 **手动**: 加注50L杜瓦瓶到液氮
-4. 👤 **手动**: 输入 'Y' 确认加注完成
-5. 🖥️ **自动**: 重新检测液位
-6. 🖥️ **自动**: 如果仍不足，重复加注流程
-7. 🖥️ **自动**: 液位足够后，自动暖气吹扫20分钟
+**When Level Insufficient**:
+1. 🖥️ **Auto**: System detects level < threshold
+2. 🖥️ **Auto**: Popup refill instruction image
+3. 👤 **Manual**: Refill 50L dewar with liquid nitrogen
+4. 👤 **Manual**: Enter 'Y' to confirm refill complete
+5. 🖥️ **Auto**: Re-check level
+6. 🖥️ **Auto**: If still insufficient, repeat refill process
+7. 🖥️ **Auto**: Once sufficient, automatic warm gas purge for 20 minutes with countdown animation
+
+<img src="GUI/output_pngs/8.png" alt="Dewar Refill Instructions" width="33%">
 
 ---
 
-### Phase 1: FEMB安装与设置
+### Phase 1: FEMB Installation & Setup
 
-#### 👤 手动: 组装数据采集
-**Bottom Slot (底部槽位)**:
-1. 👤 输入是否安装FEMB（Y/EMPTY）
-2. 👤 扫描/输入 HWDB QR码（泡沫盒上）
-3. 👤 扫描/输入 CE盒序列号
-4. 👤 输入CE盒盖后4位数字
-5. 🖥️ **自动验证**: 盖子数字必须匹配CE盒后4位
-6. 👤 扫描FEMB QR码
+#### 👤 Manual: Assembly Data Collection
 
-**Top Slot (顶部槽位)**: 重复上述步骤
+<img src="GUI/output_pngs/6.png" alt="Chamber Empty Check" width="33%">
 
-**示例**:
+**Bottom Slot**:
+1. 👤 Input whether FEMB will be installed (Y/EMPTY/N)
+   - **Input Validation**: Only accepts 'Y', 'YES', 'EMPTY', 'NONE', 'N', 'NO'
+   - **Invalid Input**: System prompts "Invalid input. Please enter 'Y', 'EMPTY', or 'N'" and loops
+2. 👤 Scan/Enter HWDB QR code (on foam box)
+3. 👤 Scan/Enter CE box serial number
+4. 👤 Enter CE box cover last 4 digits
+5. 🖥️ **Auto Validation**: Cover digits must match CE box last 4 digits
+6. 👤 Scan FEMB QR code (triple verification)
+
+<img src="GUI/output_pngs/9.png" alt="Visual Inspection" width="33%">
+
+**Top Slot**: Repeat above steps
+
+**Example**:
 ```
+Will this slot have a FEMB installed?
+(Enter 'Y' for Yes, 'EMPTY' or 'N' if this slot will be empty)
+>> Y
+
 Scan HWDB QR code on foam box
 >> A12345
 
@@ -216,31 +245,47 @@ Enter last 4 digits on CE box cover
 >> 9876
 ✓ Cover matches CE box
 
-Scan FEMB QR code
+Scan FEMB QR code (1st scan)
 >> FEMB001
-✓ FEMB registered
+Scan FEMB QR code (2nd scan)
+>> FEMB001
+✓ FEMB verified and registered
 ```
 
 ---
 
-### Phase 2: 配置与文档
+### Phase 2: Configuration & Documentation
 
-#### 👤 手动: 拍照记录
-1. 🖥️ **自动**: 弹出拍照提示窗口
-2. 👤 **手动**: 使用相机拍摄CE盒照片
-3. 👤 **手动**: 选择照片文件上传
-4. 🖥️ **自动**: 照片保存到测试记录
+#### 👤 Manual: Photo Documentation
+1. 🖥️ **Auto**: Display photo prompt popup
+2. 👤 **Manual**: Take photos of CE boxes with camera
+3. 👤 **Manual**: Select photo files to upload
+4. 🖥️ **Auto**: Save photos to test records
 
-#### 🖥️自动: 生成配置文件
-- ✅ 创建 `femb_info_implement.csv`
-- ✅ 保存所有FEMB ID和槽位信息
-- ✅ 保存组装追溯数据
+<img src="GUI/output_pngs/10.png" alt="Photo Documentation Popup" width="33%">
+
+#### 🖥️ Auto: Generate Configuration Files
+- ✅ Create `femb_info_implement.csv`
+- ✅ Save all FEMB IDs and slot information
+- ✅ Save assembly traceability data
+
+#### 📧 Email Notification: Assembly Complete
+```
+Subject: Assembly Complete - Ready for QC - BNL
+Body:
+  Assembly phase completed successfully.
+  All FEMBs are installed and ready for testing.
+
+  Next Step: Proceed to Warm QC testing (Phase 3)
+```
 
 ---
 
-### Phase 3: 暖态QC测试
+### Phase 3: Warm QC Test
 
-#### 🤖 自动: 电源控制 (USB模式)
+<img src="GUI/output_pngs/11.png" alt="Install CE Structure" width="33%">
+
+#### 🤖 Automatic: Power Control (USB Mode)
 ```
 ▶ [1/4] Powering ON WIB
 ✓ CH1: 12.0V, 3.0A - OUTPUT ON
@@ -248,7 +293,7 @@ Scan FEMB QR code
 ℹ Initializing ethernet link (35 seconds)...
 ```
 
-#### 👤 手动: 电源控制 (手动模式)
+#### 👤 Manual: Power Control (Manual Mode)
 ```
 ======================================================================
 [MANUAL POWER CONTROL] Please configure power supply:
@@ -257,16 +302,16 @@ Scan FEMB QR code
   Current Limit: 3.0 A
   Action: Turn OUTPUT ON
 ======================================================================
-Press ENTER after configuration >> [等待用户输入]
+Press ENTER after configuration >> [Wait for user input]
 ```
 
-#### 🖥️ 自动: 测试执行
-1. ✅ WIB连接测试
-2. ✅ WIB初始化
-3. ✅ FEMB Warm Checkout（最多3次重试）
-4. ✅ FEMB Warm QC测试
+#### 🖥️ Automatic: Test Execution
+1. ✅ WIB connection test
+2. ✅ WIB initialization
+3. ✅ FEMB Warm Checkout (up to 3 auto-retries)
+4. ✅ FEMB Warm QC test (~30 min)
 
-#### 🖥️ 自动: 结果分析
+#### 🖥️ Automatic: Result Analysis
 ```
 ==================================================================
   WARM QC TEST - TEST RESULTS
@@ -287,48 +332,103 @@ Press ENTER after configuration >> [等待用户输入]
 ==================================================================
 ```
 
-**失败处理**:
+**Failure Handling**:
 ```
 ✗✗✗ OVERALL RESULT: FAIL ✗✗✗
 
 ⚠️  Test failed. What would you like to do?
-  'r' - Retry the test
+  'r' - Retry the test (~30 min)
   'c' - Continue anyway (not recommended)
-  'e' - Exit program
+  'e' - Exit and proceed to disassembly
 >>
+```
+- **Input Validation**: Only accepts 'r', 'c', or 'e'
+- **Invalid Input**: System prompts "Invalid input. Please enter 'r', 'c', or 'e'" and loops
+
+#### 📧 Email Notification: Warm QC Complete
+```
+Subject: Warm QC Complete - BNL
+Attachments: Warm_QC_Summary_20260115_143022.txt
+
+Body:
+  Warm QC Test Completed - Ready for Cold Down
+
+  Test Site: BNL
+  Timestamp: 2026-01-15 14:30:22
+
+  Summary:
+    Total Fault Files: 0
+    Total Pass Files: 24
+    Overall Result: PASS
+
+  Next Steps:
+    1. Switch CTS to COLD mode for 5 minutes
+    2. Switch to IMMERSE mode
+    3. Wait for LN2 to reach Level 3
+    4. Double confirm heat LED is OFF
+
+  Detailed summary is attached.
 ```
 
 ---
 
-### Phase 4: 冷态QC测试
+### Phase 4: Cold QC Test
 
-#### 🤖 自动: CTS冷却流程 (自动模式)
+#### 🤖 Automatic: CTS Cool Down (Automatic Mode)
 ```
 🌡️  Initiating CTS cool down procedure...
 ℹ Automatic CTS control enabled
 
-▶ [1/3] Cold gas pre-cooling (~5 min)
-✓ Cold gas pre-cooling completed
+▶ [1/3] Cold gas pre-cooling
 
-▶ [2/3] LN₂ immersion with level monitoring (~30 min)
-Time pasted = 60s, Chamber Level = 1, Dewar level = 1850
-Time pasted = 120s, Chamber Level = 2, Dewar level = 1820
-Time pasted = 1200s, Chamber Level = 3, Dewar level = 1650
-✓ LN₂ immersion complete - Level 3 reached
+======================================================================
+  CTS Cold Gas Pre-cooling (5 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠋ [██████████░░░░░░░░░░░░░░░░░░░░] 25.1% 03:44 remaining
+
+✓ Wait complete!
+
+▶ [2/3] LN₂ immersion with level monitoring
+
+======================================================================
+  CTS LN₂ Immersion (~30 min)
+  Monitoring level every 60 seconds...
+======================================================================
+
+[Check 1]  1 min elapsed | Chamber Level: 1 (Filling) | Dewar: 1850
+[Check 2]  2 min elapsed | Chamber Level: 2 (In Progress) | Dewar: 1820
+[Check 20] 20 min elapsed | Chamber Level: 3 (✓ Ready) | Dewar: 1650
+
+✓ LN₂ in chamber reached Level 3 - Ready for cold test!
 
 ▶ [3/3] Checking CTS status
 ✓ Chamber Level: 3, Dewar Level: 1650
 ```
 
-#### 👤 手动: CTS冷却流程 (手动模式)
+#### 👤 Manual: CTS Cool Down (Manual Mode)
 ```
 ======================================================================
   MANUAL CTS CONTROL INSTRUCTIONS
 ======================================================================
 Step 1: Cold Gas Pre-cooling (~5 minutes)
   1. Set CTS to STATE 3 (Cold Gas)
-  2. Wait approximately 5 minutes
-Press ENTER when complete >> [等待用户输入]
+  2. Wait for countdown
+
+Have you set CTS to STATE 3 (Cold Gas)?
+Enter 'Y' when ready
+>> Y
+✓ Cold gas mode confirmed
+
+======================================================================
+  CTS Cold Gas Pre-cooling (5 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠙ [████████████████████████░░░░░░░░] 60.2% 01:59 remaining
+
+✓ Wait complete!
 
 Step 2: LN₂ Immersion (~30 minutes)
   1. Set CTS to STATE 4 (LN₂ Immersion)
@@ -336,136 +436,257 @@ Step 2: LN₂ Immersion (~30 minutes)
   3. Monitor level sensors every few minutes
 
 ⏰ Wait for LN2 Refill (~30 min)!
-[倒计时 30:00 ... 00:00]
+[Countdown timer with skip option]
 ✅ Timer complete!
 
-Please ensure:
-   • LN2 level has reached LEVEL 3 or 4
+⚠️  Please verify CTS is fully cooled down:
+   • LN₂ level has reached LEVEL 3 or 4
    • Heat LED is OFF
 
-Type "confirm" once CTS is fully cooled down
+Type 'confirm' to continue, or 'j' to skip
 >> confirm
 ✓ CTS cool down confirmed
 ```
 
-#### 🖥️ 自动: 冷态测试执行
-1. ✅ 液位监控检查（测试前）
-2. ✅ FEMB Cold Checkout（最多3次重试）
-3. ✅ FEMB Cold QC测试（~30分钟）
-4. ✅ 液位监控检查（测试后）
-5. ✅ 结果分析（同Phase 3格式）
+#### 🖥️ Automatic: Cold Test Execution
+1. ✅ Pre-test level monitoring check
+2. ✅ FEMB Cold Checkout (up to 3 auto-retries)
+3. ✅ FEMB Cold QC test (~30 min)
+4. ✅ Post-test level monitoring check
+5. ✅ Result analysis (same format as Phase 3)
+
+#### 📧 Email Notification: Cold QC Complete
+```
+Subject: Cold QC Complete - BNL
+Attachments: Cold_QC_Summary_20260115_163045.txt
+
+Body:
+  Cold QC Test Completed - Ready for Warm-Up
+
+  Test Site: BNL
+  Timestamp: 2026-01-15 16:30:45
+
+  Summary:
+    Total Fault Files: 0
+    Total Pass Files: 24
+    Overall Result: PASS
+
+  Next Step:
+    Please perform the warm-up procedure (60 minutes)
+
+  Detailed summary is attached.
+```
 
 ---
 
-#### 🤖 自动: CTS暖化流程 (自动模式)
+#### 🤖 Automatic: CTS Warm-Up (Automatic Mode)
 ```
 ==================================================================
   CTS WARM-UP PROCEDURE
 ==================================================================
 ℹ Automatic CTS warm-up control enabled
 
-▶ CTS warm gas purge (~60 min)
+▶ CTS warm gas purge
+
+======================================================================
+  CTS Warm Gas Purge (60 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠸ [████████████████████░░░░░░░░░░░░] 50.8% 29:30 remaining
+
+✓ Wait complete!
+
 ✓ CTS warm-up completed successfully
 ✓ CTS set to IDLE state
 ==================================================================
 ```
 
-#### 👤 手动: CTS暖化流程 (手动模式)
+#### 👤 Manual: CTS Warm-Up (Manual Mode)
 ```
 ======================================================================
   MANUAL CTS WARM-UP INSTRUCTIONS
 ======================================================================
 Step 1: Set CTS to Warm Gas mode
   1. Set CTS to STATE 2 (Warm Gas)
-  2. Wait approximately 60 minutes
+  2. Wait for countdown (you can skip with 'j')
+  3. After countdown, set CTS back to STATE 1 (IDLE)
 
-⏰ Wait for warm up (~60 min)!
-[倒计时 60:00 ... 00:00]
-✅ Timer complete!
+Have you set CTS to STATE 2 (Warm Gas)?
+Enter 'Y' when ready
+>> Y
+✓ Warm gas mode confirmed
+
+======================================================================
+  CTS Warm Gas Purge (20 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠴ [████████████░░░░░░░░░░░░░░░░░░░░] 30.5% 13:54 remaining
+
+✓ Wait complete!
+
+⚠️  Please set CTS to STATE 1 (IDLE)
+Enter 'Y' when CTS is set to IDLE
+>> Y
+✓ CTS warm gas purge completed
 
 Step 2: Return CTS to IDLE state
   1. Set CTS to STATE 1 (IDLE)
-Press ENTER when CTS is in IDLE state >> [等待用户输入]
+
+Have you set CTS to STATE 1 (IDLE)?
+Enter 'Y' when ready, or 'j' to skip
+>> Y
 ✓ CTS warm-up complete
 ==================================================================
 ```
 
 ---
 
-### Phase 5: 最终检查
+### Phase 5: Final Checkout
 
-与Phase 3流程相同：
-- 🤖 电源控制（自动/手动）
-- 🖥️ Final Checkout测试（最多3次重试）
-- 🖥️ 结果分析
+Same workflow as Phase 3:
+- 🤖 Power control (Automatic/Manual)
+- 🖥️ Final Checkout test (up to 3 auto-retries)
+- 🖥️ Result analysis
+
+#### 📧 Email Notification: QC Complete
+```
+Subject: QC Complete - Please Classify - BNL
+Attachments: Overall_QC_Summary_20260115_181522.txt
+
+Body:
+  QC Testing Complete - Ready for Classification
+
+  Test Site: BNL
+  Completion Time: 2026-01-15 18:15:22
+
+  OVERALL TEST SUMMARY:
+  =====================
+    Total Fault Files: 0
+    Total Pass Files: 72
+    Overall Result: ✓ PASS
+
+  FEMB Results:
+    Bottom Slot0: FEMB001 - PASS
+    Top Slot1: FEMB002 - PASS
+
+  Next Steps:
+    1. Power OFF the WIB
+    2. Proceed to disassembly and classification
+    3. Store FEMBs according to test results
+
+  Detailed comprehensive summary is attached.
+```
 
 ---
 
-### Phase 6: 拆卸与标签
+### Phase 6: Disassembly & Labeling
 
-#### 👤 手动: 拆卸验证
-**对每个槽位**:
+<img src="GUI/output_pngs/16.png" alt="Remove CE Structure" width="33%">
 
-1. **扫描CE盒验证**
+#### 👤 Manual: Disassembly Validation
+
+**Step 1: Disassemble TOP Slot**
+1. Display disassembly instructions
+2. Remove FEMB from CE box
+
+**Step 2: Disassemble BOTTOM Slot**
+1. Display disassembly instructions
+2. Remove FEMB from CE box
+
+**Step 3: Packaging Validation**
+
+For each slot (TOP first, then BOTTOM):
+
+1. **Scan CE Box Verification**
    ```
+   📦 PACKAGING TOP SLOT
+
    Please scan CE box QR code to verify
-   >> ZZZ9876
-   ✓ CE box verified: ZZZ9876
+   Scan or type CE box SN: >> ZZZ9876
+   ✓ CE box SN matches: ZZZ9876
    ```
 
-2. **安装盖子验证**
+2. **Install Cover Verification**
    ```
-   Please install cover (9876) to CE box (ZZZ9876)
-   After cover is installed, type in cover last 4 digits
-   >> 9876
-   ✓ Cover verified and installed correctly
-   ```
-
-3. **泡沫盒包装验证**
-   ```
-   Please package CE box in Foam box (A12345)
-   Scan QR code on the foam box
-   >> A12345
-   ✓ Foam box verified - correct packaging
+   ======================================================================
+         >>> Please install COVER (last 4: 9876) <<<
+         >>> To CE BOX SN: ZZZ9876 <<<
+   ======================================================================
+   After cover is installed, type cover last 4 digits: >> 9876
+   ✓ Cover SN matches: 9876
    ```
 
-4. **QC结果标签**
+3. **Foam Box Packaging Verification**
    ```
-   ✓ PASSED - Put on Green 'PASS' sticker near HWDB QR
-   ```
-   或
-   ```
-   ✗ FAILED - Put on Red 'NG' sticker near HWDB QR
-   ```
-
-5. **存放确认**
-   ```
-   Please store foam box in designated location
-   Press ENTER when complete >> [等待用户输入]
+   ======================================================================
+         >>> Please package CE BOX (ZZZ9876) <<<
+         >>> Into FOAM BOX QR: A12345 <<<
+   ======================================================================
+   Scan QR code on the foam box: >> A12345
+   ✓ Foam box matches: A12345
    ```
 
----
+4. **QC Result Sticker**
+   ```
+   FEMB ID: FEMB001
+   >>> Put on Green 'PASS' sticker near HWDB QR sticker <<<
+   ```
+   OR
+   ```
+   FEMB ID: FEMB003
+   >>> Put on Red 'NG' sticker near HWDB QR sticker <<<
+   ```
 
-#### 🖥️ 自动: FEMB标签打印指南
+5. **Storage Confirmation**
+   ```
+   Store the foam box in the designated location.
+   ✓ TOP slot CE box disassembly validation complete!
+   ```
+
+**Step 4: Accessory Return Confirmation**
+
+<img src="GUI/output_pngs/19.png" alt="Return Accessories" width="33%">
+
 ```
-==================================================================
-  FEMB LABELING GUIDE
-==================================================================
-Please label each FEMB board according to test results:
-
-✓ Bottom Slot0: FEMB FEMB001
-   → Apply GREEN label
-
-✓ Top Slot1: FEMB FEMB002
-   → Apply GREEN label
-==================================================================
-Have you labeled all FEMB boards correctly?
-Press ENTER to confirm >> [等待用户输入]
+⚠️  Please confirm all accessories have been returned to their original positions.
+Type 'confirm' to continue
+>> confirm
+✓ Accessories check completed. Thank you!
 ```
 
 ---
 
-#### 🖥️ 自动: 数据上传到网盘
+#### 🖥️ Automatic: FEMB Labeling Guide
+```
+==================================================================
+  📋 FEMB LABELING INSTRUCTIONS
+==================================================================
+
+Please label the FEMB boards according to test results:
+
+✓ Bottom Slot0: FEMB FEMB001 - PASS
+   >>> Put on Green 'PASS' sticker near HWDB QR sticker <<<
+
+✓ Top Slot1: FEMB FEMB002 - PASS
+   >>> Put on Green 'PASS' sticker near HWDB QR sticker <<<
+
+==================================================================
+```
+
+---
+
+#### 🖥️ Automatic: Real-Time Network Sync
+
+**During Test Execution**:
+```
+📤 Syncing Warm QC data to network...
+  ✓ Data synced to /data/rtss/femb/FEMB_QC/...
+  ✓ Report synced
+```
+
+**After Phase 6 Completion**:
 ```
 ==================================================================
   UPLOADING TEST DATA TO NETWORK DRIVE
@@ -489,7 +710,7 @@ Destination: /data/rtss/femb
 ✓ All test data uploaded successfully
 ```
 
-**如果上传失败**:
+**If Upload Fails**:
 ```
 ⚠️ Upload failed or incomplete - please upload manually
   Manual upload: Copy data from /mnt/data/FEMB_QC to /data/rtss/femb
@@ -497,44 +718,155 @@ Destination: /data/rtss/femb
 
 ---
 
-## 故障排除
+## New Features
 
-### 电源供应问题
+### 1. Input Validation Loops
+All user inputs now validate automatically:
 
-#### 问题: 无法连接到电源供应
-**症状**:
+**Example - Slot Status Input**:
+```
+Will this slot have a FEMB installed?
+(Enter 'Y' for Yes, 'EMPTY' or 'N' if this slot will be empty)
+>> xyz
+✗ Invalid input. Please enter 'Y', 'EMPTY', or 'N'
+>> Y
+✓ Input accepted
+```
+
+**Validated Inputs**:
+- Slot installation status (Y/EMPTY/N)
+- Dewar level checks (Y/N)
+- FEMB confirmation (y/n)
+- Configuration modification (m/confirm)
+- QC action selections (y/s/e)
+- Test failure decisions (r/c/e)
+- Final result review (y/n)
+
+### 2. Countdown Timer with Animation
+
+**Visual Features**:
+- 🔄 Spinning animation (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏)
+- 📊 Color-coded progress bar `[████████░░░░] 45.2%`
+- ⏱️ Live remaining time display `05:23 remaining`
+- ⏭️ Skip option - Press **'j'** to skip any wait
+
+**Example Display**:
+```
+======================================================================
+  CTS Warm Gas Purge (20 min)
+  Press 'j' to skip wait
+======================================================================
+
+⠹ [████████████████░░░░░░░░░░░░░░░░░░░░░░░░] 40.5% 11:54 remaining
+
+[Press 'j' to skip]
+```
+
+**Available in**:
+- Phase 0: Warm gas purge (20 min) - USB automatic mode
+- Phase 0: Warm gas purge (20 min) - Manual mode
+- Phase 4: Cold gas pre-cooling (5 min) - USB automatic mode
+- Phase 4: Cold gas pre-cooling (5 min) - Manual mode
+- Phase 4: Warm-up (60 min) - USB automatic mode
+
+### 3. Enhanced LN₂ Level Monitoring
+
+**Color-Coded Progress Display**:
+```
+======================================================================
+  CTS LN₂ Immersion (~30 min)
+  Monitoring level every 60 seconds...
+======================================================================
+
+[Check 1]  1 min elapsed | Chamber Level: 1 (Filling) | Dewar: 1850
+[Check 5]  5 min elapsed | Chamber Level: 2 (In Progress) | Dewar: 1800
+[Check 15] 15 min elapsed | Chamber Level: 3 (✓ Ready) | Dewar: 1650
+
+✓ LN₂ in chamber reached Level 3 - Ready for cold test!
+```
+
+**Status Colors**:
+- 🔴 **Red** "Filling" - Level 0-1
+- 🟡 **Yellow** "In Progress" - Level 2
+- 🟢 **Green** "✓ Ready" - Level 3-4
+
+### 4. Email Notifications
+
+**Four Automatic Emails**:
+
+1. **Assembly Complete** (After Phase 2)
+   - Subject: "Assembly Complete - Ready for QC"
+   - Content: Assembly phase completed, ready for testing
+
+2. **Warm QC Complete** (After Phase 3)
+   - Subject: "Warm QC Complete"
+   - Attachment: Warm_QC_Summary.txt
+   - Content: Test results summary + next steps for cold down
+
+3. **Cold QC Complete** (After Phase 4)
+   - Subject: "Cold QC Complete"
+   - Attachment: Cold_QC_Summary.txt
+   - Content: Test results summary + warm-up instructions
+
+4. **QC Complete** (After Phase 5)
+   - Subject: "QC Complete - Please Classify"
+   - Attachment: Overall_QC_Summary.txt
+   - Content: Complete test summary with pass/fail for each FEMB
+
+### 5. Real-Time Network Synchronization
+
+**Features**:
+- Data and reports sync to network immediately after local save
+- Syncs to `/data/rtss/femb/FEMB_QC`
+- No manual upload needed
+- Automatic retry on failure
+
+**Sync Points**:
+- After Warm QC data transfer
+- After Cold QC data transfer
+- After Final Checkout data transfer
+- Final comprehensive upload at Phase 6
+
+---
+
+## Troubleshooting
+
+### Power Supply Issues
+
+#### Issue: Cannot Connect to Power Supply
+**Symptoms**:
 ```
 ❌ Connection failed: No such resource
 ⚠️ Rigol device not found via USB
 ```
 
-**解决方案**:
-1. 检查USB连接
-2. 运行 `lsusb` 查看设备（应显示 `1ab1:0e11 Rigol Technologies`）
-3. 如果检测不到：
-   - 重启电源供应
-   - 重新插拔USB线
-   - 更换USB端口
-4. 如果仍无法连接：
-   - 修改 `init_setup.csv`: `PS_Control_Mode,MANUAL`
-   - 重启测试程序
-   - 系统将切换到手动控制模式
+**Solutions**:
+1. Check USB connection
+2. Run `lsusb` to view devices (should show `1ab1:0e11 Rigol Technologies`)
+3. If not detected:
+   - Restart power supply
+   - Re-plug USB cable
+   - Change USB port
+4. If still unable to connect:
+   - Modify `init_setup.csv`: `PS_Control_Mode,MANUAL`
+   - Restart test program
+   - System will switch to manual control mode
 
 ---
 
-### CTS控制盒问题
+### CTS Control Box Issues
 
-#### 问题: 无法找到CTS控制盒
-**症状**:
+#### Issue: Cannot Find CTS Control Box
+**Symptoms**:
 ```
 No available serial port exists
 Can't build communication with CTS
 ```
 
-**解决方案**:
-1. 检查USB连接
-2. 运行 `ls /dev/ttyACM*` 查看串口设备
-3. 按照屏幕提示操作：
+**Solutions**:
+1. Check USB connection
+2. Run `ls /dev/ttyACM*` to view serial devices
+3. Follow on-screen prompts:
    ```
    step 1: Power off cold control box
    step 2: Unplug USB cable from cold control box
@@ -543,55 +875,55 @@ Can't build communication with CTS
    step 5: Replug USB cable to cold control box
    fixed? (y/n):
    ```
-4. 如果仍无法连接，选择 'n' 进入手动控制模式
+4. If still unable to connect, select 'n' to enter manual control mode
 
 ---
 
-### 液位检查失败
+### Level Check Failure
 
-#### 问题: 加注后液位仍不足
-**症状**:
+#### Issue: Level Still Insufficient After Refill
+**Symptoms**:
 ```
 ✗ Dewar level (1150) is still below threshold (1700)
 ⚠️  Refill was insufficient. Please refill again.
 ```
 
-**解决方案**:
-1. 检查杜瓦瓶是否确实加满
-2. 检查液氮是否正在蒸发（保温是否良好）
-3. 继续加注直到液位达标
-4. 系统会自动循环检查直到通过
+**Solutions**:
+1. Check if dewar is actually filled
+2. Check if LN₂ is evaporating (insulation good?)
+3. Continue refilling until level is sufficient
+4. System will automatically loop until check passes
 
 ---
 
-### 测试失败处理
+### Test Failure Handling
 
-#### Warm/Cold Checkout 失败
-**自动重试**: 系统会自动重试最多3次
+#### Warm/Cold Checkout Failure
+**Auto-Retry**: System automatically retries up to 3 times
 
-**3次后仍失败**: 继续进行QC测试，但会发送邮件通知
+**After 3 Failures**: Continues to QC test but sends email notification
 
-#### QC测试失败
-**选项**:
-- `'r'` - 重试测试（耗时~30分钟）
-- `'c'` - 继续到下一阶段（不推荐）
-- `'e'` - 退出测试，进入暖化和拆卸流程
+#### QC Test Failure
+**Options**:
+- `'r'` - Retry test (~30 minutes)
+- `'c'` - Continue to next phase (not recommended)
+- `'e'` - Exit test, proceed to warm-up and disassembly
 
 ---
 
-### 网盘上传失败
+### Network Upload Failure
 
-#### 问题: 无法访问网络路径
-**症状**:
+#### Issue: Cannot Access Network Path
+**Symptoms**:
 ```
 ✗ Failed to create network directory: Permission denied
 ```
 
-**解决方案**:
-1. 检查网络连接: `ping [网盘服务器]`
-2. 检查挂载: `mount | grep /data`
-3. 检查权限: `ls -ld /data/rtss/femb`
-4. 手动上传:
+**Solutions**:
+1. Check network connection: `ping [network server]`
+2. Check mount: `mount | grep /data`
+3. Check permissions: `ls -ld /data/rtss/femb`
+4. Manual upload:
    ```bash
    cp -r /mnt/data/FEMB_QC /data/rtss/femb/
    cp femb_info*.csv /data/rtss/femb/
@@ -599,75 +931,87 @@ Can't build communication with CTS
 
 ---
 
-## 测试时间估算
+## Test Time Estimates
 
-### 完整测试周期（自动模式）
-| 阶段 | 预计时间 | 说明 |
-|------|---------|------|
-| Phase 0: 初始化 | 5-10分钟 | 含液位检查，若需加注+40分钟 |
-| Phase 1: 安装设置 | 15-20分钟 | 手动组装和扫描 |
-| Phase 2: 配置文档 | 5分钟 | 拍照和配置 |
-| Phase 3: 暖态QC | 30-40分钟 | 含重试 |
-| Phase 4: 冷态QC | 90-120分钟 | 含冷却、测试、暖化 |
-| Phase 5: 最终检查 | 30-35分钟 | |
-| Phase 6: 拆卸标签 | 15-20分钟 | 手动操作 |
-| **总计** | **3-4小时** | 不含额外的LN₂加注 |
+### Complete Test Cycle (Automatic Mode)
+| Phase | Estimated Time | Notes |
+|-------|---------------|-------|
+| Phase 0: Initialization | 5-10 min | With level check, +40 min if refill needed |
+| Phase 1: Installation | 15-20 min | Manual assembly and scanning |
+| Phase 2: Configuration | 5 min | Photos and config |
+| Phase 3: Warm QC | 30-40 min | Including retries |
+| Phase 4: Cold QC | 90-120 min | Including cooling, test, warm-up |
+| Phase 5: Final Checkout | 30-35 min | |
+| Phase 6: Disassembly | 15-20 min | Manual operations |
+| **Total** | **3-4 hours** | Excluding additional LN₂ refills |
 
-### 时间节约（自动vs手动）
-| 操作 | 自动模式 | 手动模式 | 节约时间 |
-|------|---------|---------|---------|
-| 电源控制 | 自动 | ~2分钟/次 × 10次 | ~20分钟 |
-| CTS控制 | 自动 | ~3分钟/次 × 5次 | ~15分钟 |
-| 液位监控 | 自动 | 需手动检查 | ~10分钟 |
-| **总节约** | | | **~45分钟/测试** |
+### Time Savings (Automatic vs Manual)
+| Operation | Automatic Mode | Manual Mode | Time Saved |
+|-----------|---------------|-------------|------------|
+| Power Control | Automatic | ~2 min/time × 10 times | ~20 min |
+| CTS Control | Automatic | ~3 min/time × 5 times | ~15 min |
+| Level Monitoring | Automatic | Manual checks needed | ~10 min |
+| **Total Savings** | | | **~45 min/test** |
 
 ---
 
-## 附录
+## Appendix
 
-### A. CTS状态代码
-| 状态码 | 名称 | 功能 |
-|-------|------|------|
-| STATE 1 | IDLE | 待机状态 |
-| STATE 2 | Warm Gas | 暖气吹扫（暖化） |
-| STATE 3 | Cold Gas | 冷气预冷 |
-| STATE 4 | LN₂ Immersion | 液氮浸入模式 |
+### A. CTS State Codes
+| State | Name | Function |
+|-------|------|----------|
+| STATE 1 | IDLE | Standby mode |
+| STATE 2 | Warm Gas | Warm gas purge (warm-up) |
+| STATE 3 | Cold Gas | Cold gas pre-cooling |
+| STATE 4 | LN₂ Immersion | Liquid nitrogen immersion mode |
 
-### B. 液位传感器等级
-| Level | ADC范围 | 状态 |
-|-------|---------|------|
-| 0 | < 10000 | 短路/异常 |
-| 1 | 10000-16000 | 室温 |
-| 2 | 16000-18400 | 冷气中 |
-| 3 | 18400-25000 | 液氮浸入 |
-| 4+ | > 25000 | 开路/溢出 |
+### B. Level Sensor Grades
+| Level | ADC Range | Status |
+|-------|-----------|--------|
+| 0 | < 10000 | Short circuit/abnormal |
+| 1 | 10000-16000 | Room temperature |
+| 2 | 16000-18400 | In cold gas |
+| 3 | 18400-25000 | LN₂ immersed |
+| 4+ | > 25000 | Open circuit/overflow |
 
-### C. 杜瓦液位阈值
-| 班次 | 时间段 | 最低液位 |
-|------|--------|---------|
-| 早班 | 1:00-11:00 | 1700 |
-| 晚班 | 12:00-0:00 | 1200 |
+### C. Dewar Level Thresholds
+| Shift | Time Period | Minimum Level |
+|-------|------------|---------------|
+| Morning | 1:00-11:00 | 1700 |
+| Evening | 12:00-0:00 | 1200 |
 
-### D. 常用命令
+### D. Common Commands
 ```bash
-# 查看USB设备
+# View USB devices
 lsusb
 
-# 查看串口设备
+# View serial devices
 ls /dev/ttyACM*
 
-# 检查网络挂载
+# Check network mounts
 mount | grep /data
 
-# 查看测试数据
+# View test data
 ls -lh /mnt/data/FEMB_QC/
 
-# 手动复制到网盘
+# Manual copy to network
 cp -r /mnt/data/FEMB_QC /data/rtss/femb/
 ```
 
+### E. Skip Options Summary
+All countdown timers support pressing **'j'** to skip:
+
+| Wait Type | Duration | Location | Skip Key |
+|-----------|----------|----------|----------|
+| Warm Gas Purge (Auto) | 20-60 min | Phase 0, Phase 4 | 'j' |
+| Warm Gas Purge (Manual) | 20-60 min | Phase 0, Phase 4 | 'j' |
+| Cold Gas Pre-cool (Auto) | 5 min | Phase 4 | 'j' |
+| Cold Gas Pre-cool (Manual) | 5 min | Phase 4 | 'j' |
+| LN₂ Fill Timer (Manual) | 30 min | Phase 4 | 's' or 'stop' |
+| Warm-up Timer (Manual) | 60 min | Phase 4 | 's' or 'stop' |
+
 ---
 
-**文档版本**: v1.0
-**更新日期**: 2026-01-14
-**维护**: BNL QC Team
+**Document Version**: v2.0
+**Last Updated**: 2026-01-15
+**Maintained By**: BNL QC Team

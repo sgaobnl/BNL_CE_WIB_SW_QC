@@ -10,8 +10,19 @@ import time
 import os.path
 import serial
 
-from colorama import just_fix_windows_console
+from colorama import just_fix_windows_console, Fore, Style
 just_fix_windows_console()
+
+# Import countdown timer for visual wait display
+try:
+    from qc_utils import countdown_timer
+except ImportError:
+    # Fallback if qc_utils not available
+    def countdown_timer(total_seconds, message="Waiting", allow_skip=True):
+        """Fallback countdown using simple sleep"""
+        print(f"{message} - {total_seconds//60} minutes...")
+        time.sleep(total_seconds)
+        return True
 #from sendemail import sendemail
 ####### Input test information #######
 #Red = '\033[91m'
@@ -245,8 +256,14 @@ class cryobox:
             parsed = self.cryo_cmd(mode=b'2')
             parsed = self.cryo_cmd(mode=b'm')
             self.cryo_close()
-            print ("Please wait %d minutes..."%waitminutes)
-            time.sleep(waitminutes*60)
+
+            # Use countdown timer with animation
+            completed = countdown_timer(
+                total_seconds=waitminutes*60,
+                message=f"CTS Warm Gas Purge (~{waitminutes} min)",
+                allow_skip=True
+            )
+
             if self.cryo_create():
                 parsed = self.cryo_cmd(mode=b'1')
                 parsed = self.cryo_cmd(mode=b'm')
@@ -303,13 +320,18 @@ class cryobox:
         if self.manual_flg:
             return False
 
-
         if self.cryo_create():
             parsed = self.cryo_cmd(mode=b'3')
             parsed = self.cryo_cmd(mode=b'm')
             self.cryo_close()
-            print ("Please wait %d minutes..."%waitminutes)
-            time.sleep(waitminutes*60)
+
+            # Use countdown timer with animation
+            completed = countdown_timer(
+                total_seconds=waitminutes*60,
+                message=f"CTS Cold Gas Pre-cooling (~{waitminutes} min)",
+                allow_skip=True
+            )
+
             return True
         else:
             return False
@@ -318,6 +340,11 @@ class cryobox:
         if self.manual_flg:
             return False
 
+        print(Fore.CYAN + f"\n{'='*70}" + Style.RESET_ALL)
+        print(Fore.YELLOW + f"  CTS LN₂ Immersion (~{waitminutes} min)" + Style.RESET_ALL)
+        print(Fore.CYAN + f"  Monitoring level every 60 seconds..." + Style.RESET_ALL)
+        print(Fore.CYAN + f"{'='*70}\n" + Style.RESET_ALL)
+
         t0 = time.time_ns()//1e9
         if self.cryo_create():
             parsed = self.cryo_cmd(mode=b'4')
@@ -325,26 +352,48 @@ class cryobox:
         else:
             return False
 
+        check_count = 0
         while True:
             time.sleep(60)
+            check_count += 1
+
             if self.cryo_create():
                 parsed =  self.cryo_cmd(mode=b'm')
                 self.cryo_close()
                 tc_level, dewar_level = self.chamber_level(parsed)
                 tgap = time.time_ns()//1e9 - t0
-                print ("Time pasted = %ds, Chamber Level = %d, Dewar level = %d"%(tgap, tc_level, dewar_level))
+
+                # Display progress with color coding
+                mins_elapsed = tgap // 60
+                progress_pct = min(100, (tgap / (waitminutes * 60)) * 100)
+
+                if tc_level >= 3:
+                    level_color = Fore.GREEN
+                    level_status = "✓ Ready"
+                elif tc_level >= 2:
+                    level_color = Fore.YELLOW
+                    level_status = "In Progress"
+                else:
+                    level_color = Fore.RED
+                    level_status = "Filling"
+
+                print(f"{Fore.CYAN}[Check {check_count}] {mins_elapsed} min elapsed | "
+                      f"{level_color}Chamber Level: {tc_level} ({level_status}) | "
+                      f"{Fore.CYAN}Dewar: {dewar_level}{Style.RESET_ALL}")
+
                 if (tc_level ==3) or (tc_level ==4):
-                    print ("LN2 in chamber reaches level 3, ready for cold test")
+                    print(Fore.GREEN + "\n✓ LN₂ in chamber reached Level 3 - Ready for cold test!" + Style.RESET_ALL)
                     return True
+
                 if tgap > waitminutes*60:
                     while True:
-                        print ("Time out: Over %d minutes LN2 still not reach level 3, please check!"%waitminutes)
-                        yorn = input ("fixed (y/n)")
+                        print(Fore.RED + f"\n⚠️  TIMEOUT: Over {waitminutes} minutes, LN₂ still not at Level 3!" + Style.RESET_ALL)
+                        yorn = input(Fore.YELLOW + "Fixed? (y/n): " + Style.RESET_ALL)
                         if 'Y' in yorn or 'y' in yorn:
                             t0 = (time.time_ns()//1e9)
                             break
                         else:
-                            yorn = input ("Take over manually (y/n)")
+                            yorn = input(Fore.YELLOW + "Take over manually? (y/n): " + Style.RESET_ALL)
                             if 'Y' in yorn or 'y' in yorn:
                                 self.manual_flg = True
                                 return False

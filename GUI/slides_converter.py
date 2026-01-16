@@ -1,7 +1,7 @@
 import os
 from pdf2image import convert_from_path
 
-pdf_path = "Pop-ups_FEMB_QC_1125.pdf"  # Your PDF file
+pdf_path = "Pop-ups_FEMB_QC.pdf"  # Your PDF file
 output_dir = "output_pngs"
 os.makedirs(output_dir, exist_ok=True)
 

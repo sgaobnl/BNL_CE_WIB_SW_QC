@@ -25,6 +25,85 @@ def timer_thread(stop_event):
     print(f"\nTotal time: {seconds}s")
 
 
+def countdown_timer(total_seconds, message="Waiting", allow_skip=True):
+    """
+    Display a countdown timer with animation and optional skip feature.
+
+    Args:
+        total_seconds: Total time to count down in seconds
+        message: Message to display during countdown
+        allow_skip: If True, user can press 'j' to skip
+
+    Returns:
+        bool: True if completed normally, False if skipped
+    """
+    import select
+
+    spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    spinner_idx = 0
+
+    print(Fore.CYAN + f"\n{'='*70}" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"  {message}" + Style.RESET_ALL)
+    if allow_skip:
+        print(Fore.CYAN + f"  Press 'j' to skip wait" + Style.RESET_ALL)
+    print(Fore.CYAN + f"{'='*70}\n" + Style.RESET_ALL)
+
+    start_time = time.time()
+
+    while True:
+        elapsed = time.time() - start_time
+        remaining = total_seconds - elapsed
+
+        if remaining <= 0:
+            # Completed
+            print(f"\r{Fore.GREEN}✓ Wait complete!{' '*60}{Style.RESET_ALL}")
+            print()
+            return True
+
+        # Format time display
+        mins, secs = divmod(int(remaining), 60)
+        hours, mins = divmod(mins, 60)
+
+        if hours > 0:
+            time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
+        else:
+            time_str = f"{mins:02d}:{secs:02d}"
+
+        # Progress bar
+        progress = (elapsed / total_seconds) * 100
+        bar_length = 40
+        filled = int(bar_length * progress / 100)
+        bar = '█' * filled + '░' * (bar_length - filled)
+
+        # Display with spinner
+        print(f"\r{Fore.CYAN}{spinner[spinner_idx]} {Fore.YELLOW}[{bar}] {progress:5.1f}% "
+              f"{Fore.GREEN}{time_str} remaining{Style.RESET_ALL}",
+              end="", flush=True)
+
+        spinner_idx = (spinner_idx + 1) % len(spinner)
+
+        # Check for user input to skip (non-blocking)
+        if allow_skip:
+            if sys.platform == 'win32':
+                import msvcrt
+                if msvcrt.kbhit():
+                    key = msvcrt.getch().decode('utf-8', errors='ignore').lower()
+                    if key == 'j':
+                        print(f"\r{Fore.YELLOW}⚠️  Skipped by user{' '*60}{Style.RESET_ALL}")
+                        print()
+                        return False
+            else:
+                # Unix/Linux/Mac
+                if select.select([sys.stdin], [], [], 0)[0]:
+                    key = sys.stdin.read(1).lower()
+                    if key == 'j':
+                        print(f"\r{Fore.YELLOW}⚠️  Skipped by user{' '*60}{Style.RESET_ALL}")
+                        print()
+                        return False
+
+        time.sleep(0.1)
+
+
 def timer_count(start_message="Timer started!",
                 exit_hint="Type 'q' or 'quit' to exit",
                 end_message="Timer stopped!",
