@@ -672,7 +672,7 @@ print("=" * 70 + Style.RESET_ALL)
 # Determine shift and set dewar level threshold
 hour = datetime.now().hour
 if 1 <= hour <= 11:
-    DEWAR_LEVEL_THRESHOLD = 1700
+    DEWAR_LEVEL_THRESHOLD = 1900
     shift_name = "Morning"
 else:
     DEWAR_LEVEL_THRESHOLD = 1200
@@ -1224,6 +1224,8 @@ if 1 in state_list:
         csv_data['toy_TPC'] = 'y'
     if 'comment' not in csv_data:
         # Format assembly data in CSV-style string
+        csv_data['comment'] = "QC Test"
+    else:
         csv_data['comment'] = (
             f"Bottom_HWDB={bottom_assembly_data['hwdb_qr']},"
             f"Bottom_CE={bottom_assembly_data['ce_box_sn']},"
@@ -1244,6 +1246,77 @@ if 1 in state_list:
 
     #### 17. Read configuration to dictionary
     inform = cts.read_csv_to_dict(csv_file, 'RT')
+
+# ----------------------------------------------------------------------------
+# CTS Warm-up Time Check (Before Phase 2)
+# ----------------------------------------------------------------------------
+# Check if warm-up time from Phase 0 is complete before proceeding to Phase 2
+if 'cts_ready_time' in locals() and cts_ready_time is not None:
+    print_separator()
+    print(Fore.CYAN + "🌡️  Checking CTS Warm-up Time..." + Style.RESET_ALL)
+
+    # Calculate remaining time
+    current_time = time.time()
+    remaining_time = cts_ready_time - current_time
+
+    warmup_skipped = False  # Track if user skipped the warm-up wait
+
+    if remaining_time > 0:
+        # Still waiting - show remaining time and allow skip
+        remaining_min = int(remaining_time // 60)
+        remaining_sec = int(remaining_time % 60)
+        print_status('warning', f"Warm-up still in progress: {remaining_min} min {remaining_sec} sec remaining")
+        print()
+        print(Fore.YELLOW + "  ⏳ Please wait for warm-up to complete before placing CE into chamber." + Style.RESET_ALL)
+        print()
+        print("  Options:")
+        print("    " + Fore.GREEN + "'W'" + Style.RESET_ALL + " - Wait for warm-up to complete (recommended)")
+        print("    " + Fore.YELLOW + "'J'" + Style.RESET_ALL + " - Jump/Skip warm-up wait and continue")
+
+        while True:
+            user_choice = input(Fore.YELLOW + '>> ' + Style.RESET_ALL).strip().upper()
+
+            if user_choice == 'W':
+                # Wait for remaining time with countdown
+                print_status('info', "Waiting for warm-up to complete...")
+                countdown_timer(
+                    total_seconds=remaining_time,
+                    message="CTS Warm-up - Waiting for completion",
+                    allow_skip=True
+                )
+                print_status('success', "Warm-up time complete!")
+                break
+            elif user_choice == 'J':
+                print_status('warning', "Skipping warm-up wait - proceeding to chamber installation")
+                warmup_skipped = True
+                break
+            else:
+                print_status('error', "Invalid input. Please enter 'W' to wait or 'J' to jump/skip")
+    else:
+        # Warm-up time already completed
+        print_status('success', "Warm-up time complete!")
+
+    # Set CTS to IDLE state after warm-up (only if not skipped)
+    if not warmup_skipped:
+        print_status('info', "Setting CTS to IDLE state...")
+        if cryo_auto_mode:
+            if cryo.cryo_warmgas_finish():
+                print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
+            else:
+                print_status('error', "Failed to set CTS to IDLE - please check manually")
+        else:
+            # Manual mode - prompt user to set to IDLE
+            print(Fore.YELLOW + "\n⚠️  Please set CTS to STATE 1 (IDLE)" + Style.RESET_ALL)
+            while True:
+                confirm_idle = input(Fore.YELLOW + "Enter 'Y' when CTS is in IDLE state >> " + Style.RESET_ALL)
+                if confirm_idle.upper() == 'Y':
+                    print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
+                    break
+
+        # Clear cts_ready_time since warm-up is complete
+        cts_ready_time = None
+
+    print_separator()
 
 # ============================================================================
 ## PHASE 2: CONNECT WITH CTS
@@ -1392,29 +1465,31 @@ if 3 in state_list:
     inform = cts.read_csv_to_dict(csv_file_implement, 'RT')
     ### 26. Warm QC Test Selection Menu
     while True:
-        print("\n" + Fore.CYAN + "=" * 70)
-        print("  OPTIONS:")
-        print("=" * 70 + Style.RESET_ALL)
-        print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Continue with Warm QC")
-        print("  " + Fore.YELLOW + "'s'" + Style.RESET_ALL + " - Skip Warm QC (proceed directly to Cold)")
-        print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit test program")
-        Next = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+        # print("\n" + Fore.CYAN + "=" * 70)
+        # print("  OPTIONS:")
+        # print("=" * 70 + Style.RESET_ALL)
+        # print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Continue with Warm QC")
+        # print("  " + Fore.YELLOW + "'s'" + Style.RESET_ALL + " - Skip Warm QC (proceed directly to Cold)")
+        # print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit test program")
+        # Next = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
 
-        #### Skip warm test option
-        if Next == 's':
-            if confirm("Do you want to skip the Warm QC?"):
-                print(Fore.YELLOW + "⏩ Skipping Warm QC..." + Style.RESET_ALL)
-                break
-
-        #### Exit program option
-        elif Next == 'e':
-            if confirm("Do you want to exit the test program?"):
-                print(Fore.RED + "Exiting QC program..." + Style.RESET_ALL)
-                sys.exit()
-
-        #### 27. Begin Warm QC Execution
-        elif Next == 'y':
-            if confirm("Do you want to begin the Warm QC?"):
+        # #### Skip warm test option
+        # if Next == 's':
+        #     if confirm("Do you want to skip the Warm QC?"):
+        #         print(Fore.YELLOW + "⏩ Skipping Warm QC..." + Style.RESET_ALL)
+        #         break
+        #
+        # #### Exit program option
+        # elif Next == 'e':
+        #     if confirm("Do you want to exit the test program?"):
+        #         print(Fore.RED + "Exiting QC program..." + Style.RESET_ALL)
+        #         sys.exit()
+        #
+        # #### 27. Begin Warm QC Execution
+        # elif Next == 'y':
+        if True:
+            # if confirm("Do you want to begin the Warm QC?"):
+            if True:
                 print_phase_header(3, 6, "Warm QC Test", "~35 min")
 
                 ##### 27a. Power ON WIB
@@ -2579,8 +2654,8 @@ if 6 in state_list or goto_disassembly:
 
     # Read assembly data from csv_data
     csv_data_dis = {}
-    if os.path.exists(csv_file):
-        with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+    if os.path.exists(csv_file_implement):
+        with open(csv_file_implement, mode='r', newline='', encoding='utf-8-sig') as file:
             reader = csv.reader(file)
             for row in reader:
                 if len(row) == 2:
@@ -2589,7 +2664,9 @@ if 6 in state_list or goto_disassembly:
 
     # Parse assembly data
     comment_str = csv_data_dis.get('comment', '')
+    print(comment_str)
     if comment_str and comment_str != 'QC test':
+    # if True:
         assembly_data_all = parse_assembly_data_from_comment(comment_str)
 
         # Collect test paths for result analysis
