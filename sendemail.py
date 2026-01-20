@@ -30,11 +30,9 @@ def sendemail(message, user_email="", subject = "Message from RTS", inform_tech 
         receiver_email = ";".join([receiver_email, shifters[weekday_iso][0]])
 
         if 'Congratulations' in message:
-        #if 'only' in message:
             now = datetime.now().time()
-            is_between = now >= time(17, 0) or now < time(7, 0)
+            is_between = now >= time(18, 0) or now < time(7, 0)
             is_before_7am = now < time(7, 0)
-            print (is_between, is_before_7am)
             if is_between:
                 if is_before_7am: #done in early morning
                     if (weekday_iso <= 5) and (weekday_iso > 1): #Tuesday to Friday
