@@ -20,7 +20,7 @@ def confirm(prompt):
             return True
         else:
             print(Fore.RED + "Invalid input. Please try again." + Style.RESET_ALL)
-            break
+            # break
 
 
 def get_email():

@@ -672,7 +672,7 @@ print("=" * 70 + Style.RESET_ALL)
 # Determine shift and set dewar level threshold
 hour = datetime.now().hour
 if 1 <= hour <= 11:
-    DEWAR_LEVEL_THRESHOLD = 1900
+    DEWAR_LEVEL_THRESHOLD = 1700
     shift_name = "Morning"
 else:
     DEWAR_LEVEL_THRESHOLD = 1200
@@ -1731,12 +1731,14 @@ if 3 in state_list:
                         print(Fore.YELLOW + "⚡ Powering OFF WIB..." + Style.RESET_ALL)
                         while True:
                             total_i = 0
+                            psu.turn_off_all()
+                            time.sleep(0.5)
                             for ch in (1, 2):
                                 v, i = psu.measure(ch)
                                 print(f"  CH{ch}: {v:.3f} V, {i:.3f} A")
                                 total_i += i
                             print(Fore.CYAN + f"  Total current: {total_i:.3f} A" + Style.RESET_ALL)
-                            psu.turn_off_all()
+
                             if total_i < 0.2:
                                 print(Fore.GREEN + "✓ Power OFF successful" + Style.RESET_ALL)
                                 break
@@ -1827,6 +1829,12 @@ Detailed summary is attached.
                 summary_path
             )
             print_status('success', "Warm QC summary email sent with attachment")
+
+            # Delete summary file after email sent
+            try:
+                os.remove(summary_path)
+            except Exception as del_e:
+                print_status('warning', f"Failed to delete summary file: {del_e}")
         else:
             # Fallback if no paths available
             send_email.send_email(
@@ -2219,6 +2227,12 @@ Detailed summary is attached.
                             summary_path
                         )
                         print_status('success', "Cold QC summary email sent with attachment")
+
+                        # Delete summary file after email sent
+                        try:
+                            os.remove(summary_path)
+                        except Exception as del_e:
+                            print_status('warning', f"Failed to delete summary file: {del_e}")
                     else:
                         # Fallback if no paths available
                         send_email.send_email(
@@ -2596,6 +2610,13 @@ Detailed comprehensive summary is attached.
                         summary_path
                     )
                     print_status('success', "Final QC summary email sent with comprehensive report")
+
+                    # Delete summary file after email sent
+                    try:
+                        os.remove(summary_path)
+                        print_status('info', f"Summary file deleted: {summary_filename}")
+                    except Exception as del_e:
+                        print_status('warning', f"Failed to delete summary file: {del_e}")
                 else:
                     # Fallback if no paths available
                     send_email.send_email(
