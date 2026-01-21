@@ -414,6 +414,33 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             print(f"\033[33mSLOT#{slot_num} Power Connection LOST Warning !!!\033[0m")
             return ' ', True
 
+    def parse_ln_current_status(ln_output, slot_list):
+        """Parse LN power output to check current status for each slot
+
+        Returns:
+            dict: {slot_num: {'normal': bool, 'message': str}} for each slot in slot_list
+        """
+        status = {}
+        if ln_output is None:
+            return status
+
+        for slot_num in ['0', '1', '2', '3']:
+            if slot_num not in slot_list:
+                continue
+
+            normal_msg = f'SLOT#{slot_num} Power Connection Normal'
+            warning_msg = f'Warning: SLOT#{slot_num} LOSS Power Connection'
+
+            if normal_msg in ln_output:
+                status[slot_num] = {'normal': True, 'message': normal_msg}
+            elif warning_msg in ln_output:
+                status[slot_num] = {'normal': False, 'message': f'SLOT#{slot_num} current abnormal'}
+            else:
+                # If no message found, assume abnormal
+                status[slot_num] = {'normal': False, 'message': f'SLOT#{slot_num} status unknown'}
+
+        return status
+
     def run_femb_powering(power_en, is_ln_mode=False):
         """Run FEMB power-on sequence"""
         ln_result = None
@@ -447,6 +474,72 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             slot_check = str(result)
 
         return slot_check, ln_result
+
+    def check_ln_current_with_retry(power_en, slot_list, max_retries=3):
+        """Check LN current with retry for persistent failures
+
+        Args:
+            power_en: Power enable string (e.g., 'on off on off')
+            slot_list: Current slot list string (e.g., ' 0  1 ')
+            max_retries: Number of retries for current check
+
+        Returns:
+            tuple: (failed_slots, all_failed)
+                - failed_slots: list of slot numbers with persistent current failures
+                - all_failed: True if all slots in slot_list failed
+        """
+        failure_count = {}  # {slot_num: count}
+
+        # Initialize failure count for each slot
+        for slot_num in ['0', '1', '2', '3']:
+            if slot_num in slot_list:
+                failure_count[slot_num] = 0
+
+        for attempt in range(max_retries):
+            print(Fore.CYAN + f"\n[LN Current Check - Attempt {attempt + 1}/{max_retries}]" + Style.RESET_ALL)
+
+            # Run LN power command
+            ln_command = [
+                "ssh", "root@192.168.121.123",
+                f"cd BNL_CE_WIB_SW_QC; python3 top_femb_powering_LN.py {power_en}"
+            ]
+            ln_result = subrun(ln_command, timeout=60, out=True)
+            time.sleep(2)
+
+            ln_output = ln_result.stdout if ln_result else ""
+
+            # Parse current status
+            current_status = parse_ln_current_status(ln_output, slot_list)
+
+            # Update failure counts
+            for slot_num, status in current_status.items():
+                if not status['normal']:
+                    failure_count[slot_num] += 1
+                    print(Fore.YELLOW + f"  ⚠️  {status['message']} (failure {failure_count[slot_num]}/{max_retries})" + Style.RESET_ALL)
+                else:
+                    print(Fore.GREEN + f"  ✓ SLOT#{slot_num} current normal" + Style.RESET_ALL)
+
+            # Check if any slot recovered (reset its count)
+            for slot_num in failure_count.keys():
+                if slot_num in current_status and current_status[slot_num]['normal']:
+                    failure_count[slot_num] = 0
+
+            # Early exit if all slots are normal
+            all_normal = all(count == 0 for count in failure_count.values())
+            if all_normal:
+                print(Fore.GREEN + "  ✓ All FEMB currents normal" + Style.RESET_ALL)
+                return [], False
+
+            if attempt < max_retries - 1:
+                print(Fore.YELLOW + "  Waiting 3 seconds before retry..." + Style.RESET_ALL)
+                time.sleep(3)
+
+        # Determine which slots have persistent failures
+        failed_slots = [slot for slot, count in failure_count.items() if count >= max_retries]
+        active_slots = [slot for slot in failure_count.keys() if slot not in failed_slots]
+        all_failed = len(active_slots) == 0
+
+        return failed_slots, all_failed
 
     def run_cable_test(slot_list):
         """Run cable test"""
@@ -492,6 +585,87 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                 '2': ('SLOT2', 'slot2'),
                 '3': ('SLOT3', 'slot3')
             }
+
+            # Track slots with critical current failures (for skipping in checkout/QC)
+            critical_failed_slots = []
+
+            # ========== LN Mode: Pre-check current with retry ==========
+            if is_ln_mode:
+                print(Fore.CYAN + "\n" + "=" * 70)
+                print("  LN MODE: FEMB CURRENT PRE-CHECK")
+                print("=" * 70 + Style.RESET_ALL)
+                print(Fore.YELLOW + "  Checking FEMB current status with retry..." + Style.RESET_ALL)
+
+                failed_slots, all_failed = check_ln_current_with_retry(power_en, slot_list, max_retries=3)
+
+                if all_failed:
+                    # All FEMBs have persistent current failures - skip entire test
+                    print(Fore.RED + "\n" + "=" * 70)
+                    print("  ⛔ CRITICAL WARNING: ALL FEMBs HAVE PERSISTENT CURRENT FAILURES")
+                    print("=" * 70 + Style.RESET_ALL)
+                    print(Fore.RED + "  All FEMBs show abnormal current after 3 retries." + Style.RESET_ALL)
+                    print(Fore.RED + "  Skipping Checkout and QC tests for this session." + Style.RESET_ALL)
+                    print(Fore.YELLOW + "\n  Please check:" + Style.RESET_ALL)
+                    print("    1. FEMB power connections")
+                    print("    2. Cable connections")
+                    print("    3. FEMB hardware status")
+
+                    # Power off all FEMBs
+                    power_off_femb_channels()
+
+                    # Record critical failure
+                    logs['critical_current_failure'] = True
+                    logs['failed_slots'] = list(failed_slots)
+
+                    # Return special tuple indicating critical failure (compatible with QC_Process)
+                    # Format: (QCstatus, bads, data_path, report_path)
+                    return ("CRITICAL_CURRENT_FAILURE", list(failed_slots), None, None)
+
+                elif failed_slots:
+                    # Some FEMBs have persistent current failures - remove from slot_list
+                    print(Fore.RED + "\n" + "-" * 70)
+                    print("  ⚠️  CRITICAL WARNING: PERSISTENT CURRENT FAILURES DETECTED")
+                    print("-" * 70 + Style.RESET_ALL)
+
+                    for slot in failed_slots:
+                        slot_name = f"SLOT#{slot}"
+                        femb_id = input_info.get(f'SLOT{slot}', 'Unknown')
+                        print(Fore.RED + f"  ⛔ {slot_name} ({femb_id}): Persistent current failure - SKIPPING" + Style.RESET_ALL)
+                        critical_failed_slots.append(slot)
+
+                    # Update slot_list and power_en to remove failed slots
+                    original_slot_list = slot_list
+                    slot_list_new = ''
+                    power_en_new = ''
+                    power_parts = power_en.strip().split()
+
+                    for i, slot_num in enumerate(['0', '1', '2', '3']):
+                        if slot_num in original_slot_list and slot_num not in failed_slots:
+                            slot_list_new += f' {slot_num} '
+                            power_en_new += ' on '
+                        else:
+                            power_en_new += ' off '
+
+                    slot_list = slot_list_new
+                    power_en = power_en_new
+
+                    print(Fore.YELLOW + f"\n  Updated slot list: [{slot_list.strip()}]" + Style.RESET_ALL)
+                    print(Fore.YELLOW + f"  Updated power config: [{power_en.strip()}]" + Style.RESET_ALL)
+
+                    # Record critical failures
+                    logs['critical_current_failure'] = True
+                    logs['failed_slots'] = list(failed_slots)
+
+                    # Check if any slots remain
+                    if not slot_list.strip():
+                        print(Fore.RED + "\n  ⛔ No valid FEMBs remaining. Skipping tests." + Style.RESET_ALL)
+                        power_off_femb_channels()
+                        return ("CRITICAL_CURRENT_FAILURE", list(failed_slots), None, None)
+
+                else:
+                    print(Fore.GREEN + "\n  ✓ All FEMB currents normal - proceeding with tests" + Style.RESET_ALL)
+
+                print()
 
             attempt = 0
             while True:  # Infinite loop, user decides when to exit

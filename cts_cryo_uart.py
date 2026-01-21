@@ -386,6 +386,7 @@ class cryobox:
                     return True
 
                 if tgap > waitminutes*60:
+                    #send a email here
                     while True:
                         print(Fore.RED + f"\n⚠️  TIMEOUT: Over {waitminutes} minutes, LN₂ still not at Level 3!" + Style.RESET_ALL)
                         yorn = input(Fore.YELLOW + "Fixed? (y/n): " + Style.RESET_ALL)

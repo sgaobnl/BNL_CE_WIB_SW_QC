@@ -188,7 +188,7 @@ def check_fault_files(paths, show_p_files=False, inform=None, time_limit_hours=N
     f_files = []  # Files with _F_
     p_files = []  # Files with _P_
     for path in paths:
-        if not os.path.isdir(path):
+        if path is None or not os.path.isdir(path):
             continue
         for root, dirs, files in os.walk(path):
             for file in files:
@@ -313,6 +313,24 @@ def QC_Process(path="D:", QC_TST_EN=None, input_info=None, pre_info=None):
             badchips = QCresult[1]
             data_path = QCresult[2]
             report_path = QCresult[3]
+
+            # Handle critical current failure
+            if QCstatus == "CRITICAL_CURRENT_FAILURE":
+                print(Fore.RED + "\n" + "=" * 70)
+                print("  ⛔ CRITICAL CURRENT FAILURE - TEST SKIPPED")
+                print("=" * 70 + Style.RESET_ALL)
+                print(Fore.RED + f"  Failed slots: {badchips}" + Style.RESET_ALL)
+                print(Fore.YELLOW + "\n  Please check FEMB hardware and connections before retesting." + Style.RESET_ALL)
+
+                if pre_info:
+                    failed_slots_str = ', '.join([f'SLOT#{s}' for s in badchips])
+                    send_email.send_email(sender, password, receiver,
+                                         f"CRITICAL: FEMB Current Failure at {pre_info.get('test_site', 'Unknown')}",
+                                         f"Critical current failure detected.\nFailed slots: {failed_slots_str}\n\nTest skipped. Please check FEMB hardware and connections.")
+
+                # Return None paths to indicate skip
+                return None, None
+
             break
         else:
             print(Fore.RED + "⚠️  Issue detected!" + Style.RESET_ALL)
