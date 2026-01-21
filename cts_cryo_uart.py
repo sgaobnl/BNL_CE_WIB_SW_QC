@@ -217,8 +217,9 @@ class cryobox:
                 print("step 1: Power off cold control box ") 
                 print("step 2: Unplug USB cable from cold control box ") 
                 print("step 3: Wait 5 seconds ") 
-                print("step 4: Turn cold control box back on") 
-                print("step 5: Replug USB cable to cold control box") 
+                print("step 4: Turn cold control box back on")
+                print("step 5: Replug USB cable to cold control box")
+                print("step 6: Call tech coordinator if you can’t  fix it")
                 fixedflg = input("fixed? (y/n): ")
                 if 'Y' in fixedflg or 'y' in fixedflg:
                     continue

@@ -21,6 +21,7 @@ import os
 import time
 import sys
 import threading
+import webbrowser
 
 # Import QC modules - Custom utility modules
 from qc_utils import timer_count, countdown_timer, check_fault_files, QC_Process, close_terminal, check_checkout_result
@@ -583,6 +584,21 @@ print(f"✓ Analysis Code Launched" + Fore.GREEN + "(A terminal for real time an
 ### 6.1 Email Validation - Get and confirm user email
 receiver = get_email()
 
+shifter_log_url = "https://docs.google.com/document/d/1Eaa8iv3Nb6AcCbxcXl-iK9pYBfZ5Rx7T7D97M3HINTU/edit?usp=sharing"
+print(f"Please open shifter log link in Chrome: {shifter_log_url}")
+# Try to open the link directly in Chrome
+try:
+    chrome_path = webbrowser.get('google-chrome')
+    chrome_path.open(shifter_log_url)
+except webbrowser.Error:
+    # Fallback to default browser if Chrome not found
+    webbrowser.open(shifter_log_url)
+link_opened = input("Did the link open? (y/n): ").strip().lower()
+if link_opened != 'y':
+    print(f"Please manually open the link in Chrome: {shifter_log_url}")
+    
+print('Initial Setup Review')
+
 ### 6.2 Display Checklist Popups
 #### Pop window 1: Initial Checkout List
 pop.show_image_popup(
@@ -642,10 +658,6 @@ except ValueError:
 print(Fore.CYAN + "\n" + "=" * 70)
 print("  CTS CRYOGENIC SYSTEM INITIALIZATION")
 print("=" * 70 + Style.RESET_ALL)
-print(Fore.CYAN + f"Configuration:" + Style.RESET_ALL)
-print(f"  LN₂ Fill Wait Time: {cts_ln2_fill_wait//60} minutes")
-print(f"  Warm-up Wait Time: {cts_warmup_wait//60} minutes")
-print()
 
 cryo = cts_cryo_uart.cryobox()
 cryo_initialized = cryo.cts_init_setup()
@@ -672,11 +684,11 @@ print("=" * 70 + Style.RESET_ALL)
 # Determine shift and set dewar level threshold
 hour = datetime.now().hour
 if 1 <= hour <= 11:
-    DEWAR_LEVEL_THRESHOLD = 1700
-    shift_name = "Morning"
+    DEWAR_LEVEL_THRESHOLD = 1200
+    shift_name = " "
 else:
     DEWAR_LEVEL_THRESHOLD = 1200
-    shift_name = "Afternoon"
+    shift_name = " "
 
 print(Fore.CYAN + f"Current Shift: {shift_name}" + Style.RESET_ALL)
 print(Fore.CYAN + f"Required Dewar Level: >= {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
@@ -732,16 +744,21 @@ if cryo_auto_mode:
 
                 if dewar_level < DEWAR_LEVEL_THRESHOLD:
                     print_status('error', f"Dewar level ({dewar_level}) is still below threshold ({DEWAR_LEVEL_THRESHOLD})")
-                    print(Fore.RED + "⚠️  Refill was insufficient." + Style.RESET_ALL)
+                    print(Fore.RED + "⚠️  Insufficient LN2 !" + Style.RESET_ALL)
                     while True:
                         print(Fore.CYAN + "\nWhat would you like to do?" + Style.RESET_ALL)
                         print("Enter " + Fore.YELLOW + "'J'" + Style.RESET_ALL + " (Jump) - Skip and continue anyway")
                         print("Enter " + Fore.GREEN + "'R'" + Style.RESET_ALL + " (Retry) - Refill again")
                         result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
                         if result.upper() == 'J':
-                            print_status('warning', f"Dewar level ({dewar_level}) bypass - continuing without sufficient level")
-                            refill_needed = False  # Exit loop
-                            break
+                            # Double confirm before skipping
+                            if confirm("Are you sure you want to skip with insufficient LN2 level?"):
+                                print_status('warning', f"Dewar level ({dewar_level}) bypass")
+                                refill_needed = False  # Exit loop
+                                break
+                            else:
+                                print_status('info', "Skip cancelled. Please choose again.")
+                                continue
                         elif result.upper() == 'R':
                             # Loop continues - will show popup and ask for refill again
                             break
@@ -894,16 +911,8 @@ if 1 in state_list:
     ### 9-13. Bottom Slot FEMB Installation
     # ------------------------------------------------------------------------
     while True:
-        print_step("Assemble CE box in BOTTOM SLOT (Cable #1)", 1, 2)
+        print_step("Assemble CE box in BOTTOM SLOT (Cable #B)", 1, 2)
         print_status('info', "Visual inspection popup opening...")
-
-        #### 9. Display bottom slot visual inspection popup
-        my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
-                      "Install Toy_TPCs and Cables", "Insert into Bottom Slot"]
-        pop01 = pop.show_image_popup(
-            title="Bottom slot Visual Inspection",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
-        )
 
         #### 9a. Check if slot is empty first
         slot_status = None
@@ -930,6 +939,14 @@ if 1 in state_list:
         else:
             # Slot will have a FEMB - collect assembly data
             #### 9b. Pre-Assembly Data Collection (HWDB, CE box, Cover SN)
+            input("Please get the foam box to be tested (Enter to continue…)")
+            #### 9. Display bottom slot visual inspection popup
+            my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
+                          "Install Toy_TPCs and Cables", "Insert into Bottom Slot"]
+            pop01 = pop.show_image_popup(
+                title="Bottom slot Visual Inspection",
+                image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
+            )
             bottom_assembly_data = collect_assembly_data("BOTTOM")
 
             #### 10. QR Code Scanning & Validation (Triple verification)
@@ -1047,12 +1064,12 @@ if 1 in state_list:
             Fore.CYAN + "Step 1.2: Assemble CE box in the " + Fore.YELLOW + "TOP SLOT" + Fore.CYAN + " (Cable #2)" + Style.RESET_ALL)
         print("         Visual inspection popup opening...")
 
-        my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
-                      "Install Toy_TPCs and Cables", "Insert into Top Slot"]
-        pop01 = pop.show_image_popup(
-            title="Top slot Visual Inspection",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
-        )
+        # my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
+        #               "Install Toy_TPCs and Cables", "Insert into Top Slot"]
+        # pop01 = pop.show_image_popup(
+        #     title="Top slot Visual Inspection",
+        #     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
+        # )
 
         #### 14a. Check if slot is empty first
         slot_status = None
@@ -1079,6 +1096,14 @@ if 1 in state_list:
         else:
             # Slot will have a FEMB - collect assembly data
             #### 14b. Pre-Assembly Data Collection (HWDB, CE box, Cover SN)
+            input("Please get the foam box to be tested (Enter to continue…)")
+            #### 9. Display bottom slot visual inspection popup
+            my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
+                          "Install Toy_TPCs and Cables", "Insert into Bottom Slot"]
+            pop01 = pop.show_image_popup(
+                title="Bottom slot Visual Inspection",
+                image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
+            )
             top_assembly_data = collect_assembly_data("TOP")
 
             #### 15. QR Code Scanning & Validation (Triple verification)
@@ -1322,16 +1347,43 @@ if 'cts_ready_time' in locals() and cts_ready_time is not None:
 ## PHASE 2: CONNECT WITH CTS
 # ============================================================================
 if 2 in state_list:
+    print("CTS Initial")
     print_phase_header(2, 6, "Connect FEMB to CTS")
     ### 18. CTS Chamber Safety Check
+
+    ### Step 1: Set CTS to IDLE mode automatically
+    print_step("Setting CTS to IDLE mode", 1, 3)
+    if cryo_auto_mode:
+        if cryo.cryo_create():
+            cryo.cryo_cmd(mode=b'1')  # Set to STATE 1 (IDLE)
+            cryo.cryo_close()
+            print_status('success', "CTS is now in IDLE state")
+        else:
+            print_status('warning', "Could not set CTS to IDLE automatically - please verify manually")
+    else:
+        print_status('info', "Manual mode - please ensure CTS is in IDLE state")
+
+    ### Step 2: Turn off WIB power supply automatically
+    print_step("Turning OFF WIB power supply", 2, 3)
+    try:
+        psu_temp = rigol.PowerSupplyController()
+        psu_temp.output_off(1)
+        psu_temp.output_off(2)
+        print_status('success', "WIB_12V power supply is OFF")
+    except Exception as e:
+        print_status('warning', f"Could not control power supply automatically: {e}")
+        print_status('info', "Please ensure WIB power supply is OFF manually")
+
+    ### Step 3: User confirmation
+    print_step("Safety confirmation", 3, 3)
     while True:
         print(Fore.YELLOW + "\n⚠️  SAFETY CHECK:" + Style.RESET_ALL)
         print("Please confirm the CTS chamber is empty.")
-        print("Type " + Fore.GREEN + "'I confirm the chamber is empty'" + Style.RESET_ALL + " to proceed")
+        print("Type " + Fore.GREEN + "'I confirm that CTS is in IDLE and WIB_12V is OFF'" + Style.RESET_ALL + " to proceed")
         com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-        if com.lower() == 'i confirm the chamber is empty':
+        if com.lower() == 'i confirm that cts is in idle and wib_12v is off':
             print(
-                Fore.GREEN + '✓ Chamber confirmed empty. Please install the CE test structure into CTS.' + Style.RESET_ALL)
+                Fore.GREEN + '✓ Safety confirmed. Please install the CE test structure into CTS.' + Style.RESET_ALL)
             break
 
     ### 19. CE Test Structure Installation

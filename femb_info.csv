@@ -1,11 +1,11 @@
-﻿tester,sgao
-SLOT0,BNL_FEMB_I0-1865-1K_00021
-SLOT1,BNL_FEMB_I0-1865-1K_00026
+﻿tester,lke
+SLOT0,IO-1865-1D 00042
+SLOT1,IO-1865-1D 00042
 SLOT2,
 SLOT3,
 test_site,BNL
 toy_TPC,y
-comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00055,Bottom_CE=VD-10010,Bottom_Cover=0010,Bottom_FEMB=BNL_FEMB_I0-1865-1K_00021,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00054,Top_CE=VD-10011,Top_Cover=0011,Top_FEMB=BNL_FEMB_I0-1865-1K_00026"
+comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00056,Bottom_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00057,Bottom_Cover=0057,Bottom_FEMB=IO-1865-1D 00042,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00059,Top_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00062,Top_Cover=0062,Top_FEMB=IO-1865-1D 00042"
 top_path,/home/dune/
 Tech_site_email,lke@bnl.gov
 Test_Site,BNL
