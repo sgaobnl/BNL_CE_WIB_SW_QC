@@ -597,20 +597,20 @@ def mon_path_ana(fembs, mon_refs, mon_temps, mon_adcs, datareport, fembNo, env, 
             # include data process and check
             if env == 'LN': # long cable effect the vssa ref
                 vssa_ref = 70; vssa_err = 150
-                fe_t_ref = 250; fe_t_err = 50
-                fe_bgp_ref = 1150; fe_bgp_err = 50
-                vcmi_ref = 890; vcmi_err = 50
-                vcmo_ref = 1185; vcmo_err = 50
-                vrefp_ref = 1930; vrefp_err = 50
-                vrefn_ref = 440; vrefn_err = 50
+                fe_t_ref = 250; fe_t_err = 100
+                fe_bgp_ref = 1150; fe_bgp_err = 100
+                vcmi_ref = 890; vcmi_err = 100
+                vcmo_ref = 1185; vcmo_err = 100
+                vrefp_ref = 1930; vrefp_err = 100
+                vrefn_ref = 440; vrefn_err = 100
             else:
                 vssa_ref = 150; vssa_err = 150
                 fe_t_ref = 930; fe_t_err = 100
-                fe_bgp_ref = 1180; fe_bgp_err = 50
-                vcmi_ref = 895; vcmi_err = 50
-                vcmo_ref = 1190; vcmo_err = 50
-                vrefp_ref = 1890; vrefp_err = 50
-                vrefn_ref = 470; vrefn_err = 50
+                fe_bgp_ref = 1180; fe_bgp_err = 100
+                vcmi_ref = 895; vcmi_err = 100
+                vcmo_ref = 1190; vcmo_err = 100
+                vrefp_ref = 1890; vrefp_err = 100
+                vrefn_ref = 470; vrefn_err = 100
 
             #   vssa
             cols = list(zip(*mon_adcs[f'chip{i}']["VSSA"][1])); vssa_tmp = round([sum(col) / len(col) for col in cols][ifemb] * fadc - ground, 1)

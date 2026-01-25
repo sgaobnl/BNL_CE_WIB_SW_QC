@@ -2,6 +2,91 @@ import sys
 from QC_report import QC_reports
 import argparse
 import time
+import csv
+import os
+import shutil
+
+# Read network path from config
+csv_data = {}
+csv_file = 'init_setup.csv'
+with open(csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+    reader = csv.reader(file)
+    for row in reader:
+        if len(row) == 2:
+            key, value = row
+            csv_data[key.strip()] = value.strip()
+top_path = csv_data.get('QC_data_root_folder', '')
+network_path = csv_data.get('Network_Upload_Path', '')
+
+print(f"[DEBUG] top_path: {top_path}")
+print(f"[DEBUG] network_path: {network_path}")
+
+
+def sync_report_to_network(data_dir):
+    """Copy generated reports to network path"""
+    print(f"\n[SYNC] Starting sync_report_to_network")
+    print(f"[SYNC] data_dir: {data_dir}")
+    print(f"[SYNC] top_path: {top_path}")
+    print(f"[SYNC] network_path: {network_path}")
+
+    try:
+        if not network_path:
+            print(f"[SYNC] SKIP: network_path is empty")
+            return
+        if network_path == top_path:
+            print(f"[SYNC] SKIP: network_path == top_path")
+            return
+
+        # Convert data path to report path
+        report_dir = data_dir.replace('/Data/', '/Report/')
+        print(f"[SYNC] report_dir: {report_dir}")
+
+        if not os.path.exists(report_dir):
+            print(f"[SYNC] report_dir does not exist: {report_dir}")
+            # Try parent directory (without /QC suffix)
+            report_dir_parent = os.path.dirname(report_dir)
+            print(f"[SYNC] Trying parent: {report_dir_parent}")
+            if os.path.exists(report_dir_parent):
+                report_dir = report_dir_parent
+                print(f"[SYNC] Using parent report_dir: {report_dir}")
+            else:
+                # List what's in the Report base folder
+                report_base = os.path.join(top_path, 'FEMB_QC', 'Report')
+                print(f"[SYNC] Checking report_base: {report_base}")
+                if os.path.exists(report_base):
+                    print(f"[SYNC] Contents of {report_base}:")
+                    for item in os.listdir(report_base):
+                        print(f"[SYNC]   - {item}")
+                else:
+                    print(f"[SYNC] report_base does not exist")
+                print(f"[SYNC] SKIP: No valid report directory found")
+                return
+
+        print(f"[SYNC] report_dir exists: {report_dir}")
+
+        # Calculate relative path and network destination
+        if report_dir.startswith(top_path):
+            rel_path = os.path.relpath(report_dir, top_path)
+            network_report_dir = os.path.join(network_path, rel_path)
+            print(f"[SYNC] rel_path: {rel_path}")
+            print(f"[SYNC] network_report_dir: {network_report_dir}")
+
+            # Copy report to network
+            parent_dir = os.path.dirname(network_report_dir)
+            print(f"[SYNC] Creating parent dir: {parent_dir}")
+            os.makedirs(parent_dir, exist_ok=True)
+
+            print(f"[SYNC] Copying {report_dir} -> {network_report_dir}")
+            shutil.copytree(report_dir, network_report_dir, dirs_exist_ok=True)
+            print(f"[SYNC] SUCCESS: Report synced to network: {network_report_dir}")
+        else:
+            print(f"[SYNC] SKIP: report_dir does not start with top_path")
+            print(f"[SYNC]   report_dir: {report_dir}")
+            print(f"[SYNC]   top_path: {top_path}")
+    except Exception as e:
+        print(f"[SYNC] ERROR: Network sync failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 ag = argparse.ArgumentParser()
 ag.add_argument("folder", help="data folder", type=str)
@@ -89,3 +174,6 @@ tt=t2-t1
 time.sleep(1)
 
 print(tt)
+
+# Sync reports to network
+sync_report_to_network(fdir)

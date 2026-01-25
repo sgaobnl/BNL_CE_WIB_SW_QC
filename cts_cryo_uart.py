@@ -13,6 +13,13 @@ import serial
 from colorama import just_fix_windows_console, Fore, Style
 just_fix_windows_console()
 
+# Import send_email for timeout notifications
+try:
+    import GUI.send_email as send_email
+    EMAIL_AVAILABLE = True
+except ImportError:
+    EMAIL_AVAILABLE = False
+
 # Import countdown timer for visual wait display
 try:
     from qc_utils import countdown_timer
@@ -337,7 +344,15 @@ class cryobox:
         else:
             return False
 
-    def cryo_immerse(self, waitminutes = 30):
+    def cryo_immerse(self, waitminutes=30, email_info=None):
+        """
+        LN2 immersion with automatic level monitoring.
+
+        Args:
+            waitminutes: Maximum wait time in minutes (default 30)
+            email_info: Dict with email settings {'sender', 'password', 'receiver', 'test_site'}
+                       If provided, sends email notification when timeout occurs
+        """
         if self.manual_flg:
             return False
 
@@ -354,6 +369,8 @@ class cryobox:
             return False
 
         check_count = 0
+        timeout_email_sent = False  # Track if timeout email was already sent
+
         while True:
             time.sleep(60)
             check_count += 1
@@ -387,12 +404,42 @@ class cryobox:
                     return True
 
                 if tgap > waitminutes*60:
-                    #send a email here
+                    # Send timeout email notification (only once)
+                    if not timeout_email_sent and email_info and EMAIL_AVAILABLE:
+                        try:
+                            email_body = f"""LN₂ Immersion Timeout Alert
+
+Test Site: {email_info.get('test_site', 'N/A')}
+
+WARNING: LN₂ immersion has exceeded {waitminutes} minutes without reaching Level 3.
+
+Current Status:
+  - Time Elapsed: {int(mins_elapsed)} minutes
+  - Chamber Level: {tc_level}
+  - Dewar Level: {dewar_level}
+
+Please check the CTS system and LN₂ supply.
+
+This is an automated notification from the CTS QC system.
+"""
+                            send_email.send_email(
+                                email_info['sender'],
+                                email_info['password'],
+                                email_info['receiver'],
+                                f"LN₂ Immersion TIMEOUT - {email_info.get('test_site', 'CTS')}",
+                                email_body
+                            )
+                            print(Fore.YELLOW + "📧 Timeout notification email sent" + Style.RESET_ALL)
+                            timeout_email_sent = True
+                        except Exception as e:
+                            print(Fore.YELLOW + f"⚠️  Failed to send timeout email: {e}" + Style.RESET_ALL)
+
                     while True:
                         print(Fore.RED + f"\n⚠️  TIMEOUT: Over {waitminutes} minutes, LN₂ still not at Level 3!" + Style.RESET_ALL)
                         yorn = input(Fore.YELLOW + "Fixed? (y/n): " + Style.RESET_ALL)
                         if 'Y' in yorn or 'y' in yorn:
                             t0 = (time.time_ns()//1e9)
+                            timeout_email_sent = False  # Reset for next timeout cycle
                             break
                         else:
                             yorn = input(Fore.YELLOW + "Take over manually? (y/n): " + Style.RESET_ALL)

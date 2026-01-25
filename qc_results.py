@@ -264,6 +264,7 @@ def handle_qc_results(paths, inform, test_phase="QC Test", allow_retry=True, ver
         print("  " + Fore.YELLOW + "'e'" + Style.RESET_ALL + " - Exit program")
 
         while True:
+            # decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
             decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
             if decision == 'r':
                 should_retry = True

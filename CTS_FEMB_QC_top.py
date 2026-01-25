@@ -416,9 +416,18 @@ def validate_disassembly_for_slot(slot_name, assembly_data, test_passed):
     print(Fore.CYAN + f"\n✓ Step 4: Apply QC result sticker" + Style.RESET_ALL)
     print(Fore.CYAN + f"         FEMB ID: {femb_sn}" + Style.RESET_ALL)
     if test_passed:
-        print(Fore.GREEN + "         >>> Put on Green 'PASS' sticker near HWDB QR sticker <<<" + Style.RESET_ALL)
+        print("")
+        print("")
+        print("")
+        print(Fore.GREEN + "📋📋📋 LABEL >> Decision <<<" + Style.RESET_ALL)
+        print(Fore.GREEN + "📋📋📋 LABEL >> Put on Green 'PASS' sticker near HWDB QR sticker <<<" + Style.RESET_ALL)
+        # add pop windows
     else:
-        print(Fore.RED + "         >>> Put on Red 'NG' sticker near HWDB QR sticker <<<" + Style.RESET_ALL)
+        print("")
+        print("")
+        print("")
+        print(Fore.RED + "⚠️⚠️⚠️ LABEL >> Decision <<<" + Style.RESET_ALL)
+        print(Fore.RED + "⚠️⚠️⚠️ LABEL >> Put on Red 'NG' sticker near HWDB QR sticker <<<" + Style.RESET_ALL)
 
     # Step 5: Storage instruction
     print(Fore.YELLOW + "\n         Store the foam box in the designated location." + Style.RESET_ALL)
@@ -469,22 +478,27 @@ def collect_assembly_data(slot_name):
         print(Fore.CYAN + "         Step: Type last 4 digits on CE box cover" + Style.RESET_ALL)
         cover_last4 = input(Fore.YELLOW + '         Type last 4 digits: ' + Style.RESET_ALL).strip()
 
-        if not cover_last4:
-            print_status('error', "         Cover digits cannot be empty. Please try again.")
+        if cover_last4:
+            print_status('success', f"         Cover SN recorded: {cover_last4}")
+            break
+        else:
+            print_status('error', "         No input. Cover SN Default as '0000'.")
+            cover_last4 = '0000'
             continue
 
+
         # Validation: Check if KKKK matches last 4 of ZZZXXXX
-        if len(ce_box_sn) >= 4:
-            expected_last4 = ce_box_sn[-4:]
-            if cover_last4 == expected_last4:
-                print_status('success', f"         ✓ Cover SN ({cover_last4}) matches CE box SN")
-                break
-            else:
-                print_status('error', f"         ✗ Mismatch: Cover shows '{cover_last4}' but CE box ends with '{expected_last4}'")
-                print(Fore.RED + "         Please re-enter the correct last 4 digits from the CE box cover." + Style.RESET_ALL)
-        else:
-            print_status('warning', "         CE box SN too short to validate, but recording anyway.")
-            break
+        # if len(ce_box_sn) >= 4:
+        #     expected_last4 = ce_box_sn[-4:]
+        #     if cover_last4 == expected_last4:
+        #         print_status('success', f"         ✓ Cover SN ({cover_last4}) matches CE box SN")
+        #         break
+        #     else:
+        #         print_status('error', f"         ✗ Mismatch: Cover shows '{cover_last4}' but CE box ends with '{expected_last4}'")
+        #         print(Fore.RED + "         Please re-enter the correct last 4 digits from the CE box cover." + Style.RESET_ALL)
+        # else:
+        #     print_status('warning', "         CE box SN too short to validate, but recording anyway.")
+        #     break
 
     print_separator()
     return {
@@ -728,11 +742,18 @@ if cryo_auto_mode:
                     refill_performed = True
                     break
                 elif result.upper() == 'J':
-                    print(Fore.YELLOW + "⏩ Skipping LN₂ refill..." + Style.RESET_ALL)
-                    refill_performed = False
-                    print_status('warning', f"Dewar level ({dewar_level}) bypass - continuing without refill")
-                    refill_needed = False  # Exit outer loop
-                    break
+                    # Confirm skip
+                    print(Fore.YELLOW + "⚠️  Are you sure you want to skip LN₂ refill?" + Style.RESET_ALL)
+                    confirm = input(Fore.YELLOW + "Enter 'Y' to confirm skip: " + Style.RESET_ALL)
+                    if confirm.upper() == 'Y':
+                        print(Fore.YELLOW + "⏩ Skipping LN₂ refill..." + Style.RESET_ALL)
+                        refill_performed = False
+                        print_status('warning', f"Dewar level ({dewar_level}) bypass - continuing without refill")
+                        refill_needed = False  # Exit outer loop
+                        break
+                    else:
+                        print_status('info', "Skip cancelled. Please refill the dewar.")
+                        continue
                 else:
                     print_status('error', "Invalid input. Please enter 'Y' or 'J'")
 
@@ -894,8 +915,9 @@ else:
 print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
 
 ## 8. Test Phase Selection - User selects which phases to execute (1-6)
-state_list = state.select_test_states()
-print(Fore.CYAN + f"Selected test phases: {state_list}" + Style.RESET_ALL)
+# state_list = state.select_test_states()
+state_list = [1, 2, 3, 4, 5, 6]
+# print(Fore.CYAN + f"Selected test phases: {state_list}" + Style.RESET_ALL)
 
 # Initialize checkout failure flag for cross-phase communication
 # Set to True if warm checkout fails and user chooses to skip to disassembly
@@ -1035,6 +1057,8 @@ if 1 in state_list:
 
         if 'exit_outer' in locals() and exit_outer:
             break
+
+        input('Please put the CE box cover and ESD in the foam box (click Enter to continue).')
 
     #### 13. Bottom Slot Assembly Guidance
     print(Fore.CYAN + "         Step 1.14: Continue assembly into bottom slot..." + Style.RESET_ALL)
@@ -1190,6 +1214,8 @@ if 1 in state_list:
         if 'exit_outer' in locals() and exit_outer:
             break
 
+        input('Please put the CE box cover and ESD in the foam box (click Enter to continue).')
+
     print(Fore.CYAN + "         Step 1.24: Continue assembly into top slot..." + Style.RESET_ALL)
     print("         Assembly instruction popup opening...")
 
@@ -1198,12 +1224,12 @@ if 1 in state_list:
     if version == "HD":
         pop01 = pop.show_image_popup(
             title="Top slot assembly instruction",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "11.png")
+            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "13.png")
         )
     else:
         pop01 = pop.show_image_popup(
             title="Top slot assembly instruction",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "13.png")
+            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "11.png")
         )
 
     confirm("Please Confirm the CE is install in the Top Slot")
@@ -1284,62 +1310,44 @@ if 'cts_ready_time' in locals() and cts_ready_time is not None:
     current_time = time.time()
     remaining_time = cts_ready_time - current_time
 
-    warmup_skipped = False  # Track if user skipped the warm-up wait
-
     if remaining_time > 0:
-        # Still waiting - show remaining time and allow skip
+        # Still waiting - show remaining time and wait
         remaining_min = int(remaining_time // 60)
         remaining_sec = int(remaining_time % 60)
         print_status('warning', f"Warm-up still in progress: {remaining_min} min {remaining_sec} sec remaining")
         print()
         print(Fore.YELLOW + "  ⏳ Please wait for warm-up to complete before placing CE into chamber." + Style.RESET_ALL)
         print()
-        print("  Options:")
-        print("    " + Fore.GREEN + "'W'" + Style.RESET_ALL + " - Wait for warm-up to complete (recommended)")
-        print("    " + Fore.YELLOW + "'J'" + Style.RESET_ALL + " - Jump/Skip warm-up wait and continue")
-
-        while True:
-            user_choice = input(Fore.YELLOW + '>> ' + Style.RESET_ALL).strip().upper()
-
-            if user_choice == 'W':
-                # Wait for remaining time with countdown
-                print_status('info', "Waiting for warm-up to complete...")
-                countdown_timer(
-                    total_seconds=remaining_time,
-                    message="CTS Warm-up - Waiting for completion",
-                    allow_skip=True
-                )
-                print_status('success', "Warm-up time complete!")
-                break
-            elif user_choice == 'J':
-                print_status('warning', "Skipping warm-up wait - proceeding to chamber installation")
-                warmup_skipped = True
-                break
-            else:
-                print_status('error', "Invalid input. Please enter 'W' to wait or 'J' to jump/skip")
+        # Wait for remaining time with countdown
+        print_status('info', "Waiting for warm-up to complete...")
+        countdown_timer(
+            total_seconds=remaining_time,
+            message="CTS Warm-up - Waiting for completion",
+            allow_skip=True
+        )
+        print_status('success', "Warm-up time complete!")
     else:
         # Warm-up time already completed
         print_status('success', "Warm-up time complete!")
 
-    # Set CTS to IDLE state after warm-up (only if not skipped)
-    if not warmup_skipped:
-        print_status('info', "Setting CTS to IDLE state...")
-        if cryo_auto_mode:
-            if cryo.cryo_warmgas_finish():
-                print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
-            else:
-                print_status('error', "Failed to set CTS to IDLE - please check manually")
+    # Set CTS to IDLE state after warm-up
+    print_status('info', "Setting CTS to IDLE state...")
+    if cryo_auto_mode:
+        if cryo.cryo_warmgas_finish():
+            print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
         else:
-            # Manual mode - prompt user to set to IDLE
-            print(Fore.YELLOW + "\n⚠️  Please set CTS to STATE 1 (IDLE)" + Style.RESET_ALL)
-            while True:
-                confirm_idle = input(Fore.YELLOW + "Enter 'Y' when CTS is in IDLE state >> " + Style.RESET_ALL)
-                if confirm_idle.upper() == 'Y':
-                    print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
-                    break
+            print_status('error', "Failed to set CTS to IDLE - please check manually")
+    else:
+        # Manual mode - prompt user to set to IDLE
+        print(Fore.YELLOW + "\n⚠️  Please set CTS to STATE 1 (IDLE)" + Style.RESET_ALL)
+        while True:
+            confirm_idle = input(Fore.YELLOW + "Enter 'Y' when CTS is in IDLE state >> " + Style.RESET_ALL)
+            if confirm_idle.upper() == 'Y':
+                print_status('success', "CTS is now in IDLE state - Ready to place CE into chamber")
+                break
 
-        # Clear cts_ready_time since warm-up is complete
-        cts_ready_time = None
+    # Clear cts_ready_time since warm-up is complete
+    cts_ready_time = None
 
     print_separator()
 
@@ -1395,7 +1403,7 @@ if 2 in state_list:
     )
 
     ### 20. Cable Connection
-    print(Fore.CYAN + 'Opening cable connection instructions...' + Style.RESET_ALL)
+    print(Fore.CYAN + 'Cable connection instructions...' + Style.RESET_ALL)
     my_options = ["Open CTS Cover", "Place the CE boxes structure"]
     pop04 = pop.show_image_popup(
         title="WIB cable connection",
@@ -1403,7 +1411,7 @@ if 2 in state_list:
     )
 
     ### 21. Close CTS Cover
-    print(Fore.CYAN + "Opening cover closing instructions..." + Style.RESET_ALL)
+    print(Fore.CYAN + "Cover closing instructions..." + Style.RESET_ALL)
     my_options = ["Close the CTS Cover"]
     pop06 = pop.show_image_popup(
         title="Closing CTS cover",
@@ -1442,6 +1450,29 @@ Please prepare for QC testing.
     print_separator()
 
 else:
+    ### Set CTS to IDLE mode (even if Phase 2 skipped)
+    print_status('info', "Setting CTS to IDLE mode...")
+    if cryo_auto_mode:
+        if cryo.cryo_create():
+            cryo.cryo_cmd(mode=b'1')  # Set to STATE 1 (IDLE)
+            cryo.cryo_close()
+            print_status('success', "CTS is now in IDLE state")
+        else:
+            print_status('warning', "Could not set CTS to IDLE automatically - please verify manually")
+    else:
+        print_status('info', "Manual mode - please ensure CTS is in IDLE state")
+
+    ### Turn off WIB power supply (even if Phase 2 skipped)
+    print_status('info', "Turning OFF WIB power supply...")
+    try:
+        psu_temp = rigol.PowerSupplyController()
+        psu_temp.output_off(1)
+        psu_temp.output_off(2)
+        print_status('success', "WIB_12V power supply is OFF")
+    except Exception as e:
+        print_status('warning', f"Could not control power supply automatically: {e}")
+        print_status('info', "Please ensure WIB power supply is OFF manually")
+
     ### 23. Load configuration directly (if Phase 2 skipped)
     print()
     csv_data = {}
@@ -1471,7 +1502,7 @@ send_email.send_email(sender, password, receiver, "FEMB CE QC {}".format(pre_inf
 ### 24a. Check and finish CTS warm gas if it was started in Phase 0
 if 'cts_ready_time' in locals() and cts_ready_time is not None:
     print_separator()
-    print(Fore.CYAN + "🌡️  Checking CTS Warm Gas status..." + Style.RESET_ALL)
+    print(Fore.CYAN + "🌡️  Checking CTS status..." + Style.RESET_ALL)
 
     # Calculate remaining time
     current_time = time.time()
@@ -1487,7 +1518,7 @@ if 'cts_ready_time' in locals() and cts_ready_time is not None:
         )
 
     # Finish warm gas (set to IDLE)
-    print_status('info', "Completing CTS Warm Gas procedure...")
+    # print_status('info', "Completing CTS Warm Gas procedure...")
     if cryo_auto_mode:
         if cryo.cryo_warmgas_finish():
             print_status('success', "CTS Warm Gas completed - CTS is now in IDLE state")
@@ -1680,25 +1711,7 @@ if 3 in state_list:
                         # Wait for test files to be fully written
                         time.sleep(60)
 
-                        # Sync report to network if it exists (reports may be generated locally after data transfer)
-                        if wqreport_path and os.path.exists(wqreport_path):
-                            try:
-                                import shutil
-                                network_path = inform.get('Network_Upload_Path', '/data/rtss/femb')
-                                qc_data_root = inform['QC_data_root_folder']
-
-                                if network_path and network_path != qc_data_root:
-                                    femb_qc_root = os.path.join(qc_data_root, "FEMB_QC")
-                                    if wqreport_path.startswith(femb_qc_root):
-                                        report_rel_path = os.path.relpath(wqreport_path, femb_qc_root)
-                                        network_report_dir = os.path.join(network_path, "FEMB_QC", report_rel_path)
-
-                                        print(Fore.CYAN + f"📤 Syncing Warm QC report to network..." + Style.RESET_ALL)
-                                        os.makedirs(os.path.dirname(network_report_dir), exist_ok=True)
-                                        shutil.copytree(wqreport_path, network_report_dir, dirs_exist_ok=True)
-                                        print(Fore.GREEN + f"  ✓ Report synced" + Style.RESET_ALL)
-                            except Exception as e:
-                                print(Fore.YELLOW + f"⚠️  Report network sync failed: {e}" + Style.RESET_ALL)
+                        # Network sync is handled by CTS_Real_Time_Monitor.py
 
                         # Check result using the specific paths returned by QC_Process
                         qc_passed = check_checkout_result(wqdata_path, wqreport_path)
@@ -1738,7 +1751,7 @@ if 3 in state_list:
                             print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit and disassemble test structure")
 
                             while True:
-                                decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
+                                decision = 'c' # input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
                                 if decision == 'r':
                                     # Confirm before retrying (takes ~30 min)
                                     if confirm("⚠️  Retry will take ~30 minutes. Are you sure?"):
@@ -1927,7 +1940,14 @@ if 4 in state_list and not goto_disassembly:
 
         ### 32b. LN₂ Immersion with Automatic Level Monitoring
         print_step("LN₂ immersion with level monitoring", 2, 3, f"~{cts_ln2_fill_wait//60} min")
-        if cryo.cryo_immerse(waitminutes=cts_ln2_fill_wait//60):
+        # Prepare email info for timeout notification
+        email_info = {
+            'sender': sender,
+            'password': password,
+            'receiver': receiver,
+            'test_site': pre_info.get('test_site', 'CTS')
+        }
+        if cryo.cryo_immerse(waitminutes=cts_ln2_fill_wait//60, email_info=email_info):
             print_status('success', "LN₂ immersion complete - Level 3 or 4 reached")
         else:
             print_status('error', "LN₂ immersion failed or manual control required")
@@ -1968,7 +1988,7 @@ if 4 in state_list and not goto_disassembly:
         countdown_timer(
             total_seconds=5*60,
             message="CTS Cold Gas Pre-cooling (5 min)",
-            allow_skip=True
+            allow_skip=False
         )
 
         print("\n" + Fore.CYAN + f"Step 2: LN₂ Immersion (~{cts_ln2_fill_wait//60} minutes)" + Style.RESET_ALL)
@@ -2137,25 +2157,7 @@ if 4 in state_list and not goto_disassembly:
                 print_step("FEMB Cold Quality Control Test", estimated_time="<30 min")
                 lqdata_path, lqreport_path = QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=3, input_info=infoln)
 
-                # Sync report to network if it exists
-                if lqreport_path and os.path.exists(lqreport_path):
-                    try:
-                        import shutil
-                        network_path = infoln.get('Network_Upload_Path', '/data/rtss/femb')
-                        qc_data_root = infoln['QC_data_root_folder']
-
-                        if network_path and network_path != qc_data_root:
-                            femb_qc_root = os.path.join(qc_data_root, "FEMB_QC")
-                            if lqreport_path.startswith(femb_qc_root):
-                                report_rel_path = os.path.relpath(lqreport_path, femb_qc_root)
-                                network_report_dir = os.path.join(network_path, "FEMB_QC", report_rel_path)
-
-                                print(Fore.CYAN + f"📤 Syncing Cold QC report to network..." + Style.RESET_ALL)
-                                os.makedirs(os.path.dirname(network_report_dir), exist_ok=True)
-                                shutil.copytree(lqreport_path, network_report_dir, dirs_exist_ok=True)
-                                print(Fore.GREEN + f"  ✓ Report synced" + Style.RESET_ALL)
-                    except Exception as e:
-                        print(Fore.YELLOW + f"⚠️  Report network sync failed: {e}" + Style.RESET_ALL)
+                # Network sync is handled by CTS_Real_Time_Monitor.py
 
                 print(Fore.CYAN + "🔄 Closing WIB Linux system..." + Style.RESET_ALL)
                 QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=6, input_info=infoln)
@@ -2168,14 +2170,14 @@ if 4 in state_list and not goto_disassembly:
                 while True:
                     total_i = 0
                     print("\n" + Fore.CYAN + "Checking WIB current..." + Style.RESET_ALL)
-
+                    psu.turn_off_all()
                     for ch in (1, 2):
                         v, i = psu.measure(ch)
                         print(f"  CH{ch}: {v:.3f} V, {i:.3f} A")
                         total_i += i
 
                     print(Fore.CYAN + f"  Total current: {total_i:.3f} A" + Style.RESET_ALL)
-                    psu.turn_off_all()
+
 
                     if total_i < 0.2:
                         print(Fore.GREEN + "✓ WIB power OFF successful." + Style.RESET_ALL)
@@ -2228,7 +2230,7 @@ if 4 in state_list and not goto_disassembly:
                     paths=paths,
                     inform=infoln,  # Use Cold QC info, not Warm QC info
                     test_phase="Cold QC Test",
-                    allow_retry=True,
+                    allow_retry=False,
                     verbose=False
                 )
             else:
@@ -2329,7 +2331,7 @@ Detailed summary is attached.
                 print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit Cold QC, proceed to warm-up then disassembly")
 
                 while True:
-                    decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
+                    decision = 'c' #input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
                     if decision == 'r':
                         # Confirm before retrying (takes ~30 min)
                         if confirm("⚠️  Retry will take ~30 minutes. Are you sure?"):
@@ -2340,7 +2342,8 @@ Detailed summary is attached.
                             continue
                     elif decision == 'c':
                         # Confirm before continuing despite failure
-                        if confirm("⚠️  Are you sure you want to continue to warm-up despite Cold QC failure?"):
+                        # if confirm("⚠️  Are you sure you want to continue to warm-up despite Cold QC failure?"):
+                        if True:
                             print(Fore.YELLOW + "⚠️  Continuing to warm-up despite Cold QC failure..." + Style.RESET_ALL)
                             # Exit retry loop and continue to warm-up
                             break
@@ -2705,7 +2708,7 @@ if 6 in state_list or goto_disassembly:
 
     print_phase_header(6, 6, "Disassembly")
     print(Fore.YELLOW + "\n⚠️  Please:" + Style.RESET_ALL)
-    print("   • Power OFF the CTS")
+    # print("   • Power OFF the CTS")
     print("   • Remove and disassemble the FEMB CE boxes\n")
 
     ### 46. Disassembly Preparation
@@ -2800,10 +2803,13 @@ if 6 in state_list or goto_disassembly:
             # )
 
             print(Fore.GREEN + "✓ Please disassemble TOP slot CE box" + Style.RESET_ALL)
-
+            input('"Enter" to continue')
+            if '1865' in assembly_data_all['top']['femb_sn']:
+                version = "VD"
+            else:
+                version = "HD"
             # Validate cover ID, foam box ID, and package
-            print(Fore.CYAN + "\n📦 Now validate and package TOP slot..." + Style.RESET_ALL)
-            validate_disassembly_for_slot('top', assembly_data_all['top'], top_passed)
+            # print(Fore.CYAN + "\n📦 Now validate and package TOP slot..." + Style.RESET_ALL)
             if version == "VD":
                 pop01 = pop.show_image_popup(
                     title="Top slot Disassembly instruction",
@@ -2812,7 +2818,20 @@ if 6 in state_list or goto_disassembly:
             else:  # HD version
                 pop01 = pop.show_image_popup(
                     title="Top slot Disassembly instruction",
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
+                )
+
+            validate_disassembly_for_slot('top', assembly_data_all['top'], top_passed)
+
+            if version == "VD":
+                pop01 = pop.show_image_popup(
+                    title="Top slot Disassembly instruction",
                     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
+                )
+            else:  # HD version
+                pop01 = pop.show_image_popup(
+                    title="Top slot Disassembly instruction",
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
                 )
         else:
             print_status('info', "TOP slot was EMPTY - skipping")
@@ -2831,19 +2850,33 @@ if 6 in state_list or goto_disassembly:
             # )
 
             print(Fore.GREEN + "✓ Please disassemble BOTTOM slot CE box" + Style.RESET_ALL)
-
+            input('"Enter" to continue')
             # Validate cover ID, foam box ID, and package
             print(Fore.CYAN + "\n📦 Now validate and package BOTTOM slot..." + Style.RESET_ALL)
-            validate_disassembly_for_slot('bottom', assembly_data_all['bottom'], bottom_passed)
+            if '1865' in assembly_data_all['bottom']['femb_sn']:
+                version = "VD"
+            else:
+                version = "HD"
             if version == "VD":
                 pop01 = pop.show_image_popup(
                     title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "18.png")
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "20.png")
                 )
             else:  # HD version
                 pop01 = pop.show_image_popup(
                     title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
+                )
+            validate_disassembly_for_slot('bottom', assembly_data_all['bottom'], bottom_passed)
+            if version == "VD":
+                pop01 = pop.show_image_popup(
+                    title="BOTTOM slot Disassembly instruction",
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "21.png")
+                )
+            else:  # HD version
+                pop01 = pop.show_image_popup(
+                    title="BOTTOM slot Disassembly instruction",
+                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
                 )
         else:
             print_status('info', "BOTTOM slot was EMPTY - skipping")
@@ -2862,9 +2895,10 @@ if 6 in state_list or goto_disassembly:
     print_separator("=")
     while True:
         print(Fore.CYAN + "\nOpening accessory return instructions..." + Style.RESET_ALL)
+        input("'Enter' to continue")
         pop.show_image_popup(
             title="Return Accessories to Their Original Position",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "20.png")
+            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "23.png")
         )
 
         print(
@@ -2940,58 +2974,58 @@ if len(paths) == 0:
 else:
     print(Fore.GREEN + f"\n✓ Total paths collected: {len(paths)}" + Style.RESET_ALL)
 
-print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
-print("\nWould you like to review the complete test results?")
-print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Yes, show detailed results")
-print("  " + Fore.YELLOW + "'n'" + Style.RESET_ALL + " - No, skip to completion")
+# print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
+# print("\nWould you like to review the complete test results?")
+# print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Yes, show detailed results")
+# print("  " + Fore.YELLOW + "'n'" + Style.RESET_ALL + " - No, skip to completion")
+#
+# while True:
+#     choice = input(Fore.YELLOW + ">> " + Style.RESET_ALL).lower()
+#     if choice == 'y':
+#         # Display comprehensive results using actual test paths (no time filtering needed)
+#         result = analyze_test_results(paths, pre_info, time_limit_hours=None)
+#         display_qc_results(result, "Complete QC Cycle", verbose=True)
+#         break
+#     elif choice == 'n':
+#         print(Fore.CYAN + "Skipping detailed review..." + Style.RESET_ALL)
+#         break
+#     else:
+#         print(Fore.RED + "Invalid input. Please enter 'y' or 'n'" + Style.RESET_ALL)
 
-while True:
-    choice = input(Fore.YELLOW + ">> " + Style.RESET_ALL).lower()
-    if choice == 'y':
-        # Display comprehensive results using actual test paths (no time filtering needed)
-        result = analyze_test_results(paths, pre_info, time_limit_hours=None)
-        display_qc_results(result, "Complete QC Cycle", verbose=True)
-        break
-    elif choice == 'n':
-        print(Fore.CYAN + "Skipping detailed review..." + Style.RESET_ALL)
-        break
-    else:
-        print(Fore.RED + "Invalid input. Please enter 'y' or 'n'" + Style.RESET_ALL)
+# ### 53b. Labeling Instructions Based on Test Results
+# print("\n" + Fore.CYAN + "=" * 70)
+# print("  📋 FEMB LABELING INSTRUCTIONS")
+# print("=" * 70 + Style.RESET_ALL)
+#
+# # Analyze final results to determine which FEMBs passed/failed
+# if len(paths) > 0:
+#     final_result = analyze_test_results(paths, pre_info, time_limit_hours=None)
+#
+#     print(Fore.YELLOW + "\nPlease label the FEMB boards according to test results:\n" + Style.RESET_ALL)
+#
+#     # Check each slot and provide labeling instructions
+#     labeled_count = 0
+#     for slot_num in ['0', '1', '2', '3']:
+#         if slot_num in final_result.slot_status:
+#             passed, femb_id = final_result.slot_status[slot_num]
+#             slot_name = "Bottom" if slot_num == '0' else ("Top" if slot_num == '1' else f"Slot{slot_num}")
+#
+#             if passed:
+#                 print(Fore.GREEN + f"  ✓ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
+#                 print(Fore.GREEN + f"     → Apply GREEN label" + Style.RESET_ALL)
+#             else:
+#                 print(Fore.RED + f"  ✗ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
+#                 print(Fore.RED + f"     → Apply RED label" + Style.RESET_ALL)
+#             print()
+#             labeled_count += 1
+#
+#     if labeled_count == 0:
+#         print(Fore.YELLOW + "  ⚠️  No FEMB boards found in this test session" + Style.RESET_ALL)
+# else:
+#     print(Fore.YELLOW + "\n⚠️  No test results available. Please label boards manually.\n" + Style.RESET_ALL)
 
-### 53b. Labeling Instructions Based on Test Results
-print("\n" + Fore.CYAN + "=" * 70)
-print("  📋 FEMB LABELING INSTRUCTIONS")
-print("=" * 70 + Style.RESET_ALL)
-
-# Analyze final results to determine which FEMBs passed/failed
-if len(paths) > 0:
-    final_result = analyze_test_results(paths, pre_info, time_limit_hours=None)
-
-    print(Fore.YELLOW + "\nPlease label the FEMB boards according to test results:\n" + Style.RESET_ALL)
-
-    # Check each slot and provide labeling instructions
-    labeled_count = 0
-    for slot_num in ['0', '1', '2', '3']:
-        if slot_num in final_result.slot_status:
-            passed, femb_id = final_result.slot_status[slot_num]
-            slot_name = "Bottom" if slot_num == '0' else ("Top" if slot_num == '1' else f"Slot{slot_num}")
-
-            if passed:
-                print(Fore.GREEN + f"  ✓ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
-                print(Fore.GREEN + f"     → Apply GREEN label" + Style.RESET_ALL)
-            else:
-                print(Fore.RED + f"  ✗ {slot_name} Slot{slot_num}: FEMB {femb_id}" + Style.RESET_ALL)
-                print(Fore.RED + f"     → Apply RED label" + Style.RESET_ALL)
-            print()
-            labeled_count += 1
-
-    if labeled_count == 0:
-        print(Fore.YELLOW + "  ⚠️  No FEMB boards found in this test session" + Style.RESET_ALL)
-else:
-    print(Fore.YELLOW + "\n⚠️  No test results available. Please label boards manually.\n" + Style.RESET_ALL)
-
-print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
-confirm("Have you labeled all FEMB boards correctly?")
+# print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
+# confirm("Have you labeled all FEMB boards correctly?")
 
 # ----------------------------------------------------------------------------
 # Upload Test Data to Network Drive
@@ -3059,10 +3093,16 @@ print(Fore.CYAN + f"FEMB IDs: {', '.join(femb_ids) if femb_ids else 'None'}" + S
 # ----------------------------------------------------------------------------
 
 ### 54. Record Test Result
-confirm("Please Record the Test Result")
+# confirm("Please Record the Test Result")
 
 ### 55. Close CTS and Exit
-confirm("Please Close The CTS, then, exit ...")
+while True:
+    print("Enter 'Exit' to exit ...")
+    com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+    if com.lower() == "exit":
+        break
+    else:
+        print(Fore.RED + "Invalid input. Please try again." + Style.RESET_ALL)
 
 # ============================================================================
 ## MAIN PROGRAM ENTRY POINT
