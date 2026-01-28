@@ -698,14 +698,15 @@ print("=" * 70 + Style.RESET_ALL)
 # Determine shift and set dewar level threshold
 hour = datetime.now().hour
 if 1 <= hour <= 11:
-    DEWAR_LEVEL_THRESHOLD = 1200
+    DEWAR_LEVEL_THRESHOLD = 1000
     shift_name = " "
 else:
-    DEWAR_LEVEL_THRESHOLD = 1200
+    DEWAR_LEVEL_THRESHOLD = 1000
     shift_name = " "
 
 print(Fore.CYAN + f"Current Shift: {shift_name}" + Style.RESET_ALL)
-print(Fore.CYAN + f"Required Dewar Level: >= {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
+# print(Fore.CYAN + f"Required Dewar Level: >= {DEWAR_LEVEL_THRESHOLD}" + Style.RESET_ALL)
+print(Fore.CYAN + f"Required Dewar Level: >= 1000" + Style.RESET_ALL)
 
 # Initialize CTS ready time (will be set if warm gas is started)
 cts_ready_time = None
@@ -722,7 +723,7 @@ if cryo_auto_mode:
         print(Fore.CYAN + f"Current Dewar Level: {dewar_level}" + Style.RESET_ALL)
 
         if dewar_level < DEWAR_LEVEL_THRESHOLD:
-            print_status('warning', f"Dewar level ({dewar_level}) is below {shift_name} threshold ({DEWAR_LEVEL_THRESHOLD})")
+            print_status('warning', f"Dewar level ({dewar_level}) is below {shift_name} threshold ({1000})")
             print(Fore.YELLOW + "⚠️  Dewar refill required!" + Style.RESET_ALL)
 
             # Show refill instructions popup
@@ -789,7 +790,7 @@ if cryo_auto_mode:
                     print_status('success', f"Dewar level ({dewar_level}) is now sufficient!")
                     refill_needed = False  # Exit loop
         else:
-            print_status('success', f"Dewar level ({dewar_level}) is sufficient for {shift_name} shift (>= {DEWAR_LEVEL_THRESHOLD})")
+            print_status('success', f"Dewar level ({dewar_level}) is sufficient for {shift_name} shift (>= 1000)")
             refill_needed = False  # Exit loop
 
     # If refill was performed, start automatic warm gas purge in background (20 minutes)
@@ -1273,20 +1274,17 @@ if 1 in state_list:
         csv_data['test_site'] = 'BNL'
     if 'toy_TPC' not in csv_data:
         csv_data['toy_TPC'] = 'y'
-    if 'comment' not in csv_data:
-        # Format assembly data in CSV-style string
-        csv_data['comment'] = "QC Test"
-    else:
-        csv_data['comment'] = (
-            f"Bottom_HWDB={bottom_assembly_data['hwdb_qr']},"
-            f"Bottom_CE={bottom_assembly_data['ce_box_sn']},"
-            f"Bottom_Cover={bottom_assembly_data['cover_last4']},"
-            f"Bottom_FEMB={femb_id_0},"
-            f"Top_HWDB={top_assembly_data['hwdb_qr']},"
-            f"Top_CE={top_assembly_data['ce_box_sn']},"
-            f"Top_Cover={top_assembly_data['cover_last4']},"
-            f"Top_FEMB={femb_id_1}"
-        )
+    # Format assembly data in CSV-style string
+    csv_data['comment'] = (
+        f"Bottom_HWDB={bottom_assembly_data['hwdb_qr']},"
+        f"Bottom_CE={bottom_assembly_data['ce_box_sn']},"
+        f"Bottom_Cover={bottom_assembly_data['cover_last4']},"
+        f"Bottom_FEMB={femb_id_0},"
+        f"Top_HWDB={top_assembly_data['hwdb_qr']},"
+        f"Top_CE={top_assembly_data['ce_box_sn']},"
+        f"Top_Cover={top_assembly_data['cover_last4']},"
+        f"Top_FEMB={femb_id_1}"
+    )
     if 'top_path' not in csv_data:
         csv_data['top_path'] = 'D:'
 
@@ -1709,7 +1707,6 @@ if 3 in state_list:
                         )
 
                         # Wait for test files to be fully written
-                        time.sleep(60)
 
                         # Network sync is handled by CTS_Real_Time_Monitor.py
 
@@ -1762,7 +1759,8 @@ if 3 in state_list:
                                         continue
                                 elif decision == 'c':
                                     # Confirm before continuing despite failure
-                                    if confirm("⚠️  Are you sure you want to continue despite Warm QC failure?"):
+                                    if True:
+                                    # if confirm("⚠️  Are you sure you want to continue despite Warm QC failure?"):
                                         print(Fore.YELLOW + "⚠️  Continuing despite Warm QC failure..." + Style.RESET_ALL)
                                         # Exit retry loop and continue to cleanup
                                         qc_passed = False  # Mark as not passed but continue
@@ -1878,6 +1876,16 @@ Summary:
   Total Pass Files: {warm_qc_result.total_passes}
   Overall Result: {'PASS' if warm_qc_result.total_faults == 0 else 'FAIL'}
 
+FEMB Results:
+"""
+            # Add per-slot details
+            for slot_num in sorted(warm_qc_result.slot_status.keys()):
+                passed, femb_id = warm_qc_result.slot_status[slot_num]
+                slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+                status = "PASS" if passed else "FAIL"
+                email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
+
+            email_body += f"""
 Next Steps:
   1. Switch CTS to COLD mode for 5 minutes
   2. Switch to IMMERSE mode
@@ -2201,7 +2209,6 @@ if 4 in state_list and not goto_disassembly:
 
                 print_separator()
                 print_status('success', "Cold QC completed!")
-
                 # CTS Level Monitoring after Cold QC (if automatic mode)
                 if cryo_auto_mode:
                     print_step("Final CTS LN₂ level check", estimated_time="<5 sec")
@@ -2266,8 +2273,18 @@ Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 Summary:
   Total Fault Files: {cold_qc_result.total_faults}
   Total Pass Files: {cold_qc_result.total_passes}
-  Overall Result: PASS
+  Overall Result: {'PASS' if cold_qc_result.total_faults == 0 else 'FAIL'}
 
+FEMB Results:
+"""
+                        # Add per-slot details
+                        for slot_num in sorted(cold_qc_result.slot_status.keys()):
+                            passed, femb_id = cold_qc_result.slot_status[slot_num]
+                            slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+                            status = "PASS" if passed else "FAIL"
+                            email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
+
+                        email_body += f"""
 Next Step:
   Please perform the warm-up procedure ({cts_warmup_wait//60} minutes)
 

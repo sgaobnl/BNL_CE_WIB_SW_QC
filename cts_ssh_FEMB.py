@@ -1228,6 +1228,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                 result = subprocess.run(command, timeout=10, capture_output=True)
             except subprocess.TimeoutExpired:
                 print('Jump Remove')
+        time.sleep(500)
         t2 = time.time()
         print('QC time consumption is: {}'.format(t2 - t1))
 

@@ -10,12 +10,12 @@ CTS_LN2_PM,1200
 CTS_LN2_Fill_Wait,1800
 CTS_Warmup_Wait,3600
 Network_Upload_Path,/data/rtss/femb
-tester,sgao
-SLOT0,H01
-SLOT1,H02
-SLOT2, 
-SLOT3, 
+tester,lke
+SLOT0,BNL_FEMB_I0-1865-1K_00021
+SLOT1,BNL_FEMB_I0-1865-1K_00026
+SLOT2,
+SLOT3,
 test_site,BNL
 toy_TPC,y
-comment,QC Test
+comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00055,Bottom_CE=VD-10010,Bottom_Cover=0000,Bottom_FEMB=BNL_FEMB_I0-1865-1K_00021,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00054,Top_CE=VD-10011,Top_Cover=0000,Top_FEMB=BNL_FEMB_I0-1865-1K_00026"
 top_path,D:

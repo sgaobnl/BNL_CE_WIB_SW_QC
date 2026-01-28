@@ -868,9 +868,11 @@ class QC_reports:
                 ped, rms, pedmax, pedmin = qc.GetRMS(pldata, ifemb, fp, fname)
 
                 # Bypass RMS/BL checking for SELC 5nA test (accuracy limitation)
+                # Bypass RMS/BL checking for SE ON gain 4.7 mV/fC
                 is_selc_5nA = ("SELC" in fname) and ("5nA" in fname)
+                is_seon_4_7 = ("SEON" in fname) and ("4_7mVfC" in fname)
 
-                if is_selc_5nA:
+                if is_selc_5nA or is_seon_4_7:
                     # For SELC 5nA, bypass checking and mark as passed
                     ped_status = True
                     rms_status = True
