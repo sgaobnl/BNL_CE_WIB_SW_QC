@@ -24,6 +24,9 @@ print("\033[35m" + "A_RT03_01 : Power Rail" + "\033[0m")
 t1 = time.time()
 psu = rigol.RigolDP800()
 
+
+psu.safe_power_off()
+time.sleep(0.5)
 psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)

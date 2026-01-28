@@ -12,6 +12,7 @@ from datetime import datetime
 from function.cls_udp import CLS_UDP
 from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
+from function.csv_manager import WIB_QC_CSV_Manager
 import time
 import file.report_dict as rp_dict
 import function.tcp as tcp_con
@@ -126,7 +127,23 @@ psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)
 v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
+v2, c2 = psu.measure(2)  # FIXED: was psu.measure(1)
+print(f"WIB Power - Ch1: {v1:.3f}V {c1:.3f}A, Ch2: {v2:.3f}V {c2:.3f}A")
+
+# Update CSV with WIB power measurements
+if rp_dict.csv_manager:
+    v1_status = "PASS" if 11.0 <= v1 <= 13.0 else "FAIL"
+    c1_status = "PASS" if 0.5 <= c1 <= 3.0 else "FAIL"
+    v2_status = "PASS" if 11.0 <= v2 <= 13.0 else "FAIL"
+    c2_status = "PASS" if 0.5 <= c2 <= 3.0 else "FAIL"
+
+    rp_dict.csv_manager.batch_update([
+        {"item_id": "T052_00", "value": round(v1, 3), "status": v1_status},
+        {"item_id": "T052_01", "value": round(c1, 3), "status": c1_status},
+        {"item_id": "T052_02", "value": round(v2, 3), "status": v2_status},
+        {"item_id": "T052_03", "value": round(c2, 3), "status": c2_status}
+    ])
+
 time.sleep(1)
 
 time.sleep(30) # wait for boot
@@ -469,6 +486,63 @@ raw = ((msb << 8) | lsb)
 current_5 = ((((raw & 0x3fff)) * 0.000019075) / 0.1)
 rp_dict.log04_wib['LTC2990_0x4e_V0.9_c'] = current_5
 
+# Update CSV with all sensor measurements
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.batch_update([
+        # LTC2499 Temperatures (7 sensors) - Fixed key names to match actual dictionary keys
+        {"item_id": "T052_10", "value": round(rp_dict.log04_wib.get('LTC2499_BRD0_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_11", "value": round(rp_dict.log04_wib.get('LTC2499_BRD1_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_12", "value": round(rp_dict.log04_wib.get('LTC2499_BRD2_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_13", "value": round(rp_dict.log04_wib.get('LTC2499_BRD3_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_14", "value": round(rp_dict.log04_wib.get('LTC2499_WIB1_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_15", "value": round(rp_dict.log04_wib.get('LTC2499_WIB2_Temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_16", "value": round(rp_dict.log04_wib.get('LTC2499_WIB3_Temperature', 0), 2), "status": "PASS"},
+
+        # INA226
+        {"item_id": "T052_20", "value": round(rp_dict.log04_wib.get('LINA226_Vbus', 0), 3), "status": "PASS"},
+        {"item_id": "T052_21", "value": round(rp_dict.log04_wib.get('INA226_Current', 0), 3), "status": "PASS"},
+
+        # AD7414 Temperatures
+        {"item_id": "T052_30", "value": round(rp_dict.log04_wib.get('AD7414_0x4A_temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_31", "value": round(rp_dict.log04_wib.get('AD7414_0x49_temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_32", "value": round(rp_dict.log04_wib.get('AD7414_0x4D_temperature', 0), 2), "status": "PASS"},
+
+        # LTC2991_0x48 (10 measurements)
+        {"item_id": "T052_40", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_41", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V0.85_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_42", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V0.85_c', 0), 3), "status": "PASS"},
+        {"item_id": "T052_43", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V5.0_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_44", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V5.0_c', 0), 3), "status": "PASS"},
+        {"item_id": "T052_45", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V2.5_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_46", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V2.5_c', 0), 3), "status": "PASS"},
+        {"item_id": "T052_47", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V1.8_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_48", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_V1.8_c', 0), 3), "status": "PASS"},
+        {"item_id": "T052_49", "value": round(rp_dict.log04_wib.get('LTC2991_0x48_VCC', 0), 3), "status": "PASS"},
+
+        # LTC2990_0x4C (6 measurements)
+        {"item_id": "T052_50", "value": round(rp_dict.log04_wib.get('LTC2990_0x4C_temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_51", "value": round(rp_dict.log04_wib.get('LTC2990_0x4C_V1.2_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_52", "value": round(rp_dict.log04_wib.get('LTC2990_0x4C_V3.3_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_53", "value": round(rp_dict.log04_wib.get('LTC2990_0x4C_VCC', 0), 3), "status": "PASS"},
+        {"item_id": "T052_54", "value": round(rp_dict.log04_wib.get('LTC2990_0x4c_V1_2_c', 0), 3), "status": "PASS"},
+        {"item_id": "T052_55", "value": round(rp_dict.log04_wib.get('LTC2990_0x4c_V3.3_c', 0), 3), "status": "PASS"},
+
+        # LTC2990_0x4E (6 measurements)
+        {"item_id": "T052_60", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_temperature', 0), 2), "status": "PASS"},
+        {"item_id": "T052_61", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_V0.9_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_62", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_VCCPSPLL_1.2_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_63", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_PSDDR4_v', 0), 3), "status": "PASS"},
+        {"item_id": "T052_64", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_VCC', 0), 3), "status": "PASS"},
+        {"item_id": "T052_65", "value": round(rp_dict.log04_wib.get('LTC2990_0x4e_V0.9_c', 0), 3), "status": "PASS"},
+    ])
+
+t2 = time.time()
+test_duration = round(t2 - t1, 2)
+
+# Update CSV with test duration
+if rp_dict.csv_manager:
+    rp_dict.csv_manager.update_item("T052_99", test_duration, status="COMPLETE")
+
 time.sleep(0.5)
 psu.safe_power_off()
 psu.close()
@@ -477,72 +551,201 @@ import os
 
 # === Setup relative path to ../report/wib_power_report_052.html ===
 base_dir = os.path.dirname(os.path.abspath(__file__))
-target_file_path = os.path.join(base_dir, "..", "report", "WIB_052_WIB_Power_report_052.html")
+target_file_path = os.path.join(base_dir, "..", "report", "WIB_052_I2C_Sensor_Info.html")
 print(target_file_path)
 
 # Ensure target directory exists
 os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
 
-# Build table rows
-rows = ""
-for key, value in rp_dict.log04_wib.items():
-    rows += f"<tr><td>{key}</td><td>{value:.3f}</td></tr>\n"
+# Organize measurements by category
+categories = {
+    "WIB Power Measurements": {
+        "WIB_Power_Ch1_V": f"{v1:.3f} V",
+        "WIB_Power_Ch1_I": f"{c1:.3f} A",
+        "WIB_Power_Ch2_V": f"{v2:.3f} V",
+        "WIB_Power_Ch2_I": f"{c2:.3f} A"
+    },
+    "LTC2499 Temperature Sensors": {},
+    "INA226 Power Monitor": {},
+    "AD7414 Temperature Sensors": {},
+    "LTC2991_0x48 Monitor": {},
+    "LTC2990_0x4C Monitor": {},
+    "LTC2990_0x4E Monitor": {}
+}
 
-# HTML content with CSS styling
-html_content = f"""
-<!DOCTYPE html>
+# Populate categories
+for key, value in rp_dict.log04_wib.items():
+    if "LTC2499" in key:
+        categories["LTC2499 Temperature Sensors"][key] = f"{value:.2f} °C"
+    elif "INA226" in key or "LINA226" in key:
+        categories["INA226 Power Monitor"][key] = f"{value:.3f}"
+    elif "AD7414" in key:
+        categories["AD7414 Temperature Sensors"][key] = f"{value:.2f} °C"
+    elif "LTC2991_0x48" in key:
+        categories["LTC2991_0x48 Monitor"][key] = f"{value:.3f}"
+    elif "LTC2990_0x4C" in key or "LTC2990_0x4c" in key:
+        categories["LTC2990_0x4C Monitor"][key] = f"{value:.3f}"
+    elif "LTC2990_0x4e" in key:
+        categories["LTC2990_0x4E Monitor"][key] = f"{value:.3f}"
+
+# Build category tables
+category_html = ""
+for category, items in categories.items():
+    if items:  # Only show non-empty categories
+        category_html += f"""
+        <h3>{category}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+"""
+        for key, value in items.items():
+            category_html += f"                <tr><td>{key}</td><td>{value}</td></tr>\n"
+        category_html += """            </tbody>
+        </table>
+"""
+
+# Professional clean HTML report
+html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WIB_052 WIB Power report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUNE WIB I2C Sensor Information Report</title>
     <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
         body {{
             font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-            color: #333;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 20px;
         }}
-        h2 {{
+
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+        }}
+
+        .header {{
             text-align: center;
-            color: #444;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
         }}
-        table {{
-            width: 60%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
+
+        .header h1 {{
+            font-size: 28px;
+            margin-bottom: 10px;
         }}
-        th, td {{
-            border: 1px solid #ddd;
-            padding: 10px 15px;
-            text-align: left;
+
+        .header h2 {{
+            font-size: 20px;
+            color: #666666;
+            font-weight: normal;
         }}
-        th {{
-            background-color: #f0f0f0;
+
+        .info-section {{
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #000000;
+        }}
+
+        .info-row {{
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #cccccc;
+        }}
+
+        .info-row:last-child {{
+            border-bottom: none;
+        }}
+
+        .info-label {{
             font-weight: bold;
-            text-align: center;
         }}
-        tr:nth-child(even) td {{
-            background-color: #fafafa;
+
+        h3 {{
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #000000;
+        }}
+
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border: 1px solid #000000;
+        }}
+
+        th {{
+            background-color: #e5e5e5;
+            color: #000000;
+            font-weight: bold;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #000000;
+        }}
+
+        td {{
+            padding: 10px 12px;
+            border: 1px solid #000000;
+        }}
+
+        tr:nth-child(even) {{
+            background-color: #f9f9f9;
+        }}
+
+        .footer {{
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
         }}
     </style>
 </head>
 <body>
-    <h2>WIB Power Report</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            {rows}
-        </tbody>
-    </table>
+    <div class="container">
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <h2>I2C Sensor Information Report (Test052)</h2>
+        </div>
+
+        <div class="info-section">
+            <h3 style="margin-top: 0; border: none;">Test Information</h3>
+            <div class="info-row">
+                <span class="info-label">Test Date:</span>
+                <span>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Test Duration:</span>
+                <span>{test_duration} seconds</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Measurements:</span>
+                <span>{len(rp_dict.log04_wib) + 4} items</span>
+            </div>
+        </div>
+
+        {category_html}
+
+        <div class="footer">
+            <p>DUNE WIB Quality Control System</p>
+            <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+    </div>
 </body>
 </html>
 """
@@ -551,5 +754,5 @@ html_content = f"""
 with open(target_file_path, "w", encoding="utf-8") as f:
     f.write(html_content)
 
-print(f"HTML report saved (new file) to {target_file_path}")
+print(f"HTML report saved to {target_file_path}")
 

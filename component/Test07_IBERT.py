@@ -70,8 +70,9 @@ print(process.stderr)
 
 
 # time to test
+# the time used to test gtx ber
 time.sleep(20)
-
+print('Measure the BER Result of GTX')
 command = [vivado_path, "-mode", "batch", "-source", "file/tcl_02.tcl"]
 # # Execute the command
 process = subprocess.run(command, capture_output=True, text=True, cwd = project_dir)

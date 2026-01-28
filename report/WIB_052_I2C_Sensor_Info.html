@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUNE WIB I2C Sensor Information Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            font-size: 20px;
+            color: #666666;
+            font-weight: normal;
+        }
+
+        .info-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #000000;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+        }
+
+        h3 {
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #000000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border: 1px solid #000000;
+        }
+
+        th {
+            background-color: #e5e5e5;
+            color: #000000;
+            font-weight: bold;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #000000;
+        }
+
+        td {
+            padding: 10px 12px;
+            border: 1px solid #000000;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DUNE WIB Quality Control</h1>
+            <h2>I2C Sensor Information Report (Test052)</h2>
+        </div>
+
+        <div class="info-section">
+            <h3 style="margin-top: 0; border: none;">Test Information</h3>
+            <div class="info-row">
+                <span class="info-label">Test Date:</span>
+                <span>2026-01-22 11:54:15 UTC</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Test Duration:</span>
+                <span>164.59 seconds</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Measurements:</span>
+                <span>38 items</span>
+            </div>
+        </div>
+
+        
+        <h3>WIB Power Measurements</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>WIB_Power_Ch1_V</td><td>12.000 V</td></tr>
+                <tr><td>WIB_Power_Ch1_I</td><td>1.502 A</td></tr>
+                <tr><td>WIB_Power_Ch2_V</td><td>12.010 V</td></tr>
+                <tr><td>WIB_Power_Ch2_I</td><td>0.023 A</td></tr>
+            </tbody>
+        </table>
+
+        <h3>LTC2499 Temperature Sensors</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>LTC2499_BRD0_Temperature</td><td>64.19 °C</td></tr>
+                <tr><td>LTC2499_BRD1_Temperature</td><td>63.38 °C</td></tr>
+                <tr><td>LTC2499_BRD2_Temperature</td><td>69.67 °C</td></tr>
+                <tr><td>LTC2499_BRD3_Temperature</td><td>68.95 °C</td></tr>
+                <tr><td>LTC2499_WIB1_Temperature</td><td>82.50 °C</td></tr>
+                <tr><td>LTC2499_WIB2_Temperature</td><td>84.50 °C</td></tr>
+                <tr><td>LTC2499_WIB3_Temperature</td><td>77.50 °C</td></tr>
+            </tbody>
+        </table>
+
+        <h3>INA226 Power Monitor</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>LINA226_Vbus</td><td>1.204</td></tr>
+                <tr><td>INA226_Current</td><td>0.159</td></tr>
+            </tbody>
+        </table>
+
+        <h3>AD7414 Temperature Sensors</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>AD7414_0x4A_temperature</td><td>32.25 °C</td></tr>
+                <tr><td>AD7414_0x49_temperature</td><td>27.50 °C</td></tr>
+                <tr><td>AD7414_0x4D_temperature</td><td>33.25 °C</td></tr>
+            </tbody>
+        </table>
+
+        <h3>LTC2991_0x48 Monitor</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>LTC2991_0x48_temperature</td><td>27.500</td></tr>
+                <tr><td>LTC2991_0x48_V0.85_c</td><td>0.051</td></tr>
+                <tr><td>LTC2991_0x48_V5.0_c</td><td>0.001</td></tr>
+                <tr><td>LTC2991_0x48_V2.5_c</td><td>0.015</td></tr>
+                <tr><td>LTC2991_0x48_V1.8_c</td><td>0.007</td></tr>
+                <tr><td>LTC2991_0x48_V0.85_v</td><td>0.855</td></tr>
+                <tr><td>LTC2991_0x48_V5.0_v</td><td>4.999</td></tr>
+                <tr><td>LTC2991_0x48_V2.5_v</td><td>2.502</td></tr>
+                <tr><td>LTC2991_0x48_V1.8_v</td><td>1.801</td></tr>
+                <tr><td>LTC2991_0x48_VCC</td><td>4.994</td></tr>
+            </tbody>
+        </table>
+
+        <h3>LTC2990_0x4C Monitor</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>LTC2990_0x4C_V1.2_v</td><td>1.216</td></tr>
+                <tr><td>LTC2990_0x4C_V3.3_v</td><td>3.306</td></tr>
+                <tr><td>LTC2990_0x4C_temperature</td><td>31.562</td></tr>
+                <tr><td>LTC2990_0x4C_VCC</td><td>4.996</td></tr>
+                <tr><td>LTC2990_0x4c_V1_2_c</td><td>2.066</td></tr>
+                <tr><td>LTC2990_0x4c_V3.3_c</td><td>1.560</td></tr>
+            </tbody>
+        </table>
+
+        <h3>LTC2990_0x4E Monitor</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>LTC2990_0x4e_V0.9_v</td><td>0.905</td></tr>
+                <tr><td>LTC2990_0x4e_VCCPSPLL_1.2_v</td><td>1.196</td></tr>
+                <tr><td>LTC2990_0x4e_temperature</td><td>28.250</td></tr>
+                <tr><td>LTC2990_0x4e_VCC</td><td>4.992</td></tr>
+                <tr><td>LTC2990_0x4e_PSDDR4_v</td><td>0.592</td></tr>
+                <tr><td>LTC2990_0x4e_V0.9_c</td><td>0.747</td></tr>
+            </tbody>
+        </table>
+
+
+        <div class="footer">
+            <p>DUNE WIB Quality Control System</p>
+            <p>Generated on 2026-01-22 11:54:15</p>
+        </div>
+    </div>
+</body>
+</html>

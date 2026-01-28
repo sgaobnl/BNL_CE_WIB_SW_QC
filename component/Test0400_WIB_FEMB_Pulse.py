@@ -30,7 +30,8 @@ import matplotlib.pyplot as plt
 import h5py
 import datetime
 import function.chkout as chkout_top
-import function.rigol_dp832_ps as Power  # import power component
+# import function.rigol_dp832_ps as Power  # import power component
+import function.Rigol_DP800 as rigol
 from function.ping_host import ping_host
 import platform
 import subprocess
@@ -48,6 +49,8 @@ import subprocess
 print("\033[35m" + "A_RT04_slot_00 : WIB_FEMB_Pulse" + "\033[0m")
 print("Power on")
 ps = Power.RIGOL_PS_CTL()
+psu.safe_power_off()
+psu.close()
 ps.ps_init()
 ps.off([1, 2, 3])
 time.sleep(2)
