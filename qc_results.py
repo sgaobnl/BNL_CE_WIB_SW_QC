@@ -6,8 +6,10 @@ Enhanced result checking and reporting for FEMB QC tests
 import os
 import sys
 import time
+import re
 import colorama
 from colorama import Fore, Style
+from datetime import datetime
 
 colorama.init()
 
@@ -18,7 +20,8 @@ class QCResult:
         self.fault_files = []
         self.pass_files = []
         self.slot_status = {}  # {slot_num: (passed, femb_id)}
-        self.slot_files = {}  # {slot_num: {'faults': [], 'passes': []}}
+        self.slot_files = {}  # {slot_num: {'faults': [], 'passes': [], 'tests_found': set()}}
+        self.slot_missing_tests = {}  # {slot_num: [list of missing test numbers]}
         self.test_phase = ""
         self.total_faults = 0
         self.total_passes = 0
@@ -42,18 +45,28 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
     # Calculate time threshold if specified
     time_threshold = 0
     if time_limit_hours is not None:
-        time_threshold = time.time() - (time_limit_hours * 3600)
+        time_threshold = time.time() - (time_limit_hours * 3.600)
 
     # Initialize slot file groups
     for slot_num in ['0', '1', '2', '3']:
-        result.slot_files[slot_num] = {'faults': [], 'passes': []}
+        result.slot_files[slot_num] = {'faults': [], 'passes': [], 'tests_found': set()}
+        result.slot_missing_tests[slot_num] = []
+
+    # All 16 test items that should be present
+    all_test_items = set(range(1, 17))  # t1 through t16
 
     # Scan all paths for fault and pass files, grouping by slot
+    # Only count .md and .html files with _S0 (slot0/bottom) or _S1 (slot1/top)
     for path in paths:
         if not os.path.isdir(path):
+            print(f"  Path not found: {path}")
             continue
         for root, dirs, files in os.walk(path):
             for file in files:
+                # Only process .md and .html files
+                if not (file.endswith('.md') or file.endswith('.html')):
+                    continue
+
                 file_path = os.path.join(root, file)
 
                 # Apply time filter if specified
@@ -65,54 +78,49 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
                     except OSError:
                         continue
 
-                # Determine if this is a fault or pass file
-                is_fault = "_F." in file or "_F_S" in file
-                is_pass = "_P." in file or "_P_S" in file
+                # Identify slot from filename: _S0 = slot0 (bottom), _S1 = slot1 (top)
+                slot_identified = None
+                if "_S0" in file:
+                    slot_identified = '0'
+                elif "_S1" in file:
+                    slot_identified = '1'
+                elif "_S2" in file:
+                    slot_identified = '2'
+                elif "_S3" in file:
+                    slot_identified = '3'
+
+                if slot_identified is None:
+                    continue
+
+                # Extract test item number from filename (_t1_, _t2_, ..., _t16_)
+                test_match = re.search(r'_t(\d+)', file)
+                if test_match:
+                    test_num = int(test_match.group(1))
+                    if 1 <= test_num <= 16:
+                        result.slot_files[slot_identified]['tests_found'].add(test_num)
+
+                # Determine if this is a fault or pass file using _F_ and _P_
+                is_fault = "_F_" in file
+                is_pass = "_P_" in file
 
                 if not (is_fault or is_pass):
                     continue
 
-                # Identify which slot this file belongs to based on filename
-                slot_identified = None
-                file_upper = file.upper()
-
-                # Check for FEMB_X_ pattern (where X is slot number)
-                # This is the primary pattern: FEMB_0_ for slot0, FEMB_1_ for slot1
-                for slot_num in ['0', '1', '2', '3']:
-                    if f"FEMB_{slot_num}_" in file_upper:
-                        slot_identified = slot_num
-                        break
-
-                # Fallback: check other slot patterns if primary pattern not found
-                if slot_identified is None:
-                    for slot_num in ['0', '1', '2', '3']:
-                        slot_patterns = [
-                            f"SLOT{slot_num}",   # e.g., "Slot0" or "SLOT0"
-                            f"_S{slot_num}_",    # e.g., "_S0_"
-                            f"_S{slot_num}.",    # e.g., "_S0."
-                            f"-S{slot_num}_",    # e.g., "-S0_"
-                            f"S{slot_num}_",     # e.g., "S0_" at start
-                        ]
-
-                        for pattern in slot_patterns:
-                            if pattern in file_upper:
-                                slot_identified = slot_num
-                                break
-                        if slot_identified:
-                            break
-
                 # Group file by slot and type
                 if is_fault:
                     result.fault_files.append(file_path)
-                    if slot_identified:
-                        result.slot_files[slot_identified]['faults'].append(file_path)
+                    result.slot_files[slot_identified]['faults'].append(file_path)
+                    print(f"  Fault file (Slot{slot_identified}): {file}")
                 elif is_pass:
                     result.pass_files.append(file_path)
-                    if slot_identified:
-                        result.slot_files[slot_identified]['passes'].append(file_path)
+                    result.slot_files[slot_identified]['passes'].append(file_path)
+                    print(f"  Pass file (Slot{slot_identified}): {file}")
 
     result.total_faults = len(result.fault_files)
     result.total_passes = len(result.pass_files)
+
+    # Check for missing test items in each slot
+    print(f"\n  Checking test item completeness (t1-t16)...")
 
     # Analyze slot-specific results based on grouped files
     slots_to_check = ['Slot0', 'Slot1', 'Slot2', 'Slot3']
@@ -129,18 +137,34 @@ def analyze_test_results(paths, inform=None, time_limit_hours=None):
         # Determine pass/fail based on files grouped for this slot
         slot_faults = result.slot_files[slot_num]['faults']
         slot_passes = result.slot_files[slot_num]['passes']
+        tests_found = result.slot_files[slot_num]['tests_found']
 
-        # Slot passes only if it has no fault files
-        passed = len(slot_faults) == 0
+        # Check for missing test items (t1-t16)
+        missing_tests = sorted(all_test_items - tests_found)
+        result.slot_missing_tests[slot_num] = missing_tests
 
-        # Debug: print slot file summary (if debug enabled)
-        if os.environ.get('QC_DEBUG') == '1':
-            print(f"DEBUG: Slot{slot_num} (FEMB {femb_id}):")
-            print(f"  - Fault files: {len(slot_faults)}")
-            print(f"  - Pass files: {len(slot_passes)}")
-            if slot_faults:
-                for fault_file in slot_faults:
-                    print(f"    • {os.path.basename(fault_file)}")
+        # Report missing tests
+        slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+        if missing_tests:
+            print(f"  WARNING: {slot_position} Slot{slot_num} missing tests: {missing_tests}")
+        else:
+            print(f"  {slot_position} Slot{slot_num}: All 16 tests found")
+
+        # Slot passes only if:
+        # 1. No fault files (_F_)
+        # 2. All 16 test items are present
+        has_faults = len(slot_faults) > 0
+        has_missing_tests = len(missing_tests) > 0
+        passed = not has_faults and not has_missing_tests
+
+        # Print slot summary
+        print(f"    - Fault files: {len(slot_faults)}")
+        print(f"    - Pass files: {len(slot_passes)}")
+        print(f"    - Tests found: {len(tests_found)}/16")
+        if has_faults:
+            print(f"    - FAILED: Has {len(slot_faults)} fault file(s)")
+        if has_missing_tests:
+            print(f"    - FAILED: Missing {len(missing_tests)} test(s): t{', t'.join(map(str, missing_tests))}")
 
         result.slot_status[slot_num] = (passed, femb_id)
 
@@ -174,9 +198,11 @@ def display_qc_results(result, test_phase="QC Test", verbose=False):
         passed, femb_id = result.slot_status[slot_num]
         slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
 
-        # Get slot-specific file counts
+        # Get slot-specific file counts and test info
         slot_faults = result.slot_files.get(slot_num, {}).get('faults', [])
         slot_passes = result.slot_files.get(slot_num, {}).get('passes', [])
+        tests_found = result.slot_files.get(slot_num, {}).get('tests_found', set())
+        missing_tests = result.slot_missing_tests.get(slot_num, [])
         fault_count = len(slot_faults)
         pass_count = len(slot_passes)
 
@@ -193,6 +219,9 @@ def display_qc_results(result, test_phase="QC Test", verbose=False):
 
         print(f"   {color}{status_icon} {slot_position} Slot{slot_num}: FEMB {femb_id} - {status_text}{Style.RESET_ALL}")
         print(f"      Files: {Fore.RED}{fault_count} faults{Style.RESET_ALL}, {Fore.GREEN}{pass_count} passes{Style.RESET_ALL}")
+        print(f"      Tests: {len(tests_found)}/16 found")
+        if missing_tests:
+            print(f"      {Fore.YELLOW}Missing tests: t{', t'.join(map(str, missing_tests))}{Style.RESET_ALL}")
 
         # Show detailed file list for this slot if verbose
         if verbose and (slot_faults or slot_passes):
@@ -298,3 +327,90 @@ def get_slot_results(paths, inform):
     s0 = result.slot_status.get('0', (True, 'N/A'))[0]
     s1 = result.slot_status.get('1', (True, 'N/A'))[0]
     return s0, s1
+
+
+def generate_qc_summary(test_phase, inform, qc_result, output_file):
+    """
+    Generate QC test summary and save to file
+
+    Args:
+        test_phase: "Warm QC", "Cold QC", or "Final Checkout"
+        inform: FEMB information dictionary
+        qc_result: QCResult object from analyze_test_results
+        output_file: Path to save summary text file
+
+    Returns:
+        str: Path to generated summary file
+    """
+    try:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            # Header
+            f.write("=" * 70 + "\n")
+            f.write(f"  {test_phase.upper()} - TEST SUMMARY\n")
+            f.write("=" * 70 + "\n\n")
+
+            # Test site and timestamp
+            f.write(f"Test Site: {inform.get('test_site', 'N/A')}\n")
+            f.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+            # Summary statistics
+            f.write(f"Summary Statistics:\n")
+            f.write(f"  Total Fault Files: {qc_result.total_faults}\n")
+            f.write(f"  Total Pass Files:  {qc_result.total_passes}\n\n")
+
+            # Slot-by-slot results
+            f.write(f"FEMB Status by Slot:\n")
+            f.write("-" * 70 + "\n")
+            all_passed = True
+            failed_slots = []
+
+            for slot_num in sorted(qc_result.slot_status.keys()):
+                passed, femb_id = qc_result.slot_status[slot_num]
+                slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+
+                # Get slot-specific file counts and test info
+                slot_faults = qc_result.slot_files.get(slot_num, {}).get('faults', [])
+                slot_passes = qc_result.slot_files.get(slot_num, {}).get('passes', [])
+                tests_found = qc_result.slot_files.get(slot_num, {}).get('tests_found', set())
+                missing_tests = qc_result.slot_missing_tests.get(slot_num, [])
+                fault_count = len(slot_faults)
+                pass_count = len(slot_passes)
+
+                status_text = "PASS" if passed else "FAIL"
+                f.write(f"  {slot_position} Slot{slot_num}: FEMB {femb_id} - {status_text}\n")
+                f.write(f"    Files: {fault_count} faults, {pass_count} passes\n")
+                f.write(f"    Tests: {len(tests_found)}/16 found\n")
+
+                if not passed:
+                    all_passed = False
+                    failed_slots.append((slot_num, femb_id))
+
+                # List fault files for this slot
+                if slot_faults:
+                    f.write(f"    Fault files:\n")
+                    for fault_file in slot_faults:
+                        f.write(f"      - {os.path.basename(fault_file)}\n")
+
+                # List missing tests for this slot
+                if missing_tests:
+                    f.write(f"    Missing tests: t{', t'.join(map(str, missing_tests))}\n")
+
+                f.write("\n")
+
+            # Overall result
+            f.write("=" * 70 + "\n")
+            if all_passed:
+                f.write("  OVERALL RESULT: PASS\n")
+            else:
+                f.write("  OVERALL RESULT: FAIL\n")
+                f.write("\n  Failed FEMBs:\n")
+                for slot_num, femb_id in failed_slots:
+                    slot_name = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+                    f.write(f"    - {slot_name} Slot{slot_num}: {femb_id}\n")
+            f.write("=" * 70 + "\n")
+
+        print(Fore.GREEN + f"✓ Summary saved to: {output_file}" + Style.RESET_ALL)
+        return output_file
+    except Exception as e:
+        print(Fore.RED + f"✗ Failed to generate summary: {e}" + Style.RESET_ALL)
+        return None

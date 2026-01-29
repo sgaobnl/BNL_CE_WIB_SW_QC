@@ -7,6 +7,8 @@ import QC_components.qc_log as main_dict
 import csv
 import shutil
 import webbrowser
+import GUI.send_email as send_email
+from qc_results import analyze_test_results, generate_qc_summary
 
 
 
@@ -26,6 +28,11 @@ print(top_path)
 target_folder = top_path + '/FEMB_QC/Data'
 last_scan_file = top_path + '/FEMB_QC/Data/last_scan_results.txt'
 network_path = csv_data.get('Network_Upload_Path', '/data/rtss/femb')
+
+# Email configuration from init_setup
+sender = csv_data.get('email_sender', 'bnlr216@gmail.com')
+password = csv_data.get('email_password', 'vvef tosp minf wwhf')
+receiver = csv_data.get('email_receiver', 'lke@bnl.gov')
 
 
 def sync_to_network(raw_dir, report_dir):
@@ -139,6 +146,126 @@ def subrun(command, timeout=30, check=True, exitflg=True, user_input=None):
     return result
 
 
+def process_qc_summary_after_t16(report_path):
+    """
+    Process QC summary after t16 analysis completes:
+    1. Wait 500 seconds for all reports to complete
+    2. Read FEMB info from femb_info_implement.csv
+    3. Analyze test results
+    4. Send summary email with per-slot results
+
+    Args:
+        report_path: Path to the report directory (e.g., /FEMB_QC/Report/<timestamp>/)
+    """
+    try:
+        print(f"\n{'='*70}")
+        print(f"  QC Test Item 16 Completed - Preparing Summary")
+        print(f"{'='*70}")
+        print(f"  Waiting 500 seconds for all reports to complete...")
+
+        # Wait 500 seconds for reports to complete
+        time.sleep(5)
+
+        print(f"  Analyzing QC results...")
+
+        # Read FEMB info from femb_info_implement.csv
+        csv_file_implement = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'femb_info_implement.csv')
+        inform = {}
+        if os.path.exists(csv_file_implement):
+            with open(csv_file_implement, mode='r', newline='', encoding='utf-8-sig') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if len(row) == 2:
+                        key, value = row
+                        inform[key.strip()] = value.strip()
+
+        # Determine QC type based on path (WQ = Warm QC, LQ = Cold QC)
+        qc_type = "QC Test"
+        if '_WQ_' in report_path or '/WQ/' in report_path or 'Warm' in report_path:
+            qc_type = "Warm QC"
+        elif '_LQ_' in report_path or '/LQ/' in report_path or 'Cold' in report_path or 'LN' in report_path:
+            qc_type = "Cold QC"
+
+        test_site = inform.get('test_site', csv_data.get('Test_Site', 'N/A'))
+
+        # Use report_path directly (passed from real_time_monitor using QC_report.py formula)
+        print(f"  Using report_path: {report_path}")
+        paths = [report_path]  # Report path contains _F_ and _P_ result files
+
+        # Analyze test results from Report directory
+        qc_result = analyze_test_results(paths, inform, time_limit_hours=None)
+
+        # Generate summary file in Report directory
+        summary_filename = f"{qc_type.replace(' ', '_')}_Summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        summary_path = os.path.join(report_path, summary_filename)
+        generate_qc_summary(qc_type, inform, qc_result, summary_path)
+
+        # Build email body with per-slot results
+        overall_passed = qc_result.total_faults == 0
+        email_body = f"""{qc_type} Test Completed
+
+Test Site: {test_site}
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Summary:
+  Total Fault Files: {qc_result.total_faults}
+  Total Pass Files: {qc_result.total_passes}
+  Overall Result: {'PASS' if overall_passed else 'FAIL'}
+
+FEMB Results:
+"""
+        # Add per-slot details
+        for slot_num in sorted(qc_result.slot_status.keys()):
+            passed, femb_id = qc_result.slot_status[slot_num]
+            slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
+            status = "PASS" if passed else "FAIL"
+            email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
+
+        # Add next steps based on QC type
+        if qc_type == "Warm QC":
+            email_body += f"""
+Next Steps:
+  1. Switch CTS to COLD mode for 5 minutes
+  2. Switch to IMMERSE mode
+  3. Wait for LN2 to reach Level 3
+  4. Double confirm heat LED is OFF
+
+Detailed summary is attached.
+"""
+        elif qc_type == "Cold QC":
+            warmup_time = int(csv_data.get('CTS_Warmup_Wait', 3600)) // 60
+            email_body += f"""
+Next Step:
+  Please perform the warm-up procedure ({warmup_time} minutes)
+
+Detailed summary is attached.
+"""
+        else:
+            email_body += "\nDetailed summary is attached.\n"
+
+        # Send email with attachment
+        try:
+            send_email.send_email_with_attachment(
+                sender, password, receiver,
+                f"{qc_type} Complete - {test_site}",
+                email_body,
+                summary_path
+            )
+            print(f"  ✓ {qc_type} summary email sent with attachment")
+        except Exception as email_err:
+            print(f"  ✗ Failed to send email: {email_err}")
+
+        # Delete summary file after email sent
+        try:
+            os.remove(summary_path)
+        except Exception as del_e:
+            print(f"  Warning: Failed to delete summary file: {del_e}")
+
+        print(f"{'='*70}\n")
+
+    except Exception as e:
+        print(f"  ✗ Error processing QC summary: {e}")
+
 
 logs = {}
 
@@ -194,9 +321,35 @@ def real_time_monitor():
 
                 # After report generation, sync to network and open reports
                 raw_dir = path
-                report_dir = path.replace('/Data/', '/Report/')
-                sync_to_network(raw_dir, report_dir)
-                open_reports(raw_dir)
+
+                # Parse report path from QC_report_all.py output
+                report_dir = None
+                if result and result.stdout:
+                    for line in result.stdout.split('\n'):
+                        if line.startswith('REPORT_PATH_OUTPUT='):
+                            print(line)
+                            print(line.split('=', 1))
+                            print(line.startswith('REPORT_PATH_OUTPUT='))
+                            print(report_dir)
+                            report_dir = line.split('=', 1)[1].strip()
+                            print(f"  Parsed report_dir from QC_report_all.py: {report_dir}")
+                            break
+
+                # Fallback to string replacement if parsing failed
+                if not report_dir:
+                    report_dir = path.replace('/Data/', '/Report/')
+                    print(f"  Fallback report_dir: {report_dir}")
+
+                # sync_to_network(raw_dir, report_dir)
+                # open_reports(raw_dir)
+
+                # After t16 completes, generate QC summary email
+                if '_t16' in file_path:
+                    print(f"  t16 detected - triggering QC summary process")
+                    # Construct report_path using same formula as QC_report.py line 46
+                    qc_report_path = top_path + '/FEMB_QC/Report/' + path.split("/")[-3] + '/' + path.split("/")[-2] + '/'
+                    print(f"  Constructed report_path: {qc_report_path}")
+                    process_qc_summary_after_t16(qc_report_path)
 
         time.sleep(5)   # when monitor works in wait, 5 seconds wait in one scan cycle
 

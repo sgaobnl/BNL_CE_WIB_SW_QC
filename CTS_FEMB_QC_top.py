@@ -24,7 +24,7 @@ import threading
 import webbrowser
 
 # Import QC modules - Custom utility modules
-from qc_utils import timer_count, countdown_timer, check_fault_files, QC_Process, close_terminal, check_checkout_result
+from qc_utils import timer_count, countdown_timer, check_fault_files, QC_Process, close_terminal, check_checkout_result, save_qc_paths
 from qc_power import safe_power_off
 from qc_ui import confirm, get_email, get_cebox_image
 from qc_results import handle_qc_results, display_qc_results, analyze_test_results
@@ -580,6 +580,78 @@ print("=" * 70 + Style.RESET_ALL)
 
 ### Get tester name input
 input_name = input('Please enter your name:\n' + Fore.YELLOW + '>> ' + Style.RESET_ALL)
+
+
+## 4a. Check if preparing 2nd CE Box Support Structure
+print(Fore.CYAN + "\n" + "-" * 70)
+print("  2nd CE Box Support Structure Check")
+print("-" * 70 + Style.RESET_ALL)
+
+print(Fore.YELLOW + "\nAre you preparing the 2nd CE Box Support Structure?" + Style.RESET_ALL)
+print("  " + Fore.GREEN + "'N'" + Style.RESET_ALL + " - No, this is a fresh start (normal flow)")
+print("  " + Fore.CYAN + "'Y'" + Style.RESET_ALL + " - Yes, preparing 2nd CE Box for back-to-back testing")
+
+is_2nd_ce_box = False
+while True:
+    ce_box_input = input(Fore.YELLOW + '>> ' + Style.RESET_ALL).strip().upper()
+    if ce_box_input in ['N', 'NO']:
+        is_2nd_ce_box = False
+        print_status('info', "Normal flow - starting fresh QC cycle")
+        break
+    elif ce_box_input in ['Y', 'YES']:
+        is_2nd_ce_box = True
+        print_status('info', "2nd CE Box mode - preparing for back-to-back testing")
+        break
+    else:
+        print_status('error', "Invalid input. Please enter 'Y' or 'N'")
+
+# If preparing 2nd CE Box Support Structure
+if is_2nd_ce_box:
+    print(Fore.CYAN + "\n" + "=" * 70)
+    print("  2nd CE BOX SUPPORT STRUCTURE ASSEMBLY")
+    print("=" * 70 + Style.RESET_ALL)
+
+    # Show CE Support Structure assembly instructions
+    print(Fore.GREEN + "\n📋 Please assemble the CE Support Structure:" + Style.RESET_ALL)
+    print("  1. Prepare the 2nd CE Box Support Structure")
+    print("  2. Install FEMBs into the CE Box")
+    print("  3. Connect all cables and verify connections")
+    print("  4. Ensure the structure is ready for insertion")
+
+    pop.show_image_popup(
+        title="2nd CE Box Support Structure Assembly",
+        image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "7.png")
+    )
+
+    input(Fore.YELLOW + "\nPress Enter when CE Support Structure assembly is complete..." + Style.RESET_ALL)
+    print_status('success', "CE Support Structure assembly confirmed")
+
+    # Wait for chamber to be empty
+    print(Fore.CYAN + "\n" + "-" * 70)
+    print("  CHAMBER STATUS CHECK")
+    print("-" * 70 + Style.RESET_ALL)
+
+    chamber_empty = False
+    while not chamber_empty:
+        print(Fore.YELLOW + "\nIs the CTS chamber empty? (Previous CE Box removed)" + Style.RESET_ALL)
+        print("  " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " - Yes, chamber is empty and ready")
+        print("  " + Fore.CYAN + "'N'" + Style.RESET_ALL + " - No, still waiting for chamber to be cleared")
+
+        chamber_input = input(Fore.YELLOW + '>> ' + Style.RESET_ALL).strip().upper()
+        if chamber_input in ['Y', 'YES']:
+            chamber_empty = True
+            print_status('success', "Chamber confirmed empty - proceeding to LN2 check")
+        elif chamber_input in ['N', 'NO']:
+            print_status('info', "Please wait for the chamber to be cleared...")
+            print(Fore.CYAN + "  - Remove previous CE Box from chamber" + Style.RESET_ALL)
+            print(Fore.CYAN + "  - Ensure warm-up procedure is complete" + Style.RESET_ALL)
+            print(Fore.CYAN + "  - Verify chamber is ready for new CE Box" + Style.RESET_ALL)
+            input(Fore.YELLOW + "\nPress Enter to check again..." + Style.RESET_ALL)
+        else:
+            print_status('error', "Invalid input. Please enter 'Y' or 'N'")
+
+    # Now proceed to LN2 check (will happen in the normal flow below)
+    print_status('info', "Proceeding to LN2 dewar level check...")
 
 
 ## 5. Launch Real-Time Monitoring Script
@@ -1356,7 +1428,15 @@ if 2 in state_list:
     print("CTS Initial")
     print_phase_header(2, 6, "Connect FEMB to CTS")
     ### 18. CTS Chamber Safety Check
-
+    while True:
+        print(Fore.YELLOW + "\n⚠️  SAFETY CHECK:" + Style.RESET_ALL)
+        print("Please confirm the CTS chamber is empty and begin the test.")
+        print("Type " + Fore.GREEN + "'I confirm that CTS is EMPTY'" + Style.RESET_ALL + " to proceed")
+        com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
+        if com.lower() == 'i confirm that cts is empty':
+            print(
+                Fore.GREEN + '✓ Safety confirmed. Please open the cover of CTS.' + Style.RESET_ALL)
+            break
     ### Step 1: Set CTS to IDLE mode automatically
     print_step("Setting CTS to IDLE mode", 1, 3)
     if cryo_auto_mode:
@@ -1611,6 +1691,9 @@ if 3 in state_list:
                         QC_TST_EN=2,
                         input_info=inform
                     )
+                    # Save paths to shared file for CTS_Real_Time_Monitor.py
+                    if wcdata_path and wcreport_path:
+                        save_qc_paths(wcdata_path, wcreport_path, "Warm_Checkout")
 
                     # Wait for test files to be fully written
                     time.sleep(2)
@@ -1705,6 +1788,9 @@ if 3 in state_list:
                             QC_TST_EN=3,
                             input_info=inform
                         )
+                        # Save paths to shared file for CTS_Real_Time_Monitor.py
+                        if wqdata_path and wqreport_path:
+                            save_qc_paths(wqdata_path, wqreport_path, "Warm_QC")
 
                         # Wait for test files to be fully written
 
@@ -1848,76 +1934,10 @@ if 3 in state_list:
     print_status('success', "Warm QC completed!")
     print_separator()
 
-    ### 30a. Generate Warm QC Summary and Send Email
-    print(Fore.CYAN + "📧 Generating Warm QC summary and sending notification..." + Style.RESET_ALL)
-    try:
-        # Analyze Warm QC results
-        warm_qc_paths = []
-        if 'wqdata_path' in locals() and wqdata_path:
-            warm_qc_paths.append(wqdata_path)
-        if 'wqreport_path' in locals() and wqreport_path:
-            warm_qc_paths.append(wqreport_path)
-
-        if warm_qc_paths:
-            # Generate summary
-            warm_qc_result = analyze_test_results(warm_qc_paths, inform, time_limit_hours=None)
-            summary_filename = f"Warm_QC_Summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-            summary_path = os.path.join(inform['QC_data_root_folder'], summary_filename)
-            generate_qc_summary("Warm QC", inform, warm_qc_result, summary_path)
-
-            # Prepare email body
-            email_body = f"""Warm QC Test Completed - Ready for Cold Down
-
-Test Site: {pre_info.get('test_site', 'N/A')}
-Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Summary:
-  Total Fault Files: {warm_qc_result.total_faults}
-  Total Pass Files: {warm_qc_result.total_passes}
-  Overall Result: {'PASS' if warm_qc_result.total_faults == 0 else 'FAIL'}
-
-FEMB Results:
-"""
-            # Add per-slot details
-            for slot_num in sorted(warm_qc_result.slot_status.keys()):
-                passed, femb_id = warm_qc_result.slot_status[slot_num]
-                slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
-                status = "PASS" if passed else "FAIL"
-                email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
-
-            email_body += f"""
-Next Steps:
-  1. Switch CTS to COLD mode for 5 minutes
-  2. Switch to IMMERSE mode
-  3. Wait for LN2 to reach Level 3
-  4. Double confirm heat LED is OFF
-
-Detailed summary is attached.
-"""
-            # Send email with attachment
-            send_email.send_email_with_attachment(
-                sender, password, receiver,
-                f"Warm QC Complete - {pre_info.get('test_site', 'N/A')}",
-                email_body,
-                summary_path
-            )
-            print_status('success', "Warm QC summary email sent with attachment")
-
-            # Delete summary file after email sent
-            try:
-                os.remove(summary_path)
-            except Exception as del_e:
-                print_status('warning', f"Failed to delete summary file: {del_e}")
-        else:
-            # Fallback if no paths available
-            send_email.send_email(
-                sender, password, receiver,
-                f"Warm QC Complete - {pre_info.get('test_site', 'N/A')}",
-                "Warm QC Done. Switch to COLD for 5 min, then IMMERSE. Wait for LN2 to reach Level 3. Double confirm heat LED OFF."
-            )
-            print_status('success', "Warm QC completion email sent")
-    except Exception as e:
-        print_status('warning', f"Failed to send Warm QC summary email: {e}")
+    ### 30a. QC Summary Email
+    # QC summary email will be sent automatically by CTS_Real_Time_Monitor.py
+    # after t16 analysis completes (waits 500 seconds then sends summary)
+    print_status('info', "QC summary will be sent by Real-Time Monitor after report generation")
 
 # ============================================================================
 ## PHASE 4: COLD QC TEST
@@ -2108,6 +2128,9 @@ if 4 in state_list and not goto_disassembly:
                         QC_TST_EN=2,
                         input_info=infoln
                     )
+                    # Save paths to shared file for CTS_Real_Time_Monitor.py
+                    if lcdata_path and lcreport_path:
+                        save_qc_paths(lcdata_path, lcreport_path, "Cold_Checkout")
 
                     # Wait for test files to be fully written
                     time.sleep(2)
@@ -2164,6 +2187,9 @@ if 4 in state_list and not goto_disassembly:
                 print_separator()
                 print_step("FEMB Cold Quality Control Test", estimated_time="<30 min")
                 lqdata_path, lqreport_path = QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=3, input_info=infoln)
+                # Save paths to shared file for CTS_Real_Time_Monitor.py
+                if lqdata_path and lqreport_path:
+                    save_qc_paths(lqdata_path, lqreport_path, "Cold_QC")
 
                 # Network sync is handled by CTS_Real_Time_Monitor.py
 
@@ -2247,73 +2273,9 @@ if 4 in state_list and not goto_disassembly:
 
             if all_passed:
                 print(Fore.GREEN + "\n🎉 Cold QC Test Passed!" + Style.RESET_ALL)
-                print(Fore.CYAN + "📧 Generating Cold QC summary and sending notification..." + Style.RESET_ALL)
-
-                # Generate Cold QC summary and send email
-                try:
-                    cold_qc_paths = []
-                    if 'lqdata_path' in locals() and lqdata_path:
-                        cold_qc_paths.append(lqdata_path)
-                    if 'lqreport_path' in locals() and lqreport_path:
-                        cold_qc_paths.append(lqreport_path)
-
-                    if cold_qc_paths:
-                        # Generate summary
-                        cold_qc_result = analyze_test_results(cold_qc_paths, infoln, time_limit_hours=None)
-                        summary_filename = f"Cold_QC_Summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                        summary_path = os.path.join(infoln['QC_data_root_folder'], summary_filename)
-                        generate_qc_summary("Cold QC", infoln, cold_qc_result, summary_path)
-
-                        # Prepare email body
-                        email_body = f"""Cold QC Test Completed - Ready for Warm-Up
-
-Test Site: {pre_info.get('test_site', 'N/A')}
-Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Summary:
-  Total Fault Files: {cold_qc_result.total_faults}
-  Total Pass Files: {cold_qc_result.total_passes}
-  Overall Result: {'PASS' if cold_qc_result.total_faults == 0 else 'FAIL'}
-
-FEMB Results:
-"""
-                        # Add per-slot details
-                        for slot_num in sorted(cold_qc_result.slot_status.keys()):
-                            passed, femb_id = cold_qc_result.slot_status[slot_num]
-                            slot_position = "Bottom" if slot_num == '0' else "Top" if slot_num == '1' else f"Slot{slot_num}"
-                            status = "PASS" if passed else "FAIL"
-                            email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
-
-                        email_body += f"""
-Next Step:
-  Please perform the warm-up procedure ({cts_warmup_wait//60} minutes)
-
-Detailed summary is attached.
-"""
-                        # Send email with attachment
-                        send_email.send_email_with_attachment(
-                            sender, password, receiver,
-                            f"Cold QC Complete - {pre_info.get('test_site', 'N/A')}",
-                            email_body,
-                            summary_path
-                        )
-                        print_status('success', "Cold QC summary email sent with attachment")
-
-                        # Delete summary file after email sent
-                        try:
-                            os.remove(summary_path)
-                        except Exception as del_e:
-                            print_status('warning', f"Failed to delete summary file: {del_e}")
-                    else:
-                        # Fallback if no paths available
-                        send_email.send_email(
-                            sender, password, receiver,
-                            f"Cold QC Complete - {pre_info.get('test_site', 'N/A')}",
-                            "Cold QC Done - Pass cold test is done, please perform the warm-up procedure"
-                        )
-                        print_status('success', "Cold QC completion email sent")
-                except Exception as e:
-                    print_status('warning', f"Failed to send Cold QC summary email: {e}")
+                # QC summary email will be sent automatically by CTS_Real_Time_Monitor.py
+                # after t16 analysis completes (waits 500 seconds then sends summary)
+                print_status('info', "QC summary will be sent by Real-Time Monitor after report generation")
 
                 break
             else:
@@ -2386,26 +2348,15 @@ Detailed summary is attached.
         else:
             print_status('error', "Invalid input. Please enter 'y', 's', or 'e'")
 
-    # Warm Up CTS
-    print("\n" + Fore.CYAN + "=" * 70)
-    print("  CTS WARM-UP PROCEDURE")
-    print("=" * 70 + Style.RESET_ALL)
-
-    # print(Fore.CYAN + "Opening CTS warm-up instructions..." + Style.RESET_ALL)
-    # pop.show_image_popup(
-    #     title="CTS Warm-Up",
-    #     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "15.png")
-    # )
+    # Warm Up CTS - Direct control without notices
+    print_status('info', f"CTS warm-up starting (~{cts_warmup_wait//60} min)")
 
     if cryo_auto_mode:
-        # Automatic CTS Warm-up
-        print_status('info', "Automatic CTS warm-up control enabled")
-        print_step("CTS warm gas purge", estimated_time=f"~{cts_warmup_wait//60} min")
-
+        # Automatic CTS Warm-up - direct control
         if cryo.cryo_warmgas(waitminutes=cts_warmup_wait//60):
-            print_status('success', "CTS warm-up completed successfully")
+            print_status('success', "CTS warm-up completed")
         else:
-            print_status('error', "CTS warm-up failed or manual control required")
+            print_status('error', "CTS warm-up failed")
 
         # Set to IDLE state
         if cryo.cryo_create():
@@ -2414,44 +2365,18 @@ Detailed summary is attached.
             print_status('success', "CTS set to IDLE state")
 
     else:
-        # Manual CTS Warm-up
-        print_status('warning', "Manual CTS warm-up control mode")
-
-        print("\n" + Fore.YELLOW + "=" * 70)
-        print("  MANUAL CTS WARM-UP INSTRUCTIONS")
-        print("=" * 70 + Style.RESET_ALL)
-        print(Fore.CYAN + "Step 1: Set CTS to Warm Gas mode" + Style.RESET_ALL)
-        print("  1. Set CTS to " + Fore.CYAN + "STATE 2 (Warm Gas)" + Style.RESET_ALL)
-        print(f"  2. Wait approximately {cts_warmup_wait//60} minutes for warm-up")
-        print()
+        # Manual mode - minimal output, just wait timer
+        print_status('warning', "Manual mode: Set CTS to STATE 2 (Warm Gas)")
 
         timer_count(
-            start_message=f"⏰ Wait for warm up (~{cts_warmup_wait//60} min)!",
-            exit_hint="Type 's' to stop",
-            end_message="✅ Timer complete!",
+            start_message=f"Warm-up timer ({cts_warmup_wait//60} min)",
+            exit_hint="'s' to stop",
+            end_message="Timer complete",
             auto_exit_seconds=cts_warmup_wait,
             exit_chars=['s', 'stop']
         )
 
-        print("\n" + Fore.CYAN + "Step 2: Return CTS to IDLE state" + Style.RESET_ALL)
-        print("  1. Set CTS to " + Fore.CYAN + "STATE 1 (IDLE)" + Style.RESET_ALL)
-
-        # Confirm IDLE state
-        while True:
-            print(Fore.YELLOW + "\nHave you set CTS to STATE 1 (IDLE)?" + Style.RESET_ALL)
-            print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " when ready, or " + Fore.CYAN + "'j'" + Style.RESET_ALL + " to skip")
-            user_input = input(Fore.YELLOW + ">> " + Style.RESET_ALL).strip().lower()
-
-            if user_input == 'y':
-                print_status('success', "CTS warm-up complete")
-                break
-            elif user_input == 'j':
-                print_status('warning', "⚠️  Skipping IDLE confirmation - ensure CTS is in proper state!")
-                break
-            else:
-                print_status('error', "Invalid input. Enter 'Y' or 'j'")
-
-    print(Fore.CYAN + "=" * 70 + Style.RESET_ALL)
+        print_status('info', "Set CTS to STATE 1 (IDLE) when ready")
 
 # ============================================================================
 ## PHASE 5: FINAL CHECKOUT
@@ -2534,6 +2459,9 @@ if 5 in state_list and not goto_disassembly:
                     QC_TST_EN=5,
                     input_info=inform
                 )
+                # Save paths to shared file for CTS_Real_Time_Monitor.py
+                if fcdata_path and fcreport_path:
+                    save_qc_paths(fcdata_path, fcreport_path, "Final_Checkout")
 
                 # Wait for test files to be fully written
                 time.sleep(2)
@@ -2825,31 +2753,47 @@ if 6 in state_list or goto_disassembly:
                 version = "VD"
             else:
                 version = "HD"
-            # Validate cover ID, foam box ID, and package
-            # print(Fore.CYAN + "\n📦 Now validate and package TOP slot..." + Style.RESET_ALL)
-            if version == "VD":
-                pop01 = pop.show_image_popup(
-                    title="Top slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "18.png")
-                )
-            else:  # HD version
-                pop01 = pop.show_image_popup(
-                    title="Top slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
-                )
 
-            validate_disassembly_for_slot('top', assembly_data_all['top'], top_passed)
+            # Show disassembly validation popup with ID verification
+            top_original_ids = {
+                'femb_sn': assembly_data_all['top'].get('femb_sn', ''),
+                'ce_box_sn': assembly_data_all['top'].get('ce_box_sn', ''),
+                'cover_last4': assembly_data_all['top'].get('cover_last4', ''),
+                'hwdb_qr': assembly_data_all['top'].get('hwdb_qr', '')
+            }
 
             if version == "VD":
-                pop01 = pop.show_image_popup(
-                    title="Top slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
-                )
+                image_path = os.path.join(ROOT_DIR, "GUI", "output_pngs", "18.png")
             else:  # HD version
-                pop01 = pop.show_image_popup(
-                    title="Top slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
-                )
+                image_path = os.path.join(ROOT_DIR, "GUI", "output_pngs", "20.png")
+
+            # Show validation popup with test result and ID verification
+            top_validation = pop.show_disassembly_validation_popup(
+                title="TOP Slot Disassembly Validation",
+                image_path=image_path,
+                test_passed=top_passed,
+                slot_name="TOP",
+                original_ids=top_original_ids
+            )
+
+            # Check validation results
+            if top_validation['all_valid']:
+                print_status('success', "TOP slot ID verification complete - all IDs match!")
+            else:
+                print_status('warning', "TOP slot ID verification - some IDs may not match")
+                # Fall back to terminal validation if GUI validation incomplete
+                # validate_disassembly_for_slot('top', assembly_data_all['top'], top_passed)
+
+            # if version == "VD":
+            #     pop01 = pop.show_image_popup(
+            #         title="Top slot Disassembly instruction",
+            #         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
+            #     )
+            # else:  # HD version
+            #     pop01 = pop.show_image_popup(
+            #         title="Top slot Disassembly instruction",
+            #         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
+            #     )
         else:
             print_status('info', "TOP slot was EMPTY - skipping")
 
@@ -2868,33 +2812,51 @@ if 6 in state_list or goto_disassembly:
 
             print(Fore.GREEN + "✓ Please disassemble BOTTOM slot CE box" + Style.RESET_ALL)
             input('"Enter" to continue')
-            # Validate cover ID, foam box ID, and package
-            print(Fore.CYAN + "\n📦 Now validate and package BOTTOM slot..." + Style.RESET_ALL)
+
             if '1865' in assembly_data_all['bottom']['femb_sn']:
                 version = "VD"
             else:
                 version = "HD"
+
+            # Show disassembly validation popup with ID verification
+            bottom_original_ids = {
+                'femb_sn': assembly_data_all['bottom'].get('femb_sn', ''),
+                'ce_box_sn': assembly_data_all['bottom'].get('ce_box_sn', ''),
+                'cover_last4': assembly_data_all['bottom'].get('cover_last4', ''),
+                'hwdb_qr': assembly_data_all['bottom'].get('hwdb_qr', '')
+            }
+
             if version == "VD":
-                pop01 = pop.show_image_popup(
-                    title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "20.png")
-                )
+                image_path = os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
             else:  # HD version
-                pop01 = pop.show_image_popup(
-                    title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
-                )
-            validate_disassembly_for_slot('bottom', assembly_data_all['bottom'], bottom_passed)
-            if version == "VD":
-                pop01 = pop.show_image_popup(
-                    title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "21.png")
-                )
-            else:  # HD version
-                pop01 = pop.show_image_popup(
-                    title="BOTTOM slot Disassembly instruction",
-                    image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
-                )
+                image_path = os.path.join(ROOT_DIR, "GUI", "output_pngs", "21.png")
+
+            # Show validation popup with test result and ID verification
+            bottom_validation = pop.show_disassembly_validation_popup(
+                title="BOTTOM Slot Disassembly Validation",
+                image_path=image_path,
+                test_passed=bottom_passed,
+                slot_name="BOTTOM",
+                original_ids=bottom_original_ids
+            )
+
+            # Check validation results
+            if bottom_validation['all_valid']:
+                print_status('success', "BOTTOM slot ID verification complete - all IDs match!")
+            else:
+                print_status('warning', "BOTTOM slot ID verification - some IDs may not match")
+                # Fall back to terminal validation if GUI validation incomplete
+                validate_disassembly_for_slot('bottom', assembly_data_all['bottom'], bottom_passed)
+            # if version == "VD":
+            #     pop01 = pop.show_image_popup(
+            #         title="BOTTOM slot Disassembly instruction",
+            #         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "19.png")
+            #     )
+            # else:  # HD version
+            #     pop01 = pop.show_image_popup(
+            #         title="BOTTOM slot Disassembly instruction",
+            #         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "21.png")
+            #     )
         else:
             print_status('info', "BOTTOM slot was EMPTY - skipping")
 
@@ -2915,7 +2877,7 @@ if 6 in state_list or goto_disassembly:
         input("'Enter' to continue")
         pop.show_image_popup(
             title="Return Accessories to Their Original Position",
-            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "23.png")
+            image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "22.png")
         )
 
         print(

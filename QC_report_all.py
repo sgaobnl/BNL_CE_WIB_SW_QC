@@ -109,6 +109,14 @@ else:
 
 rp = QC_reports(fdir, fembs, NewWIB = NewWIB)
 
+# Output the actual report directory for CTS_Real_Time_Monitor.py to parse
+# Get the base report directory (parent of FEMB-specific directories)
+if rp.savedir:
+    first_savedir = list(rp.savedir.values())[0]
+    # Go up two levels to get base report directory (remove FEMB_xxx_Sx/ part)
+    report_base_dir = os.path.dirname(os.path.dirname(first_savedir.rstrip('/')))
+    print(f"REPORT_PATH_OUTPUT={report_base_dir}")
+
 tt={}
 t1=time.time()
 for tm in tasks:

@@ -7,12 +7,111 @@ import os
 import sys
 import time
 import threading
+import json
 import colorama
 from colorama import Fore, Style
 import cts_ssh_FEMB as cts
 import GUI.send_email as send_email
 
 colorama.init()
+
+# Shared path file for communication between CTS_FEMB_QC_top.py and CTS_Real_Time_Monitor.py
+QC_PATHS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'current_qc_paths.json')
+
+
+def save_qc_paths(data_path, report_path, qc_type="QC"):
+    """
+    Save current QC paths to a shared JSON file.
+    Called by CTS_FEMB_QC_top.py after QC_Process returns.
+
+    Args:
+        data_path: Path to the data directory
+        report_path: Path to the report directory
+        qc_type: Type of QC test ("Warm", "Cold", "Checkout", etc.)
+    """
+    try:
+        paths_data = {}
+        if os.path.exists(QC_PATHS_FILE):
+            with open(QC_PATHS_FILE, 'r') as f:
+                paths_data = json.load(f)
+
+        paths_data[qc_type] = {
+            'data_path': data_path,
+            'report_path': report_path,
+            'timestamp': time.time()
+        }
+
+        # Also store as 'latest' for easy access
+        paths_data['latest'] = {
+            'data_path': data_path,
+            'report_path': report_path,
+            'qc_type': qc_type,
+            'timestamp': time.time()
+        }
+
+        with open(QC_PATHS_FILE, 'w') as f:
+            json.dump(paths_data, f, indent=2)
+
+        print(Fore.CYAN + f"  [QC Paths] Saved {qc_type} paths to shared file" + Style.RESET_ALL)
+    except Exception as e:
+        print(Fore.YELLOW + f"  [QC Paths] Warning: Could not save paths: {e}" + Style.RESET_ALL)
+
+
+def load_qc_paths(qc_type=None):
+    """
+    Load QC paths from the shared JSON file.
+    Called by CTS_Real_Time_Monitor.py to get the correct report path.
+
+    Args:
+        qc_type: Type of QC test to load, or None for latest
+
+    Returns:
+        tuple: (data_path, report_path) or (None, None) if not found
+    """
+    try:
+        if not os.path.exists(QC_PATHS_FILE):
+            return None, None
+
+        with open(QC_PATHS_FILE, 'r') as f:
+            paths_data = json.load(f)
+
+        if qc_type and qc_type in paths_data:
+            return paths_data[qc_type].get('data_path'), paths_data[qc_type].get('report_path')
+        elif 'latest' in paths_data:
+            return paths_data['latest'].get('data_path'), paths_data['latest'].get('report_path')
+        else:
+            return None, None
+    except Exception as e:
+        print(f"  [QC Paths] Warning: Could not load paths: {e}")
+        return None, None
+
+
+def get_report_path_for_data_path(data_path):
+    """
+    Get the report path corresponding to a data path from the shared file.
+
+    Args:
+        data_path: The data path to match
+
+    Returns:
+        str: The report path, or None if not found
+    """
+    try:
+        if not os.path.exists(QC_PATHS_FILE):
+            return None
+
+        with open(QC_PATHS_FILE, 'r') as f:
+            paths_data = json.load(f)
+
+        # Search for matching data_path
+        for key, value in paths_data.items():
+            if isinstance(value, dict) and value.get('data_path') == data_path:
+                return value.get('report_path')
+
+        return None
+    except Exception as e:
+        print(f"  [QC Paths] Warning: Could not get report path: {e}")
+        return None
 
 
 def timer_thread(stop_event):

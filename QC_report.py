@@ -41,10 +41,8 @@ top_path = main_dict.top_path
 class QC_reports:
 
     def __init__(self, fdir, fembs=[], NewWIB=True):
-        print(fdir.split("/"))
-        print(fdir.split("/"))
-        print("debug02 = {}".format(fdir.split("/")[-2]))
-        print("debug03 = {}".format(fdir.split("/")[-3]))
+        # print("debug02 = {}".format(fdir.split("/")[-2]))
+        # print("debug03 = {}".format(fdir.split("/")[-3]))
         savedir = top_path + '/FEMB_QC/Report/' + fdir.split("/")[-3] + '/' + fdir.split("/")[-2] + '/'
         self.datadir = fdir + "/"
         print("debug03 = {}".format(self.datadir))

@@ -468,12 +468,12 @@ if __name__=="__main__":
 #    print ("Time:", time.time_ns()//1e9 - t0)
 #
 #    t0 =  time.time_ns()//1e9
-#    tc_level, dewar_level = cryo.cts_status() #use it to check liquid nitorgen level
-#    print (tc_level, dewar_level)
+    tc_level, dewar_level = cryo.cts_status() #use it to check liquid nitorgen level
+    print (tc_level, dewar_level)
 #    print ("Time:", time.time_ns()//1e9 - t0)
 #
 #    t0 =  time.time_ns()//1e9
-#    cryo.cryo_coldgas(waitminutes = 5)
+    cryo.cryo_coldgas(waitminutes = 1)
 #    print ("Time:", time.time_ns()//1e9 - t0)
 #
 #    t0 =  time.time_ns()//1e9
@@ -481,6 +481,6 @@ if __name__=="__main__":
 #    print ("Time:", time.time_ns()//1e9 - t0)
 
     t0 =  time.time_ns()//1e9
-    cryo.cryo_warmgas(waitminutes = 60)
+    cryo.cryo_warmgas(waitminutes = 1)
     print ("Time:", time.time_ns()//1e9 - t0)
 # 
