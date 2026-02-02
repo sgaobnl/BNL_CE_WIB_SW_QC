@@ -678,13 +678,16 @@ while (len(duts) > 0) or Undone_Flag :
                 print (f"OCR while scaning tray: {ocr_sn}, OCR while moving to socket: {ocr_info}")
                 p_shifter=True
                 s_shifter=False
-                sendemail(subject = "Chip SN mismatch, please check the pop-up window", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
-                from sn_match_gui import run_sn_match_gui
-                yorn = run_sn_match_gui(image_path=ocr_image_dir, text=f"Is chip SN {ocr_sn} ?")
-                if yorn:
-                    pass
+                if not NIGHT_ON: #pass if it is warm test at night
+                    sendemail(subject = "Chip SN mismatch, please check the pop-up window", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                    from sn_match_gui import run_sn_match_gui
+                    yorn = run_sn_match_gui(image_path=ocr_image_dir, text=f"Is chip SN {ocr_sn} ?")
+                    if yorn:
+                        pass
+                    else:
+                        RTS_debug ("OCR",user_email)
                 else:
-                    RTS_debug ("OCR",user_email)
+                    sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
 
     dut_skt.update(dut_skt_n)
     print ("Chips to be tested: ", dut_skt)
