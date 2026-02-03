@@ -271,8 +271,8 @@ class QC_Runs:
                     ####################FEMBs Data taking################################
                     rawdata = self.chk.spybuf_trig(fembs=self.fembs, num_samples=self.sample_N, trig_cmd=0)
                     fplocal = fp[0:-4] + "_vdac%06dmV" % (int((dacvol + 0.0001) * 1000)) + fp[-4:]
-                    with open(fplocal, 'wb') as fn:
-                        pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, x], fn)
+                    # with open(fplocal, 'wb') as fn:
+                    #     pickle.dump( [rawdata, pwr_meas, cfg_paras_rec, self.logs, x], fn)
                     fsubdirs = fplocal.split("/")
                     print(fsubdirs)
                     print(fsubdirs[-1])

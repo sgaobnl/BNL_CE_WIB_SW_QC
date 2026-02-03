@@ -28,18 +28,6 @@ class QCResult:
 
 
 def analyze_test_results(paths, inform=None, time_limit_hours=None):
-    """
-    Analyze test result files and return structured result data
-    Files are grouped by slot based on filename patterns (FEMB_0_ for slot0, FEMB_1_ for slot1)
-
-    Args:
-        paths: List of directories to check for result files
-        inform: Dictionary containing FEMB slot information
-        time_limit_hours: Optional time filter (in hours) - set to None to check all files in paths
-
-    Returns:
-        QCResult object with analysis results
-    """
     result = QCResult()
 
     # Calculate time threshold if specified

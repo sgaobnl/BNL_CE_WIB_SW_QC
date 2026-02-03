@@ -27,8 +27,19 @@ def show_image_popup(
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
+    # === Calculate responsive sizes based on screen dimensions ===
+    # Base reference: 1920x1080 screen
+    scale_factor = min(screen_width / 1920, screen_height / 1080)
+
+    # Padding values (scaled with minimums)
+    pad_main = max(10, int(20 * scale_factor))
+    pad_button = max(20, int(40 * scale_factor))
+
+    # Font size for error message (scaled)
+    font_size_error = max(16, int(24 * scale_factor))
+
     # === Main frame ===
-    main_frame = ttk.Frame(root, padding=20)
+    main_frame = ttk.Frame(root, padding=pad_main)
     main_frame.pack(fill="both", expand=True)
 
     # === Image display ===
@@ -38,12 +49,14 @@ def show_image_popup(
 
             # Fit image to screen (keeping aspect ratio)
             img_ratio = img.height / img.width
-            target_width = screen_width - 100
+            margin = max(50, int(100 * scale_factor))
+            target_width = screen_width - margin
             target_height = int(target_width * img_ratio)
 
             # If image too tall, scale by height instead
-            if target_height > screen_height - 150:
-                target_height = screen_height - 150
+            bottom_margin = max(80, int(150 * scale_factor))
+            if target_height > screen_height - bottom_margin:
+                target_height = screen_height - bottom_margin
                 target_width = int(target_height / img_ratio)
 
             img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
@@ -54,14 +67,14 @@ def show_image_popup(
             image_label.pack(expand=True)
         except Exception as e:
             print(f"Error loading image: {e}")
-            ttk.Label(main_frame, text="Error loading image.", font=("Arial", 24)).pack(expand=True)
+            ttk.Label(main_frame, text="Error loading image.", font=("Arial", font_size_error)).pack(expand=True)
 
     # === Bottom Close Button ===
     ttk.Button(
         main_frame,
         text="Confirm",
         command=close_window
-    ).pack(padx=40,pady=40)
+    ).pack(padx=pad_button, pady=pad_button)
 
     root.mainloop()
 
@@ -93,15 +106,26 @@ def show_checkbox_popup(
     root.attributes('-fullscreen', True)
     root.bind("<Escape>", exit_fullscreen)
 
-    # === Font ===
-    font_style = ("Arial", 24)
-
     # === Screen size ===
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
+    # === Calculate responsive sizes based on screen dimensions ===
+    # Base reference: 1920x1080 screen
+    scale_factor = min(screen_width / 1920, screen_height / 1080)
+
+    # Font size (scaled with minimum)
+    font_size = max(16, int(24 * scale_factor))
+    font_style = ("Arial", font_size)
+
+    # Padding values (scaled)
+    pad_main = max(10, int(20 * scale_factor))
+    pad_small = max(2, int(4 * scale_factor))
+    pad_medium = max(5, int(10 * scale_factor))
+    pad_large = max(10, int(20 * scale_factor))
+
     # === Main frame ===
-    main_frame = ttk.Frame(root, padding=20)
+    main_frame = ttk.Frame(root, padding=pad_main)
     main_frame.pack(fill="both", expand=True)
 
     # Grid configuration: left (fixed), right (stretch)
@@ -109,12 +133,13 @@ def show_checkbox_popup(
     main_frame.columnconfigure(1, weight=1)
     main_frame.rowconfigure(0, weight=1)
 
-    # === LEFT COLUMN: Fixed width for 60 characters ===
-    char_width_px = 12  # estimate for 24pt font
-    target_width = 40 * char_width_px  # ~840 px
+    # === LEFT COLUMN: Width based on screen size ===
+    # Scale character width estimate with font size
+    char_width_px = max(8, int(12 * scale_factor))
+    target_width = max(300, int(40 * char_width_px))  # Minimum 300px width
 
     checkbox_frame = ttk.Frame(main_frame, width=target_width)
-    checkbox_frame.grid(row=0, column=0, sticky="nsw", padx=(0, 20))
+    checkbox_frame.grid(row=0, column=0, sticky="nsw", padx=(0, pad_large))
     checkbox_frame.grid_rowconfigure(99, weight=1)
     checkbox_frame.grid_propagate(False)
 
@@ -126,7 +151,7 @@ def show_checkbox_popup(
         variable=select_all_var,
         command=toggle_all,
         font=font_style
-    ).grid(row=0, column=0, sticky="w", pady=(0, 10))
+    ).grid(row=0, column=0, sticky="w", pady=(0, pad_medium))
 
     # Checkboxes with auto-wrapping labels
     checkbox_vars = []
@@ -137,9 +162,9 @@ def show_checkbox_popup(
             text=opt,
             variable=var,
             font=font_style,
-            wraplength=target_width - 40,  # wrap to fit inside column
+            wraplength=target_width - max(20, int(40 * scale_factor)),  # wrap to fit inside column
             justify="left"
-        ).grid(row=i, column=0, sticky="w", pady=4)
+        ).grid(row=i, column=0, sticky="w", pady=pad_small)
         checkbox_vars.append(var)
 
     # Submit button at bottom-left
@@ -148,21 +173,22 @@ def show_checkbox_popup(
         text="Submit",
         command=on_submit,
         font=font_style
-    ).grid(row=99, column=0, sticky="sw", pady=(20, 0))
+    ).grid(row=99, column=0, sticky="sw", pady=(pad_large, 0))
 
     # === RIGHT COLUMN: Image ===
     if image_path:
         try:
             img = Image.open(image_path)
 
-            # Set width to 2/3 of screen, minus padding
-            img_width = int((screen_width * 2 / 3) - 100)
+            # Set width to 2/3 of screen, minus padding (scaled)
+            img_width = int((screen_width * 2 / 3) - max(50, int(100 * scale_factor)))
             img_ratio = img.height / img.width
             img_height = int(img_width * img_ratio)
 
             # Clamp if too tall
-            if img_height > screen_height - 100:
-                img_height = screen_height - 100
+            max_img_height = screen_height - max(50, int(100 * scale_factor))
+            if img_height > max_img_height:
+                img_height = max_img_height
                 img_width = int(img_height / img_ratio)
 
             img = img.resize((img_width, img_height), Image.Resampling.LANCZOS)
@@ -170,7 +196,7 @@ def show_checkbox_popup(
 
             image_label = ttk.Label(main_frame, image=photo)
             image_label.image = photo
-            image_label.grid(row=0, column=1, sticky="nsew", padx=40)
+            image_label.grid(row=0, column=1, sticky="nsew", padx=max(20, int(40 * scale_factor)))
         except Exception as e:
             print(f"Error loading image: {e}")
 
@@ -185,22 +211,7 @@ def show_disassembly_validation_popup(
     slot_name="",
     original_ids=None
 ):
-    """
-    Display a popup for disassembly validation with:
-    - Image at the top
-    - Test result banner (PASS=green, FAIL=red)
-    - ID verification section with original IDs on left, scan inputs on right
 
-    Args:
-        title: Window title
-        image_path: Path to instruction image (e.g., 18.png or 22.png)
-        test_passed: Boolean - True for PASS (green), False for FAIL (red)
-        slot_name: "TOP" or "BOTTOM"
-        original_ids: dict with keys: 'femb_sn', 'ce_box_sn', 'cover_last4', 'hwdb_qr'
-
-    Returns:
-        dict with scanned IDs and validation results
-    """
     if original_ids is None:
         original_ids = {'femb_sn': '', 'ce_box_sn': '', 'cover_last4': '', 'hwdb_qr': ''}
 
@@ -272,23 +283,77 @@ def show_disassembly_validation_popup(
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
+    # === Calculate responsive sizes based on screen dimensions ===
+    # Base reference: 1920x1080 screen
+    scale_factor = min(screen_width / 1920, screen_height / 1080)
+
+    # Font sizes (scaled with minimum values)
+    font_size_small = max(10, int(12 * scale_factor))
+    font_size_medium = max(12, int(14 * scale_factor))
+    font_size_large = max(14, int(16 * scale_factor))
+    font_size_header = max(16, int(20 * scale_factor))
+    font_size_banner = max(20, int(28 * scale_factor))
+    font_size_error = max(11, int(14 * scale_factor))
+
+    # Column widths (in characters, scaled)
+    col_component_width = max(10, int(15 * scale_factor))
+    col_id_width = max(25, int(45 * scale_factor))  # Reduced from 75 for better fit
+    col_status_width = max(6, int(8 * scale_factor))
+
+    # Padding values (scaled)
+    pad_small = max(3, int(5 * scale_factor))
+    pad_medium = max(5, int(10 * scale_factor))
+    pad_large = max(10, int(20 * scale_factor))
+
     # === Main frame ===
-    main_frame = tk.Frame(root, bg='#2C3E50', padx=20, pady=10)
+    main_frame = tk.Frame(root, bg='#2C3E50', padx=pad_large, pady=pad_medium)
     main_frame.pack(fill="both", expand=True)
+
+    # === SUBMIT BUTTON (pack FIRST to reserve space at bottom-right) ===
+    button_frame = tk.Frame(main_frame, bg='#2C3E50')
+    button_frame.pack(side='bottom', fill='x', pady=pad_medium)
+
+    # Error label for validation feedback (left side)
+    error_label = tk.Label(
+        button_frame,
+        text="",
+        font=("Arial", font_size_error, "bold"),
+        fg='#E74C3C',
+        bg='#2C3E50'
+    )
+    error_label.pack(side='left', padx=(pad_large, 0))
+
+    # Submit button (right side)
+    submit_btn = tk.Button(
+        button_frame,
+        text="Confirm & Continue",
+        command=on_submit,
+        font=("Arial", font_size_large, "bold"),
+        bg='#FF9800',
+        fg='white',
+        padx=max(15, int(30 * scale_factor)),
+        pady=max(5, int(10 * scale_factor)),
+        relief='raised',
+        cursor='hand2'
+    )
+    submit_btn.pack(side='right', padx=(0, pad_large * 2), pady=pad_medium)
 
     # === TOP: Image display ===
     if image_path:
         try:
             img = Image.open(image_path)
 
-            # Scale image to fit upper portion (about 3/4 of screen height)
+            # Scale image to fit upper portion - use less height on smaller screens
             img_ratio = img.height / img.width
-            target_height = int(screen_height * 0.70)
+            # Allocate less space for image on smaller screens
+            img_height_ratio = 0.45 if screen_height < 900 else 0.55 if screen_height < 1200 else 0.65
+            target_height = int(screen_height * img_height_ratio)
             target_width = int(target_height / img_ratio)
 
             # Limit width
-            if target_width > screen_width - 100:
-                target_width = screen_width - 100
+            max_img_width = screen_width - pad_large * 4
+            if target_width > max_img_width:
+                target_width = max_img_width
                 target_height = int(target_width * img_ratio)
 
             img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
@@ -296,12 +361,12 @@ def show_disassembly_validation_popup(
 
             image_label = tk.Label(main_frame, image=photo, bg='#2C3E50')
             image_label.image = photo
-            image_label.pack(pady=(0, 5))
+            image_label.pack(pady=(0, pad_small))
         except Exception as e:
             print(f"Error loading image: {e}")
 
     # === TEST RESULT BANNER ===
-    result_frame = tk.Frame(main_frame, padx=20, pady=15)
+    result_frame = tk.Frame(main_frame, padx=pad_large, pady=max(8, int(15 * scale_factor)))
     if test_passed:
         result_frame.configure(bg='#27AE60')  # Green
         result_text = f"✓ {slot_name} SLOT - TEST RESULT: PASS"
@@ -310,40 +375,46 @@ def show_disassembly_validation_popup(
         result_frame.configure(bg='#E74C3C')  # Red
         result_text = f"✗ {slot_name} SLOT - TEST RESULT: FAIL"
         result_color = '#E74C3C'
-    result_frame.pack(fill='x', pady=(0, 15))
+    result_frame.pack(fill='x', pady=(0, pad_medium))
 
     result_label = tk.Label(
         result_frame,
         text=result_text,
-        font=("Arial", 28, "bold"),
+        font=("Arial", font_size_banner, "bold"),
         fg='white',
         bg=result_color
     )
     result_label.pack()
 
     # === ID VERIFICATION SECTION ===
-    verify_frame = tk.Frame(main_frame, bg='#34495E', padx=20, pady=15)
-    verify_frame.pack(fill='x', pady=(0, 10))
+    verify_frame = tk.Frame(main_frame, bg='#34495E', padx=pad_large, pady=max(8, int(15 * scale_factor)))
+    verify_frame.pack(fill='both', expand=True, pady=(0, pad_medium))
 
     # Header
     header_label = tk.Label(
         verify_frame,
         text="📋 ID Verification - Scan to Confirm",
-        font=("Arial", 20, "bold"),
+        font=("Arial", font_size_header, "bold"),
         fg='white',
         bg='#34495E'
     )
-    header_label.pack(pady=(0, 15))
+    header_label.pack(pady=(0, pad_medium))
 
     # Grid for ID verification
     grid_frame = tk.Frame(verify_frame, bg='#34495E')
-    grid_frame.pack(fill='x')
+    grid_frame.pack(fill='x', expand=True)
+
+    # Configure grid columns to expand proportionally
+    grid_frame.columnconfigure(0, weight=1)  # Component
+    grid_frame.columnconfigure(1, weight=3)  # Original ID
+    grid_frame.columnconfigure(2, weight=3)  # Scan/Enter ID
+    grid_frame.columnconfigure(3, weight=1)  # Status
 
     # Column headers
-    tk.Label(grid_frame, text="Component", font=("Arial", 14, "bold"), fg='#BDC3C7', bg='#34495E', width=15).grid(row=0, column=0, padx=5, pady=5)
-    tk.Label(grid_frame, text="Original ID", font=("Arial", 14, "bold"), fg='#BDC3C7', bg='#34495E', width=25).grid(row=0, column=1, padx=5, pady=5)
-    tk.Label(grid_frame, text="Scan/Enter ID", font=("Arial", 14, "bold"), fg='#BDC3C7', bg='#34495E', width=25).grid(row=0, column=2, padx=5, pady=5)
-    tk.Label(grid_frame, text="Status", font=("Arial", 14, "bold"), fg='#BDC3C7', bg='#34495E', width=10).grid(row=0, column=3, padx=5, pady=5)
+    tk.Label(grid_frame, text="Component", font=("Arial", font_size_medium, "bold"), fg='#BDC3C7', bg='#34495E', width=col_component_width).grid(row=0, column=0, padx=pad_small, pady=pad_small, sticky='ew')
+    tk.Label(grid_frame, text="Original ID", font=("Arial", font_size_medium, "bold"), fg='#BDC3C7', bg='#34495E', width=col_id_width).grid(row=0, column=1, padx=pad_small, pady=pad_small, sticky='ew')
+    tk.Label(grid_frame, text="Scan/Enter ID", font=("Arial", font_size_medium, "bold"), fg='#BDC3C7', bg='#34495E', width=col_id_width).grid(row=0, column=2, padx=pad_small, pady=pad_small, sticky='ew')
+    tk.Label(grid_frame, text="Status", font=("Arial", font_size_medium, "bold"), fg='#BDC3C7', bg='#34495E', width=col_status_width).grid(row=0, column=3, padx=pad_small, pady=pad_small, sticky='ew')
 
     # ID fields configuration
     id_fields = [
@@ -356,51 +427,53 @@ def show_disassembly_validation_popup(
     entries = {}
     status_labels = {}
 
+    row_pady = max(4, int(8 * scale_factor))
+
     for i, (label_text, key, orig_value) in enumerate(id_fields, start=1):
         # Component name
         tk.Label(
             grid_frame,
             text=label_text,
-            font=("Arial", 14),
+            font=("Arial", font_size_medium),
             fg='white',
             bg='#34495E',
-            width=15,
+            width=col_component_width,
             anchor='w'
-        ).grid(row=i, column=0, padx=5, pady=8, sticky='w')
+        ).grid(row=i, column=0, padx=pad_small, pady=row_pady, sticky='w')
 
         # Original ID (left side)
         orig_label = tk.Label(
             grid_frame,
             text=orig_value,
-            font=("Arial", 14, "bold"),
+            font=("Arial", font_size_medium, "bold"),
             fg='#2C3E50',
             bg='#f0f0f0',
-            width=25,
+            width=col_id_width,
             relief='sunken',
-            padx=10
+            padx=pad_medium
         )
-        orig_label.grid(row=i, column=1, padx=5, pady=8)
+        orig_label.grid(row=i, column=1, padx=pad_small, pady=row_pady, sticky='ew')
 
         # Scan input (right side)
         entry = tk.Entry(
             grid_frame,
-            font=("Arial", 14),
-            width=25,
+            font=("Arial", font_size_medium),
+            width=col_id_width,
             relief='sunken'
         )
-        entry.grid(row=i, column=2, padx=5, pady=8)
+        entry.grid(row=i, column=2, padx=pad_small, pady=row_pady, sticky='ew')
         entries[key] = entry
 
         # Status label
         status_label = tk.Label(
             grid_frame,
             text="⏳",
-            font=("Arial", 14),
+            font=("Arial", font_size_medium),
             fg='white',
             bg='#34495E',
-            width=10
+            width=col_status_width
         )
-        status_label.grid(row=i, column=3, padx=5, pady=8)
+        status_label.grid(row=i, column=3, padx=pad_small, pady=row_pady, sticky='ew')
         status_labels[key] = status_label
 
         # Bind entry to check on change
@@ -408,7 +481,10 @@ def show_disassembly_validation_popup(
             def handler(event=None):
                 scanned = e.get().strip()
                 validation_results[k]['scanned'] = scanned
-                if scanned == ov and scanned != '':
+                # Normalize '/' to '_' for comparison (handle different scan formats)
+                scanned_normalized = scanned.replace('/', '_')
+                ov_normalized = ov.replace('/', '_')
+                if scanned_normalized == ov_normalized and scanned != '':
                     validation_results[k]['match'] = True
                     e.config(bg='#90EE90')
                     ol.config(bg='#90EE90')
@@ -429,34 +505,6 @@ def show_disassembly_validation_popup(
         handler = make_check_handler(entry, orig_label, orig_value, key, status_label)
         entry.bind('<KeyRelease>', handler)
         entry.bind('<FocusOut>', handler)
-
-    # === SUBMIT BUTTON ===
-    button_frame = tk.Frame(main_frame, bg='#2C3E50')
-    button_frame.pack(fill='x', pady=10)
-
-    submit_btn = tk.Button(
-        button_frame,
-        text="Confirm & Continue",
-        command=on_submit,
-        font=("Arial", 16, "bold"),
-        bg='#FF9800',
-        fg='white',
-        padx=30,
-        pady=10,
-        relief='raised',
-        cursor='hand2'
-    )
-    submit_btn.pack()
-
-    # Error label for validation feedback
-    error_label = tk.Label(
-        button_frame,
-        text="",
-        font=("Arial", 14, "bold"),
-        fg='#E74C3C',
-        bg='#2C3E50'
-    )
-    error_label.pack(pady=(5, 0))
 
     # Focus on first entry
     entries['femb_sn'].focus_set()

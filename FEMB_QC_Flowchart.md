@@ -45,7 +45,7 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  5. 2nd CE Box Support Structure Check                                       │
 │     "Are you preparing the 2nd CE Box Support Structure?"                   │
-│     • 'N' - Normal flow (fresh start)                                       │
+│     • 'N' - Normal flow (1st CE Box - fresh start)                          │
 │     • 'Y' - 2nd CE Box mode (back-to-back testing)                          │
 └─────────────────────────────────────────────────────────────────────────────┘
                                      │
@@ -53,12 +53,11 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
                         │                         │
                         ▼                         ▼
               ┌─────────────────┐       ┌─────────────────────────────────┐
-              │  Normal Flow    │       │  2nd CE Box Mode                │
-              │  (Continue)     │       │  • Show assembly popup (7.png)  │
-              └────────┬────────┘       │  • Chamber Empty Loop:          │
-                       │                │    "Is CTS chamber empty?"      │
-                       │                │    Y → Continue                 │
-                       │                │    N → Wait & check again       │
+              │  1st CE Box     │       │  2nd CE Box Mode                │
+              │  (Normal Flow)  │       │  • Show assembly popup (7.png)  │
+              │  Continue to    │       │  • Skip LN2 check at startup    │
+              │  steps 6-10     │       │  • LN2 check deferred to        │
+              └────────┬────────┘       │    after Phase 1                │
                        │                └─────────────┬───────────────────┘
                        │                              │
                        └──────────────┬───────────────┘
@@ -102,8 +101,9 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  10. LN2 Dewar Level Check                                                   │
-│      Required level: >= 1000                                                │
+│  9-10. LN2 Dewar Level Check (1st CE Box Mode Only)                          │
+│        *** SKIPPED for 2nd CE Box Mode - deferred to after Phase 1 ***      │
+│        Required level: >= 1000                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
                                      │
                         ┌────────────┴────────────┐
@@ -209,6 +209,26 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 │  │    → "Please wait for warm-up before placing CE into chamber"       │    │
 │  │  When complete:                                                     │    │
 │  │    → Set CTS to IDLE state                                          │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  2nd CE BOX MODE: CHAMBER EMPTY CHECK & LN2 CHECK                            │
+│  *** Only executes if 2nd CE Box Mode was selected ***                      │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Step 1: Chamber Empty Loop                                         │    │
+│  │    WHILE chamber not empty:                                         │    │
+│  │      → "Is the CTS chamber empty? (Previous CE Box removed)"        │    │
+│  │      → If 'Y': Break to LN2 check                                   │    │
+│  │      → If 'N': "Please complete the former test first"              │    │
+│  │                Wait and ask again                                   │    │
+│  │                                                                     │    │
+│  │  Step 2: LN2 Dewar Level Check (same as startup steps 9-10)         │    │
+│  │    → Check dewar level >= 1000                                      │    │
+│  │    → AUTO: cryo.cts_status() or MANUAL: user confirmation           │    │
+│  │    → If low: Show refill popup, wait for refill, verify             │    │
+│  │    → Start warm gas purge if refilled                               │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -604,7 +624,7 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 │       │  show_disassembly_validation_popup()                            │   │
 │       │                                                                 │   │
 │       │  Display:                                                       │   │
-│       │    • Image (VD: 18.png, HD: 20.png) at 70% screen height        │   │
+│       │    • Image (VD: 18.png, HD: 20.png) at 45% screen height        │   │
 │       │    • Test Result Banner:                                        │   │
 │       │      - PASS: Green background, "✓ TOP SLOT - TEST RESULT: PASS" │   │
 │       │      - FAIL: Red background, "✗ TOP SLOT - TEST RESULT: FAIL"   │   │
@@ -624,9 +644,9 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 │       │    • Mismatch: Red background, ✗                                │   │
 │       │    • Empty: White background, ⏳                                 │   │
 │       │                                                                 │   │
-│       │  Submit Button:                                                 │   │
+│       │  Submit Button (positioned at bottom-right):                     │   │
 │       │    • Only closes when ALL IDs match                             │   │
-│       │    • Shows error if IDs don't match                             │   │
+│       │    • Shows error on left side if IDs don't match                │   │
 │       └─────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
 │  6.4b Verify Results                                                         │
@@ -759,7 +779,7 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  QC SUMMARY TRIGGER (when _t16 detected)                                     │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │  process_qc_summary_after_t16(data_path):                           │    │
+│  │  process_qc_summary_after_t16(report_path):                         │    │
 │  │                                                                     │    │
 │  │  1. Wait 500 seconds for all reports to complete                    │    │
 │  │                                                                     │    │
@@ -767,11 +787,17 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 │  │                                                                     │    │
 │  │  3. Determine QC type (Warm QC or Cold QC) from path                │    │
 │  │                                                                     │    │
-│  │  4. Set report_path = data_path.replace('/Data/', '/Report/')       │    │
-│  │     (Report directory contains _F_ and _P_ result files)            │    │
+│  │  4. Report path constructed using QC_report.py formula:             │    │
+│  │     report_path = top_path + '/FEMB_QC/Report/' +                   │    │
+│  │                   path.split("/")[-3] + '/' +                       │    │
+│  │                   path.split("/")[-2] + '/'                         │    │
 │  │                                                                     │    │
-│  │  5. Analyze test results:                                           │    │
+│  │  5. Analyze test results (only .md and .html files):                │    │
 │  │     qc_result = analyze_test_results([report_path], inform)         │    │
+│  │     • Count _F_ files as faults, _P_ files as passes                │    │
+│  │     • Identify slots using _S0 (bottom), _S1 (top)                  │    │
+│  │     • Track test items _t1_ through _t16_                           │    │
+│  │     • Report missing test items as faults                           │    │
 │  │                                                                     │    │
 │  │  6. Generate summary file:                                          │    │
 │  │     generate_qc_summary(qc_type, inform, qc_result, summary_path)   │    │
@@ -781,6 +807,7 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 │  │     - Overall PASS/FAIL                                             │    │
 │  │     - Bottom Slot0: {femb_id} - PASS/FAIL                           │    │
 │  │     - Top Slot1: {femb_id} - PASS/FAIL                              │    │
+│  │     - Missing test items (if any)                                   │    │
 │  │     - Next Steps (based on QC type)                                 │    │
 │  │                                                                     │    │
 │  │  8. Send email with attachment:                                     │    │
@@ -814,14 +841,26 @@ The FEMB (Front-End Motherboard) QC System is a comprehensive Cold Electronics t
 ## Result File Patterns
 
 ```
-PASS Files:  *_P.* or *_P_S*  (e.g., FEMB_0_P_S0.csv)
-FAULT Files: *_F.* or *_F_S* (e.g., FEMB_0_F_S0.csv)
+File Types Analyzed:
+  • Only .md and .html files are counted for QC results
+
+PASS Files:  *_P_*  (e.g., FEMB_WQ_P_S0.md)
+FAULT Files: *_F_*  (e.g., FEMB_WQ_F_S0.md)
 
 Slot Identification:
-  FEMB_0_* → Slot 0 (Bottom)
-  FEMB_1_* → Slot 1 (Top)
-  *_S0_*   → Slot 0
-  *_S1_*   → Slot 1
+  *_S0* → Slot 0 (Bottom)
+  *_S1* → Slot 1 (Top)
+
+Test Item Tracking:
+  • Files must contain _t1_, _t2_, _t3_, ... _t16_ for test item identification
+  • All 16 test items (t1-t16) must be present for a slot to fully pass
+  • Missing test items are reported as faults in the summary
+
+Example Analysis:
+  File: FEMB_WQ_F_S0_t5.md
+    → Slot 0 (Bottom), Test Item 5, FAULT
+  File: FEMB_WQ_P_S1_t12.html
+    → Slot 1 (Top), Test Item 12, PASS
 ```
 
 ---
@@ -940,14 +979,21 @@ Calls: python3 QC_report_all.py {Data_path} -n {slots} -t {item}
 QC_report_all.py:
     • Receives Data path as input (fdir = args.folder)
     • Creates QC_reports(fdir, fembs)
-    • Generates reports to Report path: fdir.replace('/Data/', '/Report/')
-    • Creates _F_ (fault) and _P_ (pass) files in Report directory
+    • Report path formula (line 46):
+      savedir = top_path + '/FEMB_QC/Report/' + fdir.split("/")[-3] + '/' + fdir.split("/")[-2] + '/'
+    • Creates _F_ (fault) and _P_ (pass) .md/.html files in Report directory
     │
     ▼
-process_qc_summary_after_t16():
-    • Receives Data path as input
-    • Converts to Report path: data_path.replace('/Data/', '/Report/')
-    • Analyzes _F_ and _P_ files from Report directory
+When _t16 detected in real_time_monitor():
+    │
+    ▼
+process_qc_summary_after_t16(report_path):
+    • Report path constructed using same formula as QC_report.py:
+      qc_report_path = top_path + '/FEMB_QC/Report/' + path.split("/")[-3] + '/' + path.split("/")[-2] + '/'
+    • Analyzes only .md and .html files
+    • Identifies _F_ (fault) and _P_ (pass) patterns
+    • Tracks slots using _S0 (bottom), _S1 (top)
+    • Validates all 16 test items (_t1_ through _t16_) are present
 ```
 
 ---
@@ -956,7 +1002,13 @@ process_qc_summary_after_t16():
 
 - **Repository:** BNL_CE_WIB_SW_QC
 - **Branch:** CTS_2025
-- **Last Updated:** January 2026
+- **Last Updated:** January 29, 2026
+
+### Recent Changes (Jan 29, 2026)
+- **2nd CE Box Mode**: Updated workflow - LN2 check skipped at startup, chamber empty check and LN2 check added before Phase 2
+- **QC Results Analysis**: Now only counts .md and .html files, uses _P_ and _F_ patterns, tracks test items t1-t16, reports missing items as faults
+- **Report Path**: Uses QC_report.py formula for consistent path construction
+- **Disassembly Popup**: Button repositioned to bottom-right, image size reduced to 45%
 
 ---
 

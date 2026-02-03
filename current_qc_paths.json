@@ -1,0 +1,33 @@
+{
+  "Warm_Checkout": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_16_32_12_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_16_32_12_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "timestamp": 1770136473.2976944
+  },
+  "latest": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_18_53_48_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_18_53_48_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "qc_type": "Final_Checkout",
+    "timestamp": 1770144974.1088653
+  },
+  "Warm_QC": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_16_34_35_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_QC/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_16_34_35_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_QC/",
+    "timestamp": 1770138210.8830388
+  },
+  "Cold_Checkout": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_17_19_19_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_LN_CHK/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_17_19_19_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_LN_CHK/",
+    "timestamp": 1770139299.8388782
+  },
+  "Cold_QC": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_17_21_49_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_LN_QC/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_17_21_49_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_LN_QC/",
+    "timestamp": 1770141046.3193178
+  },
+  "Final_Checkout": {
+    "data_path": "/mnt/data/FEMB_QC/Data/Time_2026_02/03_18_53_48_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "report_path": "/mnt/data/FEMB_QC/Report/Time_2026_02/03_18_53_48_CTS_BNL_S0BNL_FEMB_I0-1865-1K_00023_S1BNL_FEMB_I0-1865-1K_00020_RT_CHK/",
+    "timestamp": 1770144974.108863
+  }
+}

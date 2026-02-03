@@ -164,7 +164,7 @@ def process_qc_summary_after_t16(report_path):
         print(f"  Waiting 500 seconds for all reports to complete...")
 
         # Wait 500 seconds for reports to complete
-        time.sleep(5)
+        time.sleep(100)
 
         print(f"  Analyzing QC results...")
 
@@ -342,9 +342,19 @@ def real_time_monitor():
 
                 # sync_to_network(raw_dir, report_dir)
                 # open_reports(raw_dir)
+                qc_report_path = top_path + '/FEMB_QC/Report/' + path.split("/")[-3] + '/' + path.split("/")[-2] + '/'
+                targets = ["_t16.bin", "_t15.bin", "_t14.bin", "_t13.bin"]
+                print(targets)
 
+                exists = {
+                             t
+                             for _, _, files in os.walk(qc_report_path)
+                             for fname in files
+                             for t in targets
+                             if t in fname
+                         } == set(targets)
                 # After t16 completes, generate QC summary email
-                if '_t16' in file_path:
+                if exists:
                     print(f"  t16 detected - triggering QC summary process")
                     # Construct report_path using same formula as QC_report.py line 46
                     qc_report_path = top_path + '/FEMB_QC/Report/' + path.split("/")[-3] + '/' + path.split("/")[-2] + '/'
