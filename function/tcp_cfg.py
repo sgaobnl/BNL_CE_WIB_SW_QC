@@ -631,7 +631,6 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.fc_act_rst_larasic()
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
-        print(4444444444444)
         # self.set_fe_sync()
         # self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
@@ -653,7 +652,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.wib_cntl_cs(lemo_en = False, reg_cntls = (0,0,0,0) )
         print("COLDATA CFG ongoing...")
         self.cd_fc_rst()  #
-        time.sleep(0.05)
+        time.sleep(0.01)
         self.cd_lvds_current()  #
         # self.cd_8b10_p0r3_cfg()
 

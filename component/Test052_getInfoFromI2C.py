@@ -182,46 +182,74 @@ send_command(connection, 'i2cset -y 0 0x15 0xB0 0x80')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
 print('temp_result')
-print(temp_result.splitlines()[1])
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_BRD0_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    print(temp_result.splitlines()[1])
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_BRD0_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_BRD0_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_BRD0_Temperature'] = None
 send_command(connection, 'i2cset -y 0 0x15 0xB1 0x80')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_BRD1_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
-readback = send_command(connection, 'i2cset -y 0 0x15 0xB2 0x80')
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_BRD1_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_BRD1_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_BRD1_Temperature'] = None
+send_command(connection, 'i2cset -y 0 0x15 0xB2 0x80')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_BRD2_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_BRD2_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_BRD2_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_BRD2_Temperature'] = None
 send_command(connection, 'i2cset -y 0 0x15 0xB3 0x80')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_BRD3_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_BRD3_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_BRD3_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_BRD3_Temperature'] = None
 send_command(connection, 'i2ctransfer -y 0 w2@0x15 0xB5 0x80')
 time.sleep(0.2)
 send_command(connection, 'i2ctransfer -y 0 r4@0x15')
 send_command(connection, 'i2ctransfer -y 0 r4@0x15')
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_WIB1_Temperature'] = (0.598 - 0.487) / 0.002 + 27
-# rp_dict.log04_wib['LTC2499_WIB1_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_WIB1_Temperature'] = (0.598 - 0.487) / 0.002 + 27
+    # rp_dict.log04_wib['LTC2499_WIB1_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_WIB1_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_WIB1_Temperature'] = None
 send_command(connection, 'i2cset -y 0 0x15 0xB5 0x80')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_WIB2_Temperature'] = (0.598 - 0.483) / 0.002 + 27
-# rp_dict.log04_wib['LTC2499_WIB2_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_WIB2_Temperature'] = (0.598 - 0.483) / 0.002 + 27
+    # rp_dict.log04_wib['LTC2499_WIB2_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_WIB2_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_WIB2_Temperature'] = None
 send_command(connection, 'i2ctransfer -y 0 w2@0x15 0xB6 0x80')
 time.sleep(0.2)
 send_command(connection, 'i2ctransfer -y 0 r4@0x15')
 send_command(connection, 'i2ctransfer -y 0 r4@0x15')
 temp_result = send_command(connection, 'i2ctransfer -y 0 r4@0x15')
-raw_bytes = parse_ltc2499_output(temp_result)
-rp_dict.log04_wib['LTC2499_WIB3_Temperature'] = (0.598 - 0.497) / 0.002 + 27
-# rp_dict.log04_wib['LTC2499_WIB3_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+try:
+    raw_bytes = parse_ltc2499_output(temp_result)
+    rp_dict.log04_wib['LTC2499_WIB3_Temperature'] = (0.598 - 0.497) / 0.002 + 27
+    # rp_dict.log04_wib['LTC2499_WIB3_Temperature'] = (0.598 - ltc2499_c_style_voltage(raw_bytes)) / 0.002 + 27
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error reading LTC2499_WIB3_Temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2499_WIB3_Temperature'] = None
 #########
 # Send initial command
 tcp.tcp_poke(1, 0x05)
@@ -238,21 +266,37 @@ send_command(connection, 'i2cset -y 0 0x46 0x02')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 w1@0x46 0x02 r2')
 print('temp_result')
-print(temp_result.splitlines()[1])
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw_value = (msb << 8) | lsb
-vbus_voltage = raw_value * 0.00125
-rp_dict.log04_wib['LINA226_Vbus'] = vbus_voltage
+try:
+    print(temp_result.splitlines()[1])
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read Vbus from INA226\033[0m')
+        vbus_voltage = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw_value = (msb << 8) | lsb
+        vbus_voltage = raw_value * 0.00125
+    rp_dict.log04_wib['LINA226_Vbus'] = vbus_voltage
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing INA226 Vbus: {e}\033[0m')
+    rp_dict.log04_wib['LINA226_Vbus'] = None
 send_command(connection, 'i2cset -y 0 0x46 0x01')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r2@0x46')
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw_value = (msb << 8) | lsb
-if raw_value > 0x7FFF:
-    raw_value -= 0x10000
-shunt_v = raw_value * 2.5e-6
-current = shunt_v / 0.005
-rp_dict.log04_wib['INA226_Current'] = current
+try:
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read current from INA226\033[0m')
+        current = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw_value = (msb << 8) | lsb
+        if raw_value > 0x7FFF:
+            raw_value -= 0x10000
+        shunt_v = raw_value * 2.5e-6
+        current = shunt_v / 0.005
+    rp_dict.log04_wib['INA226_Current'] = current
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing INA226 Current: {e}\033[0m')
+    rp_dict.log04_wib['INA226_Current'] = None
 #######################
 # Send initial command
 tcp.tcp_poke(1, 0x05)
@@ -269,15 +313,23 @@ send_command(connection, 'i2cset -y 0 0x4a 0x00')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r2@0x4a')
 print('temp_result')
-print(temp_result.splitlines()[1])
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw = ((msb << 8) | lsb) >> 6
-print(raw)
-if raw > 511:
-    raw -= 512
-print(raw)
-temperature = raw * 0.25
-rp_dict.log04_wib['AD7414_0x4A_temperature'] = temperature
+try:
+    print(temp_result.splitlines()[1])
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read temperature from AD7414_0x4A\033[0m')
+        temperature = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw = ((msb << 8) | lsb) >> 6
+        print(raw)
+        if raw > 511:
+            raw -= 512
+        print(raw)
+        temperature = raw * 0.25
+    rp_dict.log04_wib['AD7414_0x4A_temperature'] = temperature
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing AD7414_0x4A temperature: {e}\033[0m')
+    rp_dict.log04_wib['AD7414_0x4A_temperature'] = None
 Device = 'AD7414_0x49';    Address = '49'
 if Address in readback:
     print('I2C Device {} has been found at 0x{}'.format(Device, Address))
@@ -287,13 +339,21 @@ send_command(connection, 'i2cset -y 0 0x49 0x00')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r2@0x49')
 print('temp_result')
-print(temp_result.splitlines()[1])
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw = ((msb << 8) | lsb) >> 6
-if raw > 511:
-    raw -= 512
-temperature = raw * 0.25
-rp_dict.log04_wib['AD7414_0x49_temperature'] = temperature
+try:
+    print(temp_result.splitlines()[1])
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read temperature from AD7414_0x49\033[0m')
+        temperature = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw = ((msb << 8) | lsb) >> 6
+        if raw > 511:
+            raw -= 512
+        temperature = raw * 0.25
+    rp_dict.log04_wib['AD7414_0x49_temperature'] = temperature
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing AD7414_0x49 temperature: {e}\033[0m')
+    rp_dict.log04_wib['AD7414_0x49_temperature'] = None
 Device = 'AD7414_0x4D';    Address = '4d'
 if Address in readback:
     print('I2C Device {} has been found at 0x{}'.format(Device, Address))
@@ -303,13 +363,21 @@ send_command(connection, 'i2cset -y 0 0x4d 0x00')
 time.sleep(0.2)
 temp_result = send_command(connection, 'i2ctransfer -y 0 r2@0x4d')
 print('temp_result')
-print(temp_result.splitlines()[1])
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw = ((msb << 8) | lsb) >> 6
-if raw > 511:
-    raw -= 512
-temperature = raw * 0.25
-rp_dict.log04_wib['AD7414_0x4D_temperature'] = temperature
+try:
+    print(temp_result.splitlines()[1])
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read temperature from AD7414_0x4D\033[0m')
+        temperature = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw = ((msb << 8) | lsb) >> 6
+        if raw > 511:
+            raw -= 512
+        temperature = raw * 0.25
+    rp_dict.log04_wib['AD7414_0x4D_temperature'] = temperature
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing AD7414_0x4D temperature: {e}\033[0m')
+    rp_dict.log04_wib['AD7414_0x4D_temperature'] = None
 ###
 Device = 'LTC2991_0x48';    Address = '48'
 if Address in readback:
@@ -322,13 +390,21 @@ send_command(connection, 'sleep 0.05')
 send_command(connection, 'i2cset -y 0 0x48 0x1A')
 temp_result = send_command(connection, 'i2ctransfer -y 0 r2@0x48')
 print('temp_result')
-print(temp_result.splitlines()[1])
-msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
-raw = ((msb & 0x1F) << 8) | lsb
-if raw & 0x1000:
-    raw -= 1 << 13
-temperature = raw * 0.0625
-rp_dict.log04_wib['LTC2991_0x48_temperature'] = temperature
+try:
+    print(temp_result.splitlines()[1])
+    if 'Error:' in temp_result or len(temp_result.splitlines()) < 2:
+        print('\033[33mWarning: Failed to read temperature from LTC2991_0x48\033[0m')
+        temperature = None
+    else:
+        msb, lsb = [int(x, 16) for x in temp_result.splitlines()[1].split()]
+        raw = ((msb & 0x1F) << 8) | lsb
+        if raw & 0x1000:
+            raw -= 1 << 13
+        temperature = raw * 0.0625
+    rp_dict.log04_wib['LTC2991_0x48_temperature'] = temperature
+except (ValueError, IndexError) as e:
+    print(f'\033[33mWarning: Error parsing LTC2991_0x48 temperature: {e}\033[0m')
+    rp_dict.log04_wib['LTC2991_0x48_temperature'] = None
 # write
 send_command(connection, 'i2cset -y 0 0x48 0x06 0x11')
 send_command(connection, 'i2cset -y 0 0x48 0x07 0x11')

@@ -70,8 +70,8 @@ print(process.stderr)
 
 
 # time to test
-# the time used to test gtx ber
-time.sleep(20)
+# the time used to test gtx ber *** import item IBERT BER
+time.sleep(1000)
 print('Measure the BER Result of GTX')
 command = [vivado_path, "-mode", "batch", "-source", "file/tcl_02.tcl"]
 # # Execute the command
