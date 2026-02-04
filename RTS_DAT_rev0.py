@@ -721,6 +721,7 @@ while (len(duts) > 0) or Undone_Flag :
         if len(duts) == 0:
             Undone_Flag = True
     else: #PASS
+        Undone_Flag = False
         ids_dict.update(dut_skt)
         dut_skt = {}
         if "CD" in duttype:
