@@ -12,11 +12,11 @@ CTS_Warmup_Wait,3600
 Network_Upload_Path,/data/rtss/femb
 tester,lke
 SLOT0,BNL_FEMB_I0-1865-1K_00023
-SLOT1,BNL_FEMB_I0-1865-1K_00020
+SLOT1, 
 SLOT2,
 SLOT3,
 test_site,BNL
 toy_TPC,y
-comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00060,Bottom_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00060,Bottom_Cover=0000,Bottom_FEMB=BNL_FEMB_I0-1865-1K_00023,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00063,Top_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00063,Top_Cover=0000,Top_FEMB=BNL_FEMB_I0-1865-1K_00020"
+comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00058,Bottom_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00058,Bottom_Cover=0000,Bottom_FEMB=BNL_FEMB_I0-1865-1K_00023,Top_HWDB=EMPTY,Top_CE=EMPTY,Top_Cover=EMPTY,Top_FEMB=EMPTY"
 top_path,D:
 karTest_Site,BNL

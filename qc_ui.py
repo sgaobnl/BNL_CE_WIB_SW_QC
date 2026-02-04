@@ -10,7 +10,7 @@ from colorama import Fore, Style
 colorama.init()
 
 
-def confirm(prompt):
+def confirm_function(prompt):
     """Simple confirmation - requires typing 'confirm' to continue"""
     while True:
         print(Fore.CYAN + prompt + Style.RESET_ALL)

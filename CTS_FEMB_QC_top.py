@@ -26,7 +26,7 @@ import webbrowser
 # Import QC modules - Custom utility modules
 from qc_utils import timer_count, countdown_timer, check_fault_files, QC_Process, close_terminal, check_checkout_result, save_qc_paths
 from qc_power import safe_power_off
-from qc_ui import confirm, get_email, get_cebox_image
+from qc_ui import confirm_function, get_email, get_cebox_image
 from qc_results import handle_qc_results, display_qc_results, analyze_test_results
 
 # ----------------------------------------------------------------------------
@@ -74,43 +74,58 @@ def print_progress_bar(current, total, prefix="Progress", length=40):
     if current == total:
         print()  # New line when complete
 
-def background_timer_reminder(wait_seconds, task_name, ready_message):
+def get_failed_slot_from_path(report_path):
     """
-    Background timer that prints reminders and alerts when ready.
+    Extract slot information from report path.
+    Report path ends with _S0 (slot0) or _S1 (slot1).
+
+    Args:
+        report_path: Path like /mnt/data/FEMB_QC/Report/.../FEMBXXX_S1
+
+    Returns:
+        str: "Slot 0", "Slot 1", or "Unknown Slot"
+    """
+    if not report_path:
+        return "Unknown Slot"
+
+    # Check the end of the path for slot indicator
+    path_str = str(report_path).rstrip('/')
+    if path_str.endswith('_S0'):
+        return "Slot 0 (TOP)"
+    elif path_str.endswith('_S1'):
+        return "Slot 1 (BOTTOM)"
+    else:
+        # Try to find _S0 or _S1 anywhere in the path
+        if '_S0' in path_str and '_S1' not in path_str:
+            return "Slot 0 (TOP)"
+        elif '_S1' in path_str and '_S0' not in path_str:
+            return "Slot 1 (BOTTOM)"
+        elif '_S0' in path_str and '_S1' in path_str:
+            return "Both Slots"
+        else:
+            return "Unknown Slot"
+
+def background_timer_reminder(wait_seconds, task_name, ready_message, cryo=None):
+    """
+    Background timer that sets CTS to idle when ready.
     Runs in a separate thread so main script can continue.
 
     Args:
         wait_seconds: Number of seconds to wait
         task_name: Name of the task (e.g., "CTS Warm Gas")
         ready_message: Message to display when ready
+        cryo: CTS cryo controller object to set idle state
     """
     def timer_thread():
-        # Print initial message
-        # print(Fore.YELLOW + f"\n⏰ {task_name} timer started: {wait_seconds//60} minutes" + Style.RESET_ALL)
-        # print(Fore.CYAN + f"   You can continue with other tasks. Will remind you when ready." + Style.RESET_ALL)
+        # Wait for the full duration
+        time.sleep(wait_seconds)
 
-        # Calculate reminder intervals (e.g., halfway point)
-        halfway = wait_seconds // 2
-
-        # Wait for halfway point
-        if wait_seconds >= 120:  # Only remind if wait is >= 2 minutes
-            time.sleep(halfway)
-            remaining = wait_seconds - halfway
-            # print(Fore.YELLOW + f"\n⏰ {task_name}: {remaining//60} minutes remaining..." + Style.RESET_ALL)
-            time.sleep(remaining)
-        else:
-            time.sleep(wait_seconds)
-
-        # Alert when ready
-        # print("\n" + Fore.GREEN + "=" * 70)
-        # print(f"  ✓ {ready_message}")
-        # print("=" * 70 + Style.RESET_ALL)
-
-        # Audible alert (optional - beep)
-        try:
-            print('\a')  # System beep
-        except:
-            pass
+        # Set CTS to idle state when timer completes
+        if cryo is not None:
+            try:
+                cryo.cryo_warmgas_finish()
+            except Exception:
+                pass
 
     # Start timer in background thread
     timer = threading.Thread(target=timer_thread, daemon=True)
@@ -780,7 +795,7 @@ if not is_2nd_ce_box:
                             result = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
                             if result.upper() == 'J':
                                 # Double confirm before skipping
-                                if confirm("Are you sure you want to skip with insufficient LN2 level?"):
+                                if confirm_function("Are you sure you want to skip with insufficient LN2 level?"):
                                     print_status('warning', f"Dewar level ({dewar_level}) bypass")
                                     refill_needed = False  # Exit loop
                                     break
@@ -805,11 +820,12 @@ if not is_2nd_ce_box:
             cts_ready_time = cryo.cryo_warmgas_start(waitminutes=20)
             if cts_ready_time:
                 print_status('success', "Warm gas purge started in background")
-                # Start background timer to remind when CTS is ready
+                # Start background timer to set CTS to idle when ready
                 background_timer_reminder(
                     wait_seconds=20*60,
                     task_name="CTS Warm Gas Purge",
-                    ready_message="CTS WARM GAS PURGE COMPLETE - CTS is ready for testing!"
+                    ready_message="CTS WARM GAS PURGE COMPLETE - CTS is ready for testing!",
+                    cryo=cryo
                 )
                 print(Fore.GREEN + "\n✓ You can now proceed with CE assembly (Phase 1)" + Style.RESET_ALL)
                 print(Fore.CYAN + "  The system will remind you when CTS is ready.\n" + Style.RESET_ALL)
@@ -1092,7 +1108,7 @@ if 1 in state_list:
             image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "12.png")
         )
     ##### Confirm installation complete
-    confirm("Please Confirm the CE is install in the Bottom Slot")
+    confirm_function("Please Confirm the CE is install in the Bottom Slot")
 
     # ------------------------------------------------------------------------
     ### 14. Top Slot FEMB Installation (Repeat steps 9-13 for top slot)
@@ -1246,7 +1262,7 @@ if 1 in state_list:
             image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "11.png")
         )
 
-    confirm("Please Confirm the CE is install in the Top Slot")
+    confirm_function("Please Confirm the CE is install in the Top Slot")
 
     # Update Record CSV
     print()
@@ -1479,7 +1495,8 @@ if is_2nd_ce_box:
                 background_timer_reminder(
                     wait_seconds=20*60,
                     task_name="CTS Warm Gas Purge",
-                    ready_message="CTS WARM GAS PURGE COMPLETE - CTS is ready for testing!"
+                    ready_message="CTS WARM GAS PURGE COMPLETE - CTS is ready for testing!",
+                    cryo=cryo
                 )
             else:
                 print_status('warning', "Warm gas purge failed to start - continuing")
@@ -1760,35 +1777,10 @@ if any(x in state_list for x in [3, 4, 5]):
 # ============================================================================
 if 3 in state_list:
     inform = cts.read_csv_to_dict(csv_file_implement, 'RT')
-    ### 26. Warm QC Test Selection Menu
     while True:
-        # print("\n" + Fore.CYAN + "=" * 70)
-        # print("  OPTIONS:")
-        # print("=" * 70 + Style.RESET_ALL)
-        # print("  " + Fore.GREEN + "'y'" + Style.RESET_ALL + " - Continue with Warm QC")
-        # print("  " + Fore.YELLOW + "'s'" + Style.RESET_ALL + " - Skip Warm QC (proceed directly to Cold)")
-        # print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit test program")
-        # Next = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-
-        # #### Skip warm test option
-        # if Next == 's':
-        #     if confirm("Do you want to skip the Warm QC?"):
-        #         print(Fore.YELLOW + "⏩ Skipping Warm QC..." + Style.RESET_ALL)
-        #         break
-        #
-        # #### Exit program option
-        # elif Next == 'e':
-        #     if confirm("Do you want to exit the test program?"):
-        #         print(Fore.RED + "Exiting QC program..." + Style.RESET_ALL)
-        #         sys.exit()
-        #
-        # #### 27. Begin Warm QC Execution
-        # elif Next == 'y':
         if True:
-            # if confirm("Do you want to begin the Warm QC?"):
             if True:
                 print_phase_header(3, 6, "Warm QC Test", "~35 min")
-
                 ##### 27a. Power ON WIB
                 print_step("Powering ON WIB", 1, 4)
                 psu.set_channel(1, 12.0, 3.0, on=True)
@@ -1808,19 +1800,14 @@ if 3 in state_list:
 
                 ##### 27d. FEMB Warm Checkout with Auto-Retry (Step C2, <3 min)
                 print_step("FEMB warm checkout", 4, 4, "<3 min")
-
-                # Auto-retry loop: max 3 attempts (1 initial + 2 retries)
                 max_checkout_attempts = 3
                 checkout_attempt = 0
                 checkout_passed = False
                 first_auto_retry_done = False  # Track if we've done initial auto-retry
-
                 while checkout_attempt < max_checkout_attempts:
                     checkout_attempt += 1
-
                     if checkout_attempt > 1 and not first_auto_retry_done:
                         print_status('warning', f"Checkout Retry {checkout_attempt - 1}/2")
-
                     # Run checkout
                     wcdata_path, wcreport_path = QC_Process(
                         path=inform['QC_data_root_folder'],
@@ -1878,7 +1865,7 @@ if 3 in state_list:
                                     break
                                 elif decision == 'c':
                                     # Confirm before continuing despite failure
-                                    if confirm("⚠️  Are you sure you want to continue despite checkout failure?"):
+                                    if confirm_function("⚠️  Are you sure you want to continue despite checkout failure?"):
                                         print(Fore.YELLOW + "⚠️  Continuing despite checkout failure..." + Style.RESET_ALL)
                                         # Exit checkout loop and continue to QC
                                         checkout_attempt = max_checkout_attempts  # Force exit
@@ -1888,7 +1875,7 @@ if 3 in state_list:
                                         continue
                                 elif decision == 'e':
                                     # Confirm before exiting to disassembly
-                                    if confirm("⚠️  Are you sure you want to exit and skip to disassembly?"):
+                                    if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
                                         print(Fore.RED + "Exiting QC test. Proceeding to disassembly..." + Style.RESET_ALL)
                                         goto_disassembly = True
                                         checkout_attempt = max_checkout_attempts  # Force exit
@@ -1916,9 +1903,6 @@ if 3 in state_list:
                     qc_passed = False
                     wqdata_path = None
                     wqreport_path = None
-
-                    time.sleep(50)
-
                     while True:
                         # Run QC test (single attempt)
                         wqdata_path, wqreport_path = QC_Process(
@@ -1926,6 +1910,7 @@ if 3 in state_list:
                             QC_TST_EN=3,
                             input_info=inform
                         )
+                        time.sleep(120)
                         # Save paths to shared file for CTS_Real_Time_Monitor.py
                         if wqdata_path and wqreport_path:
                             save_qc_paths(wqdata_path, wqreport_path, "Warm_QC")
@@ -1947,9 +1932,10 @@ if 3 in state_list:
                             )
 
                             # Send email notification
+                            failed_slot = get_failed_slot_from_path(wqreport_path)
                             print(Fore.RED + "\n" + "=" * 70)
-                            print("  ⚠️  WARM QC TEST FAILED")
-                            # print("=" * 70 + Style.RESET_ALL)
+                            print(f"  ⚠️  WARM QC TEST FAILED - {failed_slot}")
+                            print("=" * 70 + Style.RESET_ALL)
                             # print(Fore.YELLOW + "📧 Sending failure notification email..." + Style.RESET_ALL)
                             # send_email.send_email(
                             #     sender, password, receiver,
@@ -1967,7 +1953,7 @@ if 3 in state_list:
                                 decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
                                 if decision == 'r':
                                     # Confirm before retrying (takes ~30 min)
-                                    if confirm("⚠️  Retry will take ~30 minutes. Are you sure?"):
+                                    if confirm_function("⚠️  Retry will take ~30 minutes. Are you sure?"):
                                         print(Fore.CYAN + "🔄 Retrying Warm QC (this will take ~30 min)..." + Style.RESET_ALL)
                                         break  # Continue outer while loop for retry
                                     else:
@@ -1976,7 +1962,7 @@ if 3 in state_list:
                                 elif decision == 'c':
                                     # Confirm before continuing despite failure
                                     if True:
-                                    # if confirm("⚠️  Are you sure you want to continue despite Warm QC failure?"):
+                                    # if confirm_function("⚠️  Are you sure you want to continue despite Warm QC failure?"):
                                         print(Fore.YELLOW + "⚠️  Continuing despite Warm QC failure..." + Style.RESET_ALL)
                                         # Exit retry loop and continue to cleanup
                                         qc_passed = False  # Mark as not passed but continue
@@ -1986,7 +1972,7 @@ if 3 in state_list:
                                         continue
                                 elif decision == 'e':
                                     # Confirm before exiting to disassembly
-                                    if confirm("⚠️  Are you sure you want to exit and skip to disassembly?"):
+                                    if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
                                         print(Fore.RED + "Exiting QC test. Will cleanup then proceed to disassembly..." + Style.RESET_ALL)
                                         goto_disassembly = True
                                         break
@@ -2203,13 +2189,13 @@ if 4 in state_list and not goto_disassembly:
         #
         # # Skip Cold QC
         # if Next == 's':
-        #     if confirm("Do you want to skip Cold QC?"):
+        #     if confirm_function("Do you want to skip Cold QC?"):
         #         print(Fore.YELLOW + "⏩ Skipping Cold QC..." + Style.RESET_ALL)
         #         break
         #
         # # Exit Test and go to warm-up + disassembly
         # elif Next == 'e':
-        #     if confirm("Do you want to skip Cold QC and proceed to warm-up + disassembly?"):
+        #     if confirm_function("Do you want to skip Cold QC and proceed to warm-up + disassembly?"):
         #         print(Fore.YELLOW + "Skipping Cold QC, will proceed to warm-up then disassembly..." + Style.RESET_ALL)
         #         goto_disassembly = True
         #         break
@@ -2217,7 +2203,7 @@ if 4 in state_list and not goto_disassembly:
         # # Start Cold QC
         # elif Next == 'y':
         if True:
-            # if confirm("Do you want to begin Cold QC?"):
+            # if confirm_function("Do you want to begin Cold QC?"):
             if True:
                 print_separator()
 
@@ -2317,6 +2303,7 @@ if 4 in state_list and not goto_disassembly:
                 print_separator()
                 print_step("FEMB Cold Quality Control Test", estimated_time="<30 min")
                 lqdata_path, lqreport_path = QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=3, input_info=infoln)
+                time.sleep(120)
                 # Save paths to shared file for CTS_Real_Time_Monitor.py
                 if lqdata_path and lqreport_path:
                     save_qc_paths(lqdata_path, lqreport_path, "Cold_QC")
@@ -2410,8 +2397,9 @@ if 4 in state_list and not goto_disassembly:
                 break
             else:
                 # Cold QC Test failed
+                failed_slot = get_failed_slot_from_path(lqreport_path)
                 print(Fore.RED + "\n" + "=" * 70)
-                print("  ⚠️  COLD QC TEST FAILED")
+                print(f"  ⚠️  COLD QC TEST FAILED - {failed_slot}")
                 print("=" * 70 + Style.RESET_ALL)
 
                 # Print fault file paths
@@ -2443,7 +2431,7 @@ if 4 in state_list and not goto_disassembly:
                     decision = 'c' #input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
                     if decision == 'r':
                         # Confirm before retrying (takes ~30 min)
-                        if confirm("⚠️  Retry will take ~30 minutes. Are you sure?"):
+                        if confirm_function("⚠️  Retry will take ~30 minutes. Are you sure?"):
                             print(Fore.CYAN + "🔄 Retrying Cold QC (this will take ~30 min)..." + Style.RESET_ALL)
                             break  # Continue outer while loop for retry
                         else:
@@ -2451,7 +2439,7 @@ if 4 in state_list and not goto_disassembly:
                             continue
                     elif decision == 'c':
                         # Confirm before continuing despite failure
-                        # if confirm("⚠️  Are you sure you want to continue to warm-up despite Cold QC failure?"):
+                        # if confirm_function("⚠️  Are you sure you want to continue to warm-up despite Cold QC failure?"):
                         if True:
                             print(Fore.YELLOW + "⚠️  Continuing to warm-up despite Cold QC failure..." + Style.RESET_ALL)
                             # Exit retry loop and continue to warm-up
@@ -2461,7 +2449,7 @@ if 4 in state_list and not goto_disassembly:
                             continue
                     elif decision == 'e':
                         # Confirm before exiting to warm-up + disassembly
-                        if confirm("⚠️  Are you sure you want to exit Cold QC and proceed to warm-up then disassembly?"):
+                        if confirm_function("⚠️  Are you sure you want to exit Cold QC and proceed to warm-up then disassembly?"):
                             print(Fore.RED + "Exiting Cold QC. Will proceed to warm-up then disassembly..." + Style.RESET_ALL)
                             goto_disassembly = True
                             break
@@ -2618,7 +2606,7 @@ if 5 in state_list and not goto_disassembly:
                                 break
                             elif decision == 'c':
                                 # Confirm before continuing despite failure
-                                if confirm("⚠️  Are you sure you want to continue despite final checkout failure?"):
+                                if confirm_function("⚠️  Are you sure you want to continue despite final checkout failure?"):
                                     print(Fore.YELLOW + "⚠️  Continuing despite final checkout failure..." + Style.RESET_ALL)
                                     # Exit checkout loop and continue
                                     final_checkout_attempt = max_final_checkout_attempts
@@ -2628,7 +2616,7 @@ if 5 in state_list and not goto_disassembly:
                                     continue
                             elif decision == 'e':
                                 # Confirm before exiting
-                                if confirm("⚠️  Are you sure you want to exit the test program?"):
+                                if confirm_function("⚠️  Are you sure you want to exit the test program?"):
                                     print(Fore.RED + "Exiting test program..." + Style.RESET_ALL)
                                     sys.exit()
                                 else:

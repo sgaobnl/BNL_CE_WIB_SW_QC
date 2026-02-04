@@ -343,8 +343,10 @@ def real_time_monitor():
                 # sync_to_network(raw_dir, report_dir)
                 # open_reports(raw_dir)
                 qc_report_path = top_path + '/FEMB_QC/Report/' + path.split("/")[-3] + '/' + path.split("/")[-2] + '/'
-                targets = ["_t16.bin", "_t15.bin", "_t14.bin", "_t13.bin"]
+                targets = ["_t16_", "_t15_", "_t14_", "_t13_"]
+
                 print(targets)
+                print(qc_report_path)
 
                 exists = {
                              t
@@ -353,6 +355,7 @@ def real_time_monitor():
                              for t in targets
                              if t in fname
                          } == set(targets)
+                print(exists)
                 # After t16 completes, generate QC summary email
                 if exists:
                     print(f"  t16 detected - triggering QC summary process")
