@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 File Name: cls_femb_config.py
-Author: GSS
+Author: GSS, LKE
 Mail: gao.hillhill@gmail.com
       lingyun.lke@gmail.com
 Description:
 Created Time: 3/20/2019 4:50:34 PM
 Last modified: 05/11/2025 5:02:04 PM
+update modified: 02/04/2025 5:02:04 PM
 """
 ## =========================================
 import numpy as np
@@ -15,14 +16,11 @@ import os
 import string
 import time
 from datetime import datetime
-
 import sys
 import os
-
 # Add the parent directory to sys.path so 'function' can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import function.Rigol_DP800 as rigol
-
 from function.cls_udp import CLS_UDP
 from function.tcp_cfg import TCP_CFG
 import struct
@@ -35,23 +33,12 @@ from function.ping_host import ping_host
 import platform
 import subprocess
 
-## =========================================
-
-##  === 01 power start =====================
-
-
-
-
-
-
-
 print("\033[35m" + "A_RT04_slot_00 : WIB_FEMB_Pulse" + "\033[0m")
-
 # Initialize timing dictionary
 timing_dict = {}
 test_start_time = time.time()
 t1 = time.time()
-
+# Power Initial
 psu = rigol.RigolDP800()
 psu.safe_power_off()
 time.sleep(0.1)
@@ -59,37 +46,24 @@ psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(5)  # Reduced from 10s to 5s - power stabilization
 v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
-time.sleep(0.5)  # Reduced from 1s to 0.5s
+v2, c2 = psu.measure(2)
+time.sleep(0.1)  # Reduced from 1s to 0.5s
 print(c1)
 print(c2)
-
 time.sleep(15)  # Reduced from 20s to 15s - wait for boot
-
 print("Power is acquired, Please start")
 timing_dict["01_Power_Startup"] = time.time() - t1
-
-## =========================================
-t1 = time.time()
-time.sleep(1)
-##  === 02 internet connection =====================
+## === 02 internet connection =====================
 ping_host(ip_address="192.168.121.1", count=4)
 ping_host(ip_address="192.168.121.2", count=4)
 timing_dict["02_Network_Check"] = time.time() - t1
-# WIB_IP = input("link with 192.168.121.1 (y/n)")
 time.sleep(1)
-
-# putty = input("link with putty (y/n)")
-
 ## ========= Initialize WIB Service =========
 t1 = time.time()
 print("\033[35m" + "Initializing WIB service..." + "\033[0m")
-import temp as initial
+import temp as initial # like putty
 print("\033[32m" + "WIB service ready" + "\033[0m")
 timing_dict["03_WIB_Init"] = time.time() - t1
-
-## =========================================
-t1 = time.time()
 tcp = TCP_CFG()
 udp = CLS_UDP()
 conv = RAW_CONV()
@@ -97,11 +71,9 @@ now = datetime.datetime.now()
 base_dir = os.path.dirname(os.path.abspath(__file__))
 target_file_path = os.path.join(base_dir, "..", "report", "WIB_to_FEMB_slot_00_power_report")
 rootdir = target_file_path
-
 ## ========== WIB monitor ADC ================
 monitor01 = tcp.wib_mon_adc_read()
 print(monitor01)
-## =========================================
 result_dict = {}
 result_dict["datetime"] = now
 result_dict["rootdir"] = rootdir
@@ -140,19 +112,12 @@ print("Initial experiment start...")
 
 tcp.tcp_poke(addr=0x16, data=0x01)
 tcp.tcp_peek(addr=0x16)
-# ## ==========BREAK_FOR_DEBUG================
 time.sleep(1)
-# print("Break02")
-# Break = input("Pass02 (y/n)")
-## =========================================
 tcp.tcp_poke(addr=0x16, data=0x00)
 tcp.tcp_peek(addr=0x16)
-## ==========BREAK_FOR_DEBUG================
 time.sleep(1)
-# print("Break03")
-# Break = input("Pass03 (y/n)")
-## =========================================
 
+# Begin the Test
 for fembi in [0]:
     print(fembi)
     femb = int(fembi)
@@ -171,8 +136,7 @@ for fembi in [0]:
     result_dict["save_dir"] = save_dir
     result_dict["Tester"] = tester
     result_dict["Note"] = note
-
-    # Power On
+    # Power On FEMB
     print("Turn on FEMB on WIB slot {}".format(femb))
     v_fe = 3
     v_adc = 3.5
@@ -186,7 +150,6 @@ for fembi in [0]:
     time.sleep(1)
     tcp.femb_pwr_set(femb=femb, pwr_on=1, v_fe=v_fe, v_adc=v_adc, v_cd=v_cd)
     time.sleep(1)
-
     # === SEOFF Mode Test ===
     t1 = time.time()
     print("\033[36m" + "=" * 60 + "\033[0m")
@@ -196,7 +159,6 @@ for fembi in [0]:
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
     time.sleep(1)  # Reduced from 2s to 1s
-
     print('SEOFF')
     tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
     tcp.femb_cfg()
@@ -204,11 +166,11 @@ for fembi in [0]:
     for i in range(3):  # Reduced from 5 to 3 measurements
         pwr_info = tcp.femb_pwr_rd(femb=femb)
         time.sleep(0.1)  # Reduced from 0.2s to 0.1s
+    input('debug')
     time.sleep(0.5)  # Reduced from 1s to 0.5s
     pwr_info = tcp.femb_pwr_rd(femb=femb)
     print(pwr_info)
     pwr_en, detailed_checks = chkout_top.pwr_chk(pwr_info, v_fe, v_adc, v_cd, v_bias, iref_fe, iref_adc, iref_cd, iref_bias)
-
     # Store detailed check results
     result_dict["detailed_checks"]["SEOFF"] = detailed_checks
 

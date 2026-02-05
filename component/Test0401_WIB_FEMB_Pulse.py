@@ -60,7 +60,7 @@ psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(5)  # Reduced from 10s to 5s - power stabilization
 v1, c1 = psu.measure(1)
-v2, c2 = psu.measure(1)
+v2, c2 = psu.measure(2)
 time.sleep(0.5)  # Reduced from 1s to 0.5s
 print(c1)
 print(c2)
@@ -154,7 +154,7 @@ time.sleep(1)
 # Break = input("Pass03 (y/n)")
 ## =========================================
 
-for fembi in [1]:
+for fembi in [0, 1, 2, 3]:
     print(fembi)
     femb = int(fembi)
     if femb == 0:
@@ -187,8 +187,9 @@ for fembi in [1]:
     time.sleep(1)
     tcp.femb_pwr_set(femb=femb, pwr_on=1, v_fe=v_fe, v_adc=v_adc, v_cd=v_cd)
     time.sleep(1)
+    # input('debug01')
 
-    # === SEOFF Mode Test ===
+    # === SEOFF Power Mode Test ===
     t1 = time.time()
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("\033[36m" + "Starting SEOFF Mode Power Test" + "\033[0m")
@@ -196,10 +197,10 @@ for fembi in [1]:
     print("Restarting WIB service for SEOFF test...")
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(1)  # Reduced from 2s to 1s
+    time.sleep(0.1)  # Reduced from 2s to 1s
 
     print('SEOFF')
-    tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
+    tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
     tcp.femb_cfg()
     time.sleep(0.5)  # Reduced from 1s to 0.5s
     for i in range(3):  # Reduced from 5 to 3 measurements
@@ -236,7 +237,7 @@ for fembi in [1]:
     timing_dict["05_SEOFF_Test"] = time.time() - t1
 
 
-    # === SEON (SDC) Mode Test ===
+    # === SEON (SDC) Mode Power Test ===
     t1 = time.time()
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("\033[36m" + "Starting SEON (SDC) Mode Power Test" + "\033[0m")
@@ -244,10 +245,10 @@ for fembi in [1]:
     print("Restarting WIB service for SEON test...")
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(1)  # Reduced from 2s to 1s
+    time.sleep(0.1)  # Reduced from 2s to 1s
 
     print('SEON')
-    tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdf = 1, swdac=1, dac=0x20)
+    tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdf = 1, swdac=1, dac=0x0)
     tcp.femb_cfg_sdc()
     time.sleep(0.5)  # Reduced from 1s to 0.5s
     for i in range(3):  # Reduced from 5 to 3 measurements
@@ -291,10 +292,10 @@ for fembi in [1]:
     print("Restarting WIB service for DIFF test...")
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(1)  # Reduced from 2s to 1s
+    time.sleep(0.1)  # Reduced from 2s to 1s
 
     print('DIFF')
-    tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdd = 1, swdac=1, dac=0x20)
+    tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, sdd = 1, swdac=1, dac=0x0)
     tcp.femb_cfg_diff()
     time.sleep(0.5)  # Reduced from 1s to 0.5s
     for i in range(3):  # Reduced from 5 to 3 measurements
@@ -340,7 +341,7 @@ for fembi in [1]:
     print("Restarting WIB service for data acquisition...")
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(2)
+    time.sleep(0.1)
 
     ##########1#####################################################################################
     # FEMB configuration: 14mV/fC, 200mV BL, 2.0us, single-ended, 500pA, ASICDAC=0x10, Cali_enable, SDC off,
@@ -350,10 +351,12 @@ for fembi in [1]:
     result_dict["CD_FE_pulse"] = "500 samples/pulse, CD Addr0x06:0x30,0x07:0x00, 0x08:0x38, 0x09:0x80"
 
     print("Measure monitoring parameters")
-    tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
+    tcp.set_fe_board(sts=0, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x10)
     tcp.femb_cfg()
     # for asic in range(8):
     for asic in [0, 4]:
+        initial.restart_wib_service()
+        tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
         print("Measure ASIC {}".format(asic))
         tmp = tcp.femb_adc_mon_cs(femb_no=femb, adc_no=asic)
         result_dict["ADC{:02d}_SetRef".format(asic)] = tmp[1]
@@ -384,13 +387,14 @@ for fembi in [1]:
     print("Restarting WIB service for data acquisition...")
     initial.restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(1)  # Reduced from 2s to 1s
+    time.sleep(0.1)  # Reduced from 2s to 1s
     print("Start FEMB configuration: 14mV/fC, 900mV BL, 2.0us, single-ended, 500pA, ASICDAC=0x10, Cali_enable, SDC off")
     #   [sg0 = 0, sg1 = 0 => 14mV/fC]   [snc = 0 => 900mV baseline] [st0 = 1, st1 = 1 => 2 us] [sts = 1 => test capacitance enable]
     tcp.set_fe_reset()
-    tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=1, dac=0x20)
+    tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=1, dac=0x10)
     tcp.set_fe_sync()
     tcp.femb_cfg()
+    time.sleep(5)
     # check channel response
     print("Check channel response")
 

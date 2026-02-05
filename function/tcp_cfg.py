@@ -570,7 +570,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
         self.set_fe_sync()
-        # self.fe_spi_prog()  # here is fe_channel configuration
+        self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]
@@ -631,8 +631,8 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.fc_act_rst_larasic()
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
-        # self.set_fe_sync()
-        # self.fe_spi_prog()  # here is fe_channel configuration
+        self.set_fe_sync()
+        self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]
@@ -693,7 +693,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         # self.fc_act_rst_larasic()
         time.sleep(0.1)
         print("LArASIC CFG ongoing...")
-        # self.fe_spi_prog()  # here is fe_channel configuration
+        self.fe_spi_prog()  # here is fe_channel configuration
         time.sleep(0.01)
         # require a fe_configuration
         self.tcp_cmd_io(cmd=0x12, aux=0xFF, addr=0x0, data=0x03002008)  # set data CHIP[03], PAGE[00], ADDR[20], DATA[08]
@@ -765,7 +765,7 @@ class TCP_CFG(tcp.TCPSocket, FE_ASIC_REG_MAPPING):
         self.femb_cd_wr(c_id=3, c_page=4, c_addr=0x08, c_data=0x20)
         self.femb_cd_rd(c_id=3, c_page=4, c_addr=0x08)
 
-    def femb_pwr_set (self,femb=0, pwr_on=1, v_fe=3.0, v_adc=3.5, v_cd=2.8, v_N = 4):
+    def femb_pwr_set (self,femb=0, pwr_on=1, v_fe=3.0, v_adc=3.5, v_cd=3, v_N = 4):
         self.tcp_cmd_io(cmd=0x0E, aux=femb, addr=0x0, data=int(v_fe/1e-7) )
         self.tcp_cmd_io(cmd=0x0E, aux=femb, addr=0x3, data=int(v_N/1e-7) )
         self.tcp_cmd_io(cmd=0x0E, aux=femb, addr=0x2, data=int(v_adc/1e-7) )

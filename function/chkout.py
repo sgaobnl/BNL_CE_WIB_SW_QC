@@ -965,11 +965,11 @@ def FEMB_PLOT(chn_rmss, chn_peds, chn_pkps, chn_pkns, chn_onewfs, chn_avgwfs, sa
     for chni in chns:
         if chni != 500:
             ts = 300
-            x = (np.arange(125)) * 0.5
+            x = (np.arange(325))
             y1 = chn_onewfs[chni]
-            y3 = chn_onewfs[chni][25:75] + chn_onewfs[chni][ts - 50:ts + 25]
+            y3 = chn_onewfs[chni][25:75] + chn_onewfs[chni][ts - 150:ts + 125]
 
-            y4 = chn_onewfs[chni][25:75] + chn_onewfs[chni][ts - 50:ts + 25]
+            y4 = chn_onewfs[chni][25:75] + chn_onewfs[chni][ts - 150:ts + 125]
 
             # print(y1)
             # print(y3)
