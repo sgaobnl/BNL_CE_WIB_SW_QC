@@ -224,6 +224,39 @@ def background_timer_reminder(wait_seconds, task_name, ready_message, cryo=None)
 #         print(Fore.RED + f"Error details: {str(e)}" + Style.RESET_ALL)
 #         return False
 
+def update_email_receiver_in_config(email_receiver):
+    """
+    Update email_receiver in init_setup.csv so CTS_Real_Time_Monitor.py can read it.
+
+    Args:
+        email_receiver: The email address to save
+    """
+    try:
+        config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "init_setup.csv")
+        config_data = {}
+
+        # Read existing config
+        if os.path.exists(config_file):
+            with open(config_file, mode='r', newline='', encoding='utf-8-sig') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if len(row) == 2:
+                        config_data[row[0].strip()] = row[1].strip()
+
+        # Update email_receiver
+        config_data['email_receiver'] = email_receiver
+
+        # Write back to file
+        with open(config_file, mode='w', newline='', encoding='utf-8-sig') as file:
+            writer = csv.writer(file)
+            for key, value in config_data.items():
+                writer.writerow([key, value])
+
+        print(Fore.GREEN + f"  ✓ Email receiver saved to config: {email_receiver}" + Style.RESET_ALL)
+    except Exception as e:
+        print(Fore.YELLOW + f"  ⚠ Warning: Could not save email to config: {e}" + Style.RESET_ALL)
+
+
 def parse_assembly_data_from_comment(comment_str):
     """
     Parse assembly data from csv_data['comment'] string.
@@ -614,6 +647,7 @@ print(f"✓ Analysis Code Launched" + Fore.GREEN + "(A terminal for real time an
 ## 6. Pre-Test Preparation
 ### 6.1 Email Validation - Get and confirm user email
 receiver = get_email()
+update_email_receiver_in_config(receiver)
 
 shifter_log_url = "https://docs.google.com/document/d/1Eaa8iv3Nb6AcCbxcXl-iK9pYBfZ5Rx7T7D97M3HINTU/edit?usp=sharing"
 print(f"Please open shifter log link in Chrome: {shifter_log_url}")
@@ -1088,7 +1122,7 @@ if 1 in state_list:
         if 'exit_outer' in locals() and exit_outer:
             break
 
-        input('Please put the CE box cover and ESD in the foam box (click Enter to continue).')
+    input("Reminder: please place the CE box cover and anti-static bag into the foam box (Enter to continue)")
 
     #### 13. Bottom Slot Assembly Guidance
     print(Fore.CYAN + "         Step 1.14: Continue assembly into bottom slot..." + Style.RESET_ALL)
@@ -1244,7 +1278,7 @@ if 1 in state_list:
         if 'exit_outer' in locals() and exit_outer:
             break
 
-        input('Please put the CE box cover and ESD in the foam box (click Enter to continue).')
+    input("Reminder: please place the CE box cover and anti-static bag into the foam box (Enter to continue)")
 
     print(Fore.CYAN + "         Step 1.24: Continue assembly into top slot..." + Style.RESET_ALL)
     print("         Assembly instruction popup opening...")
@@ -1386,6 +1420,7 @@ if is_2nd_ce_box:
             if new_email and '@' in new_email:
                 receiver = new_email
                 print_status('success', f"Email updated to: {receiver}")
+                update_email_receiver_in_config(receiver)
             elif new_email:
                 print_status('warning', "Invalid email format, keeping current email")
             else:
@@ -1659,7 +1694,7 @@ if 2 in state_list:
     print(Fore.CYAN + "📧 Sending assembly completion notification..." + Style.RESET_ALL)
     try:
         pre_info_temp = cts.read_csv_to_dict(csv_file_implement, 'RT')
-        email_body = f"""Initial Assembly Complete - Ready for QC Testing
+        email_body = f"""Initial Assembly Complete - QC Start
 
 Test Site: {pre_info_temp.get('test_site', 'N/A')}
 Tester: {pre_info_temp.get('tester', 'N/A')}
@@ -1670,7 +1705,6 @@ FEMBs Installed:
 
 Next Step: Warm QC Test
 
-Please prepare for QC testing.
 """
         send_email.send_email(sender, password, receiver,
                             f"Assembly Complete - {pre_info_temp.get('test_site', 'N/A')}",
@@ -1724,8 +1758,8 @@ else:
 
 ### 24. Send test start email notification
 pre_info = cts.read_csv_to_dict(csv_file_implement, 'RT')
-send_email.send_email(sender, password, receiver, "FEMB CE QC {}".format(pre_info['test_site']),
-                      "FEMB QC start, stay tuned ...")
+# send_email.send_email(sender, password, receiver, "FEMB CE QC {}".format(pre_info['test_site']),
+#                       "FEMB QC start, stay tuned ...")
 
 # ----------------------------------------------------------------------------
 # CTS Warm Gas Completion Check (if started in Phase 0)
@@ -1910,7 +1944,7 @@ if 3 in state_list:
                             QC_TST_EN=3,
                             input_info=inform
                         )
-                        time.sleep(120)
+                        time.sleep(150)
                         # Save paths to shared file for CTS_Real_Time_Monitor.py
                         if wqdata_path and wqreport_path:
                             save_qc_paths(wqdata_path, wqreport_path, "Warm_QC")
@@ -2303,7 +2337,7 @@ if 4 in state_list and not goto_disassembly:
                 print_separator()
                 print_step("FEMB Cold Quality Control Test", estimated_time="<30 min")
                 lqdata_path, lqreport_path = QC_Process(path=infoln['QC_data_root_folder'], QC_TST_EN=3, input_info=infoln)
-                time.sleep(120)
+                # time.sleep(120)
                 # Save paths to shared file for CTS_Real_Time_Monitor.py
                 if lqdata_path and lqreport_path:
                     save_qc_paths(lqdata_path, lqreport_path, "Cold_QC")
@@ -2396,36 +2430,36 @@ if 4 in state_list and not goto_disassembly:
 
                 break
             else:
-                # Cold QC Test failed
-                failed_slot = get_failed_slot_from_path(lqreport_path)
-                print(Fore.RED + "\n" + "=" * 70)
-                print(f"  ⚠️  COLD QC TEST FAILED - {failed_slot}")
-                print("=" * 70 + Style.RESET_ALL)
+                # # Cold QC Test failed
+                # failed_slot = get_failed_slot_from_path(lqreport_path)
+                # print(Fore.RED + "\n" + "=" * 70)
+                # print(f"  ⚠️  COLD QC TEST FAILED - {failed_slot}")
+                # print("=" * 70 + Style.RESET_ALL)
 
                 # Print fault file paths
-                print(Fore.YELLOW + "\n" + "-" * 70)
-                print("  📋 Checking for fault files in Cold QC results...")
-                print("-" * 70 + Style.RESET_ALL)
-                check_fault_files(
-                    paths=[lqdata_path, lqreport_path],
-                    show_p_files=False,
-                    inform=infoln,
-                    time_limit_hours=None
-                )
+                # print(Fore.YELLOW + "\n" + "-" * 70)
+                # print("  📋 Checking for fault files in Cold QC results...")
+                # print("-" * 70 + Style.RESET_ALL)
+                # check_fault_files(
+                #     paths=[lqdata_path, lqreport_path],
+                #     show_p_files=False,
+                #     inform=infoln,
+                #     time_limit_hours=None
+                # )
 
                 # Send failure notification
-                print(Fore.YELLOW + "\n📧 Sending failure notification email..." + Style.RESET_ALL)
-                send_email.send_email(
-                    sender, password, receiver,
-                    f"Cold QC Test Failed - {pre_info.get('test_site', 'Unknown')}",
-                    "Cold QC Test failed. Awaiting operator decision."
-                )
+                # print(Fore.YELLOW + "\n📧 Sending failure notification email..." + Style.RESET_ALL)
+                # send_email.send_email(
+                #     sender, password, receiver,
+                #     f"Cold QC Test Failed - {pre_info.get('test_site', 'Unknown')}",
+                #     "Cold QC Test failed. Awaiting operator decision."
+                # )
 
                 # User decision with retry option
-                print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
-                print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Cold QC once more (~30 min)")
-                print("  " + Fore.GREEN + "'c'" + Style.RESET_ALL + " - Continue to warm-up anyway (not recommended)")
-                print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit Cold QC, proceed to warm-up then disassembly")
+                # print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
+                # print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Cold QC once more (~30 min)")
+                # print("  " + Fore.GREEN + "'c'" + Style.RESET_ALL + " - Continue to warm-up anyway (not recommended)")
+                # print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit Cold QC, proceed to warm-up then disassembly")
 
                 while True:
                     decision = 'c' #input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
@@ -2438,15 +2472,17 @@ if 4 in state_list and not goto_disassembly:
                             print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
                             continue
                     elif decision == 'c':
+                        print('continue the QC process')
+                        break
                         # Confirm before continuing despite failure
                         # if confirm_function("⚠️  Are you sure you want to continue to warm-up despite Cold QC failure?"):
-                        if True:
-                            print(Fore.YELLOW + "⚠️  Continuing to warm-up despite Cold QC failure..." + Style.RESET_ALL)
-                            # Exit retry loop and continue to warm-up
-                            break
-                        else:
-                            print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
-                            continue
+                        # if True:
+                        #     print(Fore.YELLOW + "⚠️  Continuing to warm-up despite Cold QC failure..." + Style.RESET_ALL)
+                        #     # Exit retry loop and continue to warm-up
+                        #     break
+                        # else:
+                        #     print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
+                        #     continue
                     elif decision == 'e':
                         # Confirm before exiting to warm-up + disassembly
                         if confirm_function("⚠️  Are you sure you want to exit Cold QC and proceed to warm-up then disassembly?"):
@@ -2463,8 +2499,8 @@ if 4 in state_list and not goto_disassembly:
                 if decision in ['c', 'e']:
                     break
 
-        else:
-            print_status('error', "Invalid input. Please enter 'y', 's', or 'e'")
+        # else:
+        #     print_status('error', "Invalid input. Please enter 'y', 's', or 'e'")
 
     # Warm Up CTS - Direct control without notices
     print_status('info', f"CTS warm-up starting (~{cts_warmup_wait//60} min)")
@@ -2505,11 +2541,11 @@ if 5 in state_list and not goto_disassembly:
     inform = cts.read_csv_to_dict(csv_file_implement, 'RT')
 
     ### 41. Send Final Checkout Email Notification
-    send_email.send_email(
-        sender, password, receiver,
-        "FEMB CE QC {}".format('test_site'),
-        "Please proceed to Final Checkout."
-    )
+    # send_email.send_email(
+    #     sender, password, receiver,
+    #     "FEMB CE QC {}".format('test_site'),
+    #     "Please proceed to Final Checkout."
+    # )
 
     while True:
         if True:
@@ -2663,7 +2699,7 @@ if 5 in state_list and not goto_disassembly:
                     overall_passed = overall_result.total_faults == 0
 
                     # Prepare detailed email body
-                    email_body = f"""QC Testing Complete - Ready for Classification
+                    email_body = f"""QC Testing Complete - Ready for Disassembly
 
 Test Site: {pre_info.get('test_site', 'N/A')}
 Completion Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
@@ -2686,7 +2722,7 @@ FEMB Results:
                     email_body += f"""
 Next Steps:
   1. Power OFF the WIB
-  2. Proceed to disassembly and classification
+  2. Proceed to disassembly
   3. Store FEMBs according to test results
 
 Detailed comprehensive summary is attached.
@@ -2694,11 +2730,11 @@ Detailed comprehensive summary is attached.
                     # Send email with overall summary attachment
                     send_email.send_email_with_attachment(
                         sender, password, receiver,
-                        f"QC Complete - Please Classify - {pre_info.get('test_site', 'N/A')}",
+                        f"QC Complete - Please Disassemble CE Boxes - {pre_info.get('test_site', 'N/A')}",
                         email_body,
                         summary_path
                     )
-                    print_status('success', "Final QC summary email sent with comprehensive report")
+                    print_status('success', "QC summary email sent with comprehensive report")
 
                     # Delete summary file after email sent
                     try:

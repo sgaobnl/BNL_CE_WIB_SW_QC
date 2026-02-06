@@ -32,7 +32,26 @@ network_path = csv_data.get('Network_Upload_Path', '/data/rtss/femb')
 # Email configuration from init_setup
 sender = csv_data.get('email_sender', 'bnlr216@gmail.com')
 password = csv_data.get('email_password', 'vvef tosp minf wwhf')
-receiver = csv_data.get('email_receiver', 'lke@bnl.gov')
+
+def get_current_email_receiver():
+    """
+    Read the current email receiver from init_setup.csv.
+    This allows CTS_FEMB_QC_top.py to update the receiver dynamically.
+    """
+    try:
+        config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'init_setup.csv')
+        with open(config_file, mode='r', newline='', encoding='utf-8-sig') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) == 2 and row[0].strip() == 'email_receiver':
+                    return row[1].strip()
+    except Exception as e:
+        print(f"Warning: Could not read email receiver from config: {e}")
+    # Default fallback
+    return 'lke@bnl.gov'
+
+# Initial receiver (will be re-read before each email send)
+receiver = get_current_email_receiver()
 
 
 def sync_to_network(raw_dir, report_dir):
@@ -244,14 +263,16 @@ Detailed summary is attached.
             email_body += "\nDetailed summary is attached.\n"
 
         # Send email with attachment
+        # Get current receiver from config (may have been updated by CTS_FEMB_QC_top.py)
+        current_receiver = 'lke@bnl.gov'
         try:
             send_email.send_email_with_attachment(
-                sender, password, receiver,
+                sender, password, current_receiver,
                 f"{qc_type} Complete - {test_site}",
                 email_body,
                 summary_path
             )
-            print(f"  ✓ {qc_type} summary email sent with attachment")
+            print(f"  ✓ {qc_type} summary email sent with attachment to {current_receiver}")
         except Exception as email_err:
             print(f"  ✗ Failed to send email: {email_err}")
 

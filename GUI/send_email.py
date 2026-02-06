@@ -5,18 +5,37 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 
-def send_email(sender_email, sender_password, receiver_email, subject, body):
+# Default CC recipient for all test emails
+DEFAULT_CC = "lke@bnl.gov"
+
+def send_email(sender_email, sender_password, receiver_email, subject, body, cc_email=None):
    message = MIMEMultipart()
    message['From'] = sender_email
    message['To'] = receiver_email
    message['Subject'] = subject
+
+   # Build CC list - always include DEFAULT_CC for test emails
+   cc_list = []
+   if cc_email:
+       cc_list.append(cc_email)
+   # Add default CC if receiver is different from DEFAULT_CC
+   if receiver_email.lower() != DEFAULT_CC.lower() and DEFAULT_CC.lower() not in [c.lower() for c in cc_list]:
+       cc_list.append(DEFAULT_CC)
+
+   if cc_list:
+       message['Cc'] = ', '.join(cc_list)
+
    message.attach(MIMEText(body, 'plain'))
+
+   # Build recipient list for sendmail (includes To and Cc)
+   all_recipients = [receiver_email] + cc_list
+
    try:
        server = smtplib.SMTP('smtp.gmail.com', 587)
-       server.starttls()  # 启用TLS加密
+       server.starttls()
        server.login(sender_email, sender_password)
        text = message.as_string()
-       server.sendmail(sender_email, receiver_email, text)
+       server.sendmail(sender_email, all_recipients, text)
        print("Please Check Email!")
    except Exception as e:
        print(f"Email send fail ... : {e}")
@@ -24,7 +43,7 @@ def send_email(sender_email, sender_password, receiver_email, subject, body):
    finally:
        server.quit()
 
-def send_email_with_attachment(sender_email, sender_password, receiver_email, subject, body, attachment_path=None):
+def send_email_with_attachment(sender_email, sender_password, receiver_email, subject, body, attachment_path=None, cc_email=None):
     """
     Send email with optional text file attachment
 
@@ -35,11 +54,24 @@ def send_email_with_attachment(sender_email, sender_password, receiver_email, su
         subject: Email subject
         body: Email body text
         attachment_path: Optional path to text file to attach
+        cc_email: Optional additional CC recipient
     """
     message = MIMEMultipart()
     message['From'] = sender_email
     message['To'] = receiver_email
     message['Subject'] = subject
+
+    # Build CC list - always include DEFAULT_CC for test emails
+    cc_list = []
+    if cc_email:
+        cc_list.append(cc_email)
+    # Add default CC if receiver is different from DEFAULT_CC
+    if receiver_email.lower() != DEFAULT_CC.lower() and DEFAULT_CC.lower() not in [c.lower() for c in cc_list]:
+        cc_list.append(DEFAULT_CC)
+
+    if cc_list:
+        message['Cc'] = ', '.join(cc_list)
+
     message.attach(MIMEText(body, 'plain'))
 
     # Attach file if provided
@@ -58,12 +90,15 @@ def send_email_with_attachment(sender_email, sender_password, receiver_email, su
         except Exception as e:
             print(f"Failed to attach file {attachment_path}: {e}")
 
+    # Build recipient list for sendmail (includes To and Cc)
+    all_recipients = [receiver_email] + cc_list
+
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(sender_email, sender_password)
         text = message.as_string()
-        server.sendmail(sender_email, receiver_email, text)
+        server.sendmail(sender_email, all_recipients, text)
         print("Email sent successfully!")
     except Exception as e:
         print(f"Email send fail: {e}")

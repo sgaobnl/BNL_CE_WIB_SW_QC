@@ -500,7 +500,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                 "ssh", "root@192.168.121.123",
                 f"cd BNL_CE_WIB_SW_QC; python3 top_femb_powering_LN.py {power_en}"
             ]
-            ln_result = subrun(ln_command, timeout=60, out=True)  # Display output
+            ln_result = subrun(ln_command, timeout=120, out=True)  # Display output
             time.sleep(2)
             print("FEMB Cold Power On")
             ln_result = ln_result.stdout
@@ -512,7 +512,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
             "ssh", "root@192.168.121.123",
             f"cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py {power_en}"
         ]
-        result = subrun(command, timeout=60, out=True)  # Display output
+        result = subrun(command, timeout=120, out=True)  # Display output
 
         # Extract stdout for checking
         if hasattr(result, 'stdout'):
@@ -788,7 +788,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                     "ssh", "root@192.168.121.123",
                     "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"
                 ]
-                subrun(command, timeout=60, out=False)
+                subrun(command, timeout=120, out=False)
 
                 # ========== SUCCESS ==========
                 print(f"\n{datetime.now(timezone.utc)}")
@@ -1230,6 +1230,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                 print('Jump Remove')
         # time.sleep(500)
         t2 = time.time()
+        # time.sleep(180)
         print('QC time consumption is: {}'.format(t2 - t1))
 
 
