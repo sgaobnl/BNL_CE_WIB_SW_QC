@@ -405,8 +405,10 @@ def QC_Process(path="D:", QC_TST_EN=None, input_info=None, pre_info=None):
     password = "vvef tosp minf wwhf"
     receiver = pre_info.get('Email', 'lke@bnl.gov') if pre_info else 'lke@bnl.gov'
 
+    email_info = {'sender': sender, 'password': password, 'receiver': receiver}
+
     while True:
-        QCresult = cts.cts_ssh_FEMB(root="{}/FEMB_QC/".format(path), QC_TST_EN=QC_TST_EN, input_info=input_info)
+        QCresult = cts.cts_ssh_FEMB(root="{}/FEMB_QC/".format(path), QC_TST_EN=QC_TST_EN, input_info=input_info, email_info=email_info)
         if QCresult != None:
             QCstatus = QCresult[0]
             badchips = QCresult[1]
@@ -426,6 +428,17 @@ def QC_Process(path="D:", QC_TST_EN=None, input_info=None, pre_info=None):
                     send_email.send_email(sender, password, receiver,
                                          f"CRITICAL: FEMB Current Failure at {pre_info.get('test_site', 'Unknown')}",
                                          f"Critical current failure detected.\nFailed slots: {failed_slots_str}\n\nTest skipped. Please check FEMB hardware and connections.")
+
+                # Return None paths to indicate skip
+                return None, None
+
+            # Handle cable test failure (cold mode: 2+ slots failed)
+            if QCstatus == "CABLE_TEST_FAILURE":
+                print(Fore.RED + "\n" + "=" * 70)
+                print("  CABLE TEST FAILURE - CHECKOUT AND QC SKIPPED")
+                print("=" * 70 + Style.RESET_ALL)
+                print(Fore.RED + f"  Failed slots: {badchips}" + Style.RESET_ALL)
+                print(Fore.YELLOW + "\n  Please check data cable connections before retesting." + Style.RESET_ALL)
 
                 # Return None paths to indicate skip
                 return None, None

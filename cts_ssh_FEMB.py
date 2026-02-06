@@ -11,6 +11,7 @@ import webbrowser
 from colorama import Fore, Style
 import pprint
 import GUI.Rigol_DP800 as rigol
+import GUI.send_email as send_email_module
 import components.assembly_log as log
 import shutil
 
@@ -183,7 +184,7 @@ def read_csv_to_dict(filename, env, p=False):
     return data
 
 
-def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
+def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None, email_info=None):
     # QC_TST_EN = True
     logs = {}  # from collections import defaultdict report_log01 = defaultdict(dict)
 
@@ -590,35 +591,77 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
         return failed_slots, all_failed
 
-    def run_cable_test(slot_list):
-        """Run cable test"""
-        try:
-            # print("\n[Running Cable Test...]")
-            time.sleep(1)
-            command = [
-                "ssh", "root@192.168.121.123",
-                f"cd BNL_CE_WIB_SW_QC; python3 top_chkout_pls_fake_timing.py {slot_list} save 5"
-            ]
-            result = subrun(command, timeout=60, out=True)  # Display output
+    def run_cable_test(slot_list, is_cold=False):
+        """Run cable test slot by slot with retry logic.
 
-            # Extract output
-            output = ""
-            if hasattr(result, 'stdout'):
-                output = result.stdout
-                if isinstance(output, bytes):
-                    output = output.decode('utf-8')
+        Tests each slot individually with up to 3 attempts each.
+        At warm: sends email after 3 failures per slot, returns failure.
+        At cold: sends email, removes failed slot from test list.
+          - 1 slot fails: remove and continue with remaining slots.
+          - 2+ slots fail: skip checkout and QC entirely.
 
-            # Validate results
-            if "Cable Test Done" in output:
-                print(Fore.GREEN + "Continuity Test PASSED" + Style.RESET_ALL)
-                return True, output
+        Returns:
+            tuple: (passed_slots, failed_slots, combined_output)
+        """
+        MAX_CABLE_RETRIES = 3
+        slots = slot_list.strip().split()
+        passed_slots = []
+        failed_slots = []
+        combined_output = ""
+
+        for slot in slots:
+            slot_passed = False
+            for cable_attempt in range(1, MAX_CABLE_RETRIES + 1):
+                print(f"\n[Cable Test] Slot {slot} - Attempt {cable_attempt}/{MAX_CABLE_RETRIES}")
+                time.sleep(1)
+                command = [
+                    "ssh", "root@192.168.121.123",
+                    f"cd BNL_CE_WIB_SW_QC; python3 top_chkout_pls_fake_timing.py {slot} save 5"
+                ]
+                result = subrun(command, timeout=60, out=True)
+
+                output = ""
+                if result is not None and hasattr(result, 'stdout'):
+                    output = result.stdout
+                    if isinstance(output, bytes):
+                        output = output.decode('utf-8')
+                combined_output += output
+
+                if "Cable Test Done" in output:
+                    print(Fore.GREEN + f"Slot {slot} Continuity Test PASSED" + Style.RESET_ALL)
+                    slot_passed = True
+                    break
+                else:
+                    print(Fore.RED + f"Slot {slot} Cable Test FAILED (Attempt {cable_attempt}/{MAX_CABLE_RETRIES})" + Style.RESET_ALL)
+                    print(f"Output: {output}")
+                    if cable_attempt < MAX_CABLE_RETRIES:
+                        print(Fore.YELLOW + f"Retrying slot {slot}..." + Style.RESET_ALL)
+
+            if slot_passed:
+                passed_slots.append(slot)
             else:
-                print(Fore.RED + "Cable Test FAILED: Check data cable connection" + Style.RESET_ALL)
-                return False, output
+                failed_slots.append(slot)
+                # Send email notification for this slot failure
+                if email_info:
+                    try:
+                        test_site = logs.get('CTS_IDs', 'Unknown')
+                        mode_str = "Cold" if is_cold else "Warm"
+                        subject = f"{mode_str} Cable Test Failed - Slot {slot} - CTS {test_site}"
+                        body = (
+                            f"{mode_str} Cable Test: Slot {slot} failed after {MAX_CABLE_RETRIES} attempts.\n"
+                            f"Test Site: CTS {test_site}\n\n"
+                            f"Please check data cable connection for Slot {slot}."
+                        )
+                        if is_cold:
+                            body += f"\nSlot {slot} has been removed from the test list."
+                        send_email_module.send_email(
+                            email_info['sender'], email_info['password'], email_info['receiver'],
+                            subject, body
+                        )
+                    except Exception as e:
+                        print(f"Failed to send cable test email notification: {e}")
 
-        except Exception as e:
-            print(f"Error during cable test: {e}")
-            return False, str(e)
+        return passed_slots, failed_slots, combined_output
 
     # Main flow: QC_TST_EN == 1
     # LN_result = ""
@@ -760,27 +803,73 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
                         print(Fore.YELLOW + "User exited. FEMB powered off." + Style.RESET_ALL)
                         return None
 
-                # ========== Step 2: Cable Test ==========
+                # ========== Step 2: Cable Test (slot by slot) ==========
                 print("\n[2/3] Continuity Test...")
-                cable_success, cable_output = run_cable_test(slot_list)
+                passed_slots, cable_failed_slots, cable_output = run_cable_test(
+                    slot_list, is_cold=is_ln_mode
+                )
 
-                if not cable_success:
-                    # Cable test failed
-                    print(Fore.RED + "\nContinuity test FAILED" + Style.RESET_ALL)
+                if cable_failed_slots:
+                    if not is_ln_mode:
+                        # Warm mode: any cable failure is blocking
+                        print(Fore.RED + "\nContinuity test FAILED for slot(s): " +
+                              ", ".join(cable_failed_slots) + Style.RESET_ALL)
 
-                    # Only power off FEMB channels (do not power off Rigol and WIB)
-                    power_off_femb_channels()
-
-                    # Ask user (ask even if max attempts exceeded)
-                    choice = prompt_retry_or_exit("Cable connection error", attempt, MAX_RETRIES)
-
-                    if choice == 'retry':
-                        continue
-                    elif choice == 'exit':
-                        # User chose to exit, only power off FEMB
+                        # Only power off FEMB channels (do not power off Rigol and WIB)
                         power_off_femb_channels()
-                        print(Fore.YELLOW + "User exited. FEMB powered off." + Style.RESET_ALL)
-                        return None
+
+                        # Ask user (ask even if max attempts exceeded)
+                        choice = prompt_retry_or_exit("Cable connection error", attempt, MAX_RETRIES)
+
+                        if choice == 'retry':
+                            continue
+                        elif choice == 'exit':
+                            # User chose to exit, only power off FEMB
+                            power_off_femb_channels()
+                            print(Fore.YELLOW + "User exited. FEMB powered off." + Style.RESET_ALL)
+                            return None
+                    else:
+                        # Cold mode: handle based on number of failures
+                        if len(cable_failed_slots) >= 2:
+                            # Two or more slots failed - skip checkout and QC
+                            print(Fore.RED + "\n" + "=" * 70)
+                            print("  CABLE TEST: 2+ SLOTS FAILED - SKIPPING CHECKOUT AND QC")
+                            print("=" * 70 + Style.RESET_ALL)
+                            for s in cable_failed_slots:
+                                print(Fore.RED + f"  Slot {s}: Cable test failed after 3 attempts" + Style.RESET_ALL)
+                            power_off_femb_channels()
+                            logs['cable_test_failure'] = True
+                            logs['cable_failed_slots'] = cable_failed_slots
+                            return ("CABLE_TEST_FAILURE", cable_failed_slots, None, None)
+                        else:
+                            # One slot failed - remove from list and continue
+                            failed_slot = cable_failed_slots[0]
+                            print(Fore.YELLOW + f"\nCold mode: Removing failed slot {failed_slot} from test list" + Style.RESET_ALL)
+                            # Update input_info so subsequent QC_TST_EN calls exclude this slot
+                            input_info[f'SLOT{failed_slot}'] = ' '
+
+                            # Rebuild slot_list and power_en for current session
+                            slot_list_new = ''
+                            power_en_new = ''
+                            for sn in ['0', '1', '2', '3']:
+                                if input_info.get(f'SLOT{sn}', ' ') != ' ':
+                                    slot_list_new += f' {sn} '
+                                    power_en_new += ' on '
+                                else:
+                                    power_en_new += ' off '
+                            slot_list = slot_list_new
+                            power_en = power_en_new
+
+                            print(Fore.YELLOW + f"Updated slot list: [{slot_list.strip()}]" + Style.RESET_ALL)
+                            print(Fore.YELLOW + f"Updated power config: [{power_en.strip()}]" + Style.RESET_ALL)
+
+                            if not slot_list.strip():
+                                print(Fore.RED + "No valid slots remaining." + Style.RESET_ALL)
+                                power_off_femb_channels()
+                                return ("CABLE_TEST_FAILURE", cable_failed_slots, None, None)
+
+                            logs['cable_test_failure'] = True
+                            logs['cable_failed_slots'] = cable_failed_slots
 
                 # ========== Step 3: Power off FEMB ==========
                 print("\n[3/3] Powering off all FEMBs...")
@@ -792,7 +881,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None):
 
                 # ========== SUCCESS ==========
                 print(f"\n{datetime.now(timezone.utc)}")
-                print(Fore.GREEN + "  ✓ SLOT Confirmation SUCCESS!" + Style.RESET_ALL)
+                print(Fore.GREEN + "  SLOT Confirmation SUCCESS!" + Style.RESET_ALL)
 
                 logs['WIB_start_up'] = cable_output
 
