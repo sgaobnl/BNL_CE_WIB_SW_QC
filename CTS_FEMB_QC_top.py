@@ -106,131 +106,19 @@ def get_failed_slot_from_path(report_path):
             return "Unknown Slot"
 
 def background_timer_reminder(wait_seconds, task_name, ready_message, cryo=None):
-    """
-    Background timer that sets CTS to idle when ready.
-    Runs in a separate thread so main script can continue.
-
-    Args:
-        wait_seconds: Number of seconds to wait
-        task_name: Name of the task (e.g., "CTS Warm Gas")
-        ready_message: Message to display when ready
-        cryo: CTS cryo controller object to set idle state
-    """
     def timer_thread():
         # Wait for the full duration
         time.sleep(wait_seconds)
-
-        # Set CTS to idle state when timer completes
         if cryo is not None:
             try:
                 cryo.cryo_warmgas_finish()
             except Exception:
                 pass
-
-    # Start timer in background thread
     timer = threading.Thread(target=timer_thread, daemon=True)
     timer.start()
     return timer
 
-# def upload_to_network(qc_data_root, csv_file, csv_file_implement, network_path, femb_ids=None):
-#     """
-#     Upload all test data and reports to network drive.
-#     Copies data structure directly to network path without creating additional subfolders.
-#
-#     Args:
-#         qc_data_root: Root folder containing FEMB_QC test data (e.g., /mnt/data)
-#         csv_file: Path to femb_info.csv
-#         csv_file_implement: Path to femb_info_implement.csv
-#         network_path: Network drive upload path (e.g., /data/rtss/femb)
-#         femb_ids: List of FEMB IDs being tested (for logging only)
-#
-#     Returns:
-#         bool: True if upload successful, False otherwise
-#     """
-#     import shutil
-#     from datetime import datetime
-#
-#     try:
-#         print("\n" + Fore.CYAN + "=" * 70)
-#         print("  UPLOADING TEST DATA TO NETWORK DRIVE")
-#         print("=" * 70 + Style.RESET_ALL)
-#
-#         # Check if network path exists
-#         if not os.path.exists(network_path):
-#             print_status('warning', f"Network path does not exist: {network_path}")
-#             print(Fore.YELLOW + "Attempting to create directory..." + Style.RESET_ALL)
-#             try:
-#                 os.makedirs(network_path, exist_ok=True)
-#                 print_status('success', "Network directory created")
-#             except Exception as e:
-#                 print_status('error', f"Failed to create network directory: {e}")
-#                 return False
-#
-#         print(Fore.CYAN + f"Source: {qc_data_root}" + Style.RESET_ALL)
-#         print(Fore.CYAN + f"Destination: {network_path}" + Style.RESET_ALL)
-#
-#         files_copied = 0
-#         total_size = 0
-#
-#         # 1. Copy FEMB_QC data folder
-#         femb_qc_source = os.path.join(qc_data_root, "FEMB_QC")
-#         femb_qc_dest = os.path.join(network_path, "FEMB_QC")
-#
-#         if os.path.exists(femb_qc_source) and os.path.isdir(femb_qc_source):
-#             print_status('info', f"Copying FEMB_QC data...")
-#
-#             # Copy the entire FEMB_QC directory tree
-#             shutil.copytree(femb_qc_source, femb_qc_dest, dirs_exist_ok=True)
-#
-#             # Count files and calculate size
-#             for root, dirs, files in os.walk(femb_qc_dest):
-#                 files_copied += len(files)
-#                 for file in files:
-#                     total_size += os.path.getsize(os.path.join(root, file))
-#
-#             print_status('success', f"Copied FEMB_QC ({files_copied} files)")
-#         else:
-#             print_status('warning', f"FEMB_QC folder not found: {femb_qc_source}")
-#
-#         # 2. Copy CSV files to network path root
-#         csv_files_to_copy = [
-#             (csv_file, "femb_info.csv"),
-#             (csv_file_implement, "femb_info_implement.csv")
-#         ]
-#
-#         for src_file, dest_name in csv_files_to_copy:
-#             if os.path.exists(src_file):
-#                 dest_file = os.path.join(network_path, dest_name)
-#                 shutil.copy2(src_file, dest_file)
-#                 files_copied += 1
-#                 total_size += os.path.getsize(dest_file)
-#                 print_status('success', f"Copied {dest_name}")
-#             else:
-#                 print_status('warning', f"File not found: {src_file}")
-#
-#         # Final summary
-#         print(Fore.CYAN + "\n" + "=" * 70)
-#         print("  UPLOAD COMPLETE")
-#         print("=" * 70 + Style.RESET_ALL)
-#         print(Fore.GREEN + f"  ✓ Files uploaded: {files_copied}" + Style.RESET_ALL)
-#         print(Fore.GREEN + f"  ✓ Total size: {total_size / (1024*1024):.2f} MB" + Style.RESET_ALL)
-#         print(Fore.GREEN + f"  ✓ Location: {network_path}" + Style.RESET_ALL)
-#         print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
-#
-#         return True
-#
-#     except Exception as e:
-#         print_status('error', f"Upload failed: {e}")
-#         print(Fore.RED + f"Error details: {str(e)}" + Style.RESET_ALL)
-#         return False
-
 def update_email_receiver_in_config(email_receiver):
-    """
-    Update email_receiver in init_setup.csv so CTS_Real_Time_Monitor.py can read it.
-
-    Args:
-        email_receiver: The email address to save
-    """
     try:
         config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "init_setup.csv")
         config_data = {}
@@ -258,60 +146,27 @@ def update_email_receiver_in_config(email_receiver):
 
 
 def parse_assembly_data_from_comment(comment_str):
-    """
-    Parse assembly data from csv_data['comment'] string.
-
-    Format: "Bottom_HWDB=A123,Bottom_CE=ZZZ1234,Bottom_Cover=1234,Bottom_FEMB=...,Top_HWDB=...,..."
-
-    Args:
-        comment_str: CSV-style comment string from assembly
-
-    Returns:
-        dict: {
-            'bottom': {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str, 'femb_sn': str},
-            'top': {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str, 'femb_sn': str}
-        }
-    """
     result = {
         'bottom': {'hwdb_qr': '', 'ce_box_sn': '', 'cover_last4': '', 'femb_sn': ''},
         'top': {'hwdb_qr': '', 'ce_box_sn': '', 'cover_last4': '', 'femb_sn': ''}
     }
-
-    # Parse CSV-style string
     parts = comment_str.split(',')
     data_dict = {}
     for part in parts:
         if '=' in part:
             key, value = part.split('=', 1)
             data_dict[key.strip()] = value.strip()
-
-    # Extract bottom slot data
     result['bottom']['hwdb_qr'] = data_dict.get('Bottom_HWDB', '')
     result['bottom']['ce_box_sn'] = data_dict.get('Bottom_CE', '')
     result['bottom']['cover_last4'] = data_dict.get('Bottom_Cover', '')
     result['bottom']['femb_sn'] = data_dict.get('Bottom_FEMB', '')
-
-    # Extract top slot data
     result['top']['hwdb_qr'] = data_dict.get('Top_HWDB', '')
     result['top']['ce_box_sn'] = data_dict.get('Top_CE', '')
     result['top']['cover_last4'] = data_dict.get('Top_Cover', '')
     result['top']['femb_sn'] = data_dict.get('Top_FEMB', '')
-
     return result
 
 def generate_qc_summary(test_phase, inform, qc_result, output_file):
-    """
-    Generate QC test summary and save to file
-
-    Args:
-        test_phase: "Warm QC", "Cold QC", or "Final Checkout"
-        inform: FEMB information dictionary
-        qc_result: QCResult object from analyze_test_results
-        output_file: Path to save summary text file
-
-    Returns:
-        str: Path to generated summary file
-    """
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             # Header
@@ -379,19 +234,6 @@ def generate_qc_summary(test_phase, inform, qc_result, output_file):
         return None
 
 def validate_disassembly_for_slot(slot_name, assembly_data, test_passed):
-    """
-    Guide user through disassembly validation for one CE box slot.
-    Ensures CE box is returned to correct foam box with correct cover.
-
-    Args:
-        slot_name: "bottom" or "top"
-        assembly_data: dict from parse_assembly_data_from_comment for this slot
-        test_passed: Boolean indicating if QC test passed
-
-    Returns:
-        None
-    """
-    # Check if slot was empty during assembly
     if assembly_data['ce_box_sn'] == 'EMPTY':
         print_status('info', f"{slot_name.upper()} slot was EMPTY - skipping disassembly validation")
         return
@@ -484,17 +326,6 @@ def validate_disassembly_for_slot(slot_name, assembly_data, test_passed):
     print_separator()
 
 def collect_assembly_data(slot_name):
-    """
-    Collect pre-assembly data for a CE box slot.
-    Returns dict with HWDB QR, CE box SN, cover last 4 digits.
-    Validates that cover SN matches CE box SN.
-
-    Args:
-        slot_name: String like "BOTTOM" or "TOP" for display purposes
-
-    Returns:
-        dict: {'hwdb_qr': str, 'ce_box_sn': str, 'cover_last4': str}
-    """
     print_separator()
     print(Fore.CYAN + f"Pre-Assembly Data Collection for {slot_name} Slot" + Style.RESET_ALL)
     print_separator()
@@ -620,38 +451,18 @@ if is_2nd_ce_box:
 
     # Show CE Support Structure assembly instructions
     print(Fore.GREEN + "\n📋 Please assemble the CE Support Structure:" + Style.RESET_ALL)
-    # print("  1. Prepare the 2nd CE Box Support Structure")
-    # print("  2. Install FEMBs into the CE Box")
-    # print("  3. Connect all cables and verify connections")
-    # print("  4. Ensure the structure is ready for insertion")
-
-    # pop.show_image_popup(
-    #     title="2nd CE Box Support Structure Assembly",
-    #     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "7.png")
-    # )
-
-
-
-## 5. Launch Real-Time Monitoring Script
-### Kill old monitoring process if running
 os.system(f'pkill -f "{script}"')
 time.sleep(1)
 
 ### Launch monitoring script in minimal-size terminal
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# Launch very small terminal window in bottom-right corner
-# geometry: 15 columns x 5 rows, positioned at bottom-right
 os.system(f'gnome-terminal --title="CTS Monitor" --hide-menubar --geometry=15x5-0-0 --working-directory="{current_dir}" -- bash -c "python3 {script}; exec bash" &')
 print(f"✓ Analysis Code Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
-
-## 6. Pre-Test Preparation
-### 6.1 Email Validation - Get and confirm user email
 receiver = get_email()
 update_email_receiver_in_config(receiver)
 
 shifter_log_url = "https://docs.google.com/document/d/1Eaa8iv3Nb6AcCbxcXl-iK9pYBfZ5Rx7T7D97M3HINTU/edit?usp=sharing"
 print(f"Please open shifter log link in Chrome: {shifter_log_url}")
-# Try to open the link directly in Chrome
 try:
     chrome_path = webbrowser.get('google-chrome')
     chrome_path.open(shifter_log_url)
@@ -663,28 +474,20 @@ if link_opened != 'y':
     print(f"Please manually open the link in Chrome: {shifter_log_url}")
     
 print('Initial Setup Review')
-
-### 6.2 Display Checklist Popups
-#### Pop window 1: Initial Checkout List
 pop.show_image_popup(
     title="Initial Discharge Human Body",
     image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "2.png")
 )
 
 if not is_2nd_ce_box:
-#### Pop window 2: Accessory tray #1
     pop.show_image_popup(
         title="Initial Check",
         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "3.png")
     )
-
-    #### Pop window 2: Accessory tray #1
     pop.show_image_popup(
         title="Checklist for accessory tray #1",
         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "4.png")
     )
-
-    #### Pop window 3: Accessory tray #2
     pop.show_image_popup(
         title="Checklist for accessory tray #2",
         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "5.png")
@@ -695,11 +498,6 @@ if not is_2nd_ce_box:
         title="CTS setup Initial Check",
         image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "6.png")
     )
-
-# ----------------------------------------------------------------------------
-# CTS Cryogenic System Initialization
-# ----------------------------------------------------------------------------
-## Load CTS configuration from init_setup.csv
 if not is_2nd_ce_box:
     cts_config = {}
     try:
@@ -711,8 +509,6 @@ if not is_2nd_ce_box:
                     cts_config[key.strip()] = value.strip()
     except Exception as e:
         print(Fore.YELLOW + f"⚠ Warning: Could not load CTS configuration: {e}" + Style.RESET_ALL)
-
-    ## Get CTS wait times from config (in seconds)
     try:
         cts_ln2_fill_wait = int(cts_config.get('CTS_LN2_Fill_Wait', 1800))  # Default 30 min
         cts_warmup_wait = int(cts_config.get('CTS_Warmup_Wait', 3600))     # Default 60 min
@@ -720,8 +516,6 @@ if not is_2nd_ce_box:
         cts_ln2_fill_wait = 1800
         cts_warmup_wait = 3600
         print(Fore.YELLOW + "⚠ Invalid CTS wait time values in config, using defaults" + Style.RESET_ALL)
-
-    ## Initialize CTS cryogenic control box
     print(Fore.CYAN + "\n" + "=" * 70)
     print("  CTS CRYOGENIC SYSTEM INITIALIZATION")
     print("=" * 70 + Style.RESET_ALL)
@@ -752,11 +546,6 @@ if 1 <= hour <= 11:
 else:
     DEWAR_LEVEL_THRESHOLD = 1000
     shift_name = " "
-
-# Initialize CTS ready time (will be set if warm gas is started)
-# cts_ready_time = None
-
-# Skip LN2 check at startup for 2nd CE Box mode (will check after Phase 1)
 if not is_2nd_ce_box:
     print(Fore.CYAN + "\n" + "=" * 70)
     print("  LN₂ DEWAR LEVEL CHECK")
@@ -960,8 +749,6 @@ if not is_2nd_ce_box:
 
             print(Fore.GREEN + "\n✓ Warm gas purge time elapsed" + Style.RESET_ALL)
             print(Fore.YELLOW + "⚠️  Please set CTS to STATE 1 (IDLE)" + Style.RESET_ALL)
-
-            # Confirm IDLE state set
             while True:
                 print("Enter " + Fore.GREEN + "'Y'" + Style.RESET_ALL + " when CTS is set to IDLE")
                 idle_confirm = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
@@ -971,20 +758,12 @@ if not is_2nd_ce_box:
 
     print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
 else:
-    # 2nd CE Box mode - skip LN2 check at startup
     print(Fore.CYAN + "\n" + "=" * 70)
     print("  2nd CE BOX MODE - SKIPPING STARTUP LN₂ CHECK")
     print("=" * 70 + Style.RESET_ALL)
     print_status('info', "LN₂ dewar check will be performed after Phase 1 when chamber is ready")
     print(Fore.CYAN + "=" * 70 + Style.RESET_ALL + "\n")
-
-## 8. Test Phase Selection - User selects which phases to execute (1-6)
-# state_list = state.select_test_states()
 state_list = [1, 2, 3, 4, 5, 6]
-# print(Fore.CYAN + f"Selected test phases: {state_list}" + Style.RESET_ALL)
-
-# Initialize checkout failure flag for cross-phase communication
-# Set to True if warm checkout fails and user chooses to skip to disassembly
 goto_disassembly = False
 
 # ============================================================================
@@ -992,15 +771,9 @@ goto_disassembly = False
 # ============================================================================
 if 1 in state_list:
     print_phase_header(1, 6, "FEMB Installation & Setup")
-
-    # ------------------------------------------------------------------------
-    ### 9-13. Bottom Slot FEMB Installation
-    # ------------------------------------------------------------------------
     while True:
         print_step("Assemble CE box in BOTTOM SLOT (Cable #B)", 1, 2)
         print_status('info', "Visual inspection popup opening...")
-
-        #### 9a. Check if slot is empty first
         slot_status = None
         while True:
             print(Fore.CYAN + "         Will this slot have a FEMB installed?" + Style.RESET_ALL)
@@ -1023,8 +796,6 @@ if 1 in state_list:
             }
             print_status('warning', "         Bottom slot marked as EMPTY (no FEMB installed)")
         else:
-            # Slot will have a FEMB - collect assembly data
-            #### 9b. Pre-Assembly Data Collection (HWDB, CE box, Cover SN)
             input("Please get the foam box to be tested (Enter to continue…)")
             #### 9. Display bottom slot visual inspection popup
             my_options = ["Install MiniSAS Cable and Clamp", "Install Test Cover", "Install Power Cable",
@@ -1034,9 +805,6 @@ if 1 in state_list:
                 image_path=os.path.join(ROOT_DIR, "GUI", "output_pngs", "9.png")
             )
             bottom_assembly_data = collect_assembly_data("BOTTOM")
-
-            #### 10. QR Code Scanning & Validation (Triple verification)
-            ##### First scan
             femb_id_0 = None  # Initialize
             while True:
                 print(Fore.CYAN + "         [1/2] Scan the FEMB QR code (1st scan)" + Style.RESET_ALL)
@@ -1047,8 +815,6 @@ if 1 in state_list:
                     break
                 else:
                     print_status('error', "         No valid FEMB ID detected. Please try again.")
-
-            ##### Second scan
             while True:
                 print(Fore.CYAN + "         [2/2] Scan the FEMB QR code (2nd scan)" + Style.RESET_ALL)
                 femb_id_01 = input(Fore.YELLOW + '         >> ' + Style.RESET_ALL).strip()
@@ -1364,7 +1130,7 @@ if 1 in state_list:
 # ----------------------------------------------------------------------------
 if is_2nd_ce_box:
     print(Fore.CYAN + "\n" + "=" * 70)
-    print("  2nd CE BOX MODE - CHAMBER AND LN₂ CHECK")
+    print("  Next CE BOX MODE - CHAMBER AND LN₂ CHECK")
     print("=" * 70 + Style.RESET_ALL)
 
     # Step 1: Wait for chamber to be empty
@@ -1375,10 +1141,10 @@ if is_2nd_ce_box:
     chamber_empty = False
     while True:
         print(Fore.YELLOW + "\n⚠️  SAFETY CHECK:" + Style.RESET_ALL)
-        print("Please confirm the CTS chamber is empty and the first CE structure is removed.")
-        print("Type " + Fore.GREEN + "'I confirm that CTS is EMPTY'" + Style.RESET_ALL + " to proceed")
+        print("Please confirm the first CE structure is removed and disassembly, the CTS chamber is empty.")
+        print("Type " + Fore.GREEN + "'I confirm that CE is disassembly and CTS is EMPTY'" + Style.RESET_ALL + " to proceed")
         com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-        if com.lower() == 'i confirm that cts is empty':
+        if com.lower() == 'I confirm that CE is disassembly and CTS is EMPTY'.lower():
             print(
                 Fore.GREEN + '✓ Safety confirmed. Please open the cover of CTS.' + Style.RESET_ALL)
             break
@@ -1386,6 +1152,7 @@ if is_2nd_ce_box:
             print_status('warning', "Please complete the former test first")
             print(Fore.CYAN + "  - Wait for previous CE Box to complete testing" + Style.RESET_ALL)
             print(Fore.CYAN + "  - Remove previous CE Box from chamber" + Style.RESET_ALL)
+            print(Fore.CYAN + "  - Disassembly previous CE Box from chamber" + Style.RESET_ALL)
             print(Fore.CYAN + "  - Ensure warm-up procedure is complete" + Style.RESET_ALL)
             print(Fore.CYAN + "  - Verify chamber is ready for new CE Box" + Style.RESET_ALL)
             input(Fore.YELLOW + "\nPress Enter to check again..." + Style.RESET_ALL)
@@ -1562,7 +1329,7 @@ if is_2nd_ce_box:
 # Check if warm-up time from Phase 0 is complete before proceeding to Phase 2
 if 'cts_ready_time' in locals() and cts_ready_time is not None:
     print_separator()
-    print(Fore.CYAN + "🌡️  Checking CTS Warm-up Time..." + Style.RESET_ALL)
+    # print(Fore.CYAN + "🌡️  Checking CTS Warm-up Time..." + Style.RESET_ALL)
 
     # Calculate remaining time
     current_time = time.time()
@@ -1573,20 +1340,20 @@ if 'cts_ready_time' in locals() and cts_ready_time is not None:
         remaining_min = int(remaining_time // 60)
         remaining_sec = int(remaining_time % 60)
         print_status('warning', f"Warm-up still in progress: {remaining_min} min {remaining_sec} sec remaining")
-        print()
-        print(Fore.YELLOW + "  ⏳ Please wait for warm-up to complete before placing CE into chamber." + Style.RESET_ALL)
-        print()
+        # print()
+        # print(Fore.YELLOW + "  ⏳ Please wait for warm-up to complete before placing CE into chamber." + Style.RESET_ALL)
+        # print()
         # Wait for remaining time with countdown
-        print_status('info', "Waiting for warm-up to complete...")
+        # print_status('info', "Waiting for warm-up to complete...")
         countdown_timer(
             total_seconds=remaining_time,
             message="CTS Warm-up - Waiting for completion",
             allow_skip=True
         )
-        print_status('success', "Warm-up time complete!")
-    else:
+        # print_status('success', "Warm-up time complete!")
+    # else:
         # Warm-up time already completed
-        print_status('success', "Warm-up time complete!")
+        # print_status('success', "Warm-up time complete!")
 
     # Set CTS to IDLE state after warm-up
     print_status('info', "Setting CTS to IDLE state...")

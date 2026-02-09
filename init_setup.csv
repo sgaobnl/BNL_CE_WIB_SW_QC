@@ -1,4 +1,4 @@
-﻿karTest_Site,BNL
+﻿karTest_Site,BNL_CTS_01
 Tech_site_email,lke@bnl.gov
 Tech_Coordinator,LKE
 QC_data_root_folder,/mnt/data
@@ -10,4 +10,4 @@ CTS_LN2_PM,1200
 CTS_LN2_Fill_Wait,1800
 CTS_Warmup_Wait,3600
 Network_Upload_Path,/data/rtss/femb
-email_receiver,sgao@bnl.gov
+email_receiver,gao33.bnl@gmail.com

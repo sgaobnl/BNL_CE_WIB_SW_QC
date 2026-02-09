@@ -1,4 +1,4 @@
-﻿Test_Site,BNL
+﻿Test_Site,BNL_CTS_01
 Tech_site_email,lke@bnl.gov
 Tech_Coordinator,LKE
 QC_data_root_folder,/mnt/data
@@ -11,13 +11,13 @@ CTS_LN2_Fill_Wait,1800
 CTS_Warmup_Wait,3600
 Network_Upload_Path,/data/rtss/femb
 tester,sgao
-SLOT0,BNL_FEMB_I0-1865-1K-0023
-SLOT1,BNL_FEMB_I0-1865-1K-0020
+SLOT0,BNL_FEMB_I0-1865-1K_00016
+SLOT1,BNL_FEMB_I0-1865-1K_00020
 SLOT2,
 SLOT3,
 test_site,BNL
 toy_TPC,y
-comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00058,Bottom_CE=VD-10006,Bottom_Cover=0000,Bottom_FEMB=BNL_FEMB_I0-1865-1K-0023,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00059,Top_CE=VD-10009,Top_Cover=0000,Top_FEMB=BNL_FEMB_I0-1865-1K-0020"
+comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00060,Bottom_CE=VD-10008,Bottom_Cover=0008,Bottom_FEMB=BNL_FEMB_I0-1865-1K_00016,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00059,Top_CE=VD-10009,Top_Cover=0009,Top_FEMB=BNL_FEMB_I0-1865-1K_00020"
 top_path,D:
-karTest_Site,BNL
+karTest_Site,BNL_CTS_01
 email_receiver,sgao@bnl.gov
