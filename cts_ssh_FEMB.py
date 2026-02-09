@@ -1319,7 +1319,7 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None, email_info=No
                 print('Jump Remove')
         # time.sleep(500)
         t2 = time.time()
-        # time.sleep(180)
+        time.sleep(200)
         print('QC time consumption is: {}'.format(t2 - t1))
 
 

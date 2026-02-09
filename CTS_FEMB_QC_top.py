@@ -1525,13 +1525,6 @@ else:
 
 ### 24. Send test start email notification
 pre_info = cts.read_csv_to_dict(csv_file_implement, 'RT')
-# send_email.send_email(sender, password, receiver, "FEMB CE QC {}".format(pre_info['test_site']),
-#                       "FEMB QC start, stay tuned ...")
-
-# ----------------------------------------------------------------------------
-# CTS Warm Gas Completion Check (if started in Phase 0)
-# ----------------------------------------------------------------------------
-### 24a. Check and finish CTS warm gas if it was started in Phase 0
 if 'cts_ready_time' in locals() and cts_ready_time is not None:
     print_separator()
     print(Fore.CYAN + "🌡️  Checking CTS status..." + Style.RESET_ALL)
@@ -1565,17 +1558,8 @@ if 'cts_ready_time' in locals() and cts_ready_time is not None:
                 print_status('success', "CTS is now in IDLE state")
                 break
     print_separator()
-
-# ----------------------------------------------------------------------------
-# Power Supply Initialization
-# ----------------------------------------------------------------------------
-### 25. Initialize power supply for warm/cold/final tests
 if any(x in state_list for x in [3, 4, 5]):
     psu = rigol.PowerSupplyController()
-
-# ============================================================================
-## PHASE 3: WARM QC TEST
-# ============================================================================
 if 3 in state_list:
     inform = cts.read_csv_to_dict(csv_file_implement, 'RT')
     while True:
@@ -1711,7 +1695,6 @@ if 3 in state_list:
                             QC_TST_EN=3,
                             input_info=inform
                         )
-                        time.sleep(150)
                         # Save paths to shared file for CTS_Real_Time_Monitor.py
                         if wqdata_path and wqreport_path:
                             save_qc_paths(wqdata_path, wqreport_path, "Warm_QC")
@@ -1737,14 +1720,6 @@ if 3 in state_list:
                             print(Fore.RED + "\n" + "=" * 70)
                             print(f"  ⚠️  WARM QC TEST FAILED - {failed_slot}")
                             print("=" * 70 + Style.RESET_ALL)
-                            # print(Fore.YELLOW + "📧 Sending failure notification email..." + Style.RESET_ALL)
-                            # send_email.send_email(
-                            #     sender, password, receiver,
-                            #     f"Warm QC Test Failed - {pre_info.get('test_site', 'Unknown')}",
-                            #     "Warm QC Test failed. Awaiting operator decision."
-                            # )
-
-                            # User decision with retry option
                             print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
                             print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Warm QC once more (~30 min)")
                             print("  " + Fore.GREEN + "'c'" + Style.RESET_ALL + " - Continue anyway (not recommended)")
@@ -1765,12 +1740,8 @@ if 3 in state_list:
                                     if True:
                                     # if confirm_function("⚠️  Are you sure you want to continue despite Warm QC failure?"):
                                         print(Fore.YELLOW + "⚠️  Continuing despite Warm QC failure..." + Style.RESET_ALL)
-                                        # Exit retry loop and continue to cleanup
                                         qc_passed = False  # Mark as not passed but continue
                                         break
-                                    else:
-                                        print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
-                                        continue
                                 elif decision == 'e':
                                     # Confirm before exiting to disassembly
                                     if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
@@ -1811,23 +1782,14 @@ if 3 in state_list:
                             else:
                                 print(
                                     Fore.YELLOW + '⚠️  High current detected, attempting power off again...' + Style.RESET_ALL)
-
-                #### 28-29. Warm QC Result Check and Handling
-                # Only check results if we didn't skip due to checkout/QC failure
                 if not goto_disassembly:
                     time.sleep(2)
-
-                    # Use the specific paths from the most recent test execution
                     paths = []
                     if wqdata_path:
                         paths.append(wqdata_path)
                     if wqreport_path:
                         paths.append(wqreport_path)
-
-                    # If no paths available, skip result display
                     if paths:
-                        # Display detailed results (retry already handled in individual tests)
-                        # Set allow_retry=False to avoid double-asking user
                         all_passed, should_retry, failed_slots = handle_qc_results(
                             paths=paths,
                             inform=inform,
@@ -1835,11 +1797,8 @@ if 3 in state_list:
                             allow_retry=False,  # Retry already handled in Checkout and QC Test
                             verbose=True
                         )
-
-                    # Exit the Warm QC loop after showing results
                     break
                 else:
-                    # Checkout or QC test failed and user chose to exit, skip to disassembly
                     break
 
         else:
@@ -2161,14 +2120,8 @@ if 4 in state_list and not goto_disassembly:
                         print_status('success', f"LN₂ Level maintained - Chamber: Level {tc_level}, Dewar: {dewar_level}")
                     else:
                         print_status('warning', f"LN₂ Level depleted - Chamber: Level {tc_level}, Dewar: {dewar_level}")
-
                 print_separator()
-
-
-            #### Cold QC Result Check and Handling
             time.sleep(2)
-
-            # Use the specific paths from the Cold QC test execution
             paths = []
             if lqdata_path:
                 paths.append(lqdata_path)
@@ -2306,18 +2259,9 @@ if 4 in state_list and not goto_disassembly:
 if 5 in state_list and not goto_disassembly:
     print_phase_header(5, 6, "Final Checkout", "<35 min")
     inform = cts.read_csv_to_dict(csv_file_implement, 'RT')
-
-    ### 41. Send Final Checkout Email Notification
-    # send_email.send_email(
-    #     sender, password, receiver,
-    #     "FEMB CE QC {}".format('test_site'),
-    #     "Please proceed to Final Checkout."
-    # )
-
     while True:
         if True:
             print_separator()
-
             # Power on WIB
             print_step("Powering ON WIB", 1, 4)
             psu.set_channel(1, 12.0, 3.0, on=True)

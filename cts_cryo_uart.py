@@ -358,7 +358,7 @@ class cryobox:
 
         print(Fore.CYAN + f"\n{'='*70}" + Style.RESET_ALL)
         print(Fore.YELLOW + f"  CTS LN₂ Immersion (~{waitminutes} min)" + Style.RESET_ALL)
-        print(Fore.CYAN + f"  Monitoring level every 60 seconds..." + Style.RESET_ALL)
+        print(Fore.CYAN + f"  Monitoring level every 20 seconds..." + Style.RESET_ALL)
         print(Fore.CYAN + f"{'='*70}\n" + Style.RESET_ALL)
 
         t0 = time.time_ns()//1e9
@@ -372,7 +372,7 @@ class cryobox:
         timeout_email_sent = False  # Track if timeout email was already sent
 
         while True:
-            time.sleep(60)
+            time.sleep(20)
             check_count += 1
 
             if self.cryo_create():
