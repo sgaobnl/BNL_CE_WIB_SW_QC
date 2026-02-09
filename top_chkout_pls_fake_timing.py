@@ -64,21 +64,24 @@ while True:
         cfg_paras_rec.append( (femb_id, copy.deepcopy(chk.adcs_paras), copy.deepcopy(chk.regs_int8), adac_pls_en) )
         chk.femb_adc_cfg(femb_id)
     #step 3
-        if chk.femb_cfg(femb_id, adac_pls_en):
-            print("Cable Test Done")
-        else:
-            print("Fail: Check data cable in slot {} connection!(All FEMBs are powered off)".format(femb_id))
+        chk.femb_cfg(femb_id, adac_pls_en)
+
 
     i = i+1
     if i > 20:
         break
 
-# chk.data_align(fembs)
+chk.data_align(fembs)
 #
-# time.sleep(0.5)
+time.sleep(0.5)
 #
 # ####################FEMBs Data taking################################
-# rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+rawdata = chk.spybuf_trig(fembs=fembs, num_samples=sample_N, trig_cmd=0) #returns list of size 1
+
+if rawdata:
+    print("Cable Test Done")
+else:
+    print("Fail: Check data cable in slot {} connection!(All FEMBs are powered off)".format(femb_id))
 #
 # pwr_meas = chk.get_sensors()
 #
