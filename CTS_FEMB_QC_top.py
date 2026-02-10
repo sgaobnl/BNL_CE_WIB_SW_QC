@@ -376,6 +376,7 @@ print(Fore.YELLOW + "⚠ WARNING: Do not touch LN₂. Risk of serious injury." +
 
 script = "CTS_Real_Time_Monitor.py"
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+MAIN_SCRIPT = os.path.basename(os.path.abspath(__file__))
 
 sender = "bnlr216@gmail.com"
 password = "vvef tosp minf wwhf"
@@ -451,13 +452,13 @@ if is_2nd_ce_box:
 
     # Show CE Support Structure assembly instructions
     print(Fore.GREEN + "\n📋 Please assemble the CE Support Structure:" + Style.RESET_ALL)
-os.system(f'pkill -f "{script}"')
+# os.system(f'pkill -f "{script}"')
 time.sleep(1)
 
 ### Launch monitoring script in minimal-size terminal
-current_dir = os.path.dirname(os.path.abspath(__file__))
-os.system(f'gnome-terminal --title="CTS Monitor" --hide-menubar --geometry=15x5-0-0 --working-directory="{current_dir}" -- bash -c "python3 {script}; exec bash" &')
-print(f"✓ Analysis Code Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# os.system(f'gnome-terminal --title="CTS Monitor" --hide-menubar --geometry=15x5-0-0 --working-directory="{current_dir}" -- bash -c "python3 {script}; exec bash" &')
+print(f"✓ check CTS Monitor Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
 receiver = get_email()
 update_email_receiver_in_config(receiver)
 
@@ -1142,9 +1143,9 @@ if is_2nd_ce_box:
     while True:
         print(Fore.YELLOW + "\n⚠️  SAFETY CHECK:" + Style.RESET_ALL)
         print("Please confirm the first CE structure is removed and disassembly, the CTS chamber is empty.")
-        print("Type " + Fore.GREEN + "'I confirm that CE is disassembly and CTS is EMPTY'" + Style.RESET_ALL + " to proceed")
+        print("Type " + Fore.GREEN + "'I confirm the previous terminal has exited'" + Style.RESET_ALL + " to proceed")
         com = input(Fore.YELLOW + '>> ' + Style.RESET_ALL)
-        if com.lower() == 'I confirm that CE is disassembly and CTS is EMPTY'.lower():
+        if com.lower() == 'I confirm the previous terminal has exited'.lower():
             print(
                 Fore.GREEN + '✓ Safety confirmed. Please open the cover of CTS.' + Style.RESET_ALL)
             break
@@ -1472,6 +1473,7 @@ FEMBs Installed:
 
 Next Step: Warm QC Test
 
+Script: {MAIN_SCRIPT}
 """
         send_email.send_email(sender, password, receiver,
                             f"Assembly Complete - {pre_info_temp.get('test_site', 'N/A')}",
@@ -1632,7 +1634,7 @@ if 3 in state_list:
                                 send_email.send_email(
                                     sender, password, receiver,
                                     f"Warm Checkout Failed - {pre_info.get('test_site', 'Unknown')}",
-                                    f"Warm Checkout failed after {max_checkout_attempts} attempts. Awaiting operator decision."
+                                    f"Warm Checkout failed after {max_checkout_attempts} attempts. Awaiting operator decision.\n\nTest Data Path: {wcdata_path}\nTest Report Path: {wcreport_path}\nScript: {MAIN_SCRIPT}"
                                 )
 
                             # User decision with retry option
@@ -2047,7 +2049,7 @@ if 4 in state_list and not goto_disassembly:
                     send_email.send_email(
                         sender, password, receiver,
                         f"Cold Checkout Failed - {pre_info.get('test_site', 'Unknown')}",
-                        f"Cold Checkout failed after {max_cold_checkout_attempts} attempts. Proceeding to Cold QC test."
+                        f"Cold Checkout failed after {max_cold_checkout_attempts} attempts. Proceeding to Cold QC test.\n\nTest Data Path: {lcdata_path}\nTest Report Path: {lcreport_path}\nScript: {MAIN_SCRIPT}"
                     )
 
                 # CTS Level Monitoring (if automatic mode)
@@ -2335,7 +2337,7 @@ if 5 in state_list and not goto_disassembly:
                             send_email.send_email(
                                 sender, password, receiver,
                                 f"Final Checkout Failed - {pre_info.get('test_site', 'Unknown')}",
-                                f"Final Checkout failed after {max_final_checkout_attempts} attempts. Awaiting operator decision."
+                                f"Final Checkout failed after {max_final_checkout_attempts} attempts. Awaiting operator decision.\n\nTest Data Path: {fcdata_path}\nTest Report Path: {fcreport_path}\nScript: {MAIN_SCRIPT}"
                             )
 
                         # User decision with retry option
@@ -2430,6 +2432,28 @@ FEMB Results:
                         status = "PASS" if passed else "FAIL"
                         email_body += f"  {slot_position} Slot{slot_num}: {femb_id} - {status}\n"
 
+                    email_body += "\nTest Paths:\n"
+                    missing_paths = []
+                    if wqdata_path and wqdata_path != r"D:\data\temp":
+                        email_body += f"  Warm QC Data: {wqdata_path}\n"
+                        email_body += f"  Warm QC Report: {wqreport_path}\n"
+                    else:
+                        missing_paths.append("Warm QC")
+                    if lqdata_path and lqdata_path != r"D:\data\temp":
+                        email_body += f"  Cold QC Data: {lqdata_path}\n"
+                        email_body += f"  Cold QC Report: {lqreport_path}\n"
+                    else:
+                        missing_paths.append("Cold QC")
+                    if fcdata_path and fcdata_path != r"D:\data\temp":
+                        email_body += f"  Final Checkout Data: {fcdata_path}\n"
+                        email_body += f"  Final Checkout Report: {fcreport_path}\n"
+                    else:
+                        missing_paths.append("Final Checkout")
+
+                    if missing_paths:
+                        email_body += f"\n  WARNING: Missing paths for: {', '.join(missing_paths)}\n"
+                        email_body += f"  Please check if {script} is running.\n"
+
                     email_body += f"""
 Next Steps:
   1. Power OFF the WIB
@@ -2437,6 +2461,8 @@ Next Steps:
   3. Store FEMBs according to test results
 
 Detailed comprehensive summary is attached.
+
+Script: {MAIN_SCRIPT}
 """
                     # Send email with overall summary attachment
                     send_email.send_email_with_attachment(
@@ -2458,7 +2484,7 @@ Detailed comprehensive summary is attached.
                     send_email.send_email(
                         sender, password, receiver,
                         f"QC Complete - {pre_info.get('test_site', 'N/A')}",
-                        "Final Checkout Complete. Please power OFF the WIB and proceed to disassembly and classification."
+                        f"Final Checkout Complete. Please power OFF the WIB and proceed to disassembly and classification.\n\nScript: {MAIN_SCRIPT}"
                     )
                     print_status('success', "Final QC email sent")
             except Exception as e:
@@ -2805,6 +2831,6 @@ while True:
 ### 56. Main Entry - Close Terminal Window
 if __name__ == "__main__":
     print(Fore.CYAN + "Process ongoing..." + Style.RESET_ALL)
-    print(Fore.GREEN + "✓ Completed. Closing window..." + Style.RESET_ALL)
+    print(Fore.GREEN + "✓ Completed. Enter 'Exit' in the last line to exit ..." + Style.RESET_ALL)
     time.sleep(1)
-    close_terminal()
+    # close_terminal()

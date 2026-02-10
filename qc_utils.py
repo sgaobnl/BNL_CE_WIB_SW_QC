@@ -423,11 +423,15 @@ def QC_Process(path="D:", QC_TST_EN=None, input_info=None, pre_info=None):
                 print(Fore.RED + f"  Failed slots: {badchips}" + Style.RESET_ALL)
                 print(Fore.YELLOW + "\n  Please check FEMB hardware and connections before retesting." + Style.RESET_ALL)
 
-                if pre_info:
-                    failed_slots_str = ', '.join([f'SLOT#{s}' for s in badchips])
-                    send_email.send_email(sender, password, receiver,
-                                         f"CRITICAL: FEMB Current Failure at {pre_info.get('test_site', 'Unknown')}",
-                                         f"Critical current failure detected.\nFailed slots: {failed_slots_str}\n\nTest skipped. Please check FEMB hardware and connections.")
+                test_site = 'Unknown'
+                if input_info:
+                    test_site = input_info.get('test_site', 'Unknown')
+                elif pre_info:
+                    test_site = pre_info.get('test_site', 'Unknown')
+                failed_slots_str = ', '.join([f'SLOT#{s}' for s in badchips])
+                send_email.send_email(sender, password, receiver,
+                                     f"CRITICAL: FEMB Current Failure at {test_site}",
+                                     f"Critical current failure detected.\nFailed slots: {failed_slots_str}\n\nTest skipped. Please check FEMB hardware and connections.\n\nTest Root Path: {path}\nScript: {os.path.basename(__file__)} (called by CTS_FEMB_QC_top.py)")
 
                 # Return None paths to indicate skip
                 return None, None
@@ -449,10 +453,14 @@ def QC_Process(path="D:", QC_TST_EN=None, input_info=None, pre_info=None):
             print(Fore.YELLOW + "Enter '139' to terminate test" + Style.RESET_ALL)
             print(Fore.YELLOW + "Enter '2' to retest" + Style.RESET_ALL)
 
-            if pre_info:
-                send_email.send_email(sender, password, receiver,
-                                     "Issue Found at {}".format(pre_info.get('test_site', 'Unknown')),
-                                     "Issue Found, Please Check the Detail")
+            issue_test_site = 'Unknown'
+            if input_info:
+                issue_test_site = input_info.get('test_site', 'Unknown')
+            elif pre_info:
+                issue_test_site = pre_info.get('test_site', 'Unknown')
+            send_email.send_email(sender, password, receiver,
+                                 "Issue Found at {}".format(issue_test_site),
+                                 f"Issue Found, Please Check the Detail\n\nTest Data Path: {data_path}\nTest Report Path: {report_path}\nScript: {os.path.basename(__file__)} (called by CTS_FEMB_QC_top.py)")
 
             userinput = input(Fore.CYAN + "Please contact tech coordinator: " + Style.RESET_ALL)
             if len(userinput) > 0:

@@ -421,6 +421,8 @@ Current Status:
 Please check the CTS system and LN₂ supply.
 
 This is an automated notification from the CTS QC system.
+
+Script: {os.path.basename(__file__)} (called by CTS_FEMB_QC_top.py)
 """
                             send_email.send_email(
                                 email_info['sender'],

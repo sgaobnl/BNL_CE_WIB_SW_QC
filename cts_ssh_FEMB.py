@@ -650,7 +650,8 @@ def cts_ssh_FEMB(root="D:/FEMB_QC/", QC_TST_EN=0, input_info=None, email_info=No
                         body = (
                             f"{mode_str} Cable Test: Slot {slot} failed after {MAX_CABLE_RETRIES} attempts.\n"
                             f"Test Site: CTS {test_site}\n\n"
-                            f"Please check data cable connection for Slot {slot}."
+                            f"Please check data cable connection for Slot {slot}.\n\n"
+                            f"Script: {os.path.basename(__file__)} (called by CTS_FEMB_QC_top.py)"
                         )
                         if is_cold:
                             body += f"\nSlot {slot} has been removed from the test list."
