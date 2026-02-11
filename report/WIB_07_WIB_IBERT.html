@@ -15,6 +15,15 @@
             text-align: center;
             color: #444;
         }
+        .status-banner {
+            text-align: center;
+            padding: 15px;
+            margin: 20px auto;
+            width: 60%;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
         table {
             width: 60%;
             margin: 20px auto;
@@ -52,6 +61,11 @@
 </head>
 <body>
     <h2>WIB IBERT Report</h2>
+    <div class="status-banner" style="background-color: #d4edda; color: #28a745; border: 2px solid #28a745;">
+        Overall Test Status: PASS
+    </div>
+
+    <h3 style="text-align: center; margin-top: 30px;">rp_dict.log07_ibert Contents</h3>
     <table>
         <thead>
             <tr>
@@ -60,10 +74,22 @@
             </tr>
         </thead>
         <tbody>
-            
+            <tr><td>X0Y4_Total_BER</td><td>3.0703681760569273e-12</td></tr>
+<tr><td>X0Y4_Total_ERROR_count</td><td>000000000000</td></tr>
+<tr><td>X0Y4_Total_BIT_count</td><td>325693839520</td></tr>
+<tr><td>X0Y5_Total_BER</td><td>3.0624479566292712e-12</td></tr>
+<tr><td>X0Y5_Total_ERROR_count</td><td>000000000000</td></tr>
+<tr><td>X0Y5_Total_BIT_count</td><td>326536161320</td></tr>
+<tr><td>X0Y4_Total_ERROR_count_Result</td><td>0</td></tr>
+<tr><td>X0Y4_Total_ERROR_count_Decision</td><td>PASS</td></tr>
+<tr><td>X0Y5_Total_ERROR_count_Result</td><td>0</td></tr>
+<tr><td>X0Y5_Total_ERROR_count_Decision</td><td>PASS</td></tr>
+<tr><td>Overall_Test_Status</td><td>PASS</td></tr>
+
         </tbody>
     </table>
 
+    <h3 style="text-align: center; margin-top: 30px;">Eye Scan Results</h3>
     <div class="images">
         <img src="./eye_scan_X0Y4.png" alt="Eye Scan X0Y4">
         <img src="./eye_scan_X0Y5.png" alt="Eye Scan X0Y5">

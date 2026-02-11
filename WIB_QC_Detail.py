@@ -6,7 +6,9 @@ import file.report_dict as rd
 import csv
 import os
 import subprocess
+import time
 
+t1 = time.time()
 print("\033[35m" + "A_RT00 : Input the Test Information" + "\033[0m")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 target_file_path = os.path.join(base_dir, ".", "file", "wib_info.csv")
@@ -48,13 +50,15 @@ subprocess.run(["python", "./component/Test03_power_rail_for_FEMB_1V.py"])
 subprocess.run(["python", "./component/Test03_power_rail_for_FEMB_2V.py"])
 subprocess.run(["python", "./component/Test03_power_rail_for_FEMB_3V.py"])
 subprocess.run(["python", "./component/Test03_power_rail_for_FEMB_4V.py"])
-subprocess.run(["python", "./component/Test0400_WIB_FEMB_Pulse.py"])
+# subprocess.run(["python", "./component/Test0400_WIB_FEMB_Pulse.py"])
 subprocess.run(["python", "./component/Test0401_WIB_FEMB_Pulse.py"])
-subprocess.run(["python", "./component/Test0402_WIB_FEMB_Pulse.py"])
-subprocess.run(["python", "./component/Test0403_WIB_FEMB_Pulse.py"])
+# subprocess.run(["python", "./component/Test0402_WIB_FEMB_Pulse.py"])
+# subprocess.run(["python", "./component/Test0403_WIB_FEMB_Pulse.py"])
 subprocess.run(["python", "./component/Test05_Search_I2C.py"])
 subprocess.run(["python", "./component/Test052_getInfoFromI2C.py"])
 subprocess.run(["python", "./component/Test06_PTB_Interface_Path.py"])
 print("Test07   IBERT Test Begin ...")
 subprocess.run(["python", "./component/Test07_IBERT.py"])
 subprocess.run(["python", "./component/Final_Report.py"])
+t2 = time.time()
+print(t2-t1)

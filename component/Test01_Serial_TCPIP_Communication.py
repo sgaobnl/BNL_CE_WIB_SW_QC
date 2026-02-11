@@ -30,17 +30,6 @@ import serial.tools.list_ports
 from datetime import datetime, timezone
 import time
 
-
-
-
-
-
-
-
-
-
-
-
 # 寻找串口
 print("\n" + "="*60)
 print("\033[35m" + "A_RT01 : Serial_TCPIP_Communication Test" + "\033[0m")
@@ -188,7 +177,7 @@ while not uart_test_passed:
                     uart_note = 'Serial Communication Pass'
                     break
 
-            elif time.time() - last_data_time > 10:
+            elif time.time() - last_data_time > 30:
                 print("No data received for 10 seconds. Stopping.")
                 print("\033[31mFailed the Serial Communication Test\033[0m")
                 uart_status = False

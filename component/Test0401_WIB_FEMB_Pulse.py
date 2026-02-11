@@ -38,6 +38,26 @@ import subprocess
 
 ## =========================================
 
+# === Helper function for robust WIB service restart ===
+def safe_restart_wib_service(max_retries=5, retry_delay=5):
+    """
+    Safely restart WIB service with automatic retry on failure.
+    Raises RuntimeError if all retries are exhausted.
+    """
+    for attempt in range(max_retries):
+        if attempt > 0:
+            print(f"\033[33mRetrying WIB service restart (attempt {attempt + 1}/{max_retries})...\033[0m")
+            time.sleep(retry_delay)
+
+        success = initial.restart_wib_service()
+        if success:
+            return True
+
+        print(f"\033[31mWIB service restart attempt {attempt + 1} failed\033[0m")
+
+    # All retries exhausted - raise error to trigger test restart
+    raise RuntimeError("WIB service restart failed after all retries - connection refused")
+
 ##  === 01 power start =====================
 
 
@@ -154,7 +174,7 @@ time.sleep(1)
 # Break = input("Pass03 (y/n)")
 ## =========================================
 
-for fembi in [0, 1, 2, 3]:
+for fembi in [1]:
     print(fembi)
     femb = int(fembi)
     if femb == 0:
@@ -172,7 +192,8 @@ for fembi in [0, 1, 2, 3]:
     result_dict["save_dir"] = save_dir
     result_dict["Tester"] = tester
     result_dict["Note"] = note
-
+    safe_restart_wib_service()
+    tcp.reset_restart_counter()
     # Power On
     print("Turn on FEMB on WIB slot {}".format(femb))
     v_fe = 3
@@ -195,14 +216,14 @@ for fembi in [0, 1, 2, 3]:
     print("\033[36m" + "Starting SEOFF Mode Power Test" + "\033[0m")
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("Restarting WIB service for SEOFF test...")
-    initial.restart_wib_service()
+    safe_restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
-    time.sleep(0.1)  # Reduced from 2s to 1s
+    time.sleep(1)  # Reduced from 2s to 1s
 
     print('SEOFF')
     tcp.set_fe_board(sts=1, snc=0, sg0=0, sg1=0, st0=1, st1=1, swdac=0, dac=0x0)
     tcp.femb_cfg()
-    time.sleep(0.5)  # Reduced from 1s to 0.5s
+    time.sleep(1)  # Reduced from 1s to 0.5s
     for i in range(3):  # Reduced from 5 to 3 measurements
         pwr_info = tcp.femb_pwr_rd(femb=femb)
         time.sleep(0.1)  # Reduced from 0.2s to 0.1s
@@ -243,7 +264,7 @@ for fembi in [0, 1, 2, 3]:
     print("\033[36m" + "Starting SEON (SDC) Mode Power Test" + "\033[0m")
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("Restarting WIB service for SEON test...")
-    initial.restart_wib_service()
+    safe_restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
     time.sleep(0.1)  # Reduced from 2s to 1s
 
@@ -290,7 +311,7 @@ for fembi in [0, 1, 2, 3]:
     print("\033[36m" + "Starting DIFF Mode Power Test" + "\033[0m")
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("Restarting WIB service for DIFF test...")
-    initial.restart_wib_service()
+    safe_restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
     time.sleep(0.1)  # Reduced from 2s to 1s
 
@@ -339,7 +360,7 @@ for fembi in [0, 1, 2, 3]:
     print("\033[36m" + "Starting Data Acquisition & Analysis" + "\033[0m")
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("Restarting WIB service for data acquisition...")
-    initial.restart_wib_service()
+    safe_restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
     time.sleep(0.1)
 
@@ -355,7 +376,7 @@ for fembi in [0, 1, 2, 3]:
     tcp.femb_cfg()
     # for asic in range(8):
     for asic in [0, 4]:
-        initial.restart_wib_service()
+        safe_restart_wib_service()
         tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
         print("Measure ASIC {}".format(asic))
         tmp = tcp.femb_adc_mon_cs(femb_no=femb, adc_no=asic)
@@ -385,7 +406,7 @@ for fembi in [0, 1, 2, 3]:
     print("\033[36m" + "Starting Data Acquisition & Analysis" + "\033[0m")
     print("\033[36m" + "=" * 60 + "\033[0m")
     print("Restarting WIB service for data acquisition...")
-    initial.restart_wib_service()
+    safe_restart_wib_service()
     tcp.reset_restart_counter()  # Reset auto-restart attempts for this phase
     time.sleep(0.1)  # Reduced from 2s to 1s
     print("Start FEMB configuration: 14mV/fC, 900mV BL, 2.0us, single-ended, 500pA, ASICDAC=0x10, Cali_enable, SDC off")

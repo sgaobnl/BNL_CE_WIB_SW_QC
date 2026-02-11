@@ -159,51 +159,144 @@ def check_wib_service_healthy():
     except:
         return False
 
-def restart_wib_service(force=False):
-    """ Restart WIB service by killing old process and running FEMB_start """
+def restart_wib_service(force=False, max_retries=3, retry_delay=5):
+    """ Restart WIB service by killing old process and running FEMB_start
+
+    Args:
+        force: Force restart even if service appears healthy
+        max_retries: Maximum number of retry attempts (default: 3)
+        retry_delay: Seconds to wait between retries (default: 5)
+
+    Returns:
+        True if service started successfully, False otherwise
+    """
     global connection
 
-    # Close existing connection if any
-    if connection:
-        try:
-            connection.close()
-            print("Closed existing Telnet connection")
-        except:
-            pass
-        connection = None
+    for attempt in range(max_retries):
+        if attempt > 0:
+            print(f"\033[33m" + f"Retry attempt {attempt}/{max_retries-1}..." + "\033[0m")
+            time.sleep(retry_delay)
 
-    print("=" * 60)
-    print("Restarting WIB service...")
-    print("=" * 60)
-
-    conn = connect_to_server()
-    if conn:
-        # Kill any existing WIB server processes
-        print("Killing old WIB processes...")
-        send_command(conn, "killall -9 wib_server 2>/dev/null")
-        send_command(conn, "killall -9 wr_nic_daemon 2>/dev/null")
-        # Find and kill processes using port 32010
-        send_command(conn, "fuser -k 32010/tcp 2>/dev/null")
-        time.sleep(1)
-
-        # Restart the service using background method
-        print("Starting FEMB_start...")
-        if not start_femb_service_background(conn):
-            print("Failed to start service, trying simple method...")
-            send_command(conn, INITIAL_COMMAND + " &")
-            time.sleep(5)
-
-        # Verify service is now responding
-        if check_wib_service_healthy():
-            print("\033[32m" + "✓ WIB service restart successful and verified" + "\033[0m")
-            connection = conn
-            return True
-        else:
-            print("\033[31m" + "✗ WARNING: WIB service restarted but not responding properly" + "\033[0m")
-            conn.close()
+        # Close existing connection if any
+        if connection:
+            try:
+                connection.close()
+                print("Closed existing Telnet connection")
+            except:
+                pass
             connection = None
-            return False
+
+        print("=" * 60)
+        print(f"Restarting WIB service... (attempt {attempt + 1}/{max_retries})")
+        print("=" * 60)
+
+        conn = connect_to_server()
+        if conn:
+            # Kill any existing WIB server processes
+            print("Killing old WIB processes...")
+            send_command(conn, "killall -9 wib_server 2>/dev/null")
+            send_command(conn, "killall -9 wr_nic_daemon 2>/dev/null")
+            # Find and kill processes using port 32010
+            send_command(conn, "fuser -k 32010/tcp 2>/dev/null")
+            time.sleep(1)
+
+            # Restart the service using background method
+            print("Starting FEMB_start...")
+            if not start_femb_service_background(conn):
+                print("Failed to start service, trying simple method...")
+                send_command(conn, INITIAL_COMMAND + " &")
+                time.sleep(5)
+
+            # Verify service is now responding
+            if check_wib_service_healthy():
+                print("\033[32m" + "✓ WIB service restart successful and verified" + "\033[0m")
+                connection = conn
+                return True
+            else:
+                print("\033[31m" + "✗ WARNING: WIB service restarted but not responding properly" + "\033[0m")
+                try:
+                    conn.close()
+                except:
+                    pass
+                connection = None
+                # Continue to next retry attempt
+        else:
+            print("\033[31m" + "Failed to connect to server" + "\033[0m")
+
+    print("\033[31m" + f"Service restart failed after {max_retries} attempts" + "\033[0m")
     return False
+
+
+def restart_wib_service_with_full_test_retry(test_func, max_test_retries=3, *args, **kwargs):
+    """
+    Wrapper to run a test function with automatic retry on connection failures.
+
+    This function monitors for connection errors during test execution and
+    automatically restarts the entire test if connection failures are detected.
+
+    Args:
+        test_func: The test function to run
+        max_test_retries: Maximum number of times to retry the entire test
+        *args, **kwargs: Arguments to pass to the test function
+
+    Returns:
+        The result of test_func if successful, None if all retries failed
+    """
+    for attempt in range(max_test_retries):
+        if attempt > 0:
+            print("\033[33m" + "=" * 60 + "\033[0m")
+            print(f"\033[33mRestarting entire test (attempt {attempt + 1}/{max_test_retries})...\033[0m")
+            print("\033[33m" + "=" * 60 + "\033[0m")
+            # Force a clean service restart before retrying
+            restart_wib_service(force=True, max_retries=5, retry_delay=5)
+
+        try:
+            result = test_func(*args, **kwargs)
+            return result
+        except (ConnectionRefusedError, ConnectionResetError, OSError) as e:
+            error_str = str(e)
+            if "Connection refused" in error_str or "Errno 111" in error_str or \
+               "Transport endpoint is not connected" in error_str or "Errno 107" in error_str:
+                print(f"\033[31mConnection error detected: {e}\033[0m")
+                print(f"\033[33mWill retry test from beginning...\033[0m")
+                continue
+            else:
+                raise
+        except Exception as e:
+            error_str = str(e)
+            # Check if it's a connection-related error
+            if "Connection refused" in error_str or "Errno 111" in error_str or \
+               "Transport endpoint is not connected" in error_str or "Errno 107" in error_str:
+                print(f"\033[31mConnection error detected: {e}\033[0m")
+                print(f"\033[33mWill retry test from beginning...\033[0m")
+                continue
+            else:
+                raise
+
+    print(f"\033[31mTest failed after {max_test_retries} attempts\033[0m")
+    return None
+
+
+def ensure_wib_service_healthy(max_retries=5, retry_delay=5):
+    """
+    Ensure WIB service is healthy, with automatic restart and retry if not.
+
+    This function should be called before critical operations to ensure
+    the WIB service is ready.
+
+    Args:
+        max_retries: Maximum number of restart attempts
+        retry_delay: Seconds to wait between attempts
+
+    Returns:
+        True if service is healthy, False if all attempts failed
+    """
+    # First check if already healthy
+    if check_wib_service_healthy():
+        return True
+
+    print("\033[33mWIB service not healthy, attempting restart...\033[0m")
+    return restart_wib_service(force=True, max_retries=max_retries, retry_delay=retry_delay)
 
 # if __name__ == "__main__":
 # Initialize connection (will be used to start service if needed)
