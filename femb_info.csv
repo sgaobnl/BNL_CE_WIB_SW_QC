@@ -10,14 +10,14 @@ CTS_LN2_PM,1200
 CTS_LN2_Fill_Wait,1800
 CTS_Warmup_Wait,3600
 Network_Upload_Path,/data/rtss/femb
-tester,sgao
-SLOT0,BNL_FEMB_I0-1865-1J_00006
-SLOT1,BNL_FEMB_IO-1865-1G_00005
+tester,lke
+SLOT0,BNL_FEMB_IO-1865-1J_00094
+SLOT1,BNL_FEMB_I0-1865-1F_00041
 SLOT2,
 SLOT3,
 test_site,BNL
 toy_TPC,y
-comment,"Bottom_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00056,Bottom_CE=0004,Bottom_Cover=0052,Bottom_FEMB=BNL_FEMB_I0-1865-1J_00006,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00057,Top_CE=0149,Top_Cover=0145,Top_FEMB=BNL_FEMB_IO-1865-1G_00005"
+comment,"Bottom_HWDB=Exit the scrip,Bottom_CE=Exit the scrip,Bottom_Cover=0000,Bottom_FEMB=BNL_FEMB_IO-1865-1J_00094,Top_HWDB=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00062,Top_CE=https://dbweb0.fnal.gov/cdbdev/view/component/D08100400001-00062,Top_Cover=0000,Top_FEMB=BNL_FEMB_I0-1865-1F_00041"
 top_path,D:
 karTest_Site,BNL_CTS_01
-email_receiver,sgao@bnl.gov
+email_receiver,lke@bnl.gov

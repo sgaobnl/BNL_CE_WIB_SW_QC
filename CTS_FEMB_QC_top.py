@@ -435,6 +435,7 @@ while True:
         while True:
             ce_box_input_2 = input(Fore.YELLOW + '>> ' + Style.RESET_ALL).strip().upper()
             if ce_box_input_2 in ['N', 'NO']:
+                print("Enter 'exit' to close the script")
                 exit()
             elif ce_box_input_2 in ['Y', 'YES']:
                 is_2nd_ce_box = True
@@ -458,8 +459,8 @@ time.sleep(1)
 ### Launch monitoring script in minimal-size terminal
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # os.system(f'gnome-terminal --title="CTS Monitor" --hide-menubar --geometry=15x5-0-0 --working-directory="{current_dir}" -- bash -c "python3 {script}; exec bash" &')
-print(f"✓ check CTS Monitor Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
-receiver = get_email()
+# print(f"✓ check CTS Monitor Launched" + Fore.GREEN + "(A terminal for real time analysis is launched, please minimize it.)" + Style.RESET_ALL)
+# receiver = get_email()
 update_email_receiver_in_config(receiver)
 
 shifter_log_url = "https://docs.google.com/document/d/1Eaa8iv3Nb6AcCbxcXl-iK9pYBfZ5Rx7T7D97M3HINTU/edit?usp=sharing"
@@ -1100,7 +1101,9 @@ if 1 in state_list:
         csv_data['SLOT2'] = ' '
     if 'SLOT3' not in csv_data:
         csv_data['SLOT3'] = ' '
-    if 'test_site' not in csv_data:
+    if 'karTest_Site' in csv_data:
+        csv_data['test_site'] = csv_data['karTest_Site']
+    elif 'test_site' not in csv_data:
         csv_data['test_site'] = 'BNL'
     if 'toy_TPC' not in csv_data:
         csv_data['toy_TPC'] = 'y'
@@ -1700,65 +1703,99 @@ if 3 in state_list:
                         # Save paths to shared file for CTS_Real_Time_Monitor.py
                         if wqdata_path and wqreport_path:
                             save_qc_paths(wqdata_path, wqreport_path, "Warm_QC")
-                        qc_passed = check_checkout_result(wqdata_path, wqreport_path)
+                        paths = []
+                        if wqdata_path:
+                            paths.append(wqdata_path)
+                        if wqreport_path:
+                            paths.append(wqreport_path)
+                        if paths:
+                            qc_passed, _, failed_slots = handle_qc_results(
+                                paths=paths,
+                                inform=inform,
+                                test_phase="Warm QC",
+                                allow_retry=False,
+                                verbose=True
+                            )
+                        else:
+                            qc_passed = False
                         if qc_passed:
-                            print(Fore.GREEN + "✓ Warm QC PASSED" + Style.RESET_ALL)
                             break
                         else:
-                            print(Fore.RED + "✗ Warm QC FAILED" + Style.RESET_ALL)
-                            # Print fault file paths
-                            print(Fore.YELLOW + "\n" + "-" * 70)
-                            print("  📋 Checking for fault files in Warm QC results...")
-                            print("-" * 70 + Style.RESET_ALL)
-                            check_fault_files(
-                                paths=[wqdata_path, wqreport_path],
-                                show_p_files=False,
-                                inform=inform,
-                                time_limit_hours=None
+                            failed_slot_names = ', '.join(
+                                [f"Slot{s} ({fid})" for s, fid in failed_slots]
                             )
-
-                            # Send email notification
-                            failed_slot = get_failed_slot_from_path(wqreport_path)
                             print(Fore.RED + "\n" + "=" * 70)
-                            print(f"  ⚠️  WARM QC TEST FAILED - {failed_slot}")
+                            print(f"  ⚠️  WARM QC TEST FAILED - {failed_slot_names}")
                             print("=" * 70 + Style.RESET_ALL)
-                            print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
-                            print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Warm QC once more (~30 min)")
-                            print("  " + Fore.GREEN + "'c'" + Style.RESET_ALL + " - Continue anyway (not recommended)")
-                            print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit and disassemble test structure")
 
-                            while True:
-                                decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
-                                if decision == 'r':
-                                    # Confirm before retrying (takes ~30 min)
-                                    if confirm_function("⚠️  Retry will take ~30 minutes. Are you sure?"):
-                                        print(Fore.CYAN + "🔄 Retrying Warm QC (this will take ~30 min)..." + Style.RESET_ALL)
-                                        break  # Continue outer while loop for retry
+                            if len(failed_slots) >= 2:
+                                # Both boards failed - must disassemble
+                                print(Fore.RED + "\n  Both boards failed Warm QC." + Style.RESET_ALL)
+                                print(Fore.YELLOW + "  Please disassemble the failed boards." + Style.RESET_ALL)
+                                print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
+                                print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Warm QC once more (~30 min)")
+                                print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit and disassemble test structure")
+
+                                while True:
+                                    decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
+                                    if decision == 'r':
+                                        if confirm_function("⚠️  Retry will take ~30 minutes. Are you sure?"):
+                                            print(Fore.CYAN + "🔄 Retrying Warm QC (this will take ~30 min)..." + Style.RESET_ALL)
+                                            break  # Continue outer while loop for retry
+                                        else:
+                                            print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
+                                            continue
+                                    elif decision == 'e':
+                                        if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
+                                            print(Fore.RED + "Exiting QC test. Will cleanup then proceed to disassembly..." + Style.RESET_ALL)
+                                            goto_disassembly = True
+                                            break
+                                        else:
+                                            print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
+                                            continue
                                     else:
-                                        print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
-                                        continue
-                                elif decision == 'c':
-                                    # Confirm before continuing despite failure
-                                    if True:
-                                    # if confirm_function("⚠️  Are you sure you want to continue despite Warm QC failure?"):
-                                        print(Fore.YELLOW + "⚠️  Continuing despite Warm QC failure..." + Style.RESET_ALL)
+                                        print(Fore.RED + "Invalid input. Please enter 'r' or 'e'" + Style.RESET_ALL)
+
+                                # Break out of outer while loop if user chose 'e'
+                                if decision == 'e':
+                                    break
+
+                            else:
+                                # Only one board failed - can continue to cold
+                                print(Fore.YELLOW + "\n  One board failed Warm QC. Can continue to cold testing." + Style.RESET_ALL)
+                                print("\n" + Fore.YELLOW + "⚠️  What would you like to do?" + Style.RESET_ALL)
+                                print("  " + Fore.CYAN + "'r'" + Style.RESET_ALL + " - Retry Warm QC once more (~30 min)")
+                                print("  " + Fore.GREEN + "'c'" + Style.RESET_ALL + " - Continue to cold testing")
+                                print("  " + Fore.RED + "'e'" + Style.RESET_ALL + " - Exit and disassemble test structure")
+
+                                while True:
+                                    decision = 'c'
+                                    # decision = input(Fore.CYAN + ">> " + Style.RESET_ALL).lower()
+                                    if decision == 'r':
+                                        if confirm_function("⚠️  Retry will take ~30 minutes. Are you sure?"):
+                                            print(Fore.CYAN + "🔄 Retrying Warm QC (this will take ~30 min)..." + Style.RESET_ALL)
+                                            break  # Continue outer while loop for retry
+                                        else:
+                                            print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
+                                            continue
+                                    elif decision == 'c':
+                                        print(Fore.YELLOW + "⚠️  Continuing to cold testing despite one board failure..." + Style.RESET_ALL)
                                         qc_passed = False  # Mark as not passed but continue
                                         break
-                                elif decision == 'e':
-                                    # Confirm before exiting to disassembly
-                                    if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
-                                        print(Fore.RED + "Exiting QC test. Will cleanup then proceed to disassembly..." + Style.RESET_ALL)
-                                        goto_disassembly = True
-                                        break
+                                    elif decision == 'e':
+                                        if confirm_function("⚠️  Are you sure you want to exit and skip to disassembly?"):
+                                            print(Fore.RED + "Exiting QC test. Will cleanup then proceed to disassembly..." + Style.RESET_ALL)
+                                            goto_disassembly = True
+                                            break
+                                        else:
+                                            print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
+                                            continue
                                     else:
-                                        print(Fore.YELLOW + "Cancelled. Please choose another option." + Style.RESET_ALL)
-                                        continue
-                                else:
-                                    print(Fore.RED + "Invalid input. Please enter 'r', 'c', or 'e'" + Style.RESET_ALL)
+                                        print(Fore.RED + "Invalid input. Please enter 'r', 'c', or 'e'" + Style.RESET_ALL)
 
-                            # Break out of outer while loop if user chose 'c' or 'e'
-                            if decision in ['c', 'e']:
-                                break
+                                # Break out of outer while loop if user chose 'c' or 'e'
+                                if decision in ['c', 'e']:
+                                    break
 
                     ##### 27f. Close WIB Linux (always run after QC test for cleanup)
                     if wqdata_path is not None:  # Only if we actually ran the test
@@ -1786,19 +1823,19 @@ if 3 in state_list:
                                     Fore.YELLOW + '⚠️  High current detected, attempting power off again...' + Style.RESET_ALL)
                 if not goto_disassembly:
                     time.sleep(2)
-                    paths = []
-                    if wqdata_path:
-                        paths.append(wqdata_path)
-                    if wqreport_path:
-                        paths.append(wqreport_path)
-                    if paths:
-                        all_passed, should_retry, failed_slots = handle_qc_results(
-                            paths=paths,
-                            inform=inform,
-                            test_phase="Warm QC Final Report",
-                            allow_retry=False,  # Retry already handled in Checkout and QC Test
-                            verbose=True
-                        )
+                    # paths = []
+                    # if wqdata_path:
+                    #     paths.append(wqdata_path)
+                    # if wqreport_path:
+                    #     paths.append(wqreport_path)
+                    # if paths:
+                    #     all_passed, should_retry, failed_slots = handle_qc_results(
+                    #         paths=paths,
+                    #         inform=inform,
+                    #         test_phase="Warm QC Final Report",
+                    #         allow_retry=False,  # Retry already handled in Checkout and QC Test
+                    #         verbose=True
+                    #     )
                     break
                 else:
                     break
@@ -2718,10 +2755,10 @@ if any(x in state_list for x in [3, 4, 5]):
     psu.close()
 
 ### 52. Display Completion Message
-print("\n" + Fore.GREEN + "=" * 70)
-print_status('success', "QC TEST CYCLE COMPLETED!")
-print("=" * 70 + Style.RESET_ALL)
-print(Fore.CYAN + "\nPlease prepare for the next test cycle.\n" + Style.RESET_ALL)
+# print("\n" + Fore.GREEN + "=" * 70)
+# print_status('success', "QC TEST CYCLE COMPLETED!")
+# print("=" * 70 + Style.RESET_ALL)
+# print(Fore.CYAN + "\nPlease prepare for the next test cycle.\n" + Style.RESET_ALL)
 
 ### 53. Final Comprehensive Result Check (Optional)
 time.sleep(2)

@@ -376,7 +376,6 @@ def real_time_monitor():
                              for t in targets
                              if t in fname
                          } == set(targets)
-                print(exists)
                 # After t16 completes, generate QC summary email
                 if exists:
                     print(f"  t16 detected - triggering QC summary process")
