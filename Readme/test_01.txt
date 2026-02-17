@@ -1,0 +1,322 @@
+
+● Here's the flow chart for Test01_Serial_TCPIP_Communication.py:
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         START TEST01                            │
+  │               Serial/TCP/IP Communication Test                  │
+  └─────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                     ┌────────────────────────┐
+                     │   Initialize PSU       │
+                     │   (Rigol DP800)        │
+                     └────────────────────────┘
+                                  │
+                                  ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                    TEST ITEM 1: UART                            │
+  └─────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                     ┌────────────────────────┐
+                     │  Scan USB-Serial Port  │
+                     │  (VID/PID matching)    │
+                     └────────────────────────┘
+                                  │
+                                  ▼
+                          ┌──────────────┐
+                          │ Adapter      │
+                          │ Found?       │
+                          └──────────────┘
+                            │         │
+                      Yes   │         │  No
+                            ▼         ▼
+                ┌──────────────┐  ┌──────────────────────┐
+                │ Power ON PSU │  │ Show Error Message   │
+                │ CH1: 12V/3A  │  │ "Adapter not found"  │
+                │ CH2: 12V/3A  │  └──────────────────────┘
+                │ Wait 10s     │              │
+                └──────────────┘              ▼
+                        │         ┌──────────────────────┐
+                        │         │ [R] Retry            │
+                        │         │ [S] Skip → TCP/IP    │
+                        │         │ [E] Exit             │
+                        │         └──────────────────────┘
+                        │                     │
+                        │         ┌───────────┼───────────┐
+                        │         │ R         │ S         │ E
+                        │         ▼           ▼           ▼
+                        │      (loop)    Mark UART    ┌──────┐
+                        │                SKIPPED      │ EXIT │
+                        │                    │        └──────┘
+                        ▼                    │
+                ┌──────────────┐             │
+                │ Run UART     │             │
+                │ Test         │             │
+                │ - Open port  │             │
+                │ - Login root │             │
+                │ - Check OS   │             │
+                └──────────────┘             │
+                        │                    │
+                        ▼                    │
+                 ┌─────────────┐             │
+                 │ UART Pass?  │             │
+                 └─────────────┘             │
+                   │         │               │
+             Yes   │         │ No            │
+                   ▼         ▼               │
+           ┌─────────┐  ┌──────────────┐     │
+           │ ✓ PASS  │  │ Show FAILED  │     │
+           └─────────┘  │ [R][S][E]    │     │
+                │       └──────────────┘     │
+                │              │             │
+                │       ┌──────┼──────┐      │
+                │       │ R    │ S    │ E    │
+                │       ▼      ▼      ▼      │
+                │    (retry)  Skip   Exit    │
+                │              │             │
+                └──────┬───────┴─────────────┘
+                       │
+                       ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                  TEST ITEM 2: TCP/IP                            │
+  └─────────────────────────────────────────────────────────────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Ping            │
+              │ 192.168.121.1   │
+              │ (4 packets)     │
+              └─────────────────┘
+                       │
+                       ▼
+                ┌─────────────┐
+                │ Ping Pass?  │
+                └─────────────┘
+                  │         │
+            Yes   │         │ No
+                  ▼         ▼
+          ┌─────────┐  ┌──────────────┐
+          │ ✓ PASS  │  │ Show FAILED  │
+          └─────────┘  │ [R][S][E]    │
+               │       └──────────────┘
+               │              │
+               └──────┬───────┘
+                      │
+                      ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                   TEST ITEM 3: UDP                              │
+  └─────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+              ┌─────────────────┐
+              │ Ping            │
+              │ 192.168.121.2   │
+              │ (4 packets)     │
+              └─────────────────┘
+                      │
+                      ▼
+                ┌─────────────┐
+                │ Ping Pass?  │
+                └─────────────┘
+                  │         │
+            Yes   │         │ No
+                  ▼         ▼
+          ┌─────────┐  ┌──────────────┐
+          │ ✓ PASS  │  │ Show FAILED  │
+          └─────────┘  │ [R][S][E]    │
+               │       └──────────────┘
+               │              │
+               └──────┬───────┘
+                      │
+                      ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                      FINISH & REPORT                            │
+  └─────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+          ┌───────────────────────┐
+          │ Calculate Duration    │
+          │ Update CSV            │
+          │ Print Summary         │
+          └───────────────────────┘
+                      │
+                      ▼
+          ┌───────────────────────┐
+          │ Generate HTML Report  │
+          │ WIB_01_communication_ │
+          │ report_01.html        │
+          └───────────────────────┘
+                      │
+                      ▼
+          ┌───────────────────────┐
+          │ Power OFF PSU         │
+          │ Close Connection      │
+          └───────────────────────┘
+                      │
+                      ▼
+                ┌───────────┐
+                │    END    │
+                └───────────┘
+
+  Summary
+
+  | Function               | Purpose                                            |
+  |------------------------|----------------------------------------------------|
+  | main()                 | Orchestrates the entire test flow                  |
+  | find_serial_port(psu)  | Scans for USB-Serial adapter with retry/skip/exit  |
+  | run_uart_test()        | Tests serial login to WIB (root@WIB_Petalinux)     |
+  | run_ping_test()        | Pings IP address (TCP/IP or UDP)                   |
+  | retry_test()           | Wrapper that adds [R]etry/[S]kip/[E]xit on failure |
+  | generate_html_report() | Creates HTML report with results                   |
+
+  Key Features
+
+  1. All 3 tests have retry option - Tester can retry any failed test
+  2. Skip option - Continue to next test even if current one fails
+  3. Clean exit - Powers off PSU safely before exiting
+  4. Results tracking - All results saved to CSV and HTML report
+
+> give a summary to explain
+
+● Test01: Serial/TCP/IP Communication Test - Summary
+
+  Purpose
+
+  Tests 3 communication interfaces between the test PC and WIB (Warm Interface Board):
+
+  | Test   | Target          | What it checks                   |
+  |--------|-----------------|----------------------------------|
+  | UART   | USB-Serial Port | Serial login to WIB Linux system |
+  | TCP/IP | 192.168.121.1   | Ethernet ping response           |
+  | UDP    | 192.168.121.2   | Network ping response            |
+
+  File Structure (421 lines, 8 functions)
+
+  Test01_Serial_TCPIP_Communication.py
+  │
+  ├── print_header()         # Print section headers
+  ├── print_pass()           # Green success message
+  ├── print_fail()           # Red error message
+  │
+  ├── find_serial_port()     # Detect USB-Serial adapter (retry/skip/exit)
+  ├── run_uart_test()        # Serial communication test
+  ├── run_ping_test()        # Ping test (reused for TCP & UDP)
+  ├── retry_test()           # Wrapper: adds retry/skip/exit on failure
+  │
+  ├── generate_html_report() # Create HTML report
+  └── main()                 # Main orchestration
+
+  Test Flow
+
+  START → Init PSU → UART Test → TCP/IP Test → UDP Test → Report → END
+                        ↓            ↓            ↓
+                    [R/S/E]      [R/S/E]      [R/S/E]
+
+  User Options on Failure
+
+  When any test fails, tester can choose:
+  - [R] Retry - Run the test again
+  - [S] Skip - Mark as failed, continue to next test
+  - [E] Exit - Abort all tests, power off safely
+
+  Outputs
+
+  | Output      | Location                                   |
+  |-------------|--------------------------------------------|
+  | HTML Report | report/WIB_01_communication_report_01.html |
+  | CSV Data    | Updated via rp_dict.csv_manager            |
+  | Console     | Real-time test progress with colors        |
+
+  Before vs After Refactoring
+
+  | Metric            | Before    | After                 |
+  |-------------------|-----------|-----------------------|
+  | Lines             | 691       | 421                   |
+  | Functions         | 0         | 8                     |
+  | Duplicate imports | Yes       | No                    |
+  | Retry logic       | Copied 3x | Reusable retry_test() |
+  | Skip option       | No        | Yes                   |
+
+> in a paper section
+
+● Test01: Serial/TCP/IP Communication Test
+
+  1. Overview
+
+  Test01 validates the communication interfaces between the host PC and the Warm Interface Board (WIB). This test is a prerequisite for all subsequent QC tests, ensuring reliable data exchange pathways are established before proceeding with hardware validation.
+
+  2. Test Objectives
+
+  The test module performs three communication verifications:
+
+  1. UART/Serial Communication - Validates the USB-to-Serial interface by establishing a terminal session with the WIB's embedded Linux system (PetaLinux 2019.1).
+  2. TCP/IP Communication - Verifies Ethernet connectivity by sending ICMP echo requests to the WIB's primary IP address (192.168.121.1).
+  3. UDP Communication - Confirms network layer functionality by pinging the WIB's secondary IP address (192.168.121.2).
+
+  3. Hardware Requirements
+
+  | Component           | Specification                                         |
+  |---------------------|-------------------------------------------------------|
+  | Power Supply        | Rigol DP800 Series (12V/3A per channel)               |
+  | USB-Serial Adapter  | Silicon Labs CP2105, FTDI FT232, or FTDI FT2232       |
+  | Ethernet Connection | Direct or switched connection to 192.168.121.x subnet |
+
+  4. Software Architecture
+
+  The module is structured into eight functions following a modular design pattern:
+
+  | Function               | Description                                        |
+  |------------------------|----------------------------------------------------|
+  | find_serial_port()     | Scans USB devices for supported serial adapters    |
+  | run_uart_test()        | Executes serial login sequence and OS verification |
+  | run_ping_test()        | Performs ICMP ping test to specified IP            |
+  | retry_test()           | Provides retry/skip/exit handling for failed tests |
+  | generate_html_report() | Produces formatted HTML test report                |
+  | main()                 | Orchestrates test sequence and resource management |
+
+  5. Test Procedure
+
+  The test executes the following sequence:
+
+  1. Initialize the Rigol DP800 power supply controller
+  2. Detect and validate USB-Serial adapter presence
+  3. Power on WIB (Channel 1 & 2: 12V, 3A)
+  4. Wait 10 seconds for system boot
+  5. Execute UART communication test
+  6. Execute TCP/IP ping test
+  7. Execute UDP ping test
+  8. Generate test report and summary
+  9. Power off and release resources
+
+  6. Error Handling
+
+  Upon test failure, the operator is presented with three options:
+
+  - Retry (R) - Re-execute the current test
+  - Skip (S) - Record failure and proceed to next test
+  - Exit (E) - Terminate test sequence with safe power-down
+
+  This approach allows partial test completion when specific interfaces are unavailable while maintaining accurate failure documentation.
+
+  7. Output Artifacts
+
+  | Artifact    | Path                                       | Format     |
+  |-------------|--------------------------------------------|------------|
+  | Test Report | report/WIB_01_communication_report_01.html | HTML       |
+  | Test Data   | rp_dict.log02_wib                          | Dictionary |
+  | CSV Records | Via csv_manager                            | CSV        |
+
+  8. Pass/Fail Criteria
+
+  | Test Item | Pass Condition                                  |
+  |-----------|-------------------------------------------------|
+  | UART      | Successful login and PetaLinux 2019.1 detection |
+  | TCP/IP    | 4/4 ping responses from 192.168.121.1           |
+  | UDP       | 4/4 ping responses from 192.168.121.2           |
+  | Overall   | All three tests pass                            |
+
+  9. Test Duration
+
+  - Typical Duration: 30-40 seconds
+  - Warning Threshold: >40 seconds triggers performance warning

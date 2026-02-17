@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WIB_07 WIB IBERT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #444;
+        }
+        .status-banner {
+            text-align: center;
+            padding: 15px;
+            margin: 20px auto;
+            width: 60%;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        tr:nth-child(even) td {
+            background-color: #fafafa;
+        }
+        .images {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .images img {
+            max-width: 48%;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <h2>WIB IBERT Report</h2>
+    <div class="status-banner" style="background-color: #f8d7da; color: #dc3545; border: 2px solid #dc3545;">
+        Overall Test Status: FAIL
+    </div>
+
+    <h3 style="text-align: center; margin-top: 30px;">IBERT (Integrated Bit Error Ratio Tester) serial analyzer</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>X0Y4_Total_ERROR_count_Decision</td><td>FAIL</td></tr>
+<tr><td>X0Y5_Total_ERROR_count_Decision</td><td>FAIL</td></tr>
+<tr><td>Overall_Test_Status</td><td>FAIL</td></tr>
+<tr><td>Output_Directory</td><td>WIB_07_IBERT_UNKNOWN_20260213_211153</td></tr>
+
+        </tbody>
+    </table>
+
+    <h3 style="text-align: center; margin-top: 30px;">Eye Scan Results</h3>
+    <div class="images">
+        <img src="./eye_scan_X0Y4.png" alt="Eye Scan X0Y4">
+        <img src="./eye_scan_X0Y5.png" alt="Eye Scan X0Y5">
+    </div>
+</body>
+</html>

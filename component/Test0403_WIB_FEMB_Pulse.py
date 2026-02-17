@@ -116,7 +116,7 @@ udp = CLS_UDP()
 conv = RAW_CONV()
 now = datetime.datetime.now()
 base_dir = os.path.dirname(os.path.abspath(__file__))
-target_file_path = os.path.join(base_dir, "..", "report", "WIB_to_FEMB_slot_01_power_report")
+target_file_path = os.path.join(base_dir, "..", "report", "WIB_to_FEMB_slot_03_power_report")
 rootdir = target_file_path
 
 ## ========== WIB monitor ADC ================
@@ -529,6 +529,12 @@ for fembi in [3]:
 
     print("Test is done...")
     print("Report is saved at {}".format(result_dict["save_dir"]))
+
+    # Set report path for final report integration
+    import file.report_dict as rp_dict
+    # Extract folder name from save_dir and create relative path
+    folder_name = os.path.basename(result_dict["save_dir"].rstrip('/'))
+    rp_dict.set_report_path('item044', folder_name + '/result.html')
 
 print("Turn Power Supply off")
 time.sleep(0.5)

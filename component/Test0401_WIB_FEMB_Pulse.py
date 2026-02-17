@@ -530,6 +530,12 @@ for fembi in [1]:
     print("Test is done...")
     print("Report is saved at {}".format(result_dict["save_dir"]))
 
+    # Set report path for final report integration
+    import file.report_dict as rp_dict
+    # Extract folder name from save_dir and create relative path
+    folder_name = os.path.basename(result_dict["save_dir"].rstrip('/'))
+    rp_dict.set_report_path('item042', folder_name + '/result.html')
+
 print("Turn Power Supply off")
 time.sleep(0.5)
 psu.safe_power_off()

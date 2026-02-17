@@ -8,21 +8,289 @@ from function.tcp_cfg import TCP_CFG
 from function.raw_convertor import RAW_CONV
 import datetime
 import file.report_dict as rp_dict
+import GUI.pop_window as pop
 from function.csv_manager import WIB_QC_CSV_Manager
 t1 = time.time()
 import function.Rigol_DP800 as rigol
+# Image paths for instruction popups
+IMG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'GUI', 'output_pngs')
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+def print_header(msg):
+    print("\033[35m" + "=" * 60 + "\033[0m")
+    print("\033[35m" + msg + "\033[0m")
+    print("\033[35m" + "=" * 60 + "\033[0m")
+
+def print_pass(msg):
+    print("\033[32m" + msg + "\033[0m")
+
+def print_fail(msg):
+    print("\033[31m" + msg + "\033[0m")
+
+def print_warning(msg):
+    print("\033[33m" + msg + "\033[0m")
+
+# ============================================================================
+# TROUBLESHOOTING MESSAGES
+# ============================================================================
+TROUBLESHOOT = {
+    "voltage_low": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: VOLTAGE OUT OF RANGE (V < 11.0V)             │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • PSU not properly connected                               │
+│  • PSU channel not enabled                                  │
+│  • Faulty power cable                                       │
+│                                                             │
+│  Actions:                                                   │
+│  1. Check PSU front panel - verify CH1/CH2 are ON           │
+│  2. Verify power cable connections to WIB                   │
+│  3. Check PSU USB/Serial connection                         │
+│  4. Replace power cables if damaged                         │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "voltage_high": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: VOLTAGE OUT OF RANGE (V > 13.0V)             │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • PSU voltage setting incorrect                            │
+│  • PSU malfunction                                          │
+│                                                             │
+│  Actions:                                                   │
+│  1. Check PSU voltage setting (should be 12V)               │
+│  2. Verify PSU calibration                                  │
+│  3. Try different PSU if available                          │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "current_low": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: CURRENT TOO LOW (I < 0.5A)                   │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • WIB not powered properly                                 │
+│  • WIB not fully seated in slot                             │
+│  • Faulty WIB board                                         │
+│  • Power connector not fully inserted                       │
+│                                                             │
+│  Actions:                                                   │
+│  1. Power off and reseat WIB board                          │
+│  2. Verify correct power connector orientation              │
+│  3. Inspect power connector pins                            │
+│  4. Check WIB for visible damage                            │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "current_high": """
+┌─────────────────────────────────────────────────────────────┐
+│  ⚠️  WARNING: CURRENT TOO HIGH (I > 3.0A)                    │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • Short circuit on WIB                                     │
+│  • Component failure on WIB                                 │
+│  • Wrong voltage setting                                    │
+│                                                             │
+│  ⚠️  IMMEDIATELY POWER OFF!                                  │
+│                                                             │
+│  Actions:                                                   │
+│  1. POWER OFF IMMEDIATELY                                   │
+│  2. Inspect WIB for visible damage/burns                    │
+│  3. Check for foreign objects/debris                        │
+│  4. DO NOT retry without inspection                         │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "dac_voltage": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: DAC VOLTAGE TEST FAIL                        │
+│  Expected: 0.9V ≤ V ≤ 1.1V                                  │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • DAC chip (U12) malfunction                               │
+│  • TCP communication failure                                │
+│  • ADC readback error                                       │
+│  • Calibration path damaged                                 │
+│                                                             │
+│  Actions:                                                   │
+│  1. Verify TCP connection (run Test01 first)                │
+│  2. Check DAC SPI signals with oscilloscope                 │
+│  3. Measure DAC output directly at test points              │
+│  4. If single slot fails, check path to that connector      │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "reference_voltage": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: REFERENCE VOLTAGE TEST FAIL                  │
+│  Expected: 1.6V ≤ V ≤ 1.7V                                  │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • Reference voltage generator failure                      │
+│  • CAL_PULSE_GEN switch not responding                      │
+│  • Path selection issue                                     │
+│                                                             │
+│  Actions:                                                   │
+│  1. Measure 1.65V reference at source                       │
+│  2. Check CAL_PULSE_GEN control signal                      │
+│  3. Verify switch IC operation                              │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "path_control": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: PATH CONTROL TEST FAIL                       │
+│  Expected: 0.5V ≤ V ≤ 0.55V                                 │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • DAC_SRC_SEL switch failure                               │
+│  • Cross-talk between slots                                 │
+│  • Signal path discontinuity                                │
+│                                                             │
+│  Actions:                                                   │
+│  1. Check DAC_SRC_SEL_BRD0-3 control signals                │
+│  2. Verify switch IC (analog multiplexer) operation         │
+│  3. Check for solder bridges on switch ICs                  │
+│  4. Trace path from DAC to failing slot                     │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "lemo_p5": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: LEMO P5 INJECTION TEST FAIL                  │
+│  Expected: 0.7V ≤ V ≤ 0.85V                                 │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • LEMO P5 connector damaged                                │
+│  • External calibration pulse path issue                    │
+│  • Test cable not connected properly                        │
+│                                                             │
+│  Actions:                                                   │
+│  1. Check LEMO P5 cable connection                          │
+│  2. Verify LEMO connector for damage                        │
+│  3. Test continuity of calibration cable                    │
+│  4. Try different test cable                                │
+└─────────────────────────────────────────────────────────────┘
+""",
+    "test_points": """
+┌─────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOT: TEST POINTS FAIL                             │
+│  Expected: 0.0V ≤ V ≤ 0.5V (floating state)                 │
+├─────────────────────────────────────────────────────────────┤
+│  Possible Causes:                                           │
+│  • Residual voltage on path                                 │
+│  • Switch not fully disconnecting                           │
+│  • Leakage current                                          │
+│  • Test probe still connected                               │
+│                                                             │
+│  Actions:                                                   │
+│  1. Remove all test probes from test points                 │
+│  2. Wait for capacitors to discharge                        │
+│  3. Check for high-impedance path issues                    │
+└─────────────────────────────────────────────────────────────┘
+"""
+}
+
+# Port mapping for display
+PORT_MAP = {0: "P8", 1: "P7", 2: "P6", 3: "P4"}
+SLOT_NAMES = ["SLOT0", "SLOT1", "SLOT2", "SLOT3"]
+
+# ============================================================================
+# VALIDATION FUNCTIONS
+# ============================================================================
+def validate_power(voltage, current, channel):
+    """Validate power measurements and show troubleshooting if failed"""
+    v_ok = 11.0 <= voltage <= 13.0
+    c_ok = 0.5 <= current <= 3.0
+
+    if not v_ok:
+        if voltage < 11.0:
+            print_fail(f"  ✗ CH{channel} Voltage FAIL: {voltage:.3f}V (< 11.0V)")
+            print(TROUBLESHOOT["voltage_low"])
+        else:
+            print_fail(f"  ✗ CH{channel} Voltage FAIL: {voltage:.3f}V (> 13.0V)")
+            print(TROUBLESHOOT["voltage_high"])
+    else:
+        print_pass(f"  ✓ CH{channel} Voltage PASS: {voltage:.3f}V")
+
+    if not c_ok:
+        if current < 0.5:
+            print_fail(f"  ✗ CH{channel} Current FAIL: {current:.3f}A (< 0.5A)")
+            print(TROUBLESHOOT["current_low"])
+        else:
+            print_fail(f"  ✗ CH{channel} Current FAIL: {current:.3f}A (> 3.0A)")
+            print(TROUBLESHOOT["current_high"])
+    else:
+        print_pass(f"  ✓ CH{channel} Current PASS: {current:.3f}A")
+
+    return v_ok and c_ok
+
+def validate_adc_test(slot_values, test_name, min_v, max_v, troubleshoot_key):
+    """Validate ADC readback values and show troubleshooting if failed"""
+    all_pass = True
+    failed_slots = []
+
+    print(f"\n  {test_name} Results (Expected: {min_v}V - {max_v}V):")
+    print("  " + "-" * 50)
+
+    for i, value in enumerate(slot_values):
+        in_range = min_v <= value <= max_v
+        status = "PASS" if in_range else "FAIL"
+
+        if in_range:
+            print_pass(f"    {SLOT_NAMES[i]} ({PORT_MAP[i]}): {value:.4f}V - {status}")
+        else:
+            print_fail(f"    {SLOT_NAMES[i]} ({PORT_MAP[i]}): {value:.4f}V - {status}")
+            all_pass = False
+            failed_slots.append((SLOT_NAMES[i], PORT_MAP[i], value))
+
+    if not all_pass:
+        print(TROUBLESHOOT[troubleshoot_key])
+        print_warning(f"  Failed slots: {', '.join([f'{s[0]}({s[1]})={s[2]:.4f}V' for s in failed_slots])}")
+
+    return all_pass, failed_slots
+
+def retry_prompt(test_name):
+    """Prompt user for retry, skip, or exit"""
+    print_warning(f"\n  {test_name} has failures.")
+    print("  Options:")
+    print("    [R] Retry this test")
+    print("    [S] Skip and continue")
+    print("    [E] Exit test")
+
+    while True:
+        choice = input("  Enter choice (R/S/E): ").strip().upper()
+        if choice in ['R', 'S', 'E']:
+            return choice
+        print("  Invalid choice. Please enter R, S, or E.")
+
 
 psu = rigol.RigolDP800()
 psu.safe_power_off()
+print_header("Test02: Calibration Path Control - Power On")
 print("Turn FM on")
 psu.set_channel(1, 12.0, 3.0, on=True)
 psu.set_channel(2, 12.0, 3.0, on=True)
 time.sleep(10)
 
-# Measure initial power
+# Measure initial power with validation
+print("\n[Step 1] Initial Power Measurement")
 v1_start, c1_start = psu.measure(1)
 v2_start, c2_start = psu.measure(2)
 print(f"Initial Power - Ch1: {v1_start:.3f}V {c1_start:.3f}A, Ch2: {v2_start:.3f}V {c2_start:.3f}A")
+
+# Validate initial power
+ch1_ok = validate_power(v1_start, c1_start, 1)
+ch2_ok = validate_power(v2_start, c2_start, 2)
+
+if not (ch1_ok and ch2_ok):
+    choice = retry_prompt("Initial Power Check")
+    if choice == 'E':
+        print_fail("Test aborted by user.")
+        psu.safe_power_off()
+        sys.exit(1)
+    elif choice == 'R':
+        # Re-measure
+        v1_start, c1_start = psu.measure(1)
+        v2_start, c2_start = psu.measure(2)
+        print(f"Re-measured: Ch1: {v1_start:.3f}V {c1_start:.3f}A, Ch2: {v2_start:.3f}V {c2_start:.3f}A")
 
 # Record initial power measurements
 rp_dict.log05_Cal['power_ch1_voltage_start'] = round(v1_start, 3)
@@ -109,179 +377,330 @@ def WIB_ADC_read():
 
 
 
-# DAC Set Test
-Set_DAC(set_v = 1)
-time.sleep(1)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-time.sleep(1)
-
-# test 1 V, expected output [1 1 1 1]
-Set_switch(CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 1, Mon_PULSE_SEL = 1)
-time.sleep(1)
-Set_DAC(set_v = 1)
-Set_DAC(set_v = 1)
-Set_DAC(set_v = 1)
-Set_DAC(set_v = 1)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(2)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print('readout 01')
-rp_dict.log05_Cal['1v_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['1v_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['1v_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['1v_slot_3_P4'] = round(slot3, 4)
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-
-# Update CSV with DAC configuration and ADC readback
-if rp_dict.csv_manager:
-    rp_dict.csv_manager.batch_update([
-        {"item_id": "T02_05", "value": "0x0001", "status": "SET"},  # DAC 0 config
-        {"item_id": "T02_06", "value": "0x0001", "status": "SET"},  # DAC 1 config
-        {"item_id": "T02_07", "value": "0x0001", "status": "SET"},  # DAC 2 config
-        {"item_id": "T02_08", "value": "0x0001", "status": "SET"},  # DAC 3 config
-        {"item_id": "T02_09", "value": round(slot0, 4), "status": "PASS"},  # ADC 0
-        {"item_id": "T02_10", "value": round(slot1, 4), "status": "PASS"},  # ADC 1
-        {"item_id": "T02_11", "value": round(slot2, 4), "status": "PASS"},  # ADC 2
-        {"item_id": "T02_12", "value": round(slot3, 4), "status": "PASS"}   # ADC 3
-    ])
-
-time.sleep(1)
-
-# test 1.6 V, expected output [1.65 1.65 1.65 1.65]
-print('readout t1')
-Set_switch(CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 1, Mon_PULSE_SEL = 1)
-time.sleep(2)
-WIB_ADC_read()
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(2)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-rp_dict.log05_Cal['1_6v_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['1_6v_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['1_6v_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['1_6v_slot_3_P4'] = round(slot3, 4)
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-
-# expected output [0.5 0.5 0.5 0.5]
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(2)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print('readout t2')
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-rp_dict.log05_Cal['0123_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['0123_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['0123_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['0123_slot_3_P4'] = round(slot3, 4)
-
-# t3 expected output [0.5 0.5 0.5 0.5]
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(2)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print('readout t3')
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-rp_dict.log05_Cal['3210_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['3210_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['3210_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['3210_slot_3_P4'] = round(slot3, 4)
-
-# t4 expected output [0.8 0.8 0.8 0.8]
+# ============================================================================
+# TEST 1: DAC Voltage Test (Expected: 1V)
+# ============================================================================
+test1_pass = False
 while True:
-    print('Test P5, enter to next')
-    con = input("please enter y to continue")
-    if con == 'y':
-        print("continue test")
-        break
+    print_header("[Step 2] Test 1: DAC Voltage Test")
+    Set_DAC(set_v = 1)
+    time.sleep(0.5)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+    time.sleep(0.5)
 
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(2)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print('readout t4')
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-rp_dict.log05_Cal['P5_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['P5_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['P5_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['P5_slot_3_P4'] = round(slot3, 4)
+    # test 1 V, expected output [1 1 1 1]
+    Set_switch(CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 1, Mon_PULSE_SEL = 1)
+    time.sleep(0.5)
+    Set_DAC(set_v = 1)
+    Set_DAC(set_v = 1)
+    Set_DAC(set_v = 1)
+    Set_DAC(set_v = 1)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+
+    # Validate DAC Voltage Test
+    test1_pass, test1_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test 1: DAC Voltage (1V)",
+        0.9, 1.1,
+        "dac_voltage"
+    )
+
+    rp_dict.log05_Cal['1v_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['1v_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['1v_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['1v_slot_3_P4'] = round(slot3, 4)
+
+    # Update CSV with DAC configuration and ADC readback
+    if rp_dict.csv_manager:
+        t1_status = "PASS" if test1_pass else "FAIL"
+        rp_dict.csv_manager.batch_update([
+            {"item_id": "T02_05", "value": "0x0001", "status": "SET"},  # DAC 0 config
+            {"item_id": "T02_06", "value": "0x0001", "status": "SET"},  # DAC 1 config
+            {"item_id": "T02_07", "value": "0x0001", "status": "SET"},  # DAC 2 config
+            {"item_id": "T02_08", "value": "0x0001", "status": "SET"},  # DAC 3 config
+            {"item_id": "T02_09", "value": round(slot0, 4), "status": t1_status},  # ADC 0
+            {"item_id": "T02_10", "value": round(slot1, 4), "status": t1_status},  # ADC 1
+            {"item_id": "T02_11", "value": round(slot2, 4), "status": t1_status},  # ADC 2
+            {"item_id": "T02_12", "value": round(slot3, 4), "status": t1_status}   # ADC 3
+        ])
+
+    if test1_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test 1: DAC Voltage")
+        if choice == 'R':
+            print_warning("  Retrying Test 1...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test 1...")
+            break
+
+time.sleep(0.5)
+
+# ============================================================================
+# TEST t1: Reference Voltage Test (Expected: 1.65V)
+# ============================================================================
+test_t1_pass = False
 while True:
-    print('Test Test_Point, enter to next')
-    con = input("please enter y to continue")
-    if con == 'y':
-        print("continue test")
-        break
-Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 0)
-# t5 expected output [0 0 0 0]
-time.sleep(1)
-Set_switch(CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 0, Mon_PULSE_SEL = 0)
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-WIB_ADC_read()
-time.sleep(3)
-slot0, slot1, slot2, slot3 = WIB_ADC_read()
-print('readout t6')
-print(slot0)
-print(slot1)
-print(slot2)
-print(slot3)
-rp_dict.log05_Cal['TP_slot_0_P8'] = round(slot0, 4)
-rp_dict.log05_Cal['TP_slot_1_P7'] = round(slot1, 4)
-rp_dict.log05_Cal['TP_slot_2_P6'] = round(slot2, 4)
-rp_dict.log05_Cal['TP_slot_3_P4'] = round(slot3, 4)
-tcp.tcp_cmd_io(cmd=0x02, aux=0, addr=0x08, data=0xFFFFFFFF)
+    print_header("[Step 3] Test t1: Reference Voltage Test")
+    Set_switch(CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 1, Mon_PULSE_SEL = 1)
+    time.sleep(1)
+    WIB_ADC_read()
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
 
+    # Validate Reference Voltage Test
+    test_t1_pass, test_t1_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test t1: Reference Voltage (1.65V)",
+        1.6, 1.7,
+        "reference_voltage"
+    )
 
-# Measure final power before shutdown
+    rp_dict.log05_Cal['1_6v_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['1_6v_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['1_6v_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['1_6v_slot_3_P4'] = round(slot3, 4)
+
+    if test_t1_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test t1: Reference Voltage")
+        if choice == 'R':
+            print_warning("  Retrying Test t1...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test t1...")
+            break
+
+# ============================================================================
+# TEST t2: Path Control Test A (SLOT0/2 output, SLOT1/3 input)
+# ============================================================================
+test_t2_pass = False
+while True:
+    print_header("[Step 4] Test t2: Path Control A (SLOT0/2 → SLOT1/3)")
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 1, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 1, DAC_SRC_SEL_BRD3 = 0)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+
+    # Validate Path Control Test A
+    test_t2_pass, test_t2_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test t2: Path Control A (0.5V)",
+        0.5, 0.55,
+        "path_control"
+    )
+
+    rp_dict.log05_Cal['0123_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['0123_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['0123_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['0123_slot_3_P4'] = round(slot3, 4)
+
+    if test_t2_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test t2: Path Control A")
+        if choice == 'R':
+            print_warning("  Retrying Test t2...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test t2...")
+            break
+
+# ============================================================================
+# TEST t3: Path Control Test B (SLOT0/2 input, SLOT1/3 output)
+# ============================================================================
+test_t3_pass = False
+while True:
+    print_header("[Step 5] Test t3: Path Control B (SLOT1/3 → SLOT0/2)")
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 1, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+
+    # Validate Path Control Test B
+    test_t3_pass, test_t3_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test t3: Path Control B (0.5V)",
+        0.5, 0.55,
+        "path_control"
+    )
+
+    rp_dict.log05_Cal['3210_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['3210_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['3210_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['3210_slot_3_P4'] = round(slot3, 4)
+
+    if test_t3_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test t3: Path Control B")
+        if choice == 'R':
+            print_warning("  Retrying Test t3...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test t3...")
+            break
+
+# ============================================================================
+# TEST t4: LEMO P5 Injection Test (Expected: 0.8V)
+# ============================================================================
+test_t4_pass = False
+first_t4_attempt = True
+while True:
+    print_header("[Step 6] Test t4: LEMO P5 Injection Test")
+    if first_t4_attempt:
+        pop.show_image_popup(
+            title="Page 7: Test P5",
+            image_path=os.path.join(IMG_DIR, "7.png") if os.path.exists(os.path.join(IMG_DIR, "7.png")) else None
+        )
+        first_t4_attempt = False
+
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 0, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 1)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+
+    # Validate LEMO P5 Injection Test
+    test_t4_pass, test_t4_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test t4: LEMO P5 Injection (0.8V)",
+        0.7, 0.85,
+        "lemo_p5"
+    )
+
+    rp_dict.log05_Cal['P5_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['P5_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['P5_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['P5_slot_3_P4'] = round(slot3, 4)
+
+    if test_t4_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test t4: LEMO P5 Injection")
+        if choice == 'R':
+            print_warning("  Retrying Test t4...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test t4...")
+            break
+
+# ============================================================================
+# TEST t5/t6: Test Points (Floating state, Expected: 0V)
+# ============================================================================
+test_t5_pass = False
+first_t5_attempt = True
+while True:
+    print_header("[Step 7] Test t5/t6: Test Points (Floating)")
+    if first_t5_attempt:
+        pop.show_image_popup(
+            title="Page 8: Test Float Voltage",
+            image_path=os.path.join(IMG_DIR, "8.png") if os.path.exists(os.path.join(IMG_DIR, "8.png")) else None
+        )
+        first_t5_attempt = False
+
+    Set_DAC(set_v = 1, CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 0)
+    time.sleep(0.5)
+    Set_switch(CAL_PULSE_GEN = 1, DAC_SRC_SEL_BRD0 = 0, DAC_SRC_SEL_BRD1 = 0, DAC_SRC_SEL_BRD2 = 0, DAC_SRC_SEL_BRD3 = 0, Mon_PULSE_SEL = 0)
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    WIB_ADC_read()
+    time.sleep(1.5)
+    slot0, slot1, slot2, slot3 = WIB_ADC_read()
+
+    # Validate Test Points
+    test_t5_pass, test_t5_failed = validate_adc_test(
+        [slot0, slot1, slot2, slot3],
+        "Test t5/t6: Test Points (0V)",
+        0.0, 0.5,
+        "test_points"
+    )
+
+    rp_dict.log05_Cal['TP_slot_0_P8'] = round(slot0, 4)
+    rp_dict.log05_Cal['TP_slot_1_P7'] = round(slot1, 4)
+    rp_dict.log05_Cal['TP_slot_2_P6'] = round(slot2, 4)
+    rp_dict.log05_Cal['TP_slot_3_P4'] = round(slot3, 4)
+    tcp.tcp_cmd_io(cmd=0x02, aux=0, addr=0x08, data=0xFFFFFFFF)
+
+    if test_t5_pass:
+        break  # Test passed, continue to next
+    else:
+        choice = retry_prompt("Test t5/t6: Test Points")
+        if choice == 'R':
+            print_warning("  Retrying Test t5/t6...")
+            continue  # Retry the test
+        elif choice == 'E':
+            print_fail("Test aborted by user.")
+            psu.safe_power_off()
+            sys.exit(1)
+        else:  # 'S' - Skip
+            print_warning("  Skipping Test t5/t6...")
+            break
+
+# ============================================================================
+# FINAL POWER MEASUREMENT
+# ============================================================================
+print_header("[Step 8] Final Power Measurement")
 v1_end, c1_end = psu.measure(1)
 v2_end, c2_end = psu.measure(2)
 print(f"Final Power - Ch1: {v1_end:.3f}V {c1_end:.3f}A, Ch2: {v2_end:.3f}V {c2_end:.3f}A")
+
+# Validate final power
+ch1_end_ok = validate_power(v1_end, c1_end, 1)
+ch2_end_ok = validate_power(v2_end, c2_end, 2)
 
 # Record final power measurements
 rp_dict.log05_Cal['power_ch1_voltage_end'] = round(v1_end, 3)
@@ -295,11 +714,46 @@ rp_dict.log05_Cal['total_power'] = round(total_power, 3)
 
 t2 = time.time()
 test_duration = round(t2-t1, 3)
-print('time consumption = {}'.format(test_duration))
-
-print(rp_dict.log05_Cal)
 
 rp_dict.log05_Cal['Communication_Time_Consumption'] = test_duration
+
+# ============================================================================
+# TEST SUMMARY
+# ============================================================================
+print_header("Test02: Calibration Path Control - SUMMARY")
+
+# Collect all test results
+all_tests = [
+    ("Test 1: DAC Voltage (1V)", test1_pass),
+    ("Test t1: Reference Voltage (1.65V)", test_t1_pass),
+    ("Test t2: Path Control A", test_t2_pass),
+    ("Test t3: Path Control B", test_t3_pass),
+    ("Test t4: LEMO P5 Injection", test_t4_pass),
+    ("Test t5/t6: Test Points", test_t5_pass),
+    ("Final Power Check", ch1_end_ok and ch2_end_ok),
+]
+
+print("\n  Test Results:")
+print("  " + "=" * 50)
+passed_count = 0
+failed_count = 0
+for test_name, test_result in all_tests:
+    if test_result:
+        print_pass(f"    [PASS] {test_name}")
+        passed_count += 1
+    else:
+        print_fail(f"    [FAIL] {test_name}")
+        failed_count += 1
+
+print("  " + "=" * 50)
+overall_pass = failed_count == 0
+if overall_pass:
+    print_pass(f"\n  OVERALL RESULT: PASS ({passed_count}/{len(all_tests)} tests passed)")
+else:
+    print_fail(f"\n  OVERALL RESULT: FAIL ({failed_count} test(s) failed)")
+
+print(f"\n  Test Duration: {test_duration} seconds")
+print(f"  Total Power: {total_power:.3f} W")
 
 # Update CSV with final power measurements and test duration
 if rp_dict.csv_manager:

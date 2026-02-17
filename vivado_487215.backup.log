@@ -1,0 +1,49 @@
+#-----------------------------------------------------------
+# Vivado v2022.2 (64-bit)
+# SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Fri Feb 13 21:11:01 2026
+# Process ID: 487215
+# Current directory: /home/dune/Documents/DUNE_WIB_QC_Script
+# Command line: vivado -mode batch -source file/tcl_02.tcl
+# Log file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.log
+# Journal file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.jou
+# Running On: dune-MS-7A58, OS: Linux, CPU Frequency: 4202.286 MHz, CPU Physical cores: 4, Host memory: 67301 MB
+#-----------------------------------------------------------
+source file/tcl_02.tcl
+# open_hw_manager
+# connect_hw_server
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
+INFO: [Labtools 27-2222] Launching hw_server...
+INFO: [Labtools 27-2221] Launch Output:
+
+****** Xilinx hw_server v2022.2
+  **** Build date : Oct 14 2022 at 05:10:28
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+
+INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
+INFO: [Labtools 27-3417] Launching cs_server...
+INFO: [Labtools 27-2221] Launch Output:
+
+
+******** Xilinx cs_server v2022.2.0
+  ****** Build date   : Oct 04 2022-19:25:37
+    **** Build number : 2022.2.1664925937
+      ** Copyright 2017-2026 Xilinx, Inc. All Rights Reserved.
+
+
+
+# open_hw
+WARNING: 'open_hw' is deprecated, please use 'open_hw_manager' instead.
+# open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Digilent/210249A74687
+ERROR: [Labtools 27-2269] No devices detected on target localhost:3121/xilinx_tcf/Digilent/210249A74687.
+Check cable connectivity and that the target board is powered up then
+use the disconnect_hw_server and connect_hw_server to re-register this hardware target.
+ERROR: [Common 17-39] 'open_hw_target' failed due to earlier errors.
+
+    while executing
+"open_hw_target"
+    (file "file/tcl_02.tcl" line 4)
+INFO: [Common 17-206] Exiting Vivado at Fri Feb 13 21:11:11 2026...
