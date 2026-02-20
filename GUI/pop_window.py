@@ -68,7 +68,9 @@ def show_image_popup(
 def show_checkbox_popup(
     options,
     title="Select Options",
-    image_path=None
+    image_path=None,
+    test_result=None,
+    test_message=""
 ):
     selected_options = []
 
@@ -82,7 +84,36 @@ def show_checkbox_popup(
         selected_options = [
             options[i] for i, var in enumerate(checkbox_vars) if var.get()
         ]
-        root.destroy()
+        # If test_result is provided, show results instead of closing
+        if test_result is not None:
+            show_test_result()
+        else:
+            root.destroy()
+
+    def show_test_result():
+        # Hide submit button
+        submit_btn.grid_forget()
+
+        # Show result display
+        result_frame.grid(row=100, column=0, sticky="sw", pady=(20, 0))
+
+        # Set result color and text
+        if test_result == 'pass':
+            result_text = "PASS"
+            result_color = "green"
+        elif test_result == 'fail':
+            result_text = "FAIL"
+            result_color = "red"
+        else:
+            result_text = "WARNING"
+            result_color = "orange"
+
+        result_status_label.config(text=result_text, fg=result_color)
+        if test_message:
+            result_msg_label.config(text=test_message)
+
+        # Show continue button
+        continue_btn.grid(row=1, column=0, pady=(10, 0))
 
     def exit_fullscreen(event=None):
         root.attributes('-fullscreen', False)
@@ -143,12 +174,39 @@ def show_checkbox_popup(
         checkbox_vars.append(var)
 
     # Submit button at bottom-left
-    tk.Button(
+    submit_btn = tk.Button(
         checkbox_frame,
         text="Submit",
         command=on_submit,
         font=font_style
-    ).grid(row=99, column=0, sticky="sw", pady=(20, 0))
+    )
+    submit_btn.grid(row=99, column=0, sticky="sw", pady=(20, 0))
+
+    # Result display frame (hidden initially)
+    result_frame = ttk.Frame(checkbox_frame)
+
+    result_status_label = tk.Label(
+        result_frame,
+        text="",
+        font=("Arial", 36, "bold")
+    )
+    result_status_label.grid(row=0, column=0, pady=(5, 5))
+
+    result_msg_label = tk.Label(
+        result_frame,
+        text="",
+        font=("Arial", 18)
+    )
+    result_msg_label.grid(row=0, column=1, padx=(20, 0), pady=(5, 5))
+
+    continue_btn = tk.Button(
+        result_frame,
+        text="Continue",
+        command=root.destroy,
+        font=font_style,
+        width=12
+    )
+    # continue_btn will be shown after test result is displayed
 
     # === RIGHT COLUMN: Image ===
     if image_path:

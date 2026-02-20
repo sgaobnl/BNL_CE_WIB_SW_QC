@@ -2,13 +2,13 @@
 # Vivado v2022.2 (64-bit)
 # SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
 # IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
-# Start of session at: Fri Feb 13 14:12:56 2026
-# Process ID: 473479
+# Start of session at: Tue Feb 17 11:17:46 2026
+# Process ID: 590850
 # Current directory: /home/dune/Documents/DUNE_WIB_QC_Script
 # Command line: vivado -mode batch -source ./file/Test07_vivado_tcl_command.tcl
 # Log file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.log
 # Journal file: /home/dune/Documents/DUNE_WIB_QC_Script/vivado.jou
-# Running On: dune-MS-7A58, OS: Linux, CPU Frequency: 4203.256 MHz, CPU Physical cores: 4, Host memory: 67301 MB
+# Running On: dune-MS-7A58, OS: Linux, CPU Frequency: 800.000 MHz, CPU Physical cores: 4, Host memory: 67301 MB
 #-----------------------------------------------------------
 source ./file/Test07_vivado_tcl_command.tcl
 # open_hw_manager
@@ -40,7 +40,7 @@ INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Digilent/
 # set_property PROGRAM.FILE "/home/dune/Documents/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.bit" $device
 # program_hw_devices $device
 INFO: [Labtools 27-3164] End of startup status: HIGH
-program_hw_devices: Time (s): cpu = 00:00:22 ; elapsed = 00:00:22 . Memory (MB): peak = 1355.594 ; gain = 0.000 ; free physical = 38302 ; free virtual = 64925
+program_hw_devices: Time (s): cpu = 00:00:22 ; elapsed = 00:00:22 . Memory (MB): peak = 1358.566 ; gain = 0.000 ; free physical = 38103 ; free virtual = 65221
 # set_property PROBES.FILE "/home/dune/Documents/DUNE_WIB_QC_Script/file/example_ibert_ultrascale_gth_0.ltx" $device
 # refresh_hw_device $device
 INFO: [Labtools 27-2302] Device xczu6 (JTAG device index = 0) is programmed with a design that has 1 IBERT core(s).
@@ -86,28 +86,28 @@ IBERT RX Channel BER Report:
 #     puts "--------------------------------------"
 # }
 RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y4/RX
-  BER: 1.540050628269026e-07
-  ERROR_count: 000000000056
-  BIT_count: 558423200
+  BER: 7.6833720055843177e-08
+  ERROR_count: 000000000047
+  BIT_count: 924073440
 --------------------------------------
 RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y5/RX
-  BER: 9.110422378555533e-08
-  ERROR_count: 00000000004F
-  BIT_count: 867138720
+  BER: 5.444080670476867e-08
+  ERROR_count: 000000000049
+  BIT_count: 1340905920
 --------------------------------------
 RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y6/RX
-  BER: 0.57458458705808302
-  ERROR_count: 000027DDC792
-  BIT_count: 1164051360
+  BER: 0.57447159041678819
+  ERROR_count: 00003914B9D6
+  BIT_count: 1667026920
 --------------------------------------
 RX Channel First: localhost:3121/xilinx_tcf/Digilent/210249A74687/0_1_0_0/IBERT/Quad_128/MGT_X0Y7/RX
-  BER: 0.5750004272136009
-  ERROR_count: 000032C81B01
-  BIT_count: 1481694400
+  BER: 0.57500033645355497
+  ERROR_count: 000043A35816
+  BIT_count: 1973526480
 --------------------------------------
 # Close the connection
 invalid command name "Close"
     while executing
 "Close the connection"
     (file "./file/Test07_vivado_tcl_command.tcl" line 71)
-INFO: [Common 17-206] Exiting Vivado at Fri Feb 13 14:13:33 2026...
+INFO: [Common 17-206] Exiting Vivado at Tue Feb 17 11:18:24 2026...
