@@ -549,8 +549,13 @@ def Tray_SCAN_OCR(rootdir):
     return chip_ocr, ocrbin_fp 
 
 ############################################################
+
+#rootdir = '''C:/SGAO/ColdTest/Tested/DAT_LArASIC_QC/B009T0023/'''
+#ids_dict = {}
+
 rts = RTS_CFG()
 cryo = cryobox()
+
 
 LN2_flg = init_chk()
 gui_info = get_user_input()
@@ -605,6 +610,7 @@ else:
     print ("File exist, please make sure the tray ID is unique")
 #    print ("Exit anyway")
 
+
 ############################################################
 rts = RTS_CFG()
 cryo = cryobox()
@@ -630,6 +636,14 @@ duts = []
 for key in list(chip_ocr.keys()):
     if  (chip_ocr[key][0]) and (len(chip_ocr[key])==8) and ("PASS" not in chip_ocr[key][-1]):
             duts.append(key-1)
+
+for sroot, sdir, sfs in os.walk(rootdir):
+    break
+for logf in sfs:
+    if '_log.bin' in logf:
+        with open(rootdir + "/" + logf, 'rb') as fn:
+            slogs = pickle.load(fn)
+            ids_dict.update( slogs["RTS_MSG_S2R_P"]  )
 
 logs["duts"] = duts 
 logs["ocr"] = chip_ocr
@@ -678,7 +692,11 @@ while (len(duts) > 0) or Undone_Flag :
                 print (f"OCR while scaning tray: {ocr_sn}, OCR while moving to socket: {ocr_info}")
                 p_shifter=True
                 s_shifter=False
-                if not NIGHT_ON: #pass if it is warm test at night
+                #if not NIGHT_ON: #pass if it is warm test at night
+                switch_hr = int(datetime.datetime.now().strftime("%H"))
+                if (switch_hr >= 15) and (not LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
+                    sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                else:
                     sendemail(subject = "Chip SN mismatch, please check the pop-up window", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
                     from sn_match_gui import run_sn_match_gui
                     yorn = run_sn_match_gui(image_path=ocr_image_dir, text=f"Is chip SN {ocr_sn} ?")
@@ -686,8 +704,6 @@ while (len(duts) > 0) or Undone_Flag :
                         pass
                     else:
                         RTS_debug ("OCR",user_email)
-                else:
-                    sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
 
     dut_skt.update(dut_skt_n)
     print ("Chips to be tested: ", dut_skt)
@@ -741,7 +757,7 @@ while (len(duts) > 0) or Undone_Flag :
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
     switch_hr = int(datetime.datetime.now().strftime("%H"))
-    if (switch_hr >= 15) and LN2_flg and ((len(duts) > 0) or Undone_Flag ): 
+    if (switch_hr >= 15) and (LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
         NIGHT_ON = True
         sendemail(subject ="Please replace the tray for warm test at night!", message="Please put aside current tray for cold test. \n Then place a new tray for warm test only at night!", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
         break

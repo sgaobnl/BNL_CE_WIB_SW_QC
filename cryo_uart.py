@@ -185,7 +185,7 @@ class cryobox:
                         yorn = input("Continue filling?(y or n) : ")
                         if "Y" in yorn or "y" in yorn:
                             rd = self.cryo_cmd(mode=b'0')
-                            t0 = t1
+                            t0 = time.time_ns()
                         else:
                             x = 10/0
                     if t1 %30 == 0:
