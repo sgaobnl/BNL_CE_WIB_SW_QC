@@ -6,7 +6,7 @@ import copy
 import time, datetime, random, statistics    
 from spymemory_decode import wib_dec
 
-fdir = "./tmp_data/FE_00000000_00000001_00000002_00000003_00000004_00000005_00000006_00000007/"
+fdir = "./tmp_data/RT_FE_002000957_002000958_002000959_002000960_002000965_002000966_002000967_002000968/"
 fp = fdir + "QC_CHKRES" + ".bin"
 with open(fp, 'rb') as fn:
     data = pickle.load( fn)
@@ -27,16 +27,18 @@ for onekey in dkeys:
     wibdata = wib_dec(rawdata,fembs, spy_num=1)
     #wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
-    datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
+    #datd = [wibdata[0], wibdata[1],wibdata[2],wibdata[3]][0]
+    print (len(wibdata))
+    datd = wibdata
 
     import matplotlib.pyplot as plt
     for fe in range(8):
         for fe_chn in range(16):
             fechndata = datd[fe*16+fe_chn]
-            if np.max(fechndata) - np.mean(fechndata) > 8000:
-                pass
-            else:
-                print (fe*16+fe_chn,fe, fe_chn) 
+            #if np.max(fechndata) - np.mean(fechndata) > 8000:
+            #    pass
+            #else:
+            #    print (fe*16+fe_chn,fe, fe_chn) 
             plt.plot(fechndata)
     plt.show()
     plt.close()

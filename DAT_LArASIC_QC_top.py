@@ -41,7 +41,7 @@ print ("\033[96m 9: Turn DAT off \033[0m")
 print ("\033[96m 10: Turn DAT (on WIB slot0) on without any check\033[0m")
 
 ag = argparse.ArgumentParser()
-ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63, 64, 7,8,9,10, 22, 100],  nargs='+', default=[1,2,3,4,5,61, 62, 63, 64, 7,8])
+ag.add_argument("-t", "--task", help="which QC tasks to be performed", type=int, choices=[0, 1,2,3,4,5,61, 62, 63, 64, 7,8,9,10, 22, 100, 91,92,93,94,95,96,97,98],  nargs='+', default=[1,2,3,4,5,61, 62, 63, 64, 7,8])
 args = ag.parse_args()   
 tms = args.task
 
@@ -85,23 +85,53 @@ logs.update(logsd)
 #Vref = dat.fe_cali_vref
         
 
+if tms[0] in [91,92,93,94,95,96,97,98]: #design for FE chips, need to update to fit ColdADC and COLDATA
+    print ("Init check after chips are installed")
+    warn_flg = False
+    datad = {}
+    clim_n = tms[0]%10
+    pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = logs['env'], clim_n=clim_n)
+    datad["WIB_PWR"] = pwr_meas
+    datad["WIB_LINK"] = link_mask
+    if not init_ok:
+        #datad["FE_Fail"] = [0,1,2,3,4,5,6,7]
+        datad["FE_Fail"] = [clim_n-1]
+        datad["ADC_Fail"] = [] 
+        datad["CD_Fail"] = []
+        datad["QCstatus"] = "Code#E001: large current error when chip is placed into socket%d (1-8)" %(clim_n)
+    else:
+        datad["QCstatus"] = "Code#P001: chip in Socket%d (1-8) Pass chip-socket alignment test"%(clim_n)
+    dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
+
+    print ("QCstatus:", datad["QCstatus"])
+    datad['logs'] = logs
+    fp = fdir + "QC_INIT_CHK" + ".bin"
+    with open(fp, 'wb') as fn:
+        pickle.dump(datad, fn)
+
+    tt.append(time.time())
+    print ("save_fdir_start_%s_end_save_fdir"%fdir)
+    print ("save_file_start_%s_end_save_file"%fp)
+    print ("Done! Pass! It took %d seconds"%(tt[-1]-tt[-2]))
+
+
 #if 100 in tms : #100 is only for itemed testing with power operation 
-if True:
-    print ("Check DAT power status")
-    pwr_meas = dat.get_sensors()
-    on_f = True
-    for key in pwr_meas:
-        if "FEMB%d"%dat.dat_on_wibslot in key:
-            if ("BIAS_V" in key) and (pwr_meas[key] < 4.5):
-                on_f = False
-            if ("DC2DC0_V" in key) and (pwr_meas[key] < 3.5):
-                on_f = False
-            if ("DC2DC1_V" in key) and (pwr_meas[key] < 3.5):
-                on_f = False
-            if ("DC2DC2_V" in key) and (pwr_meas[key] < 3.5):
-                on_f = False
-    if (not on_f) and (tms[0] != 0) : #turn DAT on
-        tms = [10] + tms #turn DAT on
+##if True:
+#    print ("Check DAT power status")
+#    pwr_meas = dat.get_sensors()
+#    on_f = True
+#    for key in pwr_meas:
+#        if "FEMB%d"%dat.dat_on_wibslot in key:
+#            if ("BIAS_V" in key) and (pwr_meas[key] < 4.5):
+#                on_f = False
+#            if ("DC2DC0_V" in key) and (pwr_meas[key] < 3.5):
+#                on_f = False
+#            if ("DC2DC1_V" in key) and (pwr_meas[key] < 3.5):
+#                on_f = False
+#            if ("DC2DC2_V" in key) and (pwr_meas[key] < 3.5):
+#                on_f = False
+#    if (not on_f) and (tms[0] != 0) : #turn DAT on
+#        tms = [10] + tms #turn DAT on
 
 ####### Init check information #######
 if 10 in tms:
@@ -118,34 +148,33 @@ if 10 in tms:
 
     #print ("DAT_Power_On, it took %d seconds"%(tt[-1]-tt[-2]))
 
+
+
 if 0 in tms:
     print ("Init check after chips are installed")
-    for tryi in range(5):
-        if tryi >=3:
-            break
-        datad = {}
-        pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = logs['env'])
-        datad["WIB_PWR"] = pwr_meas
-        datad["WIB_LINK"] = link_mask
-        if not init_ok:
-            datad["FE_Fail"] = [0,1,2,3,4,5,6,7]
-            datad["ADC_Fail"] = [] 
-            datad["CD_Fail"] = []
-            datad["QCstatus"] = "Code#E001: large current or HS link error when DAT is powered on"
-        else:
-            fes_pwr_info = dat.fe_pwr_meas()
-            datad["FE_PWRON"] = fes_pwr_info
-            adcs_pwr_info = dat.adc_pwr_meas()
-            datad["ADC_PWRON"] = adcs_pwr_info
-            cds_pwr_info = dat.dat_cd_pwr_meas()
-            datad["CD_PWRON"] = cds_pwr_info
-            warn_flg, febads, adcbads, cdbads = dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
-            if not warn_flg:
-                break
-            else:
-                dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
+    warn_flg = False
+    datad = {}
+    pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = logs['env'])
+    datad["WIB_PWR"] = pwr_meas
+    datad["WIB_LINK"] = link_mask
+    if not init_ok:
+        datad["FE_Fail"] = [0,1,2,3,4,5,6,7]
+        datad["ADC_Fail"] = [] 
+        datad["CD_Fail"] = []
+        datad["QCstatus"] = "Code#E001: large current or HS link error when DAT is powered on"
+    else:
+        fes_pwr_info = dat.fe_pwr_meas()
+        datad["FE_PWRON"] = fes_pwr_info
+        adcs_pwr_info = dat.adc_pwr_meas()
+        datad["ADC_PWRON"] = adcs_pwr_info
+        cds_pwr_info = dat.dat_cd_pwr_meas()
+        datad["CD_PWRON"] = cds_pwr_info
+        warn_flg, febads, adcbads, cdbads = dat.asic_init_pwrchk(fes_pwr_info, adcs_pwr_info, cds_pwr_info)
 
-    if True:
+        if warn_flg:
+            dat.dat_pwroff_chk(env = logs['env']) #make sure DAT is off
+
+    if init_ok:
         if warn_flg:
             datad["QCstatus"] = "Code#E002: Large current of some ASIC chips is observed"
             datad["FE_Fail"] = febads

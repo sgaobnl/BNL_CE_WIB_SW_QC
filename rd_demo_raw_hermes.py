@@ -38,6 +38,22 @@ for i in [0]:
         for fe_chn in [70%16]:
             fechndata = datd[fe*16+fe_chn]
 
+if 1:
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(8,6))
+    plt.rcParams.update({'font.size': 14})
+    for chx in range(128):
+        fechndata = datd[chx]
+        if (np.max(fechndata) < 5000) or (np.min(fechndata) > 3000) :
+            plt.plot(fechndata, label="%d"%(chx))
+        else:
+            plt.plot(fechndata)
+    plt.legend()
+    plt.grid()
+    plt.show()
+    plt.close()
+    exit()
+
 #wibdata = wib_dec(rawdata,fembs, spy_num=100)
 #ch =108 
 #fechndata = []
