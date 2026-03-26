@@ -234,73 +234,56 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
 
     def femb_safe_powering(self, fembs = [], bias_ilim=0.3, dc0_ilim=0.9,dc1_ilim=0.9, dc2_ilim=1.9):
         if len(fembs) > 0:
-            ##debugging
-            #for femb_id in fembs:
-            #    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=1 )
-            #    time.sleep(10)
-            #    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-            #    time.sleep(5)
-
             self.all_femb_bias_ctrl(enable=1 )
             for femb_id in fembs:
                 t0 = time.time()
                 print ("FEMB%d is being turned on"%femb_id)
-                #for bias_en in [0]:
-                    #self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=bias_en )
-                #    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=bias_en )
-                #    time.sleep(1)
-                    #pwr_meas = self.get_sensors(sensors="FEMB%d"%femb_id)
-                #for bias_en in [1]:
-                if True:
-                    bias_en = 1
-                    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=bias_en )
-                    time.sleep(1)
-                    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=0, bias_en=bias_en )
-                    time.sleep(1)
-                    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=1, bias_en=bias_en )
-                    time.sleep(1)
-                    self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=bias_en )
-                    t1 = time.time()
-                    i = 0
-                    while True:
-                        init_ok = True
-                        pwr_meas = self.get_sensors(sensors="FEMB%d"%femb_id) #takes ~50ms
+                bias_en = 1
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=bias_en )
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=0, bias_en=bias_en )
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=1, vadc_en=1, bias_en=bias_en )
+                time.sleep(1)
+                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=bias_en )
+                t1 = time.time()
+                i = 0
+                while True:
+                    init_ok = True
+                    pwr_meas = self.get_sensors(sensors="FEMB%d"%femb_id) #takes ~50ms
 
-                        for key in pwr_meas:
-                            if "BIAS_I" in key:
-                                if pwr_meas[key] > bias_ilim:
-                                    init_ok = False
-                            if "DC2DC0_I" in key:
-                                if  pwr_meas[key] > dc0_ilim :
-                                    init_ok = False
-                            if "DC2DC1_I" in key:
-                                if pwr_meas[key] > dc1_ilim :
-                                    init_ok = False
-                            if "DC2DC2_I" in key:
-                                if pwr_meas[key] > dc2_ilim :
-                                    init_ok = False
-                            if not init_ok:
-                                break
-
-                        t1 = time.time()
+                    for key in pwr_meas:
+                        if "BIAS_I" in key:
+                            if pwr_meas[key] > bias_ilim:
+                                init_ok = False
+                        if "DC2DC0_I" in key:
+                            if  pwr_meas[key] > dc0_ilim :
+                                init_ok = False
+                        if "DC2DC1_I" in key:
+                            if pwr_meas[key] > dc1_ilim :
+                                init_ok = False
+                        if "DC2DC2_I" in key:
+                            if pwr_meas[key] > dc2_ilim :
+                                init_ok = False
                         if not init_ok:
-                            print (key, pwr_meas[key] )
-                            i = i + 1
-                            if i >= 20 : #~200ms
-                                print ("\033[91m" + "FEMB/DAT power consumption @ (power on) is not right, please contact tech coordinator!"+ "\033[0m")
-                                print ("\033[91m" + "Turn FEMB/DAT off!"+ "\033[0m")
-                                self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
-                                return init_ok, pwr_meas
-                            else:
-                                print ("\033[93m" + "Warning...detect large current during DAT/FEMB powering on, measure again..."+ "\033[0m")
-                        elif (t1-t0 ) > 3:
-                            print ("Currents of FEMB%d are in the safe range"%femb_id)
                             break
+
+                    t1 = time.time()
+                    if not init_ok:
+                        print (key, pwr_meas[key] )
+                        i = i + 1
+                        if i >= 20 : #~200ms
+                            print ("\033[91m" + "FEMB/DAT power consumption @ (power on) is not right, please contact tech coordinator!"+ "\033[0m")
+                            print ("\033[91m" + "Turn FEMB/DAT off!"+ "\033[0m")
+                            self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=0, vcd_en=0, vadc_en=0, bias_en=0 )
+                            return init_ok, pwr_meas
                         else:
-                            time.sleep(0.1)
-            #debugging
-            #self.femb_powering()
-            #exit()
+                            print ("\033[93m" + "Warning...detect large current during DAT/FEMB powering on, measure again..."+ "\033[0m")
+                    elif (t1-t0 ) > 3:
+                        print ("Currents of FEMB%d are in the safe range"%femb_id)
+                        break
+                    else:
+                        time.sleep(0.1)
         return True, pwr_meas
 
     def vol_cal(self, vms_dict, femb_id):
@@ -1502,10 +1485,6 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 adcs = self.wib_mon_adcs()
                 adcss.append(adcs)
             vms_dict[f"{vms[volcs]}"] = adcss
-            #if ("ADCRVDDD1P2" in vms[volcs]) or ("ADCLVDDD1P2" in vms[volcs]) :
-            #if True:
-            #    input (f"{vms[volcs]}, wait ...., {adcss[0][0]}")
-            #print (f"{vms[volcs]}, wait ...., {adcss[0][0]}")
         for femb_id in femb_ids:
             self.femb_cd_gpio(femb_id=femb_id, cd1_0x26 = 0x00,cd1_0x27 = 0x1f, cd2_0x26 =00 ,cd2_0x27 = 0x1f)
         return vms_dict

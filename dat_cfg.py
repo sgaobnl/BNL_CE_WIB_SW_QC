@@ -1,9 +1,5 @@
 from llc import LLC
-from fe_asic_reg_mapping import FE_ASIC_REG_MAPPING
 from wib_cfgs import WIB_CFGS
-from spymemory_decode import wib_spy_dec_syn
-from spymemory_decode import wib_dec
-import time
 import sys
 import numpy as np
 import pickle
@@ -86,7 +82,6 @@ class DAT_CFGS(WIB_CFGS):
                 ver_id = self.cdpeek(femb_id, 0xC, 0, 0xF4) 
                 year_l = self.cdpeek(femb_id, 0xC, 0, 0xF9) 
                 year_h = self.cdpeek(femb_id, 0xC, 0, 0xFA)
-                #print ("DAT", hex(ver_id), hex(year_h), hex(year_l))
                 if (ver_id == 0x2B) and (year_h == 0x20) and (year_l == 0x24):
                     init_ok = True
                     break
@@ -147,9 +142,6 @@ class DAT_CFGS(WIB_CFGS):
                 if "DC2DC2_V" in key:
                     if pwr_meas[key] < 3.5:
                         init_ok = False
-#               if "DC3DC3_V" in key: #not use
-#                   if pwr_meas[key] < 3.5:
-#                        init_ok = False
         
                 if "BIAS_I" in key:
                     if pwr_meas[key] > 0.1:
@@ -163,10 +155,6 @@ class DAT_CFGS(WIB_CFGS):
                 if "DC2DC2_I" in key:
                     if (pwr_meas[key] < 1) or (pwr_meas[key] > 1.8) :
                         init_ok = False
-#                if "DC3DC3_I" in key: #not use
-#                    if pwr_meas[key] > 1:
-#                    init_ok = True
-#                    init_ok = False
                 if not init_ok:
                     print ("\033[91m" + "DAT power consumption @ (power on) is not right, please contact tech coordinator!"+ "\033[0m")
                     print ("\033[91m" + "Turn DAT off!"+ "\033[0m")
@@ -513,7 +501,6 @@ class DAT_CFGS(WIB_CFGS):
                 self.femb_powering(fembs=[femb_id])
                 time.sleep(5)
 
-
         #FC_ACT: save_timestamp
         ####    # ·     Edge = 1110_0001 (move edge of 2 MHz clock to next rising edge of 62.5 MHz clock)
         ####    # ·     Sync = 1110_0010 (zero timestamp)
@@ -746,16 +733,9 @@ class DAT_CFGS(WIB_CFGS):
                         cdbads.append(cd_no)
                     warn_flg = True
 
-#        #to be deleted later
-#        warn_flg = False
-#        febads = []
-#        adcbads = []
-#        cdbads = []
-
         if warn_flg:
             print ("\033[91m" + "please check before restart"+ "\033[0m")
             self.femb_powering([])
-
 
         return warn_flg, febads, adcbads, cdbads
 
@@ -870,34 +850,6 @@ class DAT_CFGS(WIB_CFGS):
             time.sleep(0.2)
 
             refv_dacs.append(self.dat_adc_mons(femb_id=femb_id, mon_type=0x3c))
-            #print (refv_dacs[-1])
-            # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-                # indiv_sums[key] = indiv_sums[key] + refv_dacs[dac][key][1] #for verification
-            # print("\nadding",bin(dac),"\n")
-            ###major carry point
-            # if dac != 0x2: #because 0b10 was already covered by 0x1 << 0
-                # dac = dac - 1
-                # cfg_info = dat.dat_adc_qc_cfg(vrefp=dac, vrefn=dac, vcmo=dac, vcmi=dac)
-                # refv_dacs[dac] = dat.dat_adc_mons(mon_type=0x3c)                
-        # one_lsb = {}
-        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:    
-            # one_lsb[key] = (refv_dacs[0xFF][key][1] - refv_dacs[0x00][key][1]) / 255 #8 bits
-        # print("adding 0")
-        #[4bit version]: The all "1"s code, 1111, previously measured should equal the sum of the individual bit voltages: 0000, 0001,
-        #0010, 0100, and 1000. This is a good test to verify that superposition holds.
-        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-            # indiv_sums[key] = indiv_sums[key] + refv_dacs[0x00][key][1] #for verification
-        # print("individual sums:",indiv_sums)
-        # print("all 1's:",refv_dacs[0xFF])
-        
-        # vrefp00_sum = 0
-        # for dac in [0b0,0b1,0b10,0b100,0b1000,0b10000,0b100000,0b1000000,0b10000000]:
-            # print(bin(dac))
-            # vrefp00_sum = vrefp00_sum + refv_dacs[dac]['MON_VREFP'][1][0]
-        
-        # for key in ['MON_VREFP','MON_VREFN','MON_VCMI','MON_VCMO']:
-            # print('vrefp0 sum',key,":",vrefp00_sum[key][1])
-        # print('vrefp ff:',refv_dacs[0xFF]['MON_VREFP'][1][0])
 
         #return voltages to normal
         self.dat_adc_qc_cfg()
@@ -978,16 +930,6 @@ class DAT_CFGS(WIB_CFGS):
         self.femb_cd_rst()
         cfg_paras_rec = []
         for femb_id in self.fembs:
-#            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-#                                [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                              ]
             self.adcs_paras = self.adcs_paras_init
             for i in range(8):
                 self.adcs_paras[i][2] = sdd
@@ -1019,7 +961,6 @@ class DAT_CFGS(WIB_CFGS):
 
     def dat_adc_qc_acq(self, num_samples = 1):
         rawdata = self.spybuf_trig(fembs=self.fembs, num_samples=num_samples, trig_cmd=0, fastchk=False) #returns list of size 1
-        #wibdata = wib_dec(rawdata,fembs=self.fembs, spy_num=1)[0][self.fembs[0]]
         return rawdata 
 
 
@@ -1040,17 +981,6 @@ class DAT_CFGS(WIB_CFGS):
                 self.adcs_paras = self.adcs_paras_init
                 for i in range(8):
                     self.adcs_paras[i][2] = sdd
-#            self.adcs_paras = [ # c_id, data_fmt(0x89), sha_cs(0x84), ibuf_cs(0x80), vrefp, vrefn, vcmo, vcmi, autocali
-#                                    [0x4, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0x5, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0x6, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0x7, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0x8, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0x9, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0xA, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                    [0xB, 0x08, sdd, 0, 0xDF, 0x33, 0x89, 0x67, 0],
-#                                  ]
-
                 self.femb_adc_cfg(femb_id=femb_id)
                 self.sddflg = sdd 
             cfg_paras_rec.append( (femb_id, copy.deepcopy(self.adcs_paras), copy.deepcopy(self.regs_int8)) )
@@ -1082,12 +1012,6 @@ class DAT_CFGS(WIB_CFGS):
         #cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 or larger: disable cali
         if cali_mode <0 or cali_mode >3:
             cali_mode=3
-            #print ("\033[91m" + "Wrong value for cali_mode"+ "\033[0m")
-            #print ("\033[91m" + "cali_mode: 0 = direct input, 1 = DAT DAC, 2 = ASIC DAC, 3 =disable cali" + "\033[0m" )
-            #print ("\033[91m" + "Exit anyway!"+ "\033[0m")
-            #self.femb_powering([])
-            #self.data_align_flg = False
-            #exit()
 
         self.dat_fpga_reset()
         if cali_mode < 2:
@@ -2138,100 +2062,4 @@ class DAT_CFGS(WIB_CFGS):
                 #err = sig_gen.query("SYSTEM:ERROR?")
                 #print("Signal generator status:",err,end='')
     
-    # def dat_adc_imons(self, mon_type=0xff):
-        # femb_id = self.fembs[0]
-        
-        # mon_datas = {}     
-
-        # #mon_type = 0x01: VBGR
-        # if mon_type&0x01:   
-            # imon_select = 0x0
-            
-            # vbgr_imons = 
-
-    
-#    def asic_off_pwrchk(self):
-#        while True:
-#            fes_pwr_info =  self.fe_pwr_meas()
-#            adcs_pwr_info = self.adc_pwr_meas()
-#            cds_pwr_info =  self.cd_pwr_meas()
-#
-#            warn_flg = False
-#            kl = list(fes_pwr_info.keys())
-#            for onekey in kl:
-#                if "VDDA" in onekey:
-#                    if fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "VDDO" in onekey:
-#                    if (fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2 ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "VDDP" in onekey:
-#                    if (fes_pwr_info[onekey][0] < 0.30) & (fes_pwr_info[onekey][0]< 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#
-#            kl = list(adcs_pwr_info.keys())
-#            for onekey in kl:
-#                if "VDDA2P5" in onekey:
-#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "VDDD2P5" in onekey:
-#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#
-#                if "VDDIO" in onekey:
-#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "VDDD1P2" in onekey:
-#                    if (adcs_pwr_info[onekey][0] < 0.30) & (adcs_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#
-#            kl = list(cds_pwr_info.keys())
-#            for onekey in kl:
-#                if "CD_VDDA" in onekey:
-#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "FE_VDDA" in onekey:
-#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#
-#                if "CD_VDDCORE" in onekey:
-#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "CD_VDDD" in onekey: 
-#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        warn_flg = True
-#                if "CD_VDDIO" in onekey:
-#                    if (cds_pwr_info[onekey][0] < 0.3)  & (cds_pwr_info[onekey][0] < 2  ) :
-#                        pass
-#                    else:
-#                        print ("Warning: {} is out of range {}".format(onekey, cds_pwr_info[onekey]))
-#                        warn_flg = True
-#            if warn_flg:
-#                print ("Wait 2 second, not yet completely shut down...")
-#                time.sleep(2)
-#            else:
-#                print ("All DUTs power rails are off!")
-
 

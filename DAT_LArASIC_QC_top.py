@@ -90,7 +90,7 @@ if tms[0] in [91,92,93,94,95,96,97,98]: #design for FE chips, need to update to 
     warn_flg = False
     datad = {}
     clim_n = tms[0]%10
-    pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = logs['env'], clim_n=clim_n)
+    pwr_meas, link_mask, init_ok = dat.wib_pwr_on_dat(env = 'RT', clim_n=clim_n)
     datad["WIB_PWR"] = pwr_meas
     datad["WIB_LINK"] = link_mask
     if not init_ok:
