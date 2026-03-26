@@ -39,7 +39,7 @@ class DAT_CFGS(WIB_CFGS):
         self.rev = 1 #0 old revison, 1 new revision
         self.dat_sn=1
 
-    def wib_pwr_on_dat(self, vfe=4.0, vcd=4.0, vadc=4.0, env='RT'):
+    def wib_pwr_on_dat(self, vfe=4.0, vcd=4.0, vadc=4.0, env='RT', clim_n=8):
         print ("Initilization checkout")
         #self.wib_fw()
         print ("Turn off all power rails for FEMBs")
@@ -52,12 +52,28 @@ class DAT_CFGS(WIB_CFGS):
         self.fembs_vol_set(vfe=vfe, vcd=vcd, vadc=vadc)
 
         #power on FEMBs in safe mode
-        for i in range(3):
-            init_ok, pwr_meas  = self.femb_safe_powering(fembs=self.fembs, bias_ilim=0.1, dc0_ilim=0.8,dc1_ilim=0.7, dc2_ilim=1.9)
-            if init_ok: #unexpected large current
-                break
-            else:
-                time.sleep(2)
+        dc0_ilim = clim_n*0.1 #for FE at this momnet, need to add limit for ColdADC and COLDATA
+        if 'RT' in env:
+            init_ok, pwr_meas  = self.femb_safe_powering(fembs=self.fembs, bias_ilim=0.1, dc0_ilim=dc0_ilim,dc1_ilim=0.7, dc2_ilim=1.9)
+        else:
+            for tryi in range(5):
+                self.fembs_vol_set(vfe=1, vcd=1, vadc=1)
+                self.femb_powering(fembs=self.fembs)
+                init_ok, pwr_meas  = self.femb_cur_chk(femb_id=self.fembs[0], bias_ilim=0.1, dc0_ilim=dc0_ilim,dc1_ilim=0.7, dc2_ilim=2.1)
+                if not init_ok: continue
+                self.fembs_vol_set(vfe=2, vcd=2, vadc=2)
+                time.sleep(1)
+                init_ok, pwr_meas  = self.femb_cur_chk(femb_id=self.fembs[0], bias_ilim=0.1, dc0_ilim=dc0_ilim,dc1_ilim=0.7, dc2_ilim=2.1)
+                if not init_ok: continue
+                self.fembs_vol_set(vfe=3, vcd=3, vadc=3)
+                time.sleep(1)
+                init_ok, pwr_meas  = self.femb_cur_chk(femb_id=self.fembs[0], bias_ilim=0.1, dc0_ilim=dc0_ilim,dc1_ilim=0.7, dc2_ilim=2.1)
+                if not init_ok: continue
+                self.fembs_vol_set(vfe=vfe, vcd=vcd, vadc=vadc)
+                time.sleep(1)
+                init_ok, pwr_meas  = self.femb_cur_chk(femb_id=self.fembs[0], bias_ilim=0.1, dc0_ilim=dc0_ilim,dc1_ilim=0.7, dc2_ilim=2.1)
+                if not init_ok: continue
+                else: break
 
         self.data_align_pwron_flg = True
 

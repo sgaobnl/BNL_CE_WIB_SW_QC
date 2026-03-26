@@ -60,7 +60,7 @@ def DAT_power_off():
     logs = {}
     print (datetime.datetime.utcnow(), " : Power DAT down (it takes < 60s)")
     command = sshcmd + [wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
-    result=subrun(command, timeout = 60)
+    result=subrun(command, timeout = 60*3)
     if result != 'Error':
         if "Done" in result.stdout:
             print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
@@ -76,7 +76,7 @@ def DAT_power_on():
     logs = {}
     print (datetime.datetime.utcnow(), " : Power DAT On (it takes < 60s)")
     command = sshcmd + [ wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py on off off off"]
-    result=subrun(command, timeout = 60)
+    result=subrun(command, timeout = 60*3)
     if result != 'Error':
         if "Done" in result.stdout:
             print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
@@ -169,7 +169,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
             elif "CD" in DUT:
                 command = sshcmd + [ wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_COLDATA_QC_top.py -t {}".format(testid)]
             #result=subrun(command, timeout = None) #rewrite with Popen later
-            result=subrun(command, timeout = 60*10) #rewrite with Popen later
+            result=subrun(command, timeout = 60*20) #rewrite with Popen later
             if result != 'Error':
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d"%testid] = [command, resultstr]
@@ -208,7 +208,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
             fsrc = wibhost + ":" + fs
             command = ["scp", "-r",fsrc , fddir]
             #result=subrun(command, timeout = None)
-            result=subrun(command, timeout = 60*10)
+            result=subrun(command, timeout = 60*5)
             if result != 'Error':
                 print ("data save at {}".format(fddir))
                 logs['pc_raw_dir'] = fddir #later save it into log file
@@ -410,7 +410,7 @@ def rts_ssh(dut_skt, root = "C:/DAT_LArASIC_QC/Tested/", duttype="FE", env="RT",
             elif "CD" in DUT:
                 command = sshcmd + [ wibhost, "cd BNL_CE_WIB_SW_QC; python3 DAT_COLDATA_QC_top.py -t {}".format(testid)]
             #result=subrun(command, timeout = None) #rewrite with Popen later
-            result=subrun(command, timeout = 60*10) #rewrite with Popen later
+            result=subrun(command, timeout = 60*20) #rewrite with Popen later
             if result != 'Error':
                 resultstr = result.stdout
                 logs["QC_TestItemID_%03d"%testid] = [command, resultstr]
