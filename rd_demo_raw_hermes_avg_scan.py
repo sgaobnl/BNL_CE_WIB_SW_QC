@@ -77,7 +77,7 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512, spy_num=10):
         peddata = []
         for iperiod in range(N_period-3):
             #print (p0 + iperiod*period - 250, p0 + iperiod*period - 50, len(all_data[achn][p0 + iperiod*period - 250: p0 + iperiod*period-50]))
-            peddata += all_data[achn][p0 + iperiod*period - 250: p0 + iperiod*period-50]
+            peddata += all_data[achn][p0 + iperiod*period - 60: p0 + iperiod*period-10]
         rmss.append(np.std(peddata))
         peds.append(np.mean(peddata))
 
@@ -88,6 +88,8 @@ def data_ana(fembs, rawdata, rms_flg=False, period=512, spy_num=10):
     return chns, rmss, peds, pkps, pkns, wfs,wfsf
 
 
+
+
 fp = sys.argv[1]
 sfn = fp.split("/") #default
 if "/" in fp:
@@ -96,19 +98,48 @@ elif "\\" in fp:
     sfn = fp.split("\\")
 p = fp.find(sfn[-1])
 fdir = fp[0:p]
+print (fdir)
 
-with open(fp, 'rb') as fn:
-    raw = pickle.load(fn)
+
+import os
+fns = []
+for root, dirs, files in os.walk(fdir):
+    for fx in files:
+        if (".bin") in fx and  ("LN_Raw_J06_" in fx) and  ("snc1_st00" in fx) :
+            fns.append(fx)
+
+chacals = []
+chbcals = []
+for fx in fns:
+    fp = fdir + "/" + fx
+    a = fx.find("_dac")
+    b = fx.find("_snc")
+    dac = int(fx[a+4:b])
+
+
+    with open(fp, 'rb') as fn:
+        raw = pickle.load(fn)
     
-rawdata = raw[0]
-pwr_meas = raw[1]
-runi = 0
-#fembs = [int(sys.argv[2])]
-fembs = [0]
+    rawdata = raw[0]
+    pwr_meas = raw[1]
+    runi = 0
+    #fembs = [int(sys.argv[2])]
+    fembs = [0]
+    
+    
+    
+    period = 500
+    chns, rmss, peds, pkps, pkns, wfs,wfsf = data_ana(fembs, rawdata, rms_flg=False, period=period, spy_num=10)
+    cha = 12
+    chacals.append([dac, dac*18.62*0.185, chns[cha],  peds[cha], pkps[cha], pkns[cha]])
+    chb = 13
+    chbcals.append([dac, dac*18.62*0.185, chns[chb],  peds[chb], pkps[chb], pkns[chb]])
+
+print (chacals)
+print (chbcals)
 
 
-period = 500
-chns, rmss, peds, pkps, pkns, wfs,wfsf = data_ana(fembs, rawdata, rms_flg=False, period=period, spy_num=10)
+exit()
 
 if 0:
     import matplotlib.pyplot as plt

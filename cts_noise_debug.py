@@ -24,8 +24,7 @@ rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
 #fembs = [int(sys.argv[2])]
-fembs = [0]
-#fembs = [0,1]
+fembs = [1]
 
 #wibdata = wib_dec(rawdata,fembs, spy_num=100)
 wibdata = wib_dec(rawdata,fembs, spy_num=1)
@@ -39,200 +38,66 @@ for i in [0]:
         for fe_chn in [70%16]:
             fechndata = datd[fe*16+fe_chn]
 
+
+import matplotlib.pyplot as plt
 if 1:
-    import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(8,6))
-    plt.rcParams.update({'font.size': 14})
-    for chx in range(128):
-        fechndata = datd[chx]
-        if (np.max(fechndata) < 5000) or (np.min(fechndata) > 3000) :
-            plt.plot(fechndata, label="%d"%(chx))
-        else:
-            plt.plot(fechndata)
+    rms = []
+    pkp  = []
+    for fe in range(8):
+        for fe_chn in range(16):
+    
+            fechndata = datd[fe*16+fe_chn]
+            rms.append(np.std(fechndata))
+    plt.plot(np.arange(64),rms[0:64], marker = '.', color='b', label="left")
+    plt.plot(np.arange(64,128,1),rms[64:128], marker = '.',color='r', label="right")
     plt.legend()
     plt.grid()
-
-
-if 1:
-    import matplotlib.pyplot as plt
-    #fig = plt.figure(figsize=(8,6))
-    fig, axs = plt.subplots(2, 4, figsize=(18,10))
-    #plt.rcParams.update({'font.size': 14})
     
-    rms = []
-    pkp  = []
-    if True:
-        for chip in range(8):
-            for chipchx in range(16):
-                chx = chip*16 + chipchx
-                fechndata = datd[chx]
-                if True :
-                    npmax =  np.max(fechndata[500:1200]) 
-                    pos = np.where(fechndata[500:1200] == npmax)[0][0] + 500
-                    pedmean = int(np.mean(fechndata[pos-120:pos-20]))
-                    ax1 = chip%4
-                    ax2 = chip//4
-                    #axs[ax2, ax1].plot(np.array(fechndata[pos-20: pos+60])-pedmean, label="%d"%chx)
-                    axs[ax2, ax1].plot(np.array(fechndata[pos-20: pos+60]), marker='.', label="%d"%chx)
-                    axs[ax2, ax1].set_title(f"ASIC{chip}")
-                    axs[ax2, ax1].legend()
-
-                    #if np.min(fechndata[pos-20: pos+60]) > 3000:
-                    #plt.plot(np.array(fechndata[pos-20: pos+60])-pedmean, label="%d"%chx)
-#    plt.legend()
-    plt.grid()
-    plt.tight_layout()
+    plt.title("Noise distribution")
+    plt.ylabel("RMS noise / bit")
+    #plt.ylim((5,25))
+    plt.xlabel("Channel")
+    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
     plt.show()
     plt.close()
-    exit()
+    if 'y' in input ("y/n"):
+        exit()
 
-#wibdata = wib_dec(rawdata,fembs, spy_num=100)
-#ch =108 
-#fechndata = []
-#ch2 =109 
-#fechndata2 = []
-#for i in range(100):
-#    wibdatai = wibdata[i]
-#    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
-#    fechndata += datd[ch]
-#    fechndata2 += datd[ch2]
-#
-#print (len(fechndata))
-#from fft_chn import chn_rfft_psd
-#f,p = chn_rfft_psd(fechndata,  fft_s = 5000, avg_cycle = 20)
-#f2,p2 = chn_rfft_psd(fechndata2,  fft_s = 5000, avg_cycle = 20)
-#plt.plot(f2,p2, label="CH%d"%ch2,color='g')
-#plt.plot(f,p, label="CH%d"%ch, color='r')
-#plt.legend()
-#plt.title("FFT ")
-#plt.ylabel(" / dB ")
-#plt.xlabel("Freq / Hz")
-#plt.show()
-#plt.close()
-##
-#exit()
-###
-if 0:
+#    exit()
 
-    spy_num = 10
-    wibdata = wib_dec(rawdata,fembs, spy_num=spy_num)
-    datds = []
-    for i in range(spy_num):
-        wibdatai = wibdata[i]
-        datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
-        datds.append(datd)
-        #fechndata += datd[ch]
-        #fechndata2 += datd[ch2]
+wibdata = wib_dec(rawdata,fembs, spy_num=100)
 
 
-
-    fig, axs = plt.subplots(2, 4, figsize=(18,10))
-    #plt.rcParams.update({'font.size': 14})
-    rms = []
-    pkp  = []
-    if True:
-        for chip in range(8):
-            for chipchx in range(16):
-                chx = chip*16 + chipchx
-                fechndata = []
-                for datd in datds:
-                    fechndata += datd[chx]
-                if True :
-                    npmax =  np.max(fechndata[500:1200]) 
-                    pos = np.where(fechndata[500:1200] == npmax)[0][0] + 500
-                    pedmean = int(np.mean(fechndata[pos-120:pos-20]))
-                    ax1 = chip%4
-                    ax2 = chip//4
-                    axs[ax2, ax1].plot(np.array(fechndata[pos-10: pos+20])-pedmean, marker='.', label="%d"%chx)
-                    axs[ax2, ax1].set_title(f"ASIC{chip}")
-                    axs[ax2, ax1].legend()
-
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
-    plt.close()
-
-    exit()
-
-
-if 0:
-    import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(8,6))
-    plt.rcParams.update({'font.size': 14})
-    for chx in range(128):
-    #for chx in [0,1,2]:
-    #for chx in range(16):
-        fechndata = datd[chx]
-        plt.plot(fechndata[0:1000])
-    plt.grid()
-    plt.show()
-    plt.close()
-
-
-if 0: #check overall rms
-    datd = []
+from fft_chn import chn_rfft_psd
+#for ch in [14,15,16,24,79,80,111,112,113]:
+#for ch in [110,111,112,113]:
+#for ch in [14,15,16,24]:
+#for ch in [78,79,80,81]:
+#for ch in [95,96,97,98]:
+for ch in range(1,128,8):
     fechndata = []
-    wibdata = wib_dec(rawdata,fembs, spy_num=1)
-    rmss = []
-    peds = []
-    for ch in range(128):
-    #for ch in [0,1,2]:
-    #for ch in range(16):
-        datd = []
-        fechndata = []
-        for i in range(1):
-            wibdatai = wibdata[i]
-            datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
-            fechndata += datd[ch]
-        ped = np.mean(fechndata)
-        rms = np.std(fechndata)
-        rmss.append(rms)
-        peds.append(ped)
-    
-    import matplotlib.pyplot as plt
-    plt.plot(peds)
-    plt.grid()
-    plt.show()
-    plt.close()
-    import matplotlib.pyplot as plt
-    plt.plot(rmss)
-    plt.grid()
-    plt.show()
-    plt.close()
-    
-
-if 0:
-    ch =112 
-    fechndata = []
-    ch2 =111 
-    fechndata2 = []
-    wibdata = wib_dec(rawdata,fembs, spy_num=100)
     for i in range(100):
         wibdatai = wibdata[i]
         datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
         fechndata += datd[ch]
-        fechndata2 += datd[ch2]
-    
-    print (len(fechndata))
-    from fft_chn import chn_rfft_psd
-    f,p = chn_rfft_psd(fechndata,  fft_s = 5000, avg_cycle = 20)
-    f2,p2 = chn_rfft_psd(fechndata2,  fft_s = 5000, avg_cycle = 20)
-    plt.plot(f2,p2, label="CH%d"%ch2,color='g')
-    plt.plot(f,p, label="CH%d"%ch, color='r')
-    plt.legend()
-    plt.title("FFT ")
-    plt.ylabel(" / dB ")
-    plt.xlabel("Freq / Hz")
-    plt.show()
-    plt.close()
-    exit()
-#
+
+    f,p = chn_rfft_psd(fechndata,  fft_s = 5000, avg_cycle = 50)
+    plt.plot(f,p, label="CH%d"%ch, color='C%d'%(ch%10))
+plt.legend()
+plt.title("FFT ")
+plt.grid()
+plt.ylabel(" / dB ")
+plt.xlabel("Freq / Hz")
+plt.show()
+plt.close()
+
+exit()
 
 
-wibdata = wib_dec(rawdata,fembs, spy_num=100)
-ch =108 
+#print (len(wibdata))
+ch =9 
 fechndata = []
-ch2 =109 
+ch2 =112 
 fechndata2 = []
 for i in range(100):
     wibdatai = wibdata[i]
@@ -253,29 +118,76 @@ plt.xlabel("Freq / Hz")
 plt.show()
 plt.close()
 ##
-#exit()
+exit()
 ###
 
-if 1:
+if 0:
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(8,6))
     plt.rcParams.update({'font.size': 14})
     rms = []
     pkp  = []
+    #for fe in range(8):
+    #for fe in [70//16]:
+        #for fe_chn in range(16):
+    #    for fe_chn in [70%16-1, 70%16, 70%16 + 1]:
+        #for fe_chn in [70%16, ]:
     if True:
-        #for chx in range(128):
-        #for chx in [111,112,113,114,115]:
-        for chx in [75,76,77]:
+        #for chx in [3, 4, 69,70, 113,114]:
+        #for chx in [3, 4, 69,70, 113,114]:
+        #for chx in [1,61, 62]:
+        #for chx in [108,109]:
+        for chx in range(128):
     
             #fechndata = datd[fe*16+fe_chn]
             fechndata = datd[chx]
-            if True :
+
+            if True:
+                #plt.plot(fechndata, label="%d"%(fe*16+fe_chn))
+                plt.plot(fechndata, label="%d"%(chx))
+            else:
+                from fft_chn import chn_rfft_psd
+                f,p = chn_rfft_psd(fechndata,  fft_s = 2000, avg_cycle = 20)
+                #import matplotlib.pyplot as plt
+                plt.plot(f,p)
+                #plt.title("Waveform (leakage current = 500pA)")
+                plt.title("FFT ")
+                plt.ylabel(" / dB ")
+                plt.xlabel("Freq / Hz")
+                plt.show()
+                plt.close()
+                exit()
+
+            #if fe == 5 and (fe_chn in [11, 12, 13]):
+            #if fe == 6 and (fe_chn in [3, 4, 5]):
+            #if fe == 3 and (fe_chn in [0, 1]):
+            #if fe == 4 and (fe_chn in [3, 4,5]):
+            #if fe == 7 and (fe_chn in [0, 1,2]):
+            #if fe == 3  :
+            if False :
+            #if (fe==6) and (fe_chn in [1,2,3]):
+            #if np.max(fechndata) < 6000 :
+            #    print (fe, fe_chn)
+            #if fe == 4 and (fe_chn in [0, 8, 10]):
+            #if fe == 1 and (fe_chn in [5, 6,7]):
+            #if fe == 2 : #femb1
+            #if fe == 2 and (fe_chn in [11, 12]):
+            #if fe == 6 and (fe_chn in [0, 1]):
+            #if fe == 3 and (fe_chn in [0, 1]):
+            #if fe == 0 and (fe_chn in [3, 4, 5]):
                 npmax =  np.max(fechndata[500:1200]) 
                 pos = np.where(fechndata[500:1200] == npmax)[0][0] + 500
-                #pedmean = int(np.mean(fechndata[pos-120:pos-20]))
-                pedmean = 0
-                #if np.min(fechndata[pos-20: pos+60]) > 3000:
-                plt.plot(np.array(fechndata[pos-20: pos+60])-pedmean, label="%d"%chx)
+                plt.plot(fechndata[pos-20: pos+60], label="%d"%fe_chn)
+            #if fe == 6 and fe_chn==4:
+            #    plt.plot(fechndata)
+            #if fe == 6 and fe_chn==5:
+            #    plt.plot(fechndata)
+    #        print (np.std(fechndata))
+#            rms.append(np.std(fechndata))
+#            pkp.append(np.max(fechndata))
+            #rms.append(np.mean(fechndata))
+            #if fe==0 and fe_chn==2:
+            #    print (np.mean(fechndata))
     plt.legend()
     plt.grid()
     plt.show()
@@ -367,7 +279,7 @@ if 1:
 ##exit()
 #####
 
-if 1:
+if 0:
     import matplotlib.pyplot as plt
     rms = []
     pkp  = []

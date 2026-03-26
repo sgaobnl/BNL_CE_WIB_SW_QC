@@ -183,20 +183,20 @@ def data_ana(fembs, rawdata, rms_flg=False):
             npos64 = np.where(chndata[300:-150]==amin)[0][0] + 300
 
         if rms_flg:
-            #if (achn==82) :
-            #    chndata_hf = hp_flt_applied(chndata, fs=1953125, passfreq=10000)
-            #    import matplotlib.pyplot as plt
-            #    print (achn)
-            #    plt.plot(np.array(chndata)-int(np.mean(chndata)))
-            #    plt.plot(chndata_hf)
-            #    plt.show()
-            #    plt.close()
-            #    #from fft_chn import chn_fft_psd
-            #    #f,p = chn_fft_psd(chndata, fs=1953125, fft_s=2000, avg_cycle=1)
-            #    #import matplotlib.pyplot as plt
-            #    #plt.plot(f, p)
-            #    #plt.show()
-            #    #plt.close()
+            if (achn==56) :
+                #chndata_hf = hp_flt_applied(chndata, fs=1953125, passfreq=10000)
+                import matplotlib.pyplot as plt
+                print (achn)
+                #plt.plot(np.array(chndata)-int(np.mean(chndata)))
+                #plt.plot(chndata_hf)
+                #plt.show()
+                #plt.close()
+                from fft_chn import chn_fft_psd
+                f,p = chn_fft_psd(chndata, fs=1953125, fft_s=2000, avg_cycle=1)
+                import matplotlib.pyplot as plt
+                plt.plot(f, p)
+                plt.show()
+                plt.close()
 
             #    arms = np.std(chndata_hf)
             #else:
@@ -1106,7 +1106,10 @@ def dat_larasic_qc_quick_ana(fdir="/."):
     
 
 if __name__=="__main__":
-    fdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B009T0024\Time_20260317120157_DUT_0008_1009_2010_3011_4012_5013_6014_7015\LN_FE_009001746_009001747_009001748_009001753_009001754_009001755_009001756_009001761/'''
+    fdir = '''S:\RTS_DAT_LArASIC_QC\B006T0002\Time_20250930174950_DUT_0000_1001_2002_3003_4004_5005_6006_7007\LN_FE_006002268_006002273_006002267_006002266_006002265_006002260_006002259_006002258/'''
+    fdir = '''S:\debug\B011T0015\Time_20251212112924_DUT_0000_1001_2002_3003_4004_5005_6006_7008\LN_FE_011001404_011001305_011001306_011001307_011001308_011001309_011001310_011006660/'''
+    fdir = '''S:\RTS_DAT_LArASIC_QC\B011T0011\Time_20251124131113_DUT_0000_1001_2002_3003_4004_5005_6006_7007\LN_FE_011007583_011007584_011007585_011007671_011007606_011007611_011007612_011007613/'''
+    fdir = '''S:\RTS_DAT_LArASIC_QC\B011T0011\Time_20251124151017_DUT_0008_1009_2010_3011_4012_5013_6014_7015\LN_FE_011007672_011007561_011007562_011007567_011007568_011007569_011007570_011007575/'''
     dat_larasic_qc_quick_ana(fdir=fdir)
     #QCstatus, bads = dat_larasic_initchk(fdir)
     #print (bads)
