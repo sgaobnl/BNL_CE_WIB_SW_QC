@@ -1388,6 +1388,7 @@ class DAT_CFGS(WIB_CFGS):
         while True:
             self.femb_cd_rst()
             time.sleep(0.1)
+            self.femb_i2c_wrchk(0, cd_addr, 0, 0x1f,1)
             efusev18 = self.cdpeek(0, cd_addr, 0, 0x18)
             efusev19 = self.cdpeek(0, cd_addr, 0, 0x19)
             efusev1A = self.cdpeek(0, cd_addr, 0, 0x1A)
