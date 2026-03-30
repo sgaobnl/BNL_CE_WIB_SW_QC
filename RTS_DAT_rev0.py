@@ -146,10 +146,13 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
         status = rts.MoveChipFromTrayToSocket(trayno, trayc, trayr, sinkno, sktn,duttype)    
 
         if status < 0:
-            RTS_debug ("T2S",user_email,  status, trayno, trayc, trayr, sinkno, sktn)
-            tmpi = tmpi
-            duts=[chipi] + duts
-            continue
+            if len(duts) == 0: #use the next good chip
+                continue
+            else:
+                RTS_debug ("T2S",user_email,  status, trayno, trayc, trayr, sinkno, sktn)
+                tmpi = tmpi
+                duts=[chipi] + duts
+                continue
         else:
             dut_skt[rts.msg] = (chipi, skt)
             current_ids = rts.msg
