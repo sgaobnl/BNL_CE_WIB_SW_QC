@@ -1093,6 +1093,7 @@ CD1_EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
 		BuSY			=> open
 	);
 
+
 CD2_EFUSE_COLDATA_inst :  entity work.EFUSE_COLDATA
 	PORT MAP
 	(
@@ -1149,7 +1150,7 @@ CD2_MonADC_inst : entity work.ADC_AD7274
 	 rdy		 => open	
 	);
 	
-	
+
 --reg_adc tied to regs 72-29
 
 ADC1_MonADC_inst : entity work.ADC_AD7274
@@ -1170,7 +1171,7 @@ ADC1_MonADC_inst : entity work.ADC_AD7274
 	 busy     => ADC_MonADC_busy_arr(0),		
 	 rdy		 => open	
 	);
-	
+
 
 gen_ADC_MonADC: for i in 7 downto 1 generate
 	ADC_MonADC_inst : entity work.ADC_AD7274
@@ -1245,11 +1246,13 @@ FE1_DAC_TP_inst : entity work.DAC8411 --AD5683R
 		 start			=> FE_DAC_TP_set(0),
 		 DATA				=> FE_DAC_TP_data_arr(0),
 		 CMD				=> FE_DAC_TP_CMD,
+         sclk_en            => reg63_p(0),
 		 SCLK				=> FE_DAC_TP_SCK,
 		 DIN				=> FE_DAC_TP_DIN(0),
 		 SYNC				=> FE_DAC_TP_SYNC
 	);
-
+	
+--FE_DAC_TP_SCK <= '0';
 gen_FE_DAC_TP : for i in 7 downto 1 generate
 	FE_DAC_TP_inst : entity work.DAC8411 --AD5683R
 		PORT MAP
@@ -1259,6 +1262,7 @@ gen_FE_DAC_TP : for i in 7 downto 1 generate
 			 start			=> FE_DAC_TP_set(0),
 			 DATA				=> FE_DAC_TP_data_arr(i),
 		     CMD				=> FE_DAC_TP_CMD,
+             sclk_en            => reg63_p(0),
 			 SCLK				=> open,
 			 DIN				=> FE_DAC_TP_DIN(i),
 			 SYNC				=> open
@@ -1274,6 +1278,7 @@ DAC_ADC_P_inst : entity work.DAC8411 --AD5683R
 		 --start			=> DAC_other_set(0),
 		 DATA				=> DAC_ADC_P_data,
 		 CMD				=> DAC_ADC_P_CMD,
+         sclk_en            => reg63_p(0),
 		 SCLK				=> DAC_ADC_P_SCK,
 		 DIN				=> DAC_ADC_P_DIN,
 		 SYNC				=> DAC_ADC_P_SYNC
@@ -1288,6 +1293,7 @@ DAC_ADC_N_inst : entity work.DAC8411 --AD5683R
 		 start			=> DAC_ADC_N_set,
 		 DATA				=> DAC_ADC_N_data,
 		 CMD				=> DAC_ADC_N_CMD,
+         sclk_en            => reg63_p(0),
 		 SCLK				=> DAC_ADC_N_SCK,
 		 DIN				=> DAC_ADC_N_DIN,
 		 SYNC				=> DAC_ADC_N_SYNC
@@ -1302,11 +1308,12 @@ DAC_TP_inst : entity work.DAC8411 --AD5683R
 		 start			=> DAC_TP_set,
 		 DATA				=> DAC_TP_data,
 		 CMD				=> DAC_TP_CMD,
+         sclk_en            => reg63_p(0),
 		 SCLK				=> DAC_TP_SCK,
 		 DIN				=> DAC_TP_DIN,
 		 SYNC				=> DAC_TP_SYNC
 	);
-
+ 
 
 gen_ro_cnt: for i in 7 downto 0 generate	
 	ro_inst: ENTITY WORK.COLDADC_RO_CNT 

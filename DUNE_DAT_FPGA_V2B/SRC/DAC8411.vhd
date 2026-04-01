@@ -34,7 +34,8 @@ ENTITY DAC8411 IS
 		 reset			        	: in  std_logic;                   
 		 start						: in  std_logic;
 		 DATA							: in  std_logic_vector(15 downto 0);
-		 CMD							: in  std_logic_vector(3 downto 0);
+		 CMD				  			: in  std_logic_vector(3 downto 0);
+		 sclk_en				    	: in std_logic;
 		 SCLK							: out std_logic;
 		 DIN							: out std_logic;
 		 SYNC							: out std_logic
@@ -61,19 +62,7 @@ ARCHITECTURE behavior OF DAC8411 IS
 
 begin
 
-SCLK	<= clk;
-
-
-
-
-
-
-
-
-
-
-
-
+SCLK	<= clk AND sclk_en;
 
 
   process(clk) 
@@ -83,12 +72,6 @@ SCLK	<= clk;
 			start_s	<= start;
    end if;
 end process;
-
-
-
-
-
-
 
 
   process(clk,reset) 
