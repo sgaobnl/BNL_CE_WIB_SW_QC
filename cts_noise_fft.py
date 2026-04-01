@@ -24,7 +24,7 @@ rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
 #fembs = [int(sys.argv[2])]
-fembs = [1]
+fembs = [0]
 
 wibdata = wib_dec(rawdata,fembs, spy_num=1)
 
@@ -43,10 +43,16 @@ if 1:
     rms = []
     pkp  = []
     for fe in range(8):
+    #for fe in [3]:
         for fe_chn in range(16):
     
             fechndata = datd[fe*16+fe_chn]
             rms.append(np.std(fechndata))
+            brdchn = fe*16+fe_chn
+            #if fe == 2:
+            if brdchn in [17, 18, 19, 29, 30, 31, 49, 50, 83   ]:
+            #if True:
+                plt.plot(fechndata[0:2000], label = "%d"%brdchn)
 #    plt.plot(np.arange(64),rms[0:64], marker = '.', color='b', label="left")
 #    plt.plot(np.arange(64,128,1),rms[64:128], marker = '.',color='r', label="right")
 #    plt.legend()
@@ -57,8 +63,9 @@ if 1:
 #    #plt.ylim((5,25))
 #    plt.xlabel("Channel")
 #    plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
-#    plt.show()
-#    plt.close()
+    plt.legend()
+    plt.show()
+    plt.close()
 #    if 'n' in input ("Would you like to check FFT plot? y/n : "):
 #        exit()
 #    else:
@@ -66,6 +73,7 @@ if 1:
 
 print ("It takes a few minutes to analyze data, keep patient :)")
 
+import matplotlib.pyplot as plt
 from fft_chn import chn_rfft_psd
 wibdata = wib_dec(rawdata,fembs, spy_num=100)
 
@@ -124,7 +132,7 @@ while True:
             wibdatai = wibdata[i]
             datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
             fechndata += datd[ch]
-        f,p = chn_rfft_psd(fechndata,  fft_s = 5000, avg_cycle = 50)
+        f,p = chn_rfft_psd(fechndata, fs=1953125, fft_s = 5000, avg_cycle = 50)
         plt.plot(f,p, label="CH%d"%ch, color='C%d'%(ch%10))
     plt.legend()
     plt.title("FFT ")

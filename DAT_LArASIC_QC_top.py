@@ -11,6 +11,9 @@ import argparse
                 
 dat =  DAT_CFGS()
 froot = "/home/root/BNL_CE_WIB_SW_QC/tmp_data/"
+#Vref = dat.dat_CAL_MON_VREF()
+#print (Vref)
+#exit()
 
 ####### Input test information #######
 #Red = '\033[91m'

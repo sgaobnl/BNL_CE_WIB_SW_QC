@@ -1015,8 +1015,14 @@ class DAT_CFGS(WIB_CFGS):
 
         self.dat_fpga_reset()
         if cali_mode < 2:
+
             valint = int(val*65536/self.ADCVREF)
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
             self.dat_set_dac(val=valint, fe_cal=0)
+            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+
             if self.rev == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
             else:
@@ -1031,6 +1037,7 @@ class DAT_CFGS(WIB_CFGS):
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_PERIOD_LSB, period&0xff)  
             self.cdpoke(0, 0xC, 0, self.DAT_TEST_PULSE_EN, 0x4)  
             self.cdpoke(0, 0xC, 0, self.DAT_EXT_PULSE_CNTL, 1)    
+
 
             chncs = 0xffff
             if self.rev == 0:
@@ -1057,6 +1064,10 @@ class DAT_CFGS(WIB_CFGS):
                 sts = 1
                 swdac = 2
                 dac = 0
+        else:
+            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
 
         if cali_mode == 2:
             adac_pls_en = 1
@@ -1434,7 +1445,12 @@ class DAT_CFGS(WIB_CFGS):
             mux_name = self.mon_fe_cs[mux_cs]
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
             valint = int(1.25*65536/self.ADCVREF)
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
             self.dat_set_dac(val=valint, fe_cal=0)
+            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+
             if self.rev == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
             else:
