@@ -183,7 +183,8 @@ def data_ana(fembs, rawdata, rms_flg=False):
             npos64 = np.where(chndata[300:-150]==amin)[0][0] + 300
 
         if rms_flg:
-            if (achn==56) :
+            #if (achn==56) :
+            if False:
                 #chndata_hf = hp_flt_applied(chndata, fs=1953125, passfreq=10000)
                 import matplotlib.pyplot as plt
                 print (achn)
@@ -1110,6 +1111,7 @@ if __name__=="__main__":
     fdir = '''S:\debug\B011T0015\Time_20251212112924_DUT_0000_1001_2002_3003_4004_5005_6006_7008\LN_FE_011001404_011001305_011001306_011001307_011001308_011001309_011001310_011006660/'''
     fdir = '''S:\RTS_DAT_LArASIC_QC\B011T0011\Time_20251124131113_DUT_0000_1001_2002_3003_4004_5005_6006_7007\LN_FE_011007583_011007584_011007585_011007671_011007606_011007611_011007612_011007613/'''
     fdir = '''C:/SGAO/Github/BNL_CE_WIB_SW_QC/tmp_data/RT_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081/'''
+    fdir = '''C:/SGAO/Github/BNL_CE_WIB_SW_QC/tmp_data/LN_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081/'''
     dat_larasic_qc_quick_ana(fdir=fdir)
     #QCstatus, bads = dat_larasic_initchk(fdir)
     #print (bads)

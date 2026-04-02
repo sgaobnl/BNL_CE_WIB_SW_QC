@@ -204,6 +204,8 @@ void dat_set_dac(uint16_t val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
 	uint8_t dac_msb = (val_int & 0xFF00) >> 8; 
 	uint8_t msb_reg, lsb_reg, set_reg;
 	uint8_t set_val = 0x1;
+	cdpoke(0, 0xC, 0, 63, 1); //enable DAC
+	cdpoke(0, 0xC, 0, 63, 1); //enable DAC
 	
 	if ((fe <= 7) && (fe >= 0)) {
 		msb_reg = DAT_FE_DAC_TP_DATA_MSB;
@@ -237,6 +239,9 @@ void dat_set_dac(uint16_t val, uint8_t fe, uint8_t adc, uint8_t fe_cal) {
 	
 	cdpoke(0, 0xC, 0, set_reg, set_val);
 	cdpoke(0, 0xC, 0, set_reg, 0x0);
+
+	cdpoke(0, 0xC, 0, 63, 0); //disable DAC
+	cdpoke(0, 0xC, 0, 63, 0); //disable DAC
 }
 
 void dat_set_pulse(uint8_t en, uint16_t period, uint16_t width, float amplitude) {
