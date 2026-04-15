@@ -603,7 +603,7 @@ class LLC():
             power_meas["FEMB2_DC2DC3_V"] =  bus2_ltc2991_4a_vs[7]
             power_meas["FEMB2_DC2DC3_I"] = (bus2_ltc2991_4a_vs[6] - bus2_ltc2991_4a_vs[7])/0.1
 
-        if "FEMB2" in sensors:
+        if "FEMB3" in sensors:
             bus2_ltc2991_4b_vs = [] #DCDC for FEMB3
             for i  in range(1,9,1):
                 v = self.wib.read_ltc2991(bus, 0x4B, False, i) 
