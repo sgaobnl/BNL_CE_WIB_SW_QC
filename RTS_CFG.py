@@ -581,4 +581,16 @@ class RTS_CFG():
 if __name__=="__main__":
     rts=RTS_CFG()
     rts.rts_init()
-    rts.rts_shutdown()
+    for i in range(10):
+        rts.MotorOn()
+        rts.JumpToCamera()
+        rts.PumpOn()
+        time.sleep(5)
+        rts.PumpOff()
+        rts.rts_idle()
+        t = time.localtime()
+        current_time = time.strftime("%H:%M:%S", t)
+        print("Current Time =", current_time)
+        print ("Wait 1.5 hour")
+        #print ("Wait a minute")
+        time.sleep(3600+1800)
