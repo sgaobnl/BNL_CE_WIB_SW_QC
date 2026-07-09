@@ -296,6 +296,8 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
 
         LNQCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="LN" )
 
+        #make sure DAT is powered off
+        DAT_power_off()
         cryo.cryo_warmup(waitminutes=30)
 
         s_shifter=False

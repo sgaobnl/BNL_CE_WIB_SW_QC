@@ -33,6 +33,7 @@ def subrun(command, timeout = 30, check=False, exitflg = True):
             print("Command failed:", result.returncode)
             print("STDERR:", result.stderr.strip())
             if exitflg:
+                self.DAT_power_off()
                 return 'Error'
         return result
 
@@ -50,6 +51,7 @@ def subrun(command, timeout = 30, check=False, exitflg = True):
             #print (result.stdout)
             print ("Timoout FAIL!")
             print ("Exit anyway")
+            self.DAT_power_off()
             return 'Error'
             #exit()
 
