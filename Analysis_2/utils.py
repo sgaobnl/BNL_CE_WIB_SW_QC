@@ -117,7 +117,8 @@ def gain_inl(x: list, y: list, item='', returnDNL=False):
             lsb = np.abs((np.max(y[i0:i1]) - np.min(y[i0:i1])) / (np.max(x[i0:i1]) - np.min(x[i0:i1])))
         except:
             print(i0, i1)
-            sys.exit()
+#            sys.exit()
+            input ("utils.py, Pause, DNL, INL, error !") 
         dnl_list.append(np.abs(((np.abs(y[i0+1] - y[i0])/np.abs(x[i0+1] - x[i0]))-lsb)/lsb))
         
         for i in range(i0+1, i1):
@@ -398,16 +399,29 @@ class BaseClass:
             return
         with open('/'.join([self.input_dir, 'QC.log']), 'rb') as f:
             logs = pickle.load(f)
+
         RTS_IDs = logs['RTS_IDs']
+
+#        chip_orders = []
+#        for tmts, place in RTS_IDs.items():
+#            chip_orders.append(place[1])
+#        print (chip_orders)
+#
+#        if (0 not in chip_orders) and ( 8 in chip_orders):
+#            chip_sub1 = 1
+#        else:
+#            chip_sub1 = 0
+
         for tmts, place in RTS_IDs.items():
-            #print (tmts, place)
+#            print (tmts, place)
+#            place=[place[0], place[1]-chip_sub1]
             FE = 'FE{}'.format(place[1])
             fe_id_str =  "_".join([self.logs_dict['FE{}'.format(place[1])] , tmts, f"Tray{place[0]:02d}", f"SKT{place[1]:1d}"])
             fe_id_str = fe_id_str.replace("-", "_")
             self.logs_dict['FE{}'.format(place[1])] = fe_id_str
             self.logs_dict['position']['on Tray'][FE] = place[0]
             self.logs_dict['position']['on DAT'][FE] = place[1]
- #       exit()
+        #exit()
 
     # def get_Info_logs(self):
     #     logs = {
@@ -809,4 +823,4 @@ if __name__ == '__main__':
     for chipID in listChips:
         report = QC_REPORT(root_path=root_path, chipID=chipID)
         report.QC_PWR_report()
-        sys.exit()
+#        sys.exit()
