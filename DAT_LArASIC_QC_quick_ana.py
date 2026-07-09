@@ -486,47 +486,50 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         #dkeys = ["CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10"]
         
         for onekey in dkeys:
-            show_flg = True
+            show_flg = False
             cfgdata = data[onekey]
             fembs = cfgdata[0]
             rawdata = cfgdata[1]
             cfg_info = cfgdata[2]
     
-            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[10,40], pedr=[8000,10000] )
-            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG11" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[2500,5000], rmsr=[2,10], pedr=[8000,10000] )
-            if ("CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_OUTPUT_SDD0_SDF1_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_OUTPUT_SDD1_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC1_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[500,2000] )
-            if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[10000,12000] )
-            if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST10_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST10_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
-                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
-    
+#            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG11" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC1_ST01_ST11_SG01_SG10" in onekey) :
+                show_flg = True
+            else:
+                show_flg = False 
+                #show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[10,40], pedr=[8000,10000] )
+#            if ("CHK_GAINs_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG01_SG11" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[2500,5000], rmsr=[2,10], pedr=[8000,10000] )
+#            if ("CHK_OUTPUT_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_OUTPUT_SDD0_SDF1_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_OUTPUT_SDD1_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_BL_SDD0_SDF0_SLK00_SLK10_SNC1_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[500,2000] )
+#            if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_SLKS_SDD0_SDF0_SLK00_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[10000,12000] )
+#            if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_SLKS_SDD0_SDF0_SLK01_SLK11_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST10_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST10_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#            if ("CHK_TP_SDD0_SDF0_SLK00_SLK10_SNC0_ST01_ST11_SG00_SG10" in onekey) :
+#                show_flg = ana_res(fembs, rawdata, par=[3000,6000], rmsr=[5,30], pedr=[8000,10000] )
+#    
             if show_flg:
                 print (onekey + "  : Fail")
                 print ("command on WIB terminal to retake data for this test item is as bellow :")
@@ -752,8 +755,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
                         cfg_info = cfgdata[2]
                         chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
     
-                        ax1.plot(np.array(peds), marker='.', label="ST0%d_ST1%d"%(st0, st1))
-                        ax2.plot(np.array(rmss), marker='.', label="ST0%d_ST1%d"%(st0, st1))
+                        ax1.plot(np.array(peds), marker='.', label="SNC0_ST0%d_ST1%d"%(st0, st1))
+                        ax2.plot(np.array(rmss), marker='.', label="SNC0_ST0%d_ST1%d"%(st0, st1))
     
         ax1.set_xlim((-10,130))
         ax1.legend()
@@ -764,6 +767,99 @@ def dat_larasic_qc_quick_ana(fdir="/."):
         plt.plot()
         plt.show()
         plt.close()
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
+        plt.rcParams.update({'font.size': 8})
+        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+      
+        for st0 in [0, 1]:
+            for st1 in [0, 1]:
+                for onekey in dkeys:
+                    if "RMS_SDD0_SDF0_SLK00_SLK10_SNC1_ST0%d_ST1%d_SG00_SG10"%(st0, st1) in onekey:
+                        print (onekey)
+                        cfgdata = data[onekey]
+                        fembs = cfgdata[0]
+                        rawdata = cfgdata[1]
+                        cfg_info = cfgdata[2]
+                        chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
+    
+                        ax1.plot(np.array(peds), marker='.', label="SNC1_ST0%d_ST1%d"%(st0, st1))
+                        ax2.plot(np.array(rmss), marker='.', label="SNC1_ST0%d_ST1%d"%(st0, st1))
+    
+        ax1.set_xlim((-10,130))
+        ax1.legend()
+        ax2.set_xlim((-10,130))
+        ax2.legend()
+    
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+        plt.close()
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
+        plt.rcParams.update({'font.size': 8})
+        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+      
+        for snc in [0, 1]:
+            for buf in [0, 1, 2]:
+                sdd = buf//2
+                sdf=buf%2
+                for onekey in dkeys:
+                    if "RMS_OUTPUT_SDD%d_SDF%d_SLK00_SLK10_SNC%d_ST01_ST11_SG00_SG10"%(sdd, sdf, snc) in onekey:
+                        print (onekey)
+                        cfgdata = data[onekey]
+                        fembs = cfgdata[0]
+                        rawdata = cfgdata[1]
+                        cfg_info = cfgdata[2]
+                        chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
+    
+                        ax1.plot(np.array(peds), marker='.', label="SNC%d_SDD%d_SDF%d"%(snc, sdd, sdf))
+                        ax2.plot(np.array(rmss), marker='.', label="SNC%d_SDD%d_SDF%d"%(snc, sdd, sdf))
+    
+        ax1.set_xlim((-10,130))
+        ax1.legend()
+        ax2.set_xlim((-10,130))
+        ax2.legend()
+    
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+        plt.close()
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(12,8))
+        plt.rcParams.update({'font.size': 8})
+        ax1 = plt.subplot2grid((2, 1), (0, 0), colspan=1, rowspan=1)
+        ax2 = plt.subplot2grid((2, 1), (1, 0), colspan=1, rowspan=1)
+      
+        for sg0 in [0, 1]:
+            for sg1 in [0, 1]:
+                for onekey in dkeys:
+                    if "RMS_SDD0_SDF0_SLK00_SLK10_SNC0_ST00_ST10_SG0%d_SG1%d"%(sg0, sg1) in onekey:
+                        print (onekey)
+                        cfgdata = data[onekey]
+                        fembs = cfgdata[0]
+                        rawdata = cfgdata[1]
+                        cfg_info = cfgdata[2]
+                        chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
+    
+                        ax1.plot(np.array(peds), marker='.', label="SNC0_SG0%d_SG1%d"%(sg0, sg1))
+                        ax2.plot(np.array(rmss), marker='.', label="SNC0_SG0%d_SG1%d"%(sg0, sg1))
+    
+        ax1.set_xlim((-10,130))
+        ax1.legend()
+        ax2.set_xlim((-10,130))
+        ax2.legend()
+    
+        plt.tight_layout( rect=[0.05, 0.05, 0.95, 0.95])
+        plt.plot()
+        plt.show()
+        plt.close()
+
     
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(12,8))
@@ -782,8 +878,8 @@ def dat_larasic_qc_quick_ana(fdir="/."):
                         cfg_info = cfgdata[2]
                         chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
     
-                        ax1.plot(np.array(peds), marker='.', label="ST0%d_ST1%d"%(slk0, slk1))
-                        ax2.plot(np.array(rmss), marker='.', label="ST0%d_ST1%d"%(slk0, slk1))
+                        ax1.plot(np.array(peds), marker='.', label="SLK0%d_SLK1%d"%(slk0, slk1))
+                        ax2.plot(np.array(rmss), marker='.', label="SLK0%d_SLK1%d"%(slk0, slk1))
     
         ax1.set_xlim((-10,130))
         ax1.legend()
@@ -1111,7 +1207,10 @@ if __name__=="__main__":
     fdir = '''S:\debug\B011T0015\Time_20251212112924_DUT_0000_1001_2002_3003_4004_5005_6006_7008\LN_FE_011001404_011001305_011001306_011001307_011001308_011001309_011001310_011006660/'''
     fdir = '''S:\RTS_DAT_LArASIC_QC\B011T0011\Time_20251124131113_DUT_0000_1001_2002_3003_4004_5005_6006_7007\LN_FE_011007583_011007584_011007585_011007671_011007606_011007611_011007612_011007613/'''
     fdir = '''C:/SGAO/Github/BNL_CE_WIB_SW_QC/tmp_data/RT_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081/'''
-    fdir = '''C:/SGAO/Github/BNL_CE_WIB_SW_QC/tmp_data/LN_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081/'''
+    fdir = '''S:/debug/noise_rts/LN_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081_v1/'''
+    fdir = '''S:/debug/noise_rts/LN_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081_v2/'''
+    fdir = '''S:/debug/noise_rts/LN_FE_006006133_006006134_006006135_006006136_006006038_006006039_006006081_006006081_v3/'''
+    fdir = '''D:/tmppp/MSU/B002T9999/B002T9999/Time_20260601165101_DUT_0000_1000_2000_3000_4000_5000_6000_7000/RT_FE_002003149_002006290_002006287_002006288_002006263_002006373_002003157_002006289/'''
     dat_larasic_qc_quick_ana(fdir=fdir)
     #QCstatus, bads = dat_larasic_initchk(fdir)
     #print (bads)

@@ -27,7 +27,8 @@ fdir = froot + fsubdir + "\\"
 fdir = '''D:\DAT_SN_data\SN9\Time_20250103212716_DUT_1000_2000_3000_4000_5000_6000_7000_8000\RT_FE_001000001_001000002_001000003_001000004_001000005_001000006_001000007_001000008/'''
 fdir = '''D:\DAT_SN_data\SN9\Time_20250106163307_DUT_1000_2000_3000_4000_5000_6000_7000_8000\RT_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
 fdir = '''C:\SGAO\ColdTest\Tested\DAT_ColdADC_QC\Tested\B002T1006\Time_20250509161341_DUT_0016_1017_2018_3019_4020_5021_6022_7023\LN_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
-fdir = '''I:/RTS_data/ColdTest/SN8/B001T2008/Time_20250513110404_DUT_0045_1046_2047_3048_4049_5050_6051_7052/LN_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
+fdir = '''C:/Users/sgao.BNL/Downloads/RT_ADC_250218746_250218742_250218714_250218710_250218779_250218775_250218747_250218743/'''
+fdir = '''C:/Users/sgao.BNL/Downloads/RT_ADC_250218738_250218734_250218706_250218702_250218771_250218767_250218739_250218735/'''
 
 evl = input ("Analyze all test items? (Y/N) : " )
 if ("Y" in evl) or ("y" in evl):
@@ -896,6 +897,9 @@ if 5 in tms:
         fembs = cfgdata[0]
         rawdata = cfgdata[1]
         cfg_info = cfgdata[2]
+        print (onekey)
+        if 'SE_OPEN' in onekey:
+            continue
         chns, rmss, peds, pkps, pkns, wfs, wfsf = data_ana(fembs, rawdata, rms_flg=True)
         if "RMS_OUTPUT_" in onekey:
             sdd = int(onekey[onekey.find("_SDD")+4])
@@ -1014,6 +1018,9 @@ if 7 in tms:
             pass
         else:
             continue
+        print (onekey)
+        if "DACSE_0000" in onekey:
+            continue
         cfgdata = data[onekey]
         fembs = cfgdata[0]
         rawdata = cfgdata[1]
@@ -1027,6 +1034,7 @@ if 7 in tms:
             dacses.append([dacv, peds, rmss])
             print (dacv, peds[0], rmss[0])
             #exit()
+    exit()
     print(dkeys)  
     for onekey in dkeys:
         if 'rawdata_under' in onekey:
