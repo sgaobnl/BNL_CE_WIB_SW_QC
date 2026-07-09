@@ -5,6 +5,7 @@
 *.swo
 *.swn
 *.jpg
+*.bin
 *.png
 *.pdf
 *.dat
