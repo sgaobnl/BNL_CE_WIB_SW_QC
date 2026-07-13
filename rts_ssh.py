@@ -15,6 +15,22 @@ wibip = "192.168.121.123"
 wibhost = "root@{}".format(wibip)
 sshcmd = ["ssh","-o", "ConnectTimeout=60",  "-o", "ServerAliveInterval=20", "-o", "ServerAliveCountMax=2"]
 
+def DAT_power_off():
+    logs = {}
+    print (datetime.datetime.utcnow(), " : Power DAT down (it takes < 60s)")
+    command = sshcmd + [wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
+    result=subrun(command, timeout = 60*3)
+    if result != 'Error':
+        if "Done" in result.stdout:
+            print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
+        else:
+            print ("FAIL!")
+            print (result.stdout)
+            return None
+    else:
+        print ("FAIL!")
+        return None
+
 def subrun(command, timeout = 30, check=False, exitflg = True):
     try:
         result = subprocess.run(command,
@@ -33,7 +49,7 @@ def subrun(command, timeout = 30, check=False, exitflg = True):
             print("Command failed:", result.returncode)
             print("STDERR:", result.stderr.strip())
             if exitflg:
-                self.DAT_power_off()
+                DAT_power_off()
                 return 'Error'
         return result
 
@@ -51,28 +67,13 @@ def subrun(command, timeout = 30, check=False, exitflg = True):
             #print (result.stdout)
             print ("Timoout FAIL!")
             print ("Exit anyway")
-            self.DAT_power_off()
+            DAT_power_off()
             return 'Error'
             #exit()
 
         #continue
 
 
-def DAT_power_off():
-    logs = {}
-    print (datetime.datetime.utcnow(), " : Power DAT down (it takes < 60s)")
-    command = sshcmd + [wibhost, "cd BNL_CE_WIB_SW_QC; python3 top_femb_powering.py off off off off"]
-    result=subrun(command, timeout = 60*3)
-    if result != 'Error':
-        if "Done" in result.stdout:
-            print (datetime.datetime.utcnow(), "\033[92m  : SUCCESS!  \033[0m")
-        else:
-            print ("FAIL!")
-            print (result.stdout)
-            return None
-    else:
-        print ("FAIL!")
-        return None
 
 def DAT_power_on():
     logs = {}

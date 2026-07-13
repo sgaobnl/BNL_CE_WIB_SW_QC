@@ -2,6 +2,13 @@ import socket # for socket
 import sys 
 import time 
 
+
+# Tosend notification email
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from sendemail import sendemail
+
 class RTS_CFG():
     def __init__(self):
         self.s = None
@@ -60,8 +67,28 @@ class RTS_CFG():
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
        
+    def Safeguard(self): #
+        if True:
+            try:
+                msg = "Safeguard"
+                self.s.send(msg.encode())
+                self.s.send(b"\r\n") 
+                self.msg = self.s.recv(1024).decode() 
+                self.msg = self.msg.strip()
+                print (self.msg)
+                if '194' in self.msg:
+                    sendemail(subject = "Please release safeguard", message="Close enclousre, Green button, continue button on PC", user_email="sgao@bnl.gov", inform_tech=True)
+                #if "199" in self.msg:
+                #    break
+                #else:
+                #    time.sleep(1)
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+            #return self.msg
 
     def MotorOn(self): #
+        self.Safeguard()
 #        while True: 
 #            rdval = self.Safeguard()
 #            if "-195" in rdval:
@@ -87,25 +114,9 @@ class RTS_CFG():
                 print ("ConnectionAbortedError")
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
-    def Safeguard(self): #
-        if True:
-            try:
-                msg = "Safeguard"
-                self.s.send(msg.encode())
-                self.s.send(b"\r\n") 
-                self.msg = self.s.recv(1024).decode() 
-                self.msg = self.msg.strip()
-                print (self.msg)
-                #if "199" in self.msg:
-                #    break
-                #else:
-                #    time.sleep(1)
-            except ConnectionAbortedError:
-                print ("ConnectionAbortedError")
-                self.rts_init(port=2001, host_ip='192.168.0.2')
-            return self.msg
 
     def CoverStatus(self): #
+        self.Safeguard()
         if True:
             try:
                 msg = "CoverStatus"
@@ -124,6 +135,7 @@ class RTS_CFG():
             return self.msg
 
     def JumpToCamera(self): #
+        self.Safeguard()
         while True:
             try:
                 msg = "JumpToCamera"
@@ -141,6 +153,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def PumpOn(self): #
+        self.Safeguard()
         while True:
             try:
                 msg = "PumpOn"
@@ -159,6 +172,7 @@ class RTS_CFG():
 
 
     def PumpOff(self): #
+        self.Safeguard()
         while True:
             try:
                 msg = "PumpOff"
@@ -176,6 +190,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def MoveChipFromTrayToSocket(self, tray_nr, col_nr, row_nr, DAT_nr, socket_nr, duttype="FE"):
+        self.Safeguard()
         if "FE" in duttype:
             sktn = socket_nr
         elif "ADC" in duttype:
@@ -241,6 +256,7 @@ class RTS_CFG():
 
 
     def MoveChipFromSocketToTray(self, DAT_nr, socket_nr, tray_nr, col_nr, row_nr, duttype="FE"):
+        self.Safeguard()
         if "FE" in duttype:
             sktn = socket_nr
         elif "ADC" in duttype:
@@ -313,6 +329,7 @@ class RTS_CFG():
         return status
 
     def MoveChipFromTrayToTray(self, stray_nr, scol_nr, srow_nr, dtray_nr, dcol_nr, drow_nr):
+        self.Safeguard()
         i = 0
         origpos = False
         tryi = 0
@@ -388,6 +405,7 @@ class RTS_CFG():
         return status
 
     def rts_idle(self): 
+        self.Safeguard()
         while True:
             try:
                 print ("Quiet")
@@ -408,6 +426,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def rts_shutdown(self): 
+        self.Safeguard()
         while True:
             try:
                 self.PumpOff()
@@ -428,6 +447,7 @@ class RTS_CFG():
         self.s.close()
         
     def JumpToTray(self, tray_nr, col_nr, row_nr):
+        self.Safeguard()
         while True:
             try:
                 print ("Move Chip To Tray#{},col#{},row#{}".format(tray_nr, col_nr, row_nr))
@@ -456,6 +476,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def isChipInTray(self, tray_nr, col_nr, row_nr):
+        self.Safeguard()
         while True:
             try:
                 print ("check if chip is on Tray#{},col#{},row#{}".format(tray_nr, col_nr, row_nr))
@@ -486,6 +507,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def DropToTray(self): #
+        self.Safeguard()
         while True:
             try:
                 msg = "DropToTray"
@@ -503,6 +525,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def JumpToSocket(self, DAT_nr, socket_nr):
+        self.Safeguard()
         while True:
             try:
 
@@ -529,6 +552,7 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
 
     def InsertIntoSocket(self): #
+        self.Safeguard()
         while True:
             try:
                 msg = "InsertIntoSocket"
@@ -547,6 +571,7 @@ class RTS_CFG():
 
 
     def ScanTray_Lar(self, rootdir): #
+        self.Safeguard()
         while True:
             try:
                 msg = "ScanTray_Lar"

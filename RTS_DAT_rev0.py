@@ -295,9 +295,20 @@ def DAT_QC(user_email, dut_skt, duttype="FE", LN2_flg = True, testid=0) :
         cryo.cryo_highlevel(waitminutes=5)
 
         LNQCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="LN" )
-
         #make sure DAT is powered off
         DAT_power_off()
+
+        if LNQCresult is not None: 
+            pass
+        else:
+            LNQCresult = rts_ssh(dut_skt, root=rootdir, duttype=duttype, env="LN" )
+            DAT_power_off()
+            if LNQCresult is not None: 
+                pass
+            else:
+                sendemail(subject = "Please chk cold test", message="Cold test is done", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                input ("check?")
+
         cryo.cryo_warmup(waitminutes=30)
 
         s_shifter=False
