@@ -198,29 +198,37 @@ if __name__ =="__main__":
     #root_path = "E:/RTS_DAT_LArASIC_QC/B009T0008/"
     #root_path = "Time_20250529153639_DUT_0047_1048_2049_3066_4067_5068_6069_7082"""
     #data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
-    for root, dirs, files in os.walk(root_path):
-        break
-
-
-    Bdirs = [] 
-    for onedir in dirs:
-        #if ("B" in onedir[0:1]) and ("T0" in  onedir):
-        ba_tmp = sys.argv[1]
-        tr_tmp = sys.argv[2]
-        if (ba_tmp in onedir) and (tr_tmp in  onedir):
-             Bdirs.append(onedir)
-        
-    print (Bdirs)
-    input("confirm>>")
+#    for root, dirs, files in os.walk(root_path):
+#        break
+#
+#
+#    Bdirs = [] 
+#    for onedir in dirs:
+#        #if ("B" in onedir[0:1]) and ("T0" in  onedir):
+#        #ba_tmp = sys.argv[1]
+#        #tr_tmp = sys.argv[2]
+#        #if (ba_tmp in onedir) and (tr_tmp in  onedir):
+#        if ('B005' in onedir) :
+#             Bdirs.append(onedir)
+    #Bdirs = ["B005T0012", "B005T0013", "B005T0014", "B005T0015", "B005T0016", "B005T0017", "B005T0018", "B005T0019", "B005T0050"]  
+    #Bdirs = ["B009T0030", "B004T0033", "B004T0034", "B004T0037", "B004T0038", "B004T0039", "B004T0041", "B004T0067"]
+    #Bdirs = ["B005T0050"]  
+    #Bdirs = ["B011T0025", "B011T0027", "B011T0068", "B011T0069", ]  
+ #   Bdirs = ["B011T0069" ]  
+    #Bdirs = ["B005T0019", "B005T0049" ]  
+    #Bdirs = ["B011T0069",]  
+#    print (Bdirs)
+#    input("confirm>>")
+    Bdirs = ["B004T0039" ]  
 
     for bdir in Bdirs:
         bpath = "/".join([root_path, bdir])
         bpath = bpath + "/"
         for broot, bsubdirs, files in os.walk(bpath):
             break
-        #print (bsubdirs)
         for data_dir in bsubdirs:
-            if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+            #if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+            if ("Time_20260611203316" in data_dir) and ("_DUT_" in data_dir):
                 for subdir in os.listdir("/".join([bpath, data_dir])):
                     if os.path.isdir("/".join([bpath, data_dir, subdir])):
                         env=subdir[0:2]
@@ -232,22 +240,26 @@ if __name__ =="__main__":
                                 continue
                         if ("RT" in env) or ("LN" in env):
                             print ("/".join([bpath, data_dir, subdir]))
+                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
+                            exit()
+
                             FE_IDs = DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
                             if FE_IDs != None :
                                 pass
                             else:
                                 DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
-                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
-
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
+#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
+#
+exit()
 
 #    for data_dir in dirs:
 #        if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):

@@ -184,6 +184,9 @@ class QC_INIT_CHK(BaseClass):
             print('configuration : {}'.format(param))
             fembs = self.raw_data[param][0]
             raw_data = self.raw_data[param][1]
+            if isinstance(raw_data, bool):
+                print (raw_data)
+                continue
             decodedData = decodeRawData(fembs=fembs, rawdata=raw_data, period=self.period)
             for ichip in range(8):
                 tmp_config = [param]
@@ -383,9 +386,11 @@ class QC_INIT_CHKAna(BaseClass_Ana):
 
 
 if __name__ =='__main__':
-    root_path = "E:/B009T0008/"
+    #root_path = "E:/B009T0008/"
+    root_path = "S:\RTS_DAT_LArASIC_QC\B004T0039/"
+    #RT_FE_004005880_004005881_004005882_004005887_004005888_004005889_004005890_004005895
     output_path = root_path + "Ana"
-    data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
+    data_dir = "Time_20260611203316_DUT_0065_1066_2067_3068_4069_5070_6071_7072"
     env = 'RT'
     #qc_selection = json.load(open("./qc_selection.json"))
     qc_pwr = QC_PWR(root_path=root_path, data_dir=data_dir, output_dir=output_path, env=env)
