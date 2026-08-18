@@ -62,6 +62,10 @@ class PWR_CYCLE(BaseClass):
         #
         fembs = raw_data[0] # FEMB list : we use the first slot of WIB only
         rawdata_wf = raw_data[1] # raw data waveform
+        if isinstance(rawdata_wf, bool):
+            return None
+
+
         config_data = raw_data[2] # configuration : HOW DO WE USE THIS INFORMATION ?
         pwrCons_data = raw_data[3] # power consumption
         #
@@ -89,8 +93,9 @@ class PWR_CYCLE(BaseClass):
             pwr_cycle_N = 'PwrCycle_{}'.format(ipcycle)
             print("Item : {}".format(pwr_cycle_N))
             one_pwrcyc = self.decode_OnePwrCycle(pwr_cycle_N=pwr_cycle_N)
-            for FE_ID in one_pwrcyc.keys():
-                PwrCycle_data[FE_ID][pwr_cycle_N] = one_pwrcyc[FE_ID][pwr_cycle_N]
+            if one_pwrcyc is not None:
+                for FE_ID in one_pwrcyc.keys():
+                    PwrCycle_data[FE_ID][pwr_cycle_N] = one_pwrcyc[FE_ID][pwr_cycle_N]
         # save data to json file
         FE_IDs = []
         for ichip in range(8):
