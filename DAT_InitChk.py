@@ -428,6 +428,8 @@ def dat_initchk(fdir="/."):
             cfgdata = data[onekey]
             fembs = cfgdata[0]
             rawdata = cfgdata[1]
+            if type(rawdata) == bool:
+                return "Code#E301" , [0,1,2,3,4,5,6,7]
             cfg_info = cfgdata[2]
 
             bads0 = []
