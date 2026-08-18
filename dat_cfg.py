@@ -1,5 +1,5 @@
 from llc import LLC
-from wib_cfgs import WIB_CFGS
+from wib_cfgs_rts import WIB_CFGS
 import sys
 import numpy as np
 import pickle
@@ -122,6 +122,7 @@ class DAT_CFGS(WIB_CFGS):
                     print ("\033[91m" + "FEMB%d, HS links are broken, 0x%H"%(femb_no, link_mask)+ "\033[0m")
                     print ("\033[91m" + "Turn DAT off!"+ "\033[0m")
                     self.femb_powering([])
+
         return pwr_meas, link_mask, init_ok
 
     def wib_pwr_on_dat_chk(self):
@@ -1017,10 +1018,7 @@ class DAT_CFGS(WIB_CFGS):
         if cali_mode < 2:
 
             valint = int(val*65536/self.ADCVREF)
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
             self.dat_set_dac(val=valint, fe_cal=0)
-            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
             self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
             if self.rev == 0:
@@ -1065,7 +1063,6 @@ class DAT_CFGS(WIB_CFGS):
                 swdac = 2
                 dac = 0
         else:
-            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
             self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
             self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
 
@@ -1445,10 +1442,7 @@ class DAT_CFGS(WIB_CFGS):
             mux_name = self.mon_fe_cs[mux_cs]
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
             valint = int(1.25*65536/self.ADCVREF)
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
             self.dat_set_dac(val=valint, fe_cal=0)
-            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
             self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
             if self.rev == 0:

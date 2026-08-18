@@ -236,7 +236,7 @@ class WIB_CFGS(LLC, FE_ASIC_REG_MAPPING):
                 time.sleep(1)
                 self.femb_power_en_ctrl(femb_id=femb_id, vfe_en=1, vcd_en=1, vadc_en=1, bias_en=bias_en )
 
-                init_ok, pwr_meas = self.femb_cur_chk(femb_id , bias_ilim=0.3, dc0_ilim=0.9,dc1_ilim=0.9, dc2_ilim=1.9)
+                init_ok, pwr_meas = self.femb_cur_chk(femb_id , bias_ilim=bias_ilim, dc0_ilim=dc0_ilim,dc1_ilim=dc1_ilim, dc2_ilim=dc2_ilim)
 
         return init_ok, pwr_meas
 
