@@ -21,7 +21,7 @@ if 'save' in sys.argv:
     sys.argv.remove('save')
 else:
     save = False
-    sample_N = 1
+    sample_N = 5
 
 fembs = [int(a) for a in sys.argv[1:pos]] 
 
@@ -78,7 +78,7 @@ pwr_meas = chk.get_sensors()
 if save:
     fdir = "./tmp_data/"
     ts = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-    fp = fdir + "Raw_RMS" + ts  + ".bin"
+    fp = fdir + "Raw_RMS_" + ts  + ".bin"
     with open(fp, 'wb') as fn:
         pickle.dump( [rawdata, pwr_meas, cfg_paras_rec], fn)
 
