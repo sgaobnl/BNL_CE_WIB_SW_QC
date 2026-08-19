@@ -23,8 +23,9 @@ with open(fp, 'rb') as fn:
 rawdata = raw[0]
 pwr_meas = raw[1]
 runi = 0
-#fembs = [int(sys.argv[2])]
-fembs = [0]
+fembno = int(sys.argv[2])
+fembs = [fembno]
+#fembs = [0]
 #fembs = [0,1]
 
 #wibdata = wib_dec(rawdata,fembs, spy_num=100)
@@ -34,7 +35,7 @@ datd = []
 fechndata = []
 for i in [0]:
     wibdatai = wibdata[i]
-    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
+    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[fembno]]
     for fe in [70//16]:
         for fe_chn in [70%16]:
             fechndata = datd[fe*16+fe_chn]
