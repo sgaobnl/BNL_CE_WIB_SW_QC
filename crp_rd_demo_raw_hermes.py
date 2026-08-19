@@ -35,7 +35,7 @@ datd = []
 fechndata = []
 for i in [0]:
     wibdatai = wibdata[i]
-    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[fembno]]
+    datd = [wibdatai[0], wibdatai[1],wibdatai[2],wibdatai[3]][fembs[0]]
     for fe in [70//16]:
         for fe_chn in [70%16]:
             fechndata = datd[fe*16+fe_chn]
@@ -62,7 +62,10 @@ if 1:
         pkps.append(npmax)
         pkns.append(npmin)
         peds.append(pedmean)
-        rmsch = (np.std(fechndata[pos-120:pos-20]))
+        if 'RMS' in fp:
+            rmsch = (np.std(fechndata))
+        else:
+            rmsch = (np.std(fechndata[pos-120:pos-20]))
         rmss.append(rmsch)
 
         if ((npmax-pedmean) < 5000) :
