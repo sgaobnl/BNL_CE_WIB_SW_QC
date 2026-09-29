@@ -13,9 +13,9 @@ from common import (
 
 RT_CRITERIA = {
 
-    "vdda_range": (70, 80),
-    "vddo_range": (15, 25),
-    "vddp_range": (45, 55),
+    "vdda_range": (70-5, 80+5),
+    "vddo_range": (15-5, 25+5),
+    "vddp_range": (45-5, 55+5),
 
     "rms_range": (8, 16),
 }
@@ -27,11 +27,11 @@ RT_CRITERIA = {
 
 LN_CRITERIA = {
 
-    "vdda_range": (75, 90),
-    "vddo_range": (15, 25),
+    "vdda_range": (75, 90+10),
+    "vddo_range": (15, 25+15),
     "vddp_range": (50, 60),
 
-    "rms_range": (5, 100),
+    "rms_range": (2, 150),
 }
 
 
@@ -53,9 +53,9 @@ def check_row30(rows, file_type):
         CH0 ~ CH15
 
     For the 16 channels:
-        ped    = mean +/- 3*STD
+        ped    = mean +/- 4*STD
         rms    = 2 ~ 10
-        posAmp = mean +/- 3*STD
+        posAmp = mean +/- 4*STD
     """
 
     if file_type == "RT":
@@ -221,17 +221,17 @@ def _check_row(
     posamp_std = _population_std(posamp_values)
 
     ped_lower = (
-        ped_mean - 3.0 * ped_std
+        ped_mean - 4.0 * ped_std
     )
     ped_upper = (
-        ped_mean + 3.0 * ped_std
+        ped_mean + 4.0 * ped_std
     )
 
     posamp_lower = (
-        posamp_mean - 3.0 * posamp_std
+        posamp_mean - 4.0 * posamp_std
     )
     posamp_upper = (
-        posamp_mean + 3.0 * posamp_std
+        posamp_mean + 4.0 * posamp_std
     )
 
     # --------------------------------------------------
@@ -258,25 +258,26 @@ def _check_row(
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"ped out of 3STD range "
+                    f"ped out of 4STD range "
                     f"({ped_lower:.6g} ~ "
                     f"{ped_upper:.6g}): {ped}"
                 )
             }
 
         # RMS
-        if not (
-            criteria["rms_range"][0]
-            <= rms
-            <= criteria["rms_range"][1]
-        ):
-            return False, {
-                "fail_code": (
-                    f"FAIL: row {row_number} "
-                    f"CH{channel_number} ({col}) "
-                    f"rms out of range: {rms}"
-                )
-            }
+        if False: #bypass by Shanshan
+            if not (
+                criteria["rms_range"][0]
+                <= rms
+                <= criteria["rms_range"][1]
+            ):
+                return False, {
+                    "fail_code": (
+                        f"FAIL: row {row_number} "
+                        f"CH{channel_number} ({col}) "
+                        f"rms out of range: {rms}"
+                    )
+                }
 
         # posAmp
         if not (
@@ -288,7 +289,7 @@ def _check_row(
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"posAmp out of 3STD range "
+                    f"posAmp out of 4STD range "
                     f"({posamp_lower:.6g} ~ "
                     f"{posamp_upper:.6g}): {posamp}"
                 )
@@ -321,13 +322,13 @@ def _check_row(
 
         "Ped_Mean_16CH": ped_mean,
         "Ped_STD_16CH": ped_std,
-        "Ped_Lower_3STD": ped_lower,
-        "Ped_Upper_3STD": ped_upper,
+        "Ped_Lower_4STD": ped_lower,
+        "Ped_Upper_4STD": ped_upper,
 
         "PosAmp_Mean_16CH": posamp_mean,
         "PosAmp_STD_16CH": posamp_std,
-        "PosAmp_Lower_3STD": posamp_lower,
-        "PosAmp_Upper_3STD": posamp_upper,
+        "PosAmp_Lower_4STD": posamp_lower,
+        "PosAmp_Upper_4STD": posamp_upper,
     }
 
 

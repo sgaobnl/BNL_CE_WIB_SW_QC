@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from scipy.signal import find_peaks
 from scipy import stats
+from highpass_filter import hp_flt_applied
 
 ##
 from sklearn.cluster import DBSCAN
@@ -177,8 +178,8 @@ def organizeWibdata(wibdata: list):
         data.append(onechipData)
     return data
 
-def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500):
-    tmpwibdata = wib_dec(rawdata, fembs, spy_num=20, cd0cd1sync=False)
+def decodeRawData(fembs, rawdata, needTimeStamps=False, period=500, spy_num=20):
+    tmpwibdata = wib_dec(rawdata, fembs, spy_num=spy_num, cd0cd1sync=False)
     #-----------------------------------------------------------------------------
     dat_tmts_l = []
     dat_tmts_h = []
@@ -300,8 +301,14 @@ def getpedestal_rms(oneCHdata: list, pureNoise=False, period=500):
     '''
     ped, rms = 0.0, 0.0
     if pureNoise:
-        ped = int(np.round(np.mean(oneCHdata)))
-        rms = np.round(np.std(oneCHdata), 2)
+        chndata = oneCHdata[0:10000]
+        ped = int(np.round(np.mean(chndata)))
+#        rms0 = np.round(np.std(chndata), 2)
+        chndata_hf = hp_flt_applied(chndata, fs=1953125, passfreq=10000)
+        rms = np.round(np.std(chndata_hf), 2)
+#        ped = int(np.round(np.mean(oneCHdata)))
+#        print (len(oneCHdata))
+#        rms = np.round(np.std(oneCHdata), 2)
     else:
         # posmax, pheights = find_peaks(x=oneCHdata, height=0.85*np.max(oneCHdata)) ### use argmax corresponding to each period instead of find_peaks 
         # N_pulses = len(posmax)

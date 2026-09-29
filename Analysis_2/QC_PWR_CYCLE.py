@@ -201,7 +201,10 @@ class PWR_CYCLE_Ana(BaseClass_Ana):
                 out_dict['testItem'].append(param)# +' ({})'.format(self.units[param]))
                 out_dict['Cycle'].append(icycle)
                 out_dict['vdd_cfgs'].append(key)
-                out_dict['value'].append(data[param][icycle])
+                if len(data[param]) > icycle:
+                    out_dict['value'].append(data[param][icycle])
+                else:
+                    out_dict['value'].append(data[param][-1])
         out_df = pd.DataFrame(out_dict)
         return out_df
     

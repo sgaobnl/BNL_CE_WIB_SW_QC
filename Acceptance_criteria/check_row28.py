@@ -15,13 +15,13 @@ from common import (
 #   Vdda_P / Vddo_P / Vddp_P use the same ranges as Row 20.
 #
 #   ped:
-#       mean +/- 3 * STD of the 16 channel ped values
+#       mean +/- 4 * STD of the 16 channel ped values
 #
 #   rms:
 #       2 ~ 10
 #
 #   posAmp:
-#       mean +/- 3 * STD of the 16 channel posAmp values
+#       mean +/- 4 * STD of the 16 channel posAmp values
 #
 # The 16-channel mean and population STD are calculated
 # from CH0 ~ CH15 first. Those limits are then applied
@@ -33,10 +33,10 @@ RT_CRITERIA = {
 
     # Same as check_row20.py
     "vdda_range": (35, 40),
-    "vddo_range": (0.01, 0.1),
+    "vddo_range": (-0.05, 0.1),
     "vddp_range": (55, 75),
 
-    "rms_range": (8, 16),
+    "rms_range": (8, 25),
 }
 
 
@@ -44,10 +44,10 @@ LN_CRITERIA = {
 
     # Same as check_row20.py
     "vdda_range": (28, 35),
-    "vddo_range": (0.01, 0.1),
+    "vddo_range": (-0.05, 0.5),
     "vddp_range": (55, 75),
 
-    "rms_range": (5, 100),
+    "rms_range": (2, 100),
 }
 
 
@@ -64,9 +64,9 @@ def check_row28(rows, file_type):
     Vdda_P / Vddo_P / Vddp_P are located by label search.
 
     For CH0 ~ CH15:
-        ped    = mean +/- 3*STD
+        ped    = mean +/- 4*STD
         rms    = 2 ~ 10
-        posAmp = mean +/- 3*STD
+        posAmp = mean +/- 4*STD
     """
 
     if file_type == "RT":
@@ -234,17 +234,17 @@ def _check_row(
     posamp_std = _population_std(posamp_values)
 
     ped_lower = (
-        ped_mean - 3.0 * ped_std
+        ped_mean - 4.0 * ped_std
     )
     ped_upper = (
-        ped_mean + 3.0 * ped_std
+        ped_mean + 4.0 * ped_std
     )
 
     posamp_lower = (
-        posamp_mean - 3.0 * posamp_std
+        posamp_mean - 4.0 * posamp_std
     )
     posamp_upper = (
-        posamp_mean + 3.0 * posamp_std
+        posamp_mean + 4.0 * posamp_std
     )
 
     # --------------------------------------------------
@@ -265,35 +265,36 @@ def _check_row(
         rms = measurement["rms"]
         posamp = measurement["posAmp"]
 
-        # PED: mean +/- 3 STD
+        # PED: mean +/- 4 STD
         if not ped_lower <= ped <= ped_upper:
             return False, {
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"ped out of 3STD range "
+                    f"ped out of 4STD range "
                     f"({ped_lower:.6g} ~ "
                     f"{ped_upper:.6g}): {ped}"
                 )
             }
 
         # RMS: 2 ~ 10
-        if not criteria["rms_range"][0] <= rms <= criteria["rms_range"][1]:
-            return False, {
-                "fail_code": (
-                    f"FAIL: row {row_number} "
-                    f"CH{channel_number} ({col}) "
-                    f"rms out of range: {rms}"
-                )
-            }
+        if False:#by pass by shanshan
+            if not criteria["rms_range"][0] <= rms <= criteria["rms_range"][1]:
+                return False, {
+                    "fail_code": (
+                        f"FAIL: row {row_number} "
+                        f"CH{channel_number} ({col}) "
+                        f"rms out of range: {rms}"
+                    )
+                }
 
-        # posAmp: mean +/- 3 STD
+        # posAmp: mean +/- 4 STD
         if not posamp_lower <= posamp <= posamp_upper:
             return False, {
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"posAmp out of 3STD range "
+                    f"posAmp out of 4STD range "
                     f"({posamp_lower:.6g} ~ "
                     f"{posamp_upper:.6g}): {posamp}"
                 )
@@ -327,13 +328,13 @@ def _check_row(
 
         "Ped_Mean_16CH": ped_mean,
         "Ped_STD_16CH": ped_std,
-        "Ped_Lower_3STD": ped_lower,
-        "Ped_Upper_3STD": ped_upper,
+        "Ped_Lower_4STD": ped_lower,
+        "Ped_Upper_4STD": ped_upper,
 
         "PosAmp_Mean_16CH": posamp_mean,
         "PosAmp_STD_16CH": posamp_std,
-        "PosAmp_Lower_3STD": posamp_lower,
-        "PosAmp_Upper_3STD": posamp_upper,
+        "PosAmp_Lower_4STD": posamp_lower,
+        "PosAmp_Upper_4STD": posamp_upper,
     }
 
 

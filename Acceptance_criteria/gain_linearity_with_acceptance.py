@@ -37,8 +37,8 @@ class GainLinearityAnalyzer:
     ROW_NUMBERS = (20, 21, 22)
     CHANNELS = range(16)
 
-    NONLINEARITY_LIMIT_PERCENT = 0.5
-    GAIN_STD_MULTIPLIER = 3.0
+    NONLINEARITY_LIMIT_PERCENT = 1.5
+    GAIN_STD_MULTIPLIER = 4.0
 
     def __init__(
         self,

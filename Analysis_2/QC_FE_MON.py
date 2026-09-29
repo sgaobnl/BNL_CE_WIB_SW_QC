@@ -169,6 +169,7 @@ class FE_MON(BaseClass):
         dac_meas = self.mon_dac()
         FE_IDs = []
         for ichip in range(8):
+            print (self.logs_dict['FE{}'.format(ichip)])
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
             FE_IDs.append(FE_ID)
             dac_meas_chip = dac_meas[FE_ID]
@@ -318,9 +319,9 @@ class QC_FE_MON_Ana():
 
 
 if __name__ == '__main__':
-    root_path = "E:/B009T0008/"
+    root_path = "S:/RTS_DAT_LArASIC_QC/B002T0006/"
     output_path = root_path + "Ana"
-    data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
+    data_dir = "Time_20250903173341_DUT_0008_1009_2010_3011_5013_7015_6016_4017"
     env = 'RT'
     fe_Mon = FE_MON(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
     fe_Mon.decodeFE_MON()

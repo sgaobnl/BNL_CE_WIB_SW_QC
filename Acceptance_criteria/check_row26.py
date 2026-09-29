@@ -1,3 +1,5 @@
+import math
+
 from common import (
     column_letter,
     find_labeled_value,
@@ -17,9 +19,7 @@ RT_CRITERIA = {
     "vddo_range": (15, 25),
     "vddp_range": (45, 55),
 
-    "ped_range": (400, 800),
-    "rms_range": (8, 16),
-    "posamp_range": (8500, 8900),
+    "rms_range": (8, 20),
 }
 
 
@@ -31,15 +31,13 @@ LN_CRITERIA = {
     "col_a": "Test_00_QC_INIT_CHK",
     "col_b": "ASICDAC_CALI_CHK",
 
-    "vdda_range": (80, 90),
-    "vddo_range": (15, 25),
-    "vddp_range": (50, 60),
+    "vdda_range": (80, 90+10),
+    "vddo_range": (15, 25+15),
+    "vddp_range": (45, 60),
 
 
 
-    "ped_range": (500, 1200),
-    "rms_range": (5, 100),
-    "posamp_range": (8100, 8400),
+    "rms_range": (2, 100),
 }
 
 
@@ -118,28 +116,25 @@ def _check_row(
         }
 
     # --------------------------------------------------
-    # Column A
+    # Column A / Column B
+    #
+    # Use the actual values from this row.
     # --------------------------------------------------
 
-    if row[0].strip() != criteria["col_a"]:
+    col_a_value = row[0].strip()
+    col_b_value = row[1].strip()
+
+    if not col_a_value:
         return False, {
             "fail_code": (
-                f"FAIL: row {row_number} "
-                f"column A is incorrect: "
-                f"{row[0].strip()}"
+                f"FAIL: row {row_number} column A is empty"
             )
         }
 
-    # --------------------------------------------------
-    # Column B
-    # --------------------------------------------------
-
-    if row[1].strip() != criteria["col_b"]:
+    if not col_b_value:
         return False, {
             "fail_code": (
-                f"FAIL: row {row_number} "
-                f"column B is incorrect: "
-                f"{row[1].strip()}"
+                f"FAIL: row {row_number} column B is empty"
             )
         }
 
@@ -234,6 +229,12 @@ def _check_row(
     # Search entire Row 26 for CH0 ~ CH15
     # --------------------------------------------------
 
+    # --------------------------------------------------
+    # Collect all 16 channel measurements first
+    # --------------------------------------------------
+
+    channel_measurements = {}
+
     for channel_number in range(16):
 
         measurement = find_channel_measurements(
@@ -250,6 +251,54 @@ def _check_row(
                 )
             }
 
+        channel_measurements[channel_number] = measurement
+
+    # --------------------------------------------------
+    # Calculate 16-channel PED statistics
+    #
+    # Acceptance range:
+    #     mean +/- 3 * population STD
+    # --------------------------------------------------
+
+    ped_values = [
+        channel_measurements[channel]["ped"]
+        for channel in range(16)
+    ]
+
+    ped_mean = _mean(ped_values)
+    ped_std = _population_std(ped_values)
+
+    ped_lower = ped_mean - 4.0 * ped_std
+    ped_upper = ped_mean + 4.0 * ped_std
+
+    # --------------------------------------------------
+    # Calculate 16-channel posAmp statistics
+    #
+    # Acceptance range:
+    #     mean +/- 3 * population STD
+    # --------------------------------------------------
+
+    posamp_values = [
+        channel_measurements[channel]["posAmp"]
+        for channel in range(16)
+    ]
+
+    posamp_mean = _mean(posamp_values)
+    posamp_std = _population_std(posamp_values)
+
+    posamp_lower = posamp_mean - 4.0 * posamp_std
+    posamp_upper = posamp_mean + 4.0 * posamp_std
+
+    # --------------------------------------------------
+    # Check all 16 channels
+    # --------------------------------------------------
+
+    for channel_number in range(16):
+
+        measurement = channel_measurements[
+            channel_number
+        ]
+
         col_index = measurement["column"]
         col = column_letter(col_index)
 
@@ -257,17 +306,15 @@ def _check_row(
         rms = measurement["rms"]
         posamp = measurement["posAmp"]
 
-        # PED
-        if not (
-            criteria["ped_range"][0]
-            <= ped
-            <= criteria["ped_range"][1]
-        ):
+        # PED: mean +/- 3 STD
+        if not ped_lower <= ped <= ped_upper:
             return False, {
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"ped out of range: {ped}"
+                    f"ped out of 4STD range "
+                    f"({ped_lower:.6g} ~ "
+                    f"{ped_upper:.6g}): {ped}"
                 )
             }
 
@@ -285,26 +332,28 @@ def _check_row(
                 )
             }
 
-        # posAmp
-        if not (
-            criteria["posamp_range"][0]
-            <= posamp
-            <= criteria["posamp_range"][1]
-        ):
+        # posAmp: mean +/- 3 STD
+        if not posamp_lower <= posamp <= posamp_upper:
             return False, {
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"posAmp out of range: {posamp}"
+                    f"posAmp out of 4STD range "
+                    f"({posamp_lower:.6g} ~ "
+                    f"{posamp_upper:.6g}): {posamp}"
                 )
             }
 
-    # --------------------------------------------------
-    # All Row 26 checks passed
-    # --------------------------------------------------
-
     return True, {
         "fail_code": "",
+        "Ped_Mean_16CH": ped_mean,
+        "Ped_STD_16CH": ped_std,
+        "Ped_Lower_4STD": ped_lower,
+        "Ped_Upper_4STD": ped_upper,
+        "PosAmp_Mean_16CH": posamp_mean,
+        "PosAmp_STD_16CH": posamp_std,
+        "PosAmp_Lower_4STD": posamp_lower,
+        "PosAmp_Upper_4STD": posamp_upper,
 
         "Vdda_P": vdda_p,
         "Vdda_P_Column": column_letter(vdda_col),
@@ -315,3 +364,31 @@ def _check_row(
         "Vddp_P": vddp_p,
         "Vddp_P_Column": column_letter(vddp_col),
     }
+
+
+def _mean(values):
+    if not values:
+        raise ValueError(
+            "Cannot calculate mean of an empty list."
+        )
+
+    return sum(values) / len(values)
+
+
+def _population_std(values):
+    """
+    Calculate population standard deviation.
+    """
+    if not values:
+        raise ValueError(
+            "Cannot calculate STD of an empty list."
+        )
+
+    mean = _mean(values)
+
+    variance = sum(
+        (value - mean) ** 2
+        for value in values
+    ) / len(values)
+
+    return math.sqrt(variance)

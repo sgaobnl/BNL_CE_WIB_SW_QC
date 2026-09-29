@@ -4,9 +4,10 @@ from typing import Dict, List, Callable, Tuple, Any
 
 from check_row_count import check_row_count
 from check_sn_row5 import check_serial_number
-from check_row20 import check_row20
-from check_row21 import check_row21
-from check_row22 import check_row22
+from check_rows20_22 import check_row20
+from check_rows20_22 import check_row21
+from check_rows20_22 import check_row22
+from check_row20_21_22 import check_row20_21_22_group
 from check_row26 import check_row26
 
 from check_row28 import check_row28
@@ -15,6 +16,27 @@ from check_row30 import check_row30
 from check_row31 import check_row31
 from check_row32 import check_row32
 from check_row33 import check_row33
+from check_rows34_54 import check_rows34_54
+from check_rows65_72 import check_rows65_72
+from check_rows105_110 import check_rows105_110
+from check_rows111_114 import check_rows111_114
+from check_rows116_119 import (
+    check_row116,
+    check_row119,
+)
+from check_rows73_104 import (
+    check_rows73_76,
+    check_rows77_80,
+    check_rows81_84,
+    check_rows85_88,
+    check_rows89_92,
+    check_rows93_96,
+    check_rows97_100,
+    check_rows101_104,
+)
+from check_rows60_64 import check_rows60_64
+from check_rows57_59 import check_rows57_59
+from check_rows55_56 import check_rows55_56
 
 from gain_linearity_with_acceptance import (
     GainLinearityAnalyzer,
@@ -40,6 +62,8 @@ class CSVAnalyzer:
 
     In addition, GainLinearityAnalyzer is run on Row 20 ~ Row 22.
 
+Rows 65 ~ 72 are checked by check_rows65_72.
+
     Every check runs even if an earlier check fails.
 
     The result CSV contains two cells for each acceptance check:
@@ -55,6 +79,7 @@ class CSVAnalyzer:
         ("Check_row20", check_row20),
         ("Check_row21", check_row21),
         ("Check_row22", check_row22),
+        ("check_row20_21_22_group", check_row20_21_22_group),
         ("Check_row26", check_row26),
 
         ("check_row28",  check_row28),
@@ -63,6 +88,23 @@ class CSVAnalyzer:
         ("check_row31",  check_row31),
         ("check_row32",  check_row32),
         ("check_row33",  check_row33),
+        ("check_rows34_54", check_rows34_54),
+        ("check_rows65_72", check_rows65_72),
+        ("check_rows73_76", check_rows73_76),
+        ("check_rows77_80", check_rows77_80),
+        ("check_rows81_84", check_rows81_84),
+        ("check_rows85_88", check_rows85_88),
+        ("check_rows89_92", check_rows89_92),
+        ("check_rows93_96", check_rows93_96),
+        ("check_rows97_100", check_rows97_100),
+        ("check_rows101_104", check_rows101_104),
+        ("check_rows105_110", check_rows105_110),
+        ("check_rows111_114", check_rows111_114),
+        ("check_row116", check_row116),
+        ("check_row119", check_row119),
+        ("check_rows60_64", check_rows60_64),
+        ("check_rows57_59", check_rows57_59),
+        ("check_rows55_56", check_rows55_56),
 
         # Future checks:
         # ("Check_row23", check_row23),
@@ -393,7 +435,7 @@ class CSVAnalyzer:
                             (
                                 "Nonlinearity_Percent="
                                 f"{nonlinearity_value:.6g}"
-                                " >= 0.5%"
+                                " >= 1.5%"
                             )
                         )
                     else:
@@ -533,7 +575,72 @@ class CSVResultExporter:
         "Check_row22_Result",
         "Check_row22_Fail_Code",
 
+        "Check_row26_Result",
+        "Check_row26_Fail_Code",
+
+        "check_row28_Result",
+        "check_row28_Fail_Code",
+
+        "check_row29_Result",
+        "check_row29_Fail_Code",
+
+        "check_row30_Result",
+        "check_row30_Fail_Code",
+
+        "check_row31_Result",
+        "check_row31_Fail_Code",
+
+        "check_row32_Result",
+        "check_row32_Fail_Code",
+
+        "check_row33_Result",
+        "check_row33_Fail_Code",
+
+        "check_rows34_54_Result",
+        "check_rows34_54_Fail_Code",
+
+        "check_rows55_56_Result",
+        "check_rows55_56_Fail_Code",
+
+        "check_rows57_59_Result",
+        "check_rows57_59_Fail_Code",
+
+        "check_rows60_64_Result",
+        "check_rows60_64_Fail_Code",
+
+        "check_rows65_72_Result",
+        "check_rows65_72_Fail_Code",
+
+        "check_rows73_76_Result",
+        "check_rows73_76_Fail_Code",
+        "check_rows77_80_Result",
+        "check_rows77_80_Fail_Code",
+        "check_rows81_84_Result",
+        "check_rows81_84_Fail_Code",
+        "check_rows85_88_Result",
+        "check_rows85_88_Fail_Code",
+        "check_rows89_92_Result",
+        "check_rows89_92_Fail_Code",
+        "check_rows93_96_Result",
+        "check_rows93_96_Fail_Code",
+        "check_rows97_100_Result",
+        "check_rows97_100_Fail_Code",
+        "check_rows101_104_Result",
+        "check_rows101_104_Fail_Code",
+        "check_rows105_110_Result",
+        "check_rows105_110_Fail_Code",
+        "check_rows111_114_Result",
+        "check_rows111_114_Fail_Code",
+        "check_row116_Result",
+        "check_row116_Fail_Code",
+        "check_row119_Result",
+        "check_row119_Fail_Code",
+
         "check_row20_21_22_gain_INL_result",
+
+
+
+
         "check_row20_21_22_gain_INL_Fail_Code",
     ]
 

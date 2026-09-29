@@ -10,6 +10,8 @@ import numpy as np
 from utils import dumpJson, createDirs, decodeRawData, printItem, LArASIC_ana, BaseClass, BaseClass_Ana
 import matplotlib.pyplot as plt
 import pandas as pd
+import time
+
 
 class RMS(BaseClass):
     def __init__(self, root_path: str, data_dir: str, output_path: str, env='RT'):
@@ -51,7 +53,8 @@ class RMS(BaseClass):
         fembs = self.raw_data[config][0]
         raw_data = self.raw_data[config][1]
         cfg_info = self.raw_data[config][2]
-        decodedRMS = decodeRawData(fembs=fembs, rawdata=raw_data, period=self.period)
+
+        decodedRMS = decodeRawData(fembs=fembs, rawdata=raw_data, period=self.period, spy_num=20)
         out_dict = {self.logs_dict['FE{}'.format(ichip)]: dict() for ichip in range(8)}
         for ichip in range(8):
             FE_ID = self.logs_dict['FE{}'.format(ichip)]
@@ -61,6 +64,7 @@ class RMS(BaseClass):
                 'pedestal': pedrms['pedrms']['pedestal']['data'],
                 'rms': pedrms['pedrms']['rms']['data']
             }
+
         return out_dict
 
     def decodeRMS(self):
@@ -416,10 +420,10 @@ class RMS_StatAna():
         pd.DataFrame(configurations).to_csv('/'.join([self.output_path, 'QC_RMS_CONFIG_MAP.csv']))
 
 if __name__ == '__main__':
-    root_path = "E:/B009T0008/"
+    root_path = "E:/B006T0001/"
     output_path = root_path + "Ana"
-    data_dir = "Time_20250527114445_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
-    env = 'RT'
+    data_dir = "Time_20251003122727_DUT_0000_1001_2002_3003_4004_5005_6006_7007"
+    env = 'LN'
     rms = RMS(root_path=root_path, data_dir=data_dir, output_path=output_path, env=env)
     rms.decodeRMS()
     # root_path = '../../Data_BNL_CE_WIB_SW_QC'

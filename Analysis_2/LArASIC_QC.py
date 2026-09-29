@@ -41,7 +41,6 @@ def DecodeRawData_func(root_path, data_dir, env, tms):
             jfs = ["QC_INIT_CHK.json", "QC_PWR.json", "QC_PWR_CYCLE.json", "QC_CHKRES.json", "QC_CALI_ASICDAC.json", 
                    "QC_CALI_ASICDAC_47.json", "QC_CALI_DATDAC.json", "QC_CALI_DIRECT.json", "QC_RMS.json", "QC_FE_MON.json", 'QC_Cap_Meas.json'  ]
             for fn in jfs:
-                print (fn)
                 if not os.path.isfile('/'.join([chip_path, fn])):
                     return None
             DecodeJson2csv(root_path, FE_ID, env)
@@ -219,7 +218,13 @@ if __name__ =="__main__":
     #Bdirs = ["B011T0069",]  
 #    print (Bdirs)
 #    input("confirm>>")
-    Bdirs = ["B004T0039" ]  
+    #Bdirs = ["B011T0028", "B011T0029","B011T0030","B005T0020","B005T0051","B005T0052","B005T0054","B005T0056"]  
+    #Bdirs = ["B011T0028", "B011T0029","B011T0030"]
+    #Bdirs = ["B005T0020","B005T0051","B005T0052","B005T0054","B005T0056"]  
+    Bdirs = ["B011T0025"]
+    Bdirs = ["B011T0024", "B011T0028", "B011T0029","B011T0030"]
+    Bdirs = ["B009T0005","B009T0006","B009T0007"]
+
 
     for bdir in Bdirs:
         bpath = "/".join([root_path, bdir])
@@ -227,8 +232,8 @@ if __name__ =="__main__":
         for broot, bsubdirs, files in os.walk(bpath):
             break
         for data_dir in bsubdirs:
-            #if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
-            if ("Time_20260611203316" in data_dir) and ("_DUT_" in data_dir):
+            if ("Time_" in data_dir[0:5]) and ("_DUT_" in data_dir):
+            #if ("Time_20251003122727" in data_dir) and ("_DUT_" in data_dir):
                 for subdir in os.listdir("/".join([bpath, data_dir])):
                     if os.path.isdir("/".join([bpath, data_dir, subdir])):
                         env=subdir[0:2]
@@ -239,26 +244,23 @@ if __name__ =="__main__":
                                 print ("Warning: Folder with incompleted QC data, ignore!", "/".join([bpath, data_dir, subdir]), )
                                 continue
                         if ("RT" in env) or ("LN" in env):
-                            print ("/".join([bpath, data_dir, subdir]))
-                            DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
-                            exit()
-
                             FE_IDs = DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+                            print (FE_IDs)
                             if FE_IDs != None :
                                 pass
                             else:
                                 DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=0)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
-#                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
-#
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=1)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=2)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=3)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=4)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=5)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=61)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=62)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=63)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=64)
+                                DecodeRawData_func(root_path=bpath, data_dir=data_dir, env=env, tms=8)
+
 exit()
 
 #    for data_dir in dirs:

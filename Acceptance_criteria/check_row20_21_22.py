@@ -1,6 +1,5 @@
 from pathlib import Path
 import csv
-import re
 import math
 
 from common import find_channel_measurements
@@ -204,6 +203,24 @@ class GainLinearityAnalyzer:
         )
 
     # ==================================================
+    # Four-channel group outlier check
+    # ==================================================
+
+    @staticmethod
+    def _group_mean_excluding_two_largest(values):
+        """Mean of 10 values after removing the two largest from 12."""
+        if len(values) != 12:
+            raise ValueError("Expected exactly 12 values.")
+
+        remaining = sorted(values)[:-2]
+        return sum(remaining) / len(remaining)
+
+    def check_row_group_criteria(self):
+        """Run the RMS four-channel group criterion for Rows 20-22."""
+        self.read_file()
+        return _check_rms_group_criteria(self.rows, (20, 21, 22))
+
+    # ==================================================
     # Analyze all channels
     # ==================================================
 
@@ -215,6 +232,9 @@ class GainLinearityAnalyzer:
         self.read_file()
 
         results = []
+
+        group_check = self.check_row_group_criteria()
+        group_check_30_32_33 = _check_rms_group_criteria(self.rows, (30, 32, 33))
 
         for channel in self.CHANNELS:
 
@@ -281,8 +301,11 @@ class GainLinearityAnalyzer:
                     "Max_Abs_Residual": max_abs_residual,
                     "Nonlinearity_Percent": nonlinearity_percent,
 
-                    "Result": "PASS",
-                    "Fail_Code": "",
+                    "Result": "PASS" if group_check["Result"] == "PASS" else "FAIL",
+                    "Fail_Code": group_check["Fail_Code"],
+                    "Group_Criteria_Result": group_check["Result"],
+                    "Group_Criteria_Measure": "RMS",
+                    "Rows30_32_33_Group_Criteria_Result": group_check_30_32_33["fail_code"] == "",
                 })
 
             except Exception as exc:
@@ -313,10 +336,132 @@ class GainLinearityAnalyzer:
                     "Nonlinearity_Percent": "",
 
                     "Result": "FAIL",
-                    "Fail_Code": str(exc),
+                    "Fail_Code": str(exc) + (
+                        f" | {group_check['Fail_Code']}"
+                        if group_check["Fail_Code"]
+                        else ""
+                    ),
+                    "Group_Criteria_Result": group_check["Result"],
+                    "Group_Criteria_Measure": "RMS",
+                    "Rows30_32_33_Group_Criteria_Result": group_check_30_32_33["fail_code"] == "",
                 })
 
         return results
+
+
+
+def _check_rms_group_criteria(rows, row_numbers=(20, 21, 22)):
+    """
+    RMS four-channel group criterion.
+
+    For each selected row:
+      A0 = mean RMS of CH0-CH3
+      A1 = mean of the other 12 RMS values after removing the 2 largest
+      B0 = mean RMS of CH4-CH7
+      B1 = same calculation using channels outside CH4-CH7
+      C0 = mean RMS of CH8-CH11
+      C1 = same calculation using channels outside CH8-CH11
+      D0 = mean RMS of CH12-CH15
+      D1 = same calculation using channels outside CH12-CH15
+
+    A row fails only when all four channels in any group are
+    greater than 1.5 times that group's reference mean.
+
+    The combined criterion fails only when at least two selected rows fail.
+    """
+    groups = {
+        'A': (range(0, 4), [ch for ch in range(16) if ch not in range(0, 4)]),
+        'B': (range(4, 8), [ch for ch in range(16) if ch not in range(4, 8)]),
+        'C': (range(8, 12), [ch for ch in range(16) if ch not in range(8, 12)]),
+        'D': (range(12, 16), [ch for ch in range(16) if ch not in range(12, 16)]),
+    }
+    parsed = {}
+    row_failures_summary = []
+    failed_row_count = 0
+
+    for row_number in row_numbers:
+        row_index = row_number - 1
+        if len(rows) <= row_index:
+            failed_row_count += 1
+            msg=f'Row {row_number}: row is missing'
+            row_failures_summary.append(msg)
+            parsed[f'Row{row_number}_Result']='FAIL'
+            parsed[f'Row{row_number}_Fail_Code']='row is missing'
+            continue
+
+        row=rows[row_index]
+        rms_values={}
+        parse_failures=[]
+        for ch in range(16):
+            m=find_channel_measurements(row,ch)
+            if m is None:
+                parse_failures.append(f'CH{ch} not found or rms could not be parsed')
+            else:
+                rms_values[ch]=m['rms']
+
+        if len(rms_values)!=16:
+            failed_row_count += 1
+            fail_code=' | '.join(parse_failures)
+            row_failures_summary.append(f'Row {row_number}: {fail_code}')
+            parsed[f'Row{row_number}_Result']='FAIL'
+            parsed[f'Row{row_number}_Fail_Code']=fail_code
+            continue
+
+        stats={}
+        group_failures=[]
+        for name,(group_channels,reference_channels) in groups.items():
+            group_values=[rms_values[ch] for ch in group_channels]
+            reference_values=[rms_values[ch] for ch in reference_channels]
+            group_mean=sum(group_values)/4.0
+            reference_mean=sum(sorted(reference_values)[:-2])/10.0
+            limit=1.5*reference_mean
+            exceeding=[ch for ch in group_channels if rms_values[ch]>limit]
+            group_failed=(len(exceeding)==4)
+            stats[f'{name}0']=group_mean
+            stats[f'{name}1']=reference_mean
+            stats[f'{name}_Limit']=limit
+            stats[f'{name}_Result']='FAIL' if group_failed else 'PASS'
+            if group_failed:
+                details=', '.join(f'CH{ch}={rms_values[ch]}' for ch in group_channels)
+                group_failures.append(f'Group {name}: all 4 channels ({details}) > 1.5*{name}1={limit:.6g}')
+
+        row_failed=bool(group_failures)
+        if row_failed:
+            failed_row_count += 1
+            fail_code=' | '.join(group_failures)
+            row_failures_summary.append(f'Row {row_number}: {fail_code}')
+        else:
+            fail_code=''
+        parsed[f'Row{row_number}_Result']='FAIL' if row_failed else 'PASS'
+        parsed[f'Row{row_number}_Fail_Code']=fail_code
+        parsed[f'Row{row_number}_Group_Criteria']=stats
+
+    parsed['Failed_Row_Count']=failed_row_count
+    if failed_row_count >= 2:
+        return False, {'fail_code': f'FAIL: {failed_row_count} of selected rows failed; at least 2 failed rows trigger combined failure. ' + ' | '.join(row_failures_summary), **parsed}
+    return True, {'fail_code':'', **parsed}
+
+
+def check_row20_21_22_group(rows, file_type):
+    """Public Rows 20-22 RMS group checker.
+
+    A group fails only when all 4 channels exceed 1.5 times its
+    reference RMS mean. The combined check fails only when at least
+    2 of Rows 20, 21, and 22 fail.
+    """
+    if file_type not in ("RT", "LN"):
+        return False, {
+            "fail_code": f"FAIL: unsupported file type: {file_type}"
+        }
+    return _check_rms_group_criteria(rows, (20, 21, 22))
+
+
+def check_rows30_32_33_group(rows, file_type):
+    """Apply the same RMS four-channel group criterion to Rows 30, 32, 33."""
+    if file_type not in ('RT','LN'):
+        return False, {'fail_code': f'FAIL: unsupported file type: {file_type}'}
+    return _check_rms_group_criteria(rows, (30, 32, 33))
+
 
 
 def export_results(
@@ -354,6 +499,13 @@ def export_results(
 
         writer.writeheader()
         writer.writerows(results)
+
+
+CHECK_FUNCTIONS = {
+    "check_row20_21_22_group": check_row20_21_22_group,
+    "check_rows30_32_33_group": check_rows30_32_33_group,
+    "GainLinearityAnalyzer": GainLinearityAnalyzer,
+}
 
 
 # ======================================================

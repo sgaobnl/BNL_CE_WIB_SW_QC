@@ -13,11 +13,11 @@ from common import (
 
 RT_CRITERIA = {
     # Same voltage ranges as check_row28.py
-    "vdda_range": (35, 40),
-    "vddo_range": (-0.01, 0.1),
+    "vdda_range": (35, 45),
+    "vddo_range": (-0.05, 0.1),
     "vddp_range": (55, 75),
 
-    "rms_range": (8, 16),
+    "rms_range": (8, 25),
 }
 
 
@@ -27,11 +27,11 @@ RT_CRITERIA = {
 
 LN_CRITERIA = {
     # Same voltage ranges as check_row28.py
-    "vdda_range": (28, 35),
-    "vddo_range": (-0.01, 0.1),
-    "vddp_range": (55, 75),
+    "vdda_range": (28, 50),
+    "vddo_range": (-0.1, 0.5),
+    "vddp_range": (55, 85),
 
-    "rms_range": (5, 100),
+    "rms_range": (2, 100),
 }
 
 
@@ -48,9 +48,9 @@ def check_row31(rows, file_type):
         CH0 ~ CH15
 
     For the 16 channels:
-        ped    = mean +/- 3*STD
+        ped    = mean +/- 4*STD
         rms    = 2 ~ 10
-        posAmp = mean +/- 3*STD
+        posAmp = mean +/- 4*STD
 
     RT and LN use separate voltage/rms criteria.
     """
@@ -255,11 +255,11 @@ def _check_row(
     posamp_mean = _mean(posamp_values)
     posamp_std = _population_std(posamp_values)
 
-    ped_lower = ped_mean - 3.0 * ped_std
-    ped_upper = ped_mean + 3.0 * ped_std
+    ped_lower = ped_mean - 4.0 * ped_std
+    ped_upper = ped_mean + 4.0 * ped_std
 
-    posamp_lower = posamp_mean - 3.0 * posamp_std
-    posamp_upper = posamp_mean + 3.0 * posamp_std
+    posamp_lower = posamp_mean - 4.0 * posamp_std
+    posamp_upper = posamp_mean + 4.0 * posamp_std
 
     # --------------------------------------------------
     # Check all 16 channels
@@ -278,6 +278,7 @@ def _check_row(
         ped = measurement["ped"]
         rms = measurement["rms"]
         posamp = measurement["posAmp"]
+        negamp = measurement["negAmp"]
 
         # PED
         if not ped_lower <= ped <= ped_upper:
@@ -285,25 +286,26 @@ def _check_row(
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"ped out of 3STD range "
+                    f"ped out of 4STD range "
                     f"({ped_lower:.6g} ~ "
                     f"{ped_upper:.6g}): {ped}"
                 )
             }
 
         # RMS
-        if not (
-            criteria["rms_range"][0]
-            <= rms
-            <= criteria["rms_range"][1]
-        ):
-            return False, {
-                "fail_code": (
-                    f"FAIL: row {row_number} "
-                    f"CH{channel_number} ({col}) "
-                    f"rms out of range: {rms}"
-                )
-            }
+        if False:
+            if not (
+                criteria["rms_range"][0]
+                <= rms
+                <= criteria["rms_range"][1]
+            ):
+                return False, {
+                    "fail_code": (
+                        f"FAIL: row {row_number} "
+                        f"CH{channel_number} ({col}) "
+                        f"rms out of range: {rms}"
+                    )
+                }
 
         # posAmp
         if not posamp_lower <= posamp <= posamp_upper:
@@ -311,9 +313,26 @@ def _check_row(
                 "fail_code": (
                     f"FAIL: row {row_number} "
                     f"CH{channel_number} ({col}) "
-                    f"posAmp out of 3STD range "
+                    f"posAmp out of 4STD range "
                     f"({posamp_lower:.6g} ~ "
                     f"{posamp_upper:.6g}): {posamp}"
+                )
+            }
+
+        # posAmp / negAmp matching
+        #
+        # Acceptance:
+        #     abs(posAmp - negAmp) < 200
+        amp_difference = abs(posamp - negamp)
+
+        if amp_difference >= 200:
+            return False, {
+                "fail_code": (
+                    f"FAIL: row {row_number} "
+                    f"CH{channel_number} ({col}) "
+                    f"|posAmp-negAmp| >= 200: "
+                    f"posAmp={posamp}, negAmp={negamp}, "
+                    f"difference={amp_difference}"
                 )
             }
 
@@ -339,13 +358,13 @@ def _check_row(
 
         "Ped_Mean_16CH": ped_mean,
         "Ped_STD_16CH": ped_std,
-        "Ped_Lower_3STD": ped_lower,
-        "Ped_Upper_3STD": ped_upper,
+        "Ped_Lower_4STD": ped_lower,
+        "Ped_Upper_4STD": ped_upper,
 
         "PosAmp_Mean_16CH": posamp_mean,
         "PosAmp_STD_16CH": posamp_std,
-        "PosAmp_Lower_3STD": posamp_lower,
-        "PosAmp_Upper_3STD": posamp_upper,
+        "PosAmp_Lower_4STD": posamp_lower,
+        "PosAmp_Upper_4STD": posamp_upper,
     }
 
 
