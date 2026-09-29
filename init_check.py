@@ -34,7 +34,7 @@ class InitChecklist(QWidget):
 
         # --- Disable cold test checkbox after 3 PM ---
         current_time = QTime.currentTime()
-        cutoff_time = QTime(15, 0)  # 15:00 (3 PM)
+        cutoff_time = QTime(18, 0)  # 15:00 (3 PM)
 
         if current_time >= cutoff_time:
             self.chk_coldtest  = QCheckBox("Cold test (Disable after 3PM)")

@@ -710,7 +710,7 @@ while (len(duts) > 0) or Undone_Flag :
                 s_shifter=False
                 #if not NIGHT_ON: #pass if it is warm test at night
                 switch_hr = int(datetime.datetime.now().strftime("%H"))
-                if (switch_hr >= 15) and (not LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
+                if (switch_hr >= 17) and (not LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
                     sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
                 else:
                     sendemail(subject = "Chip SN mismatch, please check the pop-up window", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
@@ -773,7 +773,7 @@ while (len(duts) > 0) or Undone_Flag :
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
     switch_hr = int(datetime.datetime.now().strftime("%H"))
-    if (switch_hr >= 15) and (LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
+    if (switch_hr >= 17) and (LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
         NIGHT_ON = True
         sendemail(subject ="Please replace the tray for warm test at night!", message="Please put aside current tray for cold test. \n Then place a new tray for warm test only at night!", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
         break
