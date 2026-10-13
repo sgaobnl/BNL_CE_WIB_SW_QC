@@ -32,15 +32,16 @@ class InitChecklist(QWidget):
         self.chk_robot.setFont(QFont("Arial", 14))
         self.chk_robot.setStyleSheet("QCheckBox::indicator { width: 24px; height: 24px; }")
 
-        # --- Disable cold test checkbox after 3 PM ---
-        current_time = QTime.currentTime()
-        cutoff_time = QTime(18, 0)  # 15:00 (3 PM)
+        ## --- Disable cold test checkbox after 3 PM ---
+        #current_time = QTime.currentTime()
+        #cutoff_time = QTime(18, 0)  # 15:00 (3 PM)
 
-        if current_time >= cutoff_time:
-            self.chk_coldtest  = QCheckBox("Cold test (Disable after 3PM)")
-            self.chk_coldtest.setEnabled(False)
-            self.LN2_flg=False
-        else:
+        #if current_time >= cutoff_time:
+        #    self.chk_coldtest  = QCheckBox("Cold test (Disable after 3PM)")
+        #    self.chk_coldtest.setEnabled(False)
+        #    self.LN2_flg=False
+        #else:
+        if True:
             self.chk_coldtest  = QCheckBox("Cold test")
             self.chk_coldtest.setEnabled(True)
         self.chk_coldtest.setFont(QFont("Arial", 14))

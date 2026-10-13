@@ -5,29 +5,31 @@ import os
 import pickle
 
 
-rootdir = "S:/RTS_DAT_LArASIC_QC/B006T0006/"
+rootdir = "C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B005T0021/"
 #rootdir = '''C:\SGAO\ColdTest\Tested\DAT_LArASIC_QC\B006T0011/'''
 ocrbin_fp = rootdir + "ocr_results.bin"
 if os.path.isfile(ocrbin_fp) :
     with open(ocrbin_fp, 'rb') as fn:
         chip_ocr  = pickle.load(fn)
+#print (len(chip_ocr))
 for key in chip_ocr.keys():
 #    if key in [72]:
 #    if key in range(10,18):
 #        chip_ocr[key].remove(  "PASS_QC")
 #    if key in range(1,49):
-#    if key in [34,35,36,37,38,39,40,42]:
-#        chip_ocr[key][0] =  True
+    if key in [1,9,10,11,12,13]:
+        chip_ocr[key][0] =  True
 ####        chip_ocr[key].append( "Failed_in_bent_pins")
 ####        chip_ocr[key].append( "Moved_to_bad_tray_slot_manually")
 #        chip_ocr[key] = chip_ocr[key][0:-1]
-#        chip_ocr[key].remove(  "Moved_to_bad_tray_slot")
-#        chip_ocr[key].remove(  "Failed_in_QC")
-#        chip_ocr[key].remove(  "Moved_to_bad_tray_slot")
+        chip_ocr[key].remove(  "Moved_to_bad_tray_slot")
+        chip_ocr[key].remove(  "Failed_in_QC")
+        chip_ocr[key].remove(  "Failed_in_QC")
+        chip_ocr[key].remove(  "Moved_to_bad_tray_slot")
 #for key in chip_ocr.keys():
 #    print (key, chip_ocr[key])
     print (key, chip_ocr[key])
-exit()
+#exit()
 
 #exit()
 #    if key in range(80,88):

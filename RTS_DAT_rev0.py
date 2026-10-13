@@ -38,6 +38,7 @@ from SN_chip_CPM_scan import ocr_chip
 from sendemail import sendemail
 from User_Input import get_user_input
 from init_check import init_chk 
+from socket_ai_client import socket_ai_rotate_reseat, socket_ai_start, socket_ai_stop
 
 global TRAY_N 
 TRAY_N = 90
@@ -51,7 +52,7 @@ def is_weekday_work_hours():
 
     is_weekday = 0 <= now.weekday() <= 4
     start_time = datetime.time(8, 00)
-    end_time = datetime.time(20, 00)  # FIXED typo
+    end_time = datetime.time(19, 00)  # FIXED typo
 
     in_time_range = start_time <= current_time <= end_time
     return is_weekday and in_time_range
@@ -89,6 +90,10 @@ def RTS_debug (info, user_email, status=None, trayno=None, trayc=None, trayr=Non
         print ("Chip on orignial Sinkno(1-2)={}, Skt(1-8)={} ".format(sinkno, sktn)) 
     elif "T2T" in info:
         print ("Chip is moved from Tray to Tray") 
+    elif "RESEAT" in info:
+        print ("Chip was picked up from the socket for a rotated reseat (socket AI)") 
+        print ("Chip may be in Sinkno(1-2)={}, Skt(1-8)={} or on the stinger".format(sinkno, sktn)) 
+        print ("Put it back to orignial TrayNo(1-2)={}, Col(1-15)={}, Row(1-6)={}".format(trayno, trayc, trayr)) 
 
     while True:
         print ("444-> Shutdown RTS and exit anyway")
@@ -117,6 +122,9 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
     #make sure DAT is powered off
     DAT_power_off()
 
+    if "FE" in duttype: #load the socket AI model on wcgpu1 only while chips are moved into the sockets (~8 s)
+        socket_ai_start(log=logs.setdefault("socket_AI_server", []))
+
     rts.MotorOn()
     rts.PumpOn()
     time.sleep(5)
@@ -144,6 +152,12 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
         sktn = skt + 1
         
         status = rts.MoveChipFromTrayToSocket(trayno, trayc, trayr, sinkno, sktn,duttype)    
+        if (status >= 0) and ("FE" in duttype): #AI socket inspection on wcgpu1; if bad: rotate +0.5, then -1.0, then back to the lowest-z angle
+            status = socket_ai_rotate_reseat(rts, rootdir, sinkno, sktn, duttype, log=logs.setdefault("socket_AI", []))
+            if status < 0: #in-socket reseat failed: chip in the socket or on the stinger, not on the tray
+                RTS_debug ("RESEAT",user_email,  status, trayno, trayc, trayr, sinkno, sktn)
+                duts=[chipi] + duts
+                continue
 
         if status < 0:
             if len(duts) == 0: #use the next good chip
@@ -227,6 +241,8 @@ def MovetoSoket(sinkno, duts,ids_dict,  skts=[0,1,2,3,4,5,6,7], duttype="FE") :
                     tmpi = tmpi + 1 
             else:
                 tmpi = tmpi + 1
+    if "FE" in duttype: #all chips are in the sockets: release the socket AI model (GPU) on wcgpu1
+        socket_ai_stop(log=logs.setdefault("socket_AI_server", []))
     rts.rts_idle()
     return duts, dut_skt, ids_bads
 
@@ -708,11 +724,11 @@ while (len(duts) > 0) or Undone_Flag :
                 print (f"OCR while scaning tray: {ocr_sn}, OCR while moving to socket: {ocr_info}")
                 p_shifter=True
                 s_shifter=False
-                #if not NIGHT_ON: #pass if it is warm test at night
-                switch_hr = int(datetime.datetime.now().strftime("%H"))
-                if (switch_hr >= 17) and (not LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
-                    sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
-                else:
+                if not NIGHT_ON: #pass if it is warm test at night
+                #switch_hr = int(datetime.datetime.now().strftime("%H"))
+                #if (switch_hr >= 17) and (not LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
+                #    sendemail(subject = "Chip SN mismatch, ignore for the automatic testing", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
+                #else:
                     sendemail(subject = "Chip SN mismatch, please check the pop-up window", message=f"OCR result {ocr_info} is different from Chip SN {ocr_sn}", user_email=user_email, p_shifter=p_shifter, s_shifter=s_shifter)
                     from sn_match_gui import run_sn_match_gui
                     yorn = run_sn_match_gui(image_path=ocr_image_dir, text=f"Is chip SN {ocr_sn} ?")
@@ -772,13 +788,14 @@ while (len(duts) > 0) or Undone_Flag :
             logs["RTS_MSG_S2R_F"] = ids_bads
             with open(fp, 'wb') as fn:
                 pickle.dump(logs, fn)
-    switch_hr = int(datetime.datetime.now().strftime("%H"))
-    if (switch_hr >= 17) and (LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
-        NIGHT_ON = True
-        sendemail(subject ="Please replace the tray for warm test at night!", message="Please put aside current tray for cold test. \n Then place a new tray for warm test only at night!", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
-        break
-    else:
-        NIGHT_ON = False
+    #switch_hr = int(datetime.datetime.now().strftime("%H"))
+    #if (switch_hr >= 17) and (LN2_flg) and ((len(duts) > 0) or Undone_Flag ): 
+    #    NIGHT_ON = True
+    #    sendemail(subject ="Please replace the tray for warm test at night!", message="Please put aside current tray for cold test. \n Then place a new tray for warm test only at night!", user_email=user_email, inform_tech=True, p_shifter=True, s_shifter=True)
+    #    break
+    #else:
+    #    NIGHT_ON = False
+    NIGHT_ON = False
 
 rts.rts_shutdown()
 

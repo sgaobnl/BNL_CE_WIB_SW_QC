@@ -328,6 +328,44 @@ class RTS_CFG():
                 self.rts_init(port=2001, host_ip='192.168.0.2')
         return status
 
+    def ReseatChipInSocket(self, DAT_nr, socket_nr, dU, duttype="FE"):
+        # pick the chip up from the socket, rotate by dU degrees, insert it again (no tray).
+        # returns the new ts (>0, picture <ts>_socket.bmp) or an error (<0); no automatic recovery,
+        # on error the chip may be in the socket or on the stinger
+        if "FE" in duttype:
+            sktn = socket_nr
+        elif "ADC" in duttype:
+            sktn = socket_nr + 10
+        elif "CD" in duttype:
+            sktn = (socket_nr&0x03)+20
+        else:
+            sktn = socket_nr
+        while True:
+            try:
+                print ("Reseat Chip in DAT#{},Socket{}, rotate {:+.2f} deg".format(DAT_nr, sktn, dU))
+                self.msg = "ReseatChipInSocket"
+                self.s.send(self.msg.encode())
+                self.s.send(b"\r\n")
+
+                self.s.send(str(DAT_nr).encode())
+                self.s.send(b"\r\n")
+
+                self.s.send(str(sktn).encode())
+                self.s.send(b"\r\n")
+
+                self.s.send("{:.3f}".format(dU).encode())
+                self.s.send(b"\r\n")
+
+                self.msg = self.s.recv(1024).decode()
+                self.msg = self.msg.strip()
+                print("msg: ", self.msg)
+                status = int(self.msg)
+                break
+            except ConnectionAbortedError:
+                print ("ConnectionAbortedError")
+                self.rts_init(port=2001, host_ip='192.168.0.2')
+        return status
+
     def MoveChipFromTrayToTray(self, stray_nr, scol_nr, srow_nr, dtray_nr, dcol_nr, drow_nr):
 #        self.Safeguard()
         i = 0

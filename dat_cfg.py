@@ -1018,6 +1018,8 @@ class DAT_CFGS(WIB_CFGS):
         if cali_mode < 2:
 
             valint = int(val*65536/self.ADCVREF)
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+            time.sleep(0.001)
             self.dat_set_dac(val=valint, fe_cal=0)
             self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
@@ -1063,8 +1065,8 @@ class DAT_CFGS(WIB_CFGS):
                 swdac = 2
                 dac = 0
         else:
-            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
-            self.cdpoke(0, 0xC, 0, 63, 0)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
 
         if cali_mode == 2:
             adac_pls_en = 1
@@ -1442,6 +1444,8 @@ class DAT_CFGS(WIB_CFGS):
             mux_name = self.mon_fe_cs[mux_cs]
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
             valint = int(1.25*65536/self.ADCVREF)
+            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+            time.sleep(0.001)
             self.dat_set_dac(val=valint, fe_cal=0)
             self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
@@ -2071,5 +2075,7 @@ class DAT_CFGS(WIB_CFGS):
                 print("Error configuring signal generator. Trying again...")
                 #err = sig_gen.query("SYSTEM:ERROR?")
                 #print("Signal generator status:",err,end='')
-    
 
+if __name__=='__main__': 
+    dat =  DAT_CFGS()
+    Vref = dat.dat_CAL_MON_VREF()
