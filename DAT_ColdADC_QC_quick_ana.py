@@ -28,7 +28,7 @@ fdir = '''D:\DAT_SN_data\SN9\Time_20250103212716_DUT_1000_2000_3000_4000_5000_60
 fdir = '''D:\DAT_SN_data\SN9\Time_20250106163307_DUT_1000_2000_3000_4000_5000_6000_7000_8000\RT_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
 fdir = '''C:\SGAO\ColdTest\Tested\DAT_ColdADC_QC\Tested\B002T1006\Time_20250509161341_DUT_0016_1017_2018_3019_4020_5021_6022_7023\LN_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
 fdir = '''C:/Users/sgao.BNL/Downloads/RT_ADC_250218746_250218742_250218714_250218710_250218779_250218775_250218747_250218743/'''
-fdir = '''C:/Users/sgao.BNL/Downloads/RT_ADC_250218738_250218734_250218706_250218702_250218771_250218767_250218739_250218735/'''
+fdir = '''D:/Github\BNL_CE_WIB_SW_QC/tmp_data\DAT_SN11/RT_ADC_000100001_000100002_000100003_000100004_000100005_000100006_000100007_000100008/'''
 
 evl = input ("Analyze all test items? (Y/N) : " )
 if ("Y" in evl) or ("y" in evl):
@@ -45,7 +45,8 @@ else:
     print ("\033[96m 6: ADC DNL/INL measurement  \033[0m")
     print ("\033[96m 7: ADC overflow check  \033[0m")
     print ("\033[96m 8: ADC ENOB measurement \033[0m")
-    print ("\033[96m 9: ADC ring oscillator frequency readout \033[0m")
+    print ("\033[96m 11: ADC ring oscillator frequency readout \033[0m")
+    print ("\033[96m 12: ADC triangle test  \033[0m")
 
     while True:
         testnostr = input ("Please input a number (0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12) for one test item: " )
@@ -1175,7 +1176,7 @@ if 8 in tms:
             
 if 11 in tms:
     print ("-------------------------------------------------------------------------")
-    print ("9: ADC ring oscillator frequency readout  ")
+    print ("11: ADC ring oscillator frequency readout  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
     fp = fdir + "QC_RINGO" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )
@@ -1190,6 +1191,7 @@ if 11 in tms:
         exit()
     
     for onekey in dkeys:
+        print (onekey)
         if 'ring_osc_freq' in onekey:     
             freqs = data['ring_osc_freq']
             for chip, freq in enumerate(freqs):
@@ -1197,7 +1199,7 @@ if 11 in tms:
                 
 if 12 in tms:
     print ("-------------------------------------------------------------------------")
-    print ("10: ADC triangle test  ")
+    print ("12: ADC triangle test  ")
     print ("command on WIB terminal to retake data for this test item is as bellow :")
     fp = fdir + "QC_TRIG" + ".bin"
     print ("When it is done, replace {} on the local PC".format(fp) )

@@ -1018,10 +1018,10 @@ class DAT_CFGS(WIB_CFGS):
         if cali_mode < 2:
 
             valint = int(val*65536/self.ADCVREF)
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
-            time.sleep(0.001)
+#            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+#            time.sleep(0.001)
             self.dat_set_dac(val=valint, fe_cal=0)
-            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+#            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
             if self.rev == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    
@@ -1444,10 +1444,10 @@ class DAT_CFGS(WIB_CFGS):
             mux_name = self.mon_fe_cs[mux_cs]
             self.cdpoke(0, 0xC, 0, self.DAT_ADC_FE_TEST_SEL, mux_cs<<4)    
             valint = int(1.25*65536/self.ADCVREF)
-            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
-            time.sleep(0.001)
+#            self.cdpoke(0, 0xC, 0, 63, 1)    #enable DAC8411 SCLK
+#            time.sleep(0.001)
             self.dat_set_dac(val=valint, fe_cal=0)
-            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
+#            self.cdpoke(0, 0xC, 0, 63, 0)    #disable DAC8411 SCLK
 
             if self.rev == 0:
                 self.cdpoke(0, 0xC, 0, self.DAT_FE_CMN_SEL, 4)    

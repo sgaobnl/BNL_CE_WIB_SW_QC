@@ -754,6 +754,7 @@ if 8 in tms:
         for val in cali_vals:
             valint = int(val*65536/dat.ADCVREF)
             dat.dat_set_dac(val=valint, fe_cal=0)
+            time.sleep(0.1)
             data = dat.dat_fe_qc_acq(num_samples=5)
             datad["FECHN%02d_%04dmV_CALI"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, cali_fe_info, cfg_info]
         
@@ -768,6 +769,7 @@ if 8 in tms:
         for val in  dire_vals:
             valint = int(val*65536/dat.ADCVREF)
             dat.dat_set_dac(val=valint, fe_cal=0)
+            time.sleep(0.1)
             data = dat.dat_fe_qc_acq(num_samples=5)
             datad["FECHN%02d_%04dmV_INPUT"%(chn, int(val*1000))] = [dat.fembs, data, chn, val, period, width, direct_fe_info, cfg_info]
     
